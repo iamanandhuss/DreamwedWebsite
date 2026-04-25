@@ -1,0 +1,172 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Heart, Camera, Video, Image as ImageIcon, Star, Play } from 'lucide-react';
+import Button from '../components/Button';
+import SectionHeader from '../components/SectionHeader';
+
+const Home = () => {
+  const WEDDING_IMAGE_URL = "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=1470";
+  const COUPLE_IMAGE_URL = "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1470";
+
+  return (
+    <div className="overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative h-screen flex items-center justify-center p-0">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${WEDDING_IMAGE_URL})` }}
+        >
+          <div className="absolute inset-0 bg-black/30" />
+        </div>
+        
+        <div className="container relative z-10 text-center text-white">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1 }}
+          >
+            <p className="uppercase tracking-[0.3em] font-medium mb-6 text-sm">Wedding Storytellers</p>
+            <h1 className="text-5xl md:text-8xl font-serif mb-8 leading-tight">
+              Every wedding has a story.<br/>Let’s tell yours.
+            </h1>
+            <Button variant="primary" className="!px-12 !py-4 text-lg">
+              Start Your Story
+            </Button>
+          </motion.div>
+        </div>
+
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 1 }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2"
+        >
+          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center p-2">
+            <motion.div 
+              animate={{ y: [0, 10, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+              className="w-1 h-2 bg-white rounded-full"
+            />
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Intro / About Preview */}
+      <section className="bg-white">
+        <div className="container">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <SectionHeader 
+                subtitle="Who We Are" 
+                title="Blending Creativity with Pure Emotion" 
+                centered={false} 
+              />
+              <p className="text-[var(--color-text-muted)] text-lg mb-8 leading-relaxed">
+                At Dreamwed Stories, we believe that your wedding isn't just an event—it's a collection of heartbeat moments, stolen glances, and joyous celebrations that deserve to be preserved forever. 
+              </p>
+              <p className="text-[var(--color-text-muted)] text-lg mb-8">
+                Our approach is minimalist yet deeply expressive, capturing the raw, unscripted beauty of your special day.
+              </p>
+              <Button variant="secondary">Learn More Our Approach</Button>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <div className="aspect-[4/5] overflow-hidden rounded-2xl shadow-2xl">
+                <img src={COUPLE_IMAGE_URL} alt="Happy Wedding Couple" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+              </div>
+              <div className="absolute -bottom-10 -left-10 w-48 h-48 glass rounded-2xl p-6 hidden lg:block border border-[var(--color-primary)]/20">
+                <p className="text-3xl font-serif text-[var(--color-text-main)] mb-2">10+</p>
+                <p className="text-sm font-medium uppercase tracking-wider text-[var(--color-primary)]">Years of Stories</p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery Preview Section */}
+      <section className="bg-[var(--color-bg-light)]">
+        <div className="container text-center">
+          <SectionHeader subtitle="Work Highlights" title="Moments We've Preserved" />
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="group relative h-[400px] overflow-hidden rounded-xl bg-gray-200"
+              >
+                <img 
+                  src={`https://images.unsplash.com/photo-${1519225421980 + idx}-e58a7d54d55d?auto=format&fit=crop&q=80&w=800`} 
+                  alt={`Highlight ${idx}`}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <Heart className="text-white fill-white scale-150" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          <div className="mt-16">
+            <Button variant="outline">View Full Gallery</Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="bg-white">
+        <div className="container">
+          <SectionHeader subtitle="Kind Words" title="What Our Couples Say" />
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { name: "Sarah & Leo", text: "The team didn't just take photos; they captured the exact feeling of our day. Looking through our album is like reliving the wedding over and over." },
+              { name: "Maya & James", text: "Professional, invisible when they needed to be, and incredibly talented. The video they created moves us to tears every single time we watch it." },
+              { name: "Elena & David", text: "We wanted a minimalist aesthetic and they delivered beyond our expectations. Every shot is a work of art and perfectly reflects our style." }
+            ].map((t, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                className="p-10 glass rounded-2xl border border-[var(--color-primary)]/10 text-center"
+              >
+                <div className="flex justify-center gap-1 mb-6 text-[var(--color-accent)]">
+                  {[1, 2, 3, 4, 5].map(s => <Star key={s} size={16} fill="currentColor" />)}
+                </div>
+                <p className="text-[var(--color-text-muted)] italic mb-8 ">{`"${t.text}"`}</p>
+                <h4 className="font-serif text-xl text-[var(--color-text-main)]">— {t.name}</h4>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-[var(--color-primary)] py-20">
+        <div className="container text-center text-white">
+          <h2 className="text-4xl md:text-6xl font-serif mb-8">Ready to tell your story?</h2>
+          <p className="text-xl mb-12 max-w-2xl mx-auto opacity-90">
+            Let’s craft a timeless memory of your love. Currently booking for 2026/2027 weddings.
+          </p>
+          <Button variant="secondary" className="!bg-white !text-[var(--color-primary)] !border-white !px-12">
+            Book a Consultation
+          </Button>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default Home;
