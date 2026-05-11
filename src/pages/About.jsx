@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import SectionHeader from '../components/SectionHeader';
+import SectionHeader from '../components/ui/SectionHeader';
+import Button from '../components/ui/Button';
 
 const About = () => {
   const ABOUT_IMAGE = "https://images.unsplash.com/photo-1510076857177-744361488957?auto=format&fit=crop&q=80&w=1000";
@@ -71,6 +72,16 @@ const About = () => {
                 <p className="text-[var(--color-text-muted)] leading-relaxed">{v.desc}</p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+      {/* CTA Section */}
+      <section className="bg-white py-32">
+        <div className="container text-center">
+          <h2 className="text-[42px] md:text-[64px] font-normal tracking-tight mb-8">Ready to tell your story?</h2>
+          <div className="flex flex-col sm:flex-row justify-center gap-6">
+            <Button to="/services" variant="primary">Explore Services</Button>
+            <Button to="/contact" variant="outline">Say Hello</Button>
           </div>
         </div>
       </section>

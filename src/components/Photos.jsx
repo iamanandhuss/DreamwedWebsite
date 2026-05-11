@@ -6,11 +6,10 @@ export const Photos = ({ image }) => {
       className="
       w-[100%]
       h-[100%]
-      p-6
+      p-2
       overflow-hidden
       rounded-3xl
       bg-transparent
-      shadow-lg
       hover:-translate-y-2
       transition-all
       duration-300
