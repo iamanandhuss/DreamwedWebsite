@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, useInView, useSpring, useTransform } from "framer-motion";
 import Button from "../ui/Button";
-import uImage from "../../assets/images/uIcon.png";
+import favicon from "../../../public/favicon.png";
 import EXPERIENCE_BENTO1 from "../../assets/images/EXPERIENCE_BENTO1.png";
 import capure1 from "../../assets/images/capture1.png";
 import capure2 from "../../assets/images/capture2.png";
@@ -110,7 +110,7 @@ const ExperienceBento = () => {
                     transition={{ delay: 1, duration: 0.5 }}
                     className="mt-6"
                   >
-                    <img src={uImage} alt="Dreamwed Logo" className="w-12 h-12 md:w-16 md:h-16 object-contain opacity-80" />
+                    <img src={favicon} alt="Dreamwed Logo" className="w-12 h-12 md:w-16 md:h-16 object-contain opacity-80" />
                   </motion.div>
                 </div>
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/40 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-white/60 transition-all duration-700" />

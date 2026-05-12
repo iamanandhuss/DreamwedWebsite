@@ -19,12 +19,12 @@ import portrait4 from "../assets/images/portrait4.png";
 
 const Home = () => {
   return (
-    <div className="relative w-full">
+    <div className="relative w-full ">
       {/* 1. Hero Section */}
       <Hero />
 
       {/* 2. Portrait Gallery Preview */}
-      <div className="flex justify-around p-10 bg-white border-b border-zinc-100">
+      <div className="flex justify-around p-10 bg-white border-b border-zinc-100 bg-gradient-to-b from-[#050706] to-white ">
         <Photos image={portrait1} />
         <Photos image={portrait2} />
         <Photos image={portrait3} />

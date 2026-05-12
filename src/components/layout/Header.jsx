@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import uImage from "../../assets/images/uIcon.png";
+import appIcon from "../../../public/appIcon.png";
+
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -63,7 +64,7 @@ const Header = () => {
         }
         ${
           scrolled
-            ? "glass py-4 shadow-sm backdrop-blur-xl"
+            ? "bg-black/10 backdrop-blur-2xl border-0 border-white/10 py-4"
             : "bg-transparent py-6"
         }
       `}
@@ -73,12 +74,12 @@ const Header = () => {
         {/* LOGO */}
         <NavLink to="/" className="flex items-center gap-3">
           <img
-            src={uImage}
+            src={appIcon}
             alt="Logo"
             className="w-12 h-12 object-contain"
           />
 
-          <h1 className="text-xl font-light tracking-tight text-gray-800">
+          <h1 className="text-xl font-light tracking-tight text-white">
             Dreamwed Stories
           </h1>
         </NavLink>
@@ -98,6 +99,7 @@ const Header = () => {
                 transition-all
                 duration-300
                 hover:-translate-y-1
+                text-white
                 ${
                   isActive
                     ? "text-black"
