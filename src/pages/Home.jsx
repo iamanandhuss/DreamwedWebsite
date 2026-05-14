@@ -25,7 +25,7 @@ const Home = () => {
       <Hero />
 
       {/* 2. Portrait Gallery Preview */}
-      <div className="flex justify-around p-10 bg-white border-b border-zinc-100 bg-gradient-to-b from-[#050706] to-white ">
+      <div className="flex justify-around p-10 bg-white border-b border-zinc-100 bg-gradient-to-t from-transparent to-[#1A1A14] to-white ">
         <Photos image={portrait1} />
         <Photos image={portrait2} />
         <Photos image={portrait3} />

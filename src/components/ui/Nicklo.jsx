@@ -30,7 +30,7 @@ export const Nicklo = () => {
     <section className="w-screen flex min-h-screen bg-gradient-to-bflex items-center justify-center ">
       <div className="relative w-full max-w-[1500px] h-[650px] overflow-hidden ">
         <div
-          className="absolute inset-0 bg-cover bg-center transition-all duration-900 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          className="absolute text-black inset-0 bg-cover bg-center transition-all duration-900 ease-[cubic-bezier(0.22,1,0.36,1)]"
           style={{ backgroundImage: `url(${segments[active].image})` }}
         />
 
