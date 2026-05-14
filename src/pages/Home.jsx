@@ -10,6 +10,7 @@ import StickyServices from "../components/sections/StickyServices";
 import { Photos } from "../components/Photos";
 import Button from "../components/ui/Button";
 import { FaArrowRight } from "react-icons/fa6";
+import { Nicklo } from "../components/ui/Nicklo";
 
 // Assets
 import portrait1 from "../assets/images/portrait1.png";
@@ -32,7 +33,10 @@ const Home = () => {
       </div>
 
       {/* 3. Mission / Statement Section */}
-      <section className="w-full py-40 px-6 bg-white">
+
+       
+
+      <section className="w-full py-0 px-0 bg-white">
         <div className="max-w-5xl mx-auto text-center">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
@@ -41,21 +45,30 @@ const Home = () => {
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
             className="text-[36px] md:text-[62px] leading-[1.1] tracking-[-0.05em] text-[#5f6963] font-light"
           >
-            Wedding photography in <br className="hidden md:block" /> Trivandrum with candid, traditional <br className="hidden md:block" /> & cinematic styles. Book professional <br className="hidden md:block" /> wedding shoots in Kerala today.
+            Wedding photography in <br className="hidden md:block" /> Trivandrum
+            with candid, traditional <br className="hidden md:block" /> &
+            cinematic styles. Book professional{" "}
+            <br className="hidden md:block" /> wedding shoots in Kerala today.
           </motion.h2>
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.4, duration: 1 }}
             className="mt-20"
           >
-            <Button to="/about" variant="primary" className="px-14 py-6 text-[18px]">
+            <Button
+              to="/about"
+              variant="primary"
+              className="px-14 py-6 text-[18px]"
+            >
               Discover Our Process <FaArrowRight className="ml-3" />
             </Button>
           </motion.div>
         </div>
       </section>
+
+       <Nicklo />
 
       {/* 4. Sticky Services Section */}
       <StickyServices />
