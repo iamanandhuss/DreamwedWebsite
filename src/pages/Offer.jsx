@@ -1,48 +1,45 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Heart, Sparkles, Clock, Calendar, CheckCircle2, 
-  Send, Loader2, Play, Award, ShieldCheck 
+  Heart, Sparkles, Clock, CheckCircle2, 
+  Send, Loader2, Play, Award, ShieldCheck, Star, Quote, ArrowRight
 } from "lucide-react";
 import { FaInstagram } from "react-icons/fa6";
 import Button from "../components/ui/Button";
 import SEO from "../components/SEO";
 
+// Images
+import HeroBg from "../assets/images/RED.jpg";
+import Promise1 from "../assets/images/new_portrait_1.jpg";
+import Promise2 from "../assets/images/new_portrait_2.jpg";
+import Promise3 from "../assets/images/new_portrait_3.jpg";
+import Promise4 from "../assets/images/new_portrait_4.jpg";
+
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzy15y5t2F5uM9NiYPimHvlS6xDw2N1Z5oTHF3SQnR6AI_fxo6y6mhIepsUj-kav31g/exec";
 
 const Offer = () => {
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", date: "", message: "" });
-  const [status, setStatus] = useState("idle"); // idle, loading, success, error
+  const [status, setStatus] = useState("idle"); 
 
-  // Countdown Timer Logic (Dynamic 48-hour rolling or reset)
+  // Countdown Timer
   const [timeLeft, setTimeLeft] = useState({ days: 1, hours: 23, minutes: 59, seconds: 59 });
 
   useEffect(() => {
-    // Ticking countdown logic
     const timer = setInterval(() => {
       setTimeLeft(prev => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        } else if (prev.days > 0) {
-          return { ...prev, days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
-        } else {
-          // Reset to 2 days to maintain urgency loop
-          return { days: 1, hours: 23, minutes: 59, seconds: 59 };
-        }
+        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+        if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        if (prev.days > 0) return { ...prev, days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
+        return { days: 1, hours: 23, minutes: 59, seconds: 59 };
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus("loading");
-
     try {
       const form = new FormData();
       form.append("name", formData.name);
@@ -52,222 +49,231 @@ const Offer = () => {
       form.append("message", `[SPECIAL OFFER ₹59,999 INQUIRY] ${formData.message}`);
       form.append("timestamp", new Date().toLocaleString());
 
-      await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: form,
-        mode: "no-cors"
-      });
-
+      await fetch(SCRIPT_URL, { method: "POST", body: form, mode: "no-cors" });
       setStatus("success");
       setFormData({ name: "", email: "", phone: "", date: "", message: "" });
       setTimeout(() => setStatus("idle"), 6000);
     } catch (error) {
-      console.error("Submission error:", error);
       setStatus("error");
       setTimeout(() => setStatus("idle"), 6000);
     }
   };
 
+  const scrollToForm = () => {
+    document.getElementById("booking-form").scrollIntoView({ behavior: "smooth" });
+  };
+
+  const videos = [
+    { id: "c310o24XVN0", title: "The Symphony of Rituals", desc: "Cinematic traditional wedding highlights with epic drone captures." },
+    { id: "S9-SrdnKsMs", title: "Glimpses of Forever", desc: "Emotional highlights showing wedding candids and shared glances." },
+    { id: "jnSAu-C6OmQ", title: "An Elegant Rhapsody", desc: "Modern reception storytelling capturing high-energy events." }
+  ];
+
+  const reviews = [
+    { name: "Deepak Kollam", text: "Superb work bro! We had a great experience with the team. I am someone who doesn't pose for photos at all, but you guys managed to capture such incredible shots and made me feel so comfortable. Thank you so much!" },
+    { name: "Prajith", text: "Superb! We are so incredibly happy ❤️ The photo edits turned out absolutely amazing! Thank you for capturing our moments perfectly." },
+    { name: "Chindu", text: "What you did is one of the best I have seen so far. I've been searching for wedding videographers for 7 months, and I can say without any doubt... the cinematic video you guys did is one of the best!" }
+  ];
+
   const instagramLink = "https://www.instagram.com/dreamwed_stories.co?igsh=MWxuOXZkcHZ2cWgwdw==";
 
-  // Cinematic Youtube Videos
-  const videos = [
-    {
-      id: "c310o24XVN0",
-      title: "The Symphony of Rituals",
-      desc: "Cinematic traditional wedding highlights with epic drone and detail captures."
-    },
-    {
-      id: "S9-SrdnKsMs",
-      title: "Glimpses of Forever",
-      desc: "Emotional highlights showing wedding candids and quiet shared glances."
-    },
-    {
-      id: "jnSAu-C6OmQ",
-      title: "An Elegant Rhapsody",
-      desc: "Modern reception storytelling capturing high-energy traditional events."
-    }
-  ];
-
-  // Best Candid Shots representing Instagram grid
-  const instaPics = [
-    { url: "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=600", tag: "Candid Smile" },
-    { url: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600", tag: "Eternal Vows" },
-    { url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=600", tag: "Groom Portrait" },
-    { url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=600", tag: "The First Dance" },
-    { url: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=600", tag: "Romantic Walks" },
-    { url: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&q=80&w=600", tag: "Bride Entry" }
-  ];
-
   return (
-    <div className="bg-[#f5f5f3] pt-24 pb-20 select-none overflow-hidden">
+    <div className="bg-zinc-950 text-white min-h-screen select-none overflow-hidden pb-16 font-sans">
       <SEO 
-        title="Exclusive Wedding Offer"
-        description="Claim our limited-time full-combo wedding package starting @ ₹59,999/- only. Complete photography, videography, reception coverage, 70-page custom album, reels, and calendar included."
+        title="Exclusive Flash Sale | Dreamwed Stories"
+        description="Claim our limited-time premium wedding photography package starting @ ₹59,999/- only. Only 2 slots remaining. Cinematic films & custom albums included."
       />
 
-      {/* TOP PROMO ANNOUNCEMENT */}
-      <div className="w-full bg-black py-3 text-center text-white text-[11px] font-bold uppercase tracking-[0.25em] flex justify-center items-center gap-2">
-        <Sparkles size={14} className="text-[#b4975a] animate-pulse" />
-        <span>Limited-Time Special Offer: Save ₹10,000 On Our Signature Package</span>
+      {/* STICKY URGENCY BOTTOM BAR */}
+      <div className="fixed bottom-0 left-0 w-full bg-gradient-to-r from-red-700 via-red-600 to-red-700 text-white py-3 md:py-4 z-50 flex flex-col md:flex-row justify-center items-center gap-2 md:gap-6 text-[10px] md:text-xs tracking-widest font-bold shadow-[0_-15px_40px_rgba(220,38,38,0.4)] px-4">
+        <span className="animate-pulse flex items-center gap-2"><Sparkles size={14}/> FLASH SALE ALERT</span>
+        <span className="hidden md:inline">|</span>
+        <span>🔥 ONLY 2 SLOTS REMAINING FOR ₹59,999/-</span>
+        <span className="hidden md:inline">|</span>
+        <button onClick={scrollToForm} className="bg-white text-red-700 px-5 py-1.5 md:py-2 rounded-full hover:scale-105 active:scale-95 transition-all shadow-md">
+          CLAIM YOUR DATE
+        </button>
       </div>
 
-      {/* HERO SECTION */}
-      <section className="relative py-20 px-6 max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 items-center">
-        <div className="lg:col-span-7 space-y-8">
+      {/* HERO SECTION (CINEMATIC FULL-SCREEN) */}
+      <section className="relative w-full min-h-[90vh] flex items-center pt-20 border-b border-zinc-900">
+        <div className="absolute inset-0 z-0">
+          <img src={HeroBg} alt="Luxury Wedding Portrait" className="w-full h-full object-cover object-top opacity-30 scale-105" />
+          <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/80 via-zinc-950/40 to-zinc-950"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(180,151,90,0.15),transparent_70%)]"></div>
+        </div>
+
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 grid lg:grid-cols-12 gap-12 items-center">
+          
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="space-y-4"
+            transition={{ duration: 1 }}
+            className="lg:col-span-7 space-y-6 md:space-y-8"
           >
-            <span className="inline-block px-4 py-1.5 rounded-full bg-[#ececea] text-[#5d665f] text-xs tracking-wider uppercase font-bold">
-              ✦ Exclusive Combo Offer
-            </span>
-            <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-5xl md:text-7xl font-light text-zinc-950 leading-[1.05] tracking-tight">
-              Lock in Your Timeless <br/>
-              <span className="italic font-normal text-[#b4975a]">Love Story Showcase</span>
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-zinc-900/60 border border-[#b4975a]/30 backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+              <span className="text-[#b4975a] text-[10px] tracking-[0.3em] uppercase font-bold">Limited Time Discount</span>
+            </div>
+            
+            <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-5xl md:text-7xl lg:text-[90px] font-light leading-[1.05] tracking-tight">
+              Cinematic Luxury, <br/>
+              <span className="italic font-normal text-[#b4975a]">Now Accessible.</span>
             </h1>
-            <p className="text-lg md:text-xl text-zinc-600 font-light leading-relaxed max-w-xl">
-              Get complete, premium wedding and reception photography and cinematic films for a highly specialized rate of <strong className="text-zinc-900">₹59,999/-</strong>. 
+            
+            <p className="text-lg md:text-xl text-zinc-400 font-light leading-relaxed max-w-xl">
+              Lock in Trivandrum's most elite complete wedding photography and cinematography package. Save ₹10,000 instantly.
             </p>
+
+            <div className="flex flex-wrap gap-4 pt-4">
+              <button onClick={scrollToForm} className="px-8 py-4.5 rounded-full bg-gradient-to-r from-[#d1a852] to-[#b4975a] text-zinc-950 font-bold text-sm tracking-wider uppercase hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(180,151,90,0.4)] transition-all duration-300">
+                Secure ₹59,999/- Pricing
+              </button>
+            </div>
           </motion.div>
 
-          {/* DYNAMIC COUNTDOWN TIMER */}
+          {/* DYNAMIC COUNTDOWN WIDGET */}
           <motion.div 
-            initial={{ opacity: 0, scale: 0.98 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="p-6 bg-white rounded-[28px] border border-zinc-200/60 shadow-sm inline-block space-y-4"
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="lg:col-span-5 bg-zinc-900/40 backdrop-blur-xl border border-zinc-800 rounded-[30px] p-8 md:p-10 relative overflow-hidden"
           >
-            <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500 uppercase tracking-widest">
-              <Clock size={16} className="text-red-500 animate-pulse" />
-              <span>Offer Expiries Soon: Locked-in Price</span>
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 via-red-500 to-red-600"></div>
+            
+            <div className="text-center mb-8">
+              <span className="text-zinc-500 text-[10px] tracking-[0.3em] uppercase font-bold block mb-2">Offer Expires In</span>
+              <div className="flex justify-center gap-3 md:gap-5 text-center numbers-pro">
+                {[
+                  { label: "Days", val: timeLeft.days },
+                  { label: "Hrs", val: timeLeft.hours },
+                  { label: "Min", val: timeLeft.minutes },
+                  { label: "Sec", val: timeLeft.seconds }
+                ].map((time, idx) => (
+                  <div key={idx} className="flex flex-col items-center">
+                    <div className="w-14 h-14 md:w-16 md:h-16 bg-zinc-950 border border-zinc-800 text-[#b4975a] rounded-xl flex items-center justify-center text-2xl md:text-3xl font-light shadow-inner">
+                      {String(time.val).padStart(2, "0")}
+                    </div>
+                    <span className="text-[9px] uppercase font-bold text-zinc-500 mt-2 tracking-widest">{time.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="flex gap-4 md:gap-6 text-center select-none">
-              {[
-                { label: "Days", val: timeLeft.days },
-                { label: "Hours", val: timeLeft.hours },
-                { label: "Mins", val: timeLeft.minutes },
-                { label: "Secs", val: timeLeft.seconds }
-              ].map((time, idx) => (
-                <div key={idx} className="flex flex-col items-center">
-                  <div className="w-16 h-16 md:w-20 md:h-20 bg-zinc-900 text-white rounded-[20px] flex items-center justify-center text-2xl md:text-3xl font-bold font-sans shadow-md">
-                    {String(time.val).padStart(2, "0")}
-                  </div>
-                  <span className="text-[10px] uppercase font-bold text-zinc-400 mt-2 tracking-wider">{time.label}</span>
-                </div>
-              ))}
+            <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent mb-8" />
+
+            <div className="text-center">
+              <span className="text-zinc-500 text-[10px] tracking-[0.2em] uppercase font-bold block mb-2">The Gold Lite Package</span>
+              <div className="flex justify-center items-center gap-4 mb-4">
+                <span className="text-5xl font-light tracking-tight text-white numbers-pro">₹59,999/-</span>
+              </div>
+              <span className="text-zinc-400 text-sm line-through decoration-red-500/50 decoration-2 numbers-pro block mb-6">Regularly ₹69,999</span>
+              
+              <ul className="text-left space-y-3">
+                {["Complete Photo & Video Coverage", "Full Pre & Post Wedding Edits", "70-Page Layflat Album"].map((feat, i) => (
+                  <li key={i} className="flex items-center gap-3 text-sm text-zinc-300 font-light">
+                    <CheckCircle2 size={16} className="text-[#b4975a] shrink-0" /> {feat}
+                  </li>
+                ))}
+              </ul>
             </div>
           </motion.div>
-
-          <div className="flex flex-wrap gap-4 pt-2">
-            <button 
-              onClick={() => document.getElementById("booking-form").scrollIntoView({ behavior: "smooth" })}
-              className="px-8 py-4 rounded-full bg-zinc-950 text-white font-semibold text-sm hover:bg-black shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
-            >
-              Claim Special Offer Now
-            </button>
-            <Button to="/services" variant="outline" className="px-8 py-4">
-              View Other Packages
-            </Button>
-          </div>
         </div>
-
-        {/* PACKAGE DETAILS FOCUSED CARD */}
-        <motion.div 
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3, duration: 0.8 }}
-          className="lg:col-span-5 bg-zinc-900 text-white rounded-[40px] p-8 md:p-10 shadow-2xl relative border border-zinc-800"
-        >
-          <div className="absolute top-6 right-6 px-4 py-1.5 bg-[#b4975a] text-white text-[10px] font-bold rounded-full tracking-wider uppercase">
-            Save ₹10,000
-          </div>
-
-          <span className="text-[#b4975a] font-bold text-[11px] tracking-[0.2em] uppercase block mb-2">Signature Combo</span>
-          <h3 className="text-3xl font-light font-serif mb-2 tracking-tight">Ultimate Gold Lite</h3>
-          <div className="flex items-baseline gap-2 mb-6">
-            <span className="text-4xl font-normal tracking-tight numbers-pro">₹59,999/-</span>
-            <span className="text-zinc-500 line-through text-lg numbers-pro">₹69,999</span>
-          </div>
-
-          <div className="w-full h-px bg-zinc-800 mb-6" />
-
-          <ul className="space-y-4 mb-8">
-            {[
-              "Wedding Photography Coverage",
-              "Wedding Videography Coverage",
-              "Reception Photography Coverage",
-              "Reception Videography Coverage",
-              "Premium Layflat 70-Pages Album",
-              "HD Cinematic Highlights Video",
-              "Full HD Documentary Wedding Video",
-              "1 Custom Social Media Reel",
-              "Personalised Desktop Calendar"
-            ].map((feat, idx) => (
-              <li key={idx} className="flex items-start gap-3">
-                <CheckCircle2 size={18} className="text-[#b4975a] shrink-0 mt-0.5" />
-                <span className="text-sm font-light text-zinc-300">{feat}</span>
-              </li>
-            ))}
-          </ul>
-
-          <div className="p-4 bg-zinc-800/60 border border-zinc-700/60 rounded-[20px] flex items-center gap-3">
-            <ShieldCheck size={20} className="text-emerald-400 shrink-0" />
-            <p className="text-[11px] leading-relaxed text-zinc-400 font-medium">
-              Free consultation & style customization meetings included. Secure your dates today.
-            </p>
-          </div>
-        </motion.div>
       </section>
 
-      {/* CINEMATIC WEDDING FILMS VIDEO DISPLAY */}
-      <section className="py-20 bg-white border-t border-b border-zinc-100">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
-            <span className="text-[#b4975a] text-xs uppercase font-bold tracking-[0.25em] block">Cinematography Showcase</span>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-4xl md:text-5xl font-light text-zinc-950 leading-tight">
-              Watch Our Live Wedding Films
-            </h2>
-            <p className="text-sm md:text-base text-zinc-500 font-light leading-relaxed">
-              Experience the actual storytelling quality. These films represent our standard gold cinematic styles, custom-tailored to the couples.
-            </p>
+      {/* VISUAL SERVICE BENTO GRID (THE PROMISE) */}
+      <section className="py-24 max-w-7xl mx-auto px-6">
+        <div className="text-center mb-16 space-y-4">
+          <span className="text-[#b4975a] text-[10px] tracking-[0.3em] uppercase font-bold">What You Get</span>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-4xl md:text-6xl font-light">
+            Visual Proof. <span className="italic text-zinc-500">Uncompromised Quality.</span>
+          </h2>
+          <p className="text-zinc-400 max-w-xl mx-auto font-light leading-relaxed">
+            Unlike standard studios, we don't just list our services. We guarantee breathtaking cinematic outcomes across every single medium.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[300px]">
+          {/* Card 1 */}
+          <div className="lg:col-span-2 lg:row-span-2 relative rounded-[32px] overflow-hidden group">
+            <img src={Promise1} alt="Wedding Photography" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full">
+              <span className="px-3 py-1 bg-[#b4975a]/20 text-[#b4975a] border border-[#b4975a]/30 rounded-full text-[10px] font-bold tracking-widest uppercase mb-4 inline-block backdrop-blur-sm">Included</span>
+              <h3 className="text-3xl md:text-4xl font-serif mb-2">Cinematic Photography</h3>
+              <p className="text-zinc-300 text-sm md:text-base font-light max-w-md">Unobtrusive candid wedding & reception coverage capturing raw, unfiltered emotional moments.</p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {videos.map((vid, idx) => (
+          {/* Card 2 */}
+          <div className="relative rounded-[32px] overflow-hidden group">
+            <img src={Promise2} alt="Wedding Films" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 p-8 w-full">
+              <h3 className="text-2xl font-serif mb-2">4K Documentary Films</h3>
+              <p className="text-zinc-400 text-xs font-light">Full HD wedding video & cinematic highlights reel.</p>
+            </div>
+          </div>
+
+          {/* Card 3 */}
+          <div className="relative rounded-[32px] overflow-hidden group">
+            <img src={Promise3} alt="Premium Albums" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 p-8 w-full">
+              <h3 className="text-2xl font-serif mb-2">70-Page Layflat Album</h3>
+              <p className="text-zinc-400 text-xs font-light">Lustre-finish premium heirloom printed albums.</p>
+            </div>
+          </div>
+          
+          {/* Card 4 */}
+          <div className="lg:col-span-3 relative rounded-[32px] overflow-hidden group bg-zinc-900 border border-zinc-800 flex flex-col md:flex-row items-center p-8 gap-8">
+             <div className="flex-1 space-y-4">
+                <span className="text-[#b4975a] text-[10px] tracking-[0.3em] uppercase font-bold">Bonus Additions</span>
+                <h3 className="text-3xl font-serif">Social Reels & Calendar</h3>
+                <p className="text-zinc-400 text-sm font-light leading-relaxed max-w-xl">
+                  Get custom-edited vertical reels ready for Instagram immediately after the event, plus a gorgeous personalized desktop calendar of your best shots.
+                </p>
+             </div>
+             <div className="w-full md:w-1/3 aspect-[21/9] md:aspect-video rounded-2xl overflow-hidden relative">
+                <img src={Promise4} alt="Reels & Extras" className="w-full h-full object-cover opacity-60" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <FaInstagram size={32} className="text-white/80" />
+                </div>
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CUSTOMER REVIEWS (SOCIAL PROOF) */}
+      <section className="py-24 bg-zinc-900 border-y border-zinc-800/50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16 space-y-4">
+            <span className="text-[#b4975a] text-[10px] tracking-[0.3em] uppercase font-bold">Client Love</span>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-4xl md:text-5xl font-light">
+              Trusted by 500+ Couples
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {reviews.map((review, i) => (
               <motion.div 
-                key={idx}
+                key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.1, duration: 0.8 }}
-                className="bg-[#f9f9f7] rounded-[32px] overflow-hidden border border-zinc-100/60 shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-500 flex flex-col"
+                transition={{ delay: i * 0.2 }}
+                className="bg-zinc-950 p-8 rounded-[30px] border border-zinc-800/60 shadow-xl relative"
               >
-                <div className="relative aspect-video w-full bg-black group overflow-hidden">
-                  {/* Embedded Youtube Responsive Player */}
-                  <iframe 
-                    width="100%" 
-                    height="100%" 
-                    src={`https://www.youtube.com/embed/${vid.id}`} 
-                    title={vid.title} 
-                    style={{ border: 0 }} 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                    allowFullScreen
-                    loading="lazy"
-                    className="absolute inset-0"
-                  ></iframe>
+                <Quote size={40} className="text-zinc-800 absolute top-6 right-6" />
+                <div className="flex gap-1 mb-6">
+                  {[1,2,3,4,5].map(s => <Star key={s} size={14} className="fill-[#b4975a] text-[#b4975a]" />)}
                 </div>
-                <div className="p-6 md:p-8 flex flex-col flex-1 justify-between">
-                  <div className="space-y-2">
-                    <h4 className="font-serif text-xl font-normal text-zinc-900">{vid.title}</h4>
-                    <p className="text-xs md:text-sm text-zinc-500 font-light leading-relaxed">{vid.desc}</p>
+                <p className="text-zinc-300 font-light text-sm leading-relaxed mb-8 relative z-10 italic">"{review.text}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-[#b4975a] font-serif font-bold text-lg">
+                    {review.name.charAt(0)}
                   </div>
-                  <span className="text-[10px] uppercase font-bold text-[#b4975a] tracking-wider block mt-4 flex items-center gap-1.5">
-                    <Play size={10} className="fill-[#b4975a]" /> Full Cinematic Standard
-                  </span>
+                  <span className="font-bold text-xs uppercase tracking-widest text-zinc-100">{review.name}</span>
                 </div>
               </motion.div>
             ))}
@@ -275,202 +281,101 @@ const Offer = () => {
         </div>
       </section>
 
-      {/* BEST CANDID MOMENTS (INSTAGRAM SIMULATION) */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
-            <div>
-              <span className="text-[#b4975a] text-xs uppercase font-bold tracking-[0.25em] block mb-2">Our Best Works</span>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-4xl md:text-5xl font-light text-zinc-950">
-                Instagram Candid Portfolio
-              </h2>
-            </div>
-            
-            <a 
-              href={instagramLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3.5 bg-white border border-zinc-200 text-zinc-800 text-xs font-bold uppercase tracking-widest rounded-full hover:border-zinc-900 hover:text-zinc-900 shadow-sm hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
-            >
-              <FaInstagram size={16} className="text-[#b4975a]" /> Visit Instagram Feed
-            </a>
-          </div>
+      {/* YOUTUBE CINEMATIC SHOWCASE */}
+      <section className="py-24 max-w-7xl mx-auto px-6">
+        <div className="text-center mb-16 space-y-4">
+          <span className="text-[#b4975a] text-[10px] tracking-[0.3em] uppercase font-bold block">Cinema Standard</span>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-4xl md:text-5xl font-light leading-tight">
+            Watch The Quality We Guarantee
+          </h2>
+        </div>
 
-          {/* Bento Instagram Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-            {instaPics.map((pic, idx) => (
-              <motion.a
-                key={idx}
-                href={instagramLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.05 }}
-                className="group relative aspect-square rounded-[24px] overflow-hidden shadow-sm bg-gray-50 cursor-pointer"
-              >
-                <img src={pic.url} alt={pic.tag} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-center items-center text-center p-3">
-                  <FaInstagram size={20} className="text-white mb-2" />
-                  <span className="text-white text-[11px] font-bold uppercase tracking-wider">{pic.tag}</span>
-                  <span className="text-zinc-300 text-[9px] font-medium tracking-wide mt-1">View Post ✦</span>
-                </div>
-              </motion.a>
-            ))}
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {videos.map((vid, idx) => (
+            <div key={idx} className="bg-zinc-900 rounded-[32px] overflow-hidden border border-zinc-800 shadow-[0_10px_30px_rgba(0,0,0,0.5)] group">
+              <div className="relative aspect-video w-full bg-black">
+                <iframe 
+                  width="100%" height="100%" 
+                  src={`https://www.youtube.com/embed/${vid.id}?modestbranding=1&rel=0&controls=0`} 
+                  title={vid.title} 
+                  style={{ border: 0 }} 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                  allowFullScreen
+                  loading="lazy"
+                  className="absolute inset-0"
+                ></iframe>
+              </div>
+              <div className="p-8">
+                <h4 className="font-serif text-xl font-normal text-white mb-2">{vid.title}</h4>
+                <p className="text-xs text-zinc-500 font-light leading-relaxed">{vid.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* SPECIAL URGENCY BOOKING INQUIRIES FORM */}
-      <section id="booking-form" className="py-20 bg-white border-t border-zinc-100">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="bg-[#f9f9f7] rounded-[40px] p-8 md:p-16 border border-zinc-100/60 shadow-sm relative overflow-hidden">
+      {/* VIP BOOKING FORM */}
+      <section id="booking-form" className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-zinc-900/50 pointer-events-none"></div>
+        <div className="max-w-4xl mx-auto px-6 relative z-10">
+          <div className="bg-zinc-900/80 backdrop-blur-xl rounded-[40px] p-8 md:p-16 border border-zinc-700/50 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
             
             {status === "success" && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }} 
-                animate={{ opacity: 1, scale: 1 }}
-                className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center bg-[#f9f9f7] z-20"
-              >
-                <div className="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center mb-8 shadow-sm">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center bg-zinc-900 z-20">
+                <div className="w-20 h-20 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center justify-center mb-8 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
                   <CheckCircle2 size={32} />
                 </div>
-                <h3 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-4xl text-zinc-950 font-light mb-4">
-                  Offer Pricing Claimed!
-                </h3>
-                <p className="text-[#66706a] text-lg font-light max-w-md">
-                  Thank you! We have logged your details. Our coordination team will get in touch with you shortly to book your consultation and locking in the ₹59,999/- rate.
-                </p>
-              </motion.div>
-            )}
-
-            {status === "error" && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }} 
-                animate={{ opacity: 1, scale: 1 }}
-                className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center bg-[#f9f9f7] z-20"
-              >
-                <div className="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center mb-8 shadow-sm">
-                  <CheckCircle2 size={32} className="rotate-45" />
-                </div>
-                <h3 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-4xl text-zinc-950 font-light mb-4">
-                  Inquiry Logged (no-cors)
-                </h3>
-                <p className="text-[#66706a] text-lg font-light max-w-md">
-                  Thank you! Your details have been submitted and added. We will contact you shortly to lock in this special offer.
-                </p>
+                <h3 className="text-4xl font-serif font-light mb-4 text-white">Offer Pricing Locked!</h3>
+                <p className="text-zinc-400 text-sm font-light max-w-md">Our luxury coordination team will contact you within 24 hours to proceed with the booking formalities.</p>
               </motion.div>
             )}
 
             <div className="text-center max-w-xl mx-auto mb-12 space-y-4">
-              <span className="text-[#b4975a] text-xs uppercase font-bold tracking-[0.25em] block">Lock in Pricing</span>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-4xl md:text-5xl font-light text-zinc-950">
-                Claim the Limited Offer
+              <span className="text-red-500 text-[10px] tracking-[0.3em] uppercase font-bold flex items-center justify-center gap-2">
+                <Clock size={14} className="animate-pulse"/> Secure Your Date Now
+              </span>
+              <h2 className="text-4xl md:text-5xl font-serif font-light text-white">
+                Claim The ₹59,999/- Package
               </h2>
-              <p className="text-sm text-zinc-500 font-light">
-                Fill in your details below to log your inquiry. This instantly reserves your wedding dates under our ₹59,999/- package terms.
-              </p>
+              <p className="text-sm text-zinc-400 font-light">Submitting this form guarantees your eligibility for the promotional pricing if your dates are available.</p>
             </div>
 
-            <form onSubmit={handleSubmit} className={`space-y-8 transition-opacity duration-300 ${status === "loading" ? "opacity-50 pointer-events-none" : ""}`}>
+            <form onSubmit={handleSubmit} className={`space-y-8 ${status === "loading" ? "opacity-50 pointer-events-none" : ""}`}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-[0.25em] text-[#8a9289] mb-3 ml-2">Client Name</label>
-                  <input 
-                    name="name"
-                    required
-                    className="w-full px-6 py-4.5 rounded-[20px] bg-white border border-zinc-100 focus:border-black outline-none transition-all text-sm font-light shadow-sm"
-                    placeholder="E.g. Sarah & Leo"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  />
+                  <label className="block text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-500 mb-3 ml-2">Couple Names</label>
+                  <input name="name" required className="w-full px-6 py-4.5 rounded-[20px] bg-zinc-950 border border-zinc-800 text-white focus:border-[#b4975a] focus:ring-1 focus:ring-[#b4975a]/30 outline-none transition-all text-sm font-light placeholder-zinc-700" placeholder="E.g. Sarah & Leo" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
                 </div>
-                
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-[0.25em] text-[#8a9289] mb-3 ml-2">Phone Number</label>
-                  <input 
-                    name="phone"
-                    type="tel"
-                    required
-                    className="w-full px-6 py-4.5 rounded-[20px] bg-white border border-zinc-100 focus:border-black outline-none transition-all text-sm font-light shadow-sm numbers-pro"
-                    placeholder="+91 90000 00000"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  />
+                  <label className="block text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-500 mb-3 ml-2">Phone Number</label>
+                  <input name="phone" type="tel" required className="w-full px-6 py-4.5 rounded-[20px] bg-zinc-950 border border-zinc-800 text-white focus:border-[#b4975a] focus:ring-1 focus:ring-[#b4975a]/30 outline-none transition-all text-sm font-light placeholder-zinc-700 numbers-pro" placeholder="+91 90000 00000" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-[0.25em] text-[#8a9289] mb-3 ml-2">Email Address</label>
-                  <input 
-                    name="email"
-                    type="email"
-                    required
-                    className="w-full px-6 py-4.5 rounded-[20px] bg-white border border-zinc-100 focus:border-black outline-none transition-all text-sm font-light shadow-sm"
-                    placeholder="your@email.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  />
+                  <label className="block text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-500 mb-3 ml-2">Email Address</label>
+                  <input name="email" type="email" required className="w-full px-6 py-4.5 rounded-[20px] bg-zinc-950 border border-zinc-800 text-white focus:border-[#b4975a] focus:ring-1 focus:ring-[#b4975a]/30 outline-none transition-all text-sm font-light placeholder-zinc-700" placeholder="your@email.com" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
                 </div>
-                
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-[0.25em] text-[#8a9289] mb-3 ml-2">Wedding Date (Approx)</label>
-                  <input 
-                    name="date"
-                    type="text"
-                    required
-                    className="w-full px-6 py-4.5 rounded-[20px] bg-white border border-zinc-100 focus:border-black outline-none transition-all text-sm font-light shadow-sm numbers-pro"
-                    placeholder="E.g. November 2026"
-                    value={formData.date}
-                    onChange={(e) => setFormData({...formData, date: e.target.value})}
-                  />
+                  <label className="block text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-500 mb-3 ml-2">Wedding Date</label>
+                  <input name="date" type="text" required className="w-full px-6 py-4.5 rounded-[20px] bg-zinc-950 border border-zinc-800 text-white focus:border-[#b4975a] focus:ring-1 focus:ring-[#b4975a]/30 outline-none transition-all text-sm font-light placeholder-zinc-700 numbers-pro" placeholder="E.g. November 2026" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-[0.25em] text-[#8a9289] mb-3 ml-2">Your Story Vision</label>
-                <textarea 
-                  name="message"
-                  rows="3"
-                  className="w-full px-6 py-4.5 rounded-[20px] bg-white border border-zinc-100 focus:border-black outline-none transition-all resize-none text-sm font-light shadow-sm"
-                  placeholder="Share a little bit about your wedding and reception plans..."
-                  value={formData.message}
-                  onChange={(e) => setFormData({...formData, message: e.target.value})}
-                />
+                <label className="block text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-500 mb-3 ml-2">Event Details & Locations</label>
+                <textarea name="message" rows="3" className="w-full px-6 py-4.5 rounded-[20px] bg-zinc-950 border border-zinc-800 text-white focus:border-[#b4975a] focus:ring-1 focus:ring-[#b4975a]/30 outline-none transition-all text-sm font-light placeholder-zinc-700 resize-none" placeholder="Tell us about the venues and your vision..." value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} />
               </div>
 
-              <button 
-                type="submit"
-                disabled={status === "loading"}
-                className="w-full py-5 text-sm font-semibold tracking-wider flex items-center justify-center gap-3 shadow-lg rounded-full bg-zinc-950 hover:bg-black text-white cursor-pointer active:scale-95 transition-all duration-300"
-              >
-                {status === "loading" ? (
-                  <>Logging Details... <Loader2 className="animate-spin" size={18} /></>
-                ) : (
-                  <>Lock In Special Pricing (Save ₹10,000) <Send size={18} /></>
-                )}
+              <button type="submit" disabled={status === "loading"} className="w-full py-5 text-sm font-bold tracking-widest uppercase flex items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#d1a852] to-[#b4975a] hover:from-[#e3ba64] hover:to-[#c5a86b] text-zinc-950 shadow-[0_0_20px_rgba(180,151,90,0.3)] hover:shadow-[0_0_30px_rgba(180,151,90,0.5)] active:scale-95 transition-all duration-300">
+                {status === "loading" ? <>Locking Details... <Loader2 className="animate-spin" size={18} /></> : <>Claim Offer & Save ₹10,000 <ArrowRight size={18} /></>}
               </button>
             </form>
           </div>
         </div>
       </section>
 
-      {/* VALUE BADGES */}
-      <section className="py-12 max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center pt-20">
-        {[
-          { icon: <Award size={28} className="text-[#b4975a] mx-auto mb-4" />, title: "Award-Winning Team", desc: "Trivandrum's premium accredited fine-art wedding creators." },
-          { icon: <ShieldCheck size={28} className="text-[#b4975a] mx-auto mb-4" />, title: "Secure Date Booking", desc: "Instantly lock in standard backup dates in case of scheduling adjustments." },
-          { icon: <Sparkles size={28} className="text-[#b4975a] mx-auto mb-4" />, title: "Premium Finishes", desc: "Lustre-finished print materials and flawless 4K cinematic outputs." }
-        ].map((badge, idx) => (
-          <div key={idx} className="space-y-2">
-            {badge.icon}
-            <h4 className="font-serif text-lg text-zinc-900">{badge.title}</h4>
-            <p className="text-xs text-zinc-500 font-light max-w-xs mx-auto leading-relaxed">{badge.desc}</p>
-          </div>
-        ))}
-      </section>
     </div>
   );
 };
