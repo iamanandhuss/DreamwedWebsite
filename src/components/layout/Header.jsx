@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import appIcon from "../../../public/appIcon.png";
 
 
 const Header = () => {
@@ -43,9 +42,9 @@ const Header = () => {
     { name: "Home", path: "/" },
     { name: "About", path: "/about" },
     { name: "Services", path: "/services" },
+    { name: "Special Offer 🌟", path: "/offer", isSpecial: true },
     { name: "Blog", path: "/blog" },
     { name: "Contact", path: "/contact" },
-    { name: "Special Offer", path: "/offer", isSpecial: true },
   ];
 
   return (
@@ -75,8 +74,8 @@ const Header = () => {
         {/* LOGO */}
         <NavLink to="/" className="flex items-center gap-3">
           <img
-            src={appIcon}
-            alt="Logo"
+            src="/appIcon.png"
+            alt="Dreamwed Stories Logo"
             className="w-12 h-12 object-contain"
           />
 

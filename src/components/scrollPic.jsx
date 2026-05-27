@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, X, ArrowRight, Search, Heart, Camera, Clock } from "lucide-react";
-import favicon from "../../public/favicon.png";
 import Footer from "./layout/Footer";
+import detailImg from "../assets/images/new_portrait_4.jpg";
 
 export const ScrollPic = ({ 
   allServices = [], 
@@ -74,7 +74,7 @@ export const ScrollPic = ({
               {/* STICKY HEADER */}
               <div className="sticky top-0 w-full px-8 md:px-16 py-6 flex justify-between items-center bg-white/80 backdrop-blur-md z-20 border-b border-zinc-100">
                 <div className="flex items-center gap-3">
-                  <img src={favicon} alt="Dreamwed Logo" className="w-12 h-12 md:w-16 md:h-16 object-contain opacity-80" />
+                  <img src="/favicon.png" alt="Dreamwed Logo" className="w-12 h-12 md:w-16 md:h-16 object-contain opacity-80" />
                   <h2 className="text-[18px] md:text-[20px] font-normal tracking-tight text-black">Dreamwed Stories</h2>
                 </div>
                 
@@ -151,7 +151,7 @@ export const ScrollPic = ({
                       </div>
                     </div>
                     <div className="rounded-[40px] overflow-hidden aspect-square shadow-xl">
-                      <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1000" className="w-full h-full object-cover" alt="Detail" />
+                       <img src={detailImg} className="w-full h-full object-cover" alt="Detail" />
                     </div>
                   </div>
                 </div>

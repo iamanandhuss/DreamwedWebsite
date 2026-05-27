@@ -6,12 +6,14 @@ import ExperienceBento from "../components/sections/ExperienceBento";
 import PricingSection from "../components/pricing/PricingSection";
 import TestimonialSection from "../components/sections/TestimonialSection";
 import ConsultationSection from "../components/sections/ConsultationSection";
+import InstagramFeed from "../components/sections/InstagramFeed";
 import StickyServices from "../components/sections/StickyServices";
 import PortraitShowcase from "../components/sections/PortraitShowcase";
 import Button from "../components/ui/Button";
 import { FaArrowRight } from "react-icons/fa6";
 import { Nicklo } from "../components/ui/Nicklo";
 import ServicesGrid from "../components/sections/ServicesGrid";
+import BeforeAfterSlider from "../components/sections/BeforeAfterSlider";
 import SEO from "../components/SEO";
 
 const Home = () => {
@@ -65,6 +67,8 @@ const Home = () => {
 
       <ServicesGrid />
 
+      <BeforeAfterSlider />
+
        <Nicklo />
 
       {/* 4. Sticky Services Section */}
@@ -82,7 +86,10 @@ const Home = () => {
       {/* 8. Testimonials Section */}
       <TestimonialSection />
 
-      {/* 9. Consultation CTA */}
+      {/* 9. Instagram Feed */}
+      <InstagramFeed />
+
+      {/* 10. Consultation CTA */}
       <ConsultationSection />
     </div>
   );

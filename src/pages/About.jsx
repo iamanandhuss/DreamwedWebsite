@@ -3,9 +3,10 @@ import { motion } from 'framer-motion';
 import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
 import SEO from '../components/SEO';
+import ABOUT_IMAGE from '../assets/images/new_portrait_2.jpg';
 
 const About = () => {
-  const ABOUT_IMAGE = "https://images.unsplash.com/photo-1510076857177-744361488957?auto=format&fit=crop&q=80&w=1000";
+
 
   return (
     <div className="pt-24">

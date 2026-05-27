@@ -10,8 +10,9 @@ import Blog from './pages/Blog';
 import Contact from './pages/Contact';
 import Policies from './pages/Policies';
 import Admin from './pages/Admin';
-import Offer from './pages/Offer';
+import TrivandrumOffer from './pages/TrivandrumOffer';
 import NotFound from './pages/NotFound';
+import CustomCursor from './components/ui/CustomCursor';
 
 // Scroll to top on route change
 const ScrollToTop = () => {
@@ -44,7 +45,7 @@ const AnimatedRoutes = () => {
         <Route path="/blog" element={<PageWrapper><Blog /></PageWrapper>} />
         <Route path="/contact" element={<PageWrapper><Contact /></PageWrapper>} />
         <Route path="/policies" element={<PageWrapper><Policies /></PageWrapper>} />
-        <Route path="/offer" element={<PageWrapper><Offer /></PageWrapper>} />
+        <Route path="/offer" element={<PageWrapper><TrivandrumOffer /></PageWrapper>} />
         <Route path="/admin" element={<PageWrapper><Admin /></PageWrapper>} />
         <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
       </Routes>
@@ -56,6 +57,7 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
+      <CustomCursor />
       <div className="flex flex-col min-h-screen">
         <Header />
         <main className="flex-grow">

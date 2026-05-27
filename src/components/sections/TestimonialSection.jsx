@@ -4,26 +4,29 @@ import { Star } from "lucide-react";
 
 const testimonials = [
   {
-    name: "Ananya & Rohan",
-    type: "Wedding — Kovalam Beach",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400",
-    review:
-      "Every single photo made us cry happy tears. They captured moments we didn't even know happened — pure magic.",
+    name: "Dr. Athulraj",
+    type: "Wedding Photos",
+    image: "/athulraj.jpg",
+    review: "The photos came out much better than expected, especially the low-light shots! You didn't miss a single moment of the wedding, and I don't think anyone else can provide such incredible quality in this budget. Thank you so much guys ❤️",
   },
   {
-    name: "Devika & Arjun",
-    type: "Wedding — Padmanabha Swamy Temple",
-    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=400",
-    review:
-      "We felt completely at ease throughout the day. The cinematic film was beyond anything we imagined.",
+    name: "Chindu",
+    type: "Cinematic Video",
+    image: "/chindu.jpg",
+    review: "What you did is one of the best I have seen so far. I've been searching for 7 months... the cinematic video you guys did is one of the best! All my friends and office colleagues are showering with praises.",
   },
   {
-    name: "Meera & Vishnu",
-    type: "Wedding — Leela Kovalam",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400",
-    review:
-      "Dreamwed Stories didn't just shoot our wedding — they told our love story. We'll treasure these forever.",
+    name: "Anandha Lekshmi",
+    type: "Wedding Ceremony",
+    image: "/anandha_lekshmi.jpg",
+    review: "Thank you so much to the whole team for the beautiful photo frame and for capturing our big day perfectly! ❤️❤️",
   },
+  {
+    name: "Deepak Kollam",
+    type: "Candid Portraits",
+    image: "/deepak.jpg",
+    review: "Superb work bro! We had a great experience with the team. I am someone who doesn't pose for photos at all, but you guys managed to capture such incredible shots and made me feel so comfortable.",
+  }
 ];
 
 const cardVariants = {
@@ -80,7 +83,7 @@ const TestimonialSection = () => {
         </motion.div>
 
         {/* TESTIMONIAL GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 mt-20">
           {testimonials.map((item, index) => (
             <motion.div
               key={index}

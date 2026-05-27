@@ -3,37 +3,44 @@ import { motion } from 'framer-motion';
 import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
 
+// Import high-res portfolio images to eliminate stock/placeholders
+import pic1 from '../assets/images/pic1.jpeg';
+import pic2 from '../assets/images/pic2.jpeg';
+import pic3 from '../assets/images/pic3.jpeg';
+import pic4 from '../assets/images/pic4.jpeg';
+
 const Blog = () => {
   const posts = [
     {
       title: "Top 10 Wedding Trends for 2026",
       category: "Planning Tips",
       date: "May 15, 2026",
-      image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600",
+      image: pic1,
       excerpt: "From minimalist ceremonies to high-tech guest experiences, discover what's shaping the future of weddings."
     },
     {
       title: "Sarah & Leo's Coastal Romance",
       category: "Real Couple Stories",
       date: "June 2, 2026",
-      image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=600",
+      image: pic2,
       excerpt: "A look inside their intimate beach wedding that focused on sunset vows and candlelight dinner."
     },
     {
       title: "How to Choose Your Perfect Venue",
       category: "Planning Tips",
       date: "April 20, 2026",
-      image: "https://images.unsplash.com/photo-1519225421980-e58a7d54d55d?auto=format&fit=crop&q=80&w=600",
+      image: pic3,
       excerpt: "Your venue sets the stage for your entire story. Here are the key factors to consider before booking."
     },
     {
       title: "The Magic of Golden Hour Photos",
       category: "Photography Tips",
       date: "March 10, 2026",
-      image: "https://images.unsplash.com/photo-1510076857177-744361488957?auto=format&fit=crop&q=80&w=600",
+      image: pic4,
       excerpt: "Why the hour before sunset is the most critical time for capturing dreamy, romantic wedding portraits."
     }
   ];
+
 
   return (
     <div className="pt-24 bg-[var(--color-bg-light)]">
