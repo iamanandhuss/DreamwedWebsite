@@ -156,11 +156,16 @@ async function runGitPush(token) {
   console.log('📝 Staging all modified files...');
   const repoFiles = await git.listFiles({ fs, dir });
   for (const file of repoFiles) {
-    await git.add({ fs, dir, filepath: file });
+    const filePath = path.join(dir, file);
+    if (fs.existsSync(filePath)) {
+      await git.add({ fs, dir, filepath: file });
+    } else {
+      await git.remove({ fs, dir, filepath: file });
+    }
   }
   
   // Stage any new files (excluding node_modules or ignored paths)
-  const globby = async (d) => {
+  const globby = (d) => {
     let results = [];
     const list = fs.readdirSync(d);
     list.forEach(file => {
@@ -177,7 +182,7 @@ async function runGitPush(token) {
     return results;
   };
   
-  const allFiles = await globby(dir);
+  const allFiles = globby(dir);
   for (const file of allFiles) {
     await git.add({ fs, dir, filepath: file });
   }
@@ -234,6 +239,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error('\n❌ Execution Error:', err.message);
+  console.error('\n❌ Execution Error:', err);
   process.exit(1);
 });
