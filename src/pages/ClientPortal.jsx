@@ -70,7 +70,8 @@ const ClientPortal = () => {
     } catch (err) {
       console.error("Lookup error:", err);
       setStatus("error");
-      setErrorMessage("Could not connect to the booking server. Please verify your phone number and try again.");
+      setErrorMessage("Could not connect to the booking server. Please verify your phone number and ensure your Connection Settings below are updated with your active SSH Tunnel URL.");
+      setShowDevServer(true);
     }
   };
 
