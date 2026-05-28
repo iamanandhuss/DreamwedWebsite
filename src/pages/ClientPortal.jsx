@@ -44,15 +44,16 @@ const ClientPortal = () => {
     alert(`Connected to server: ${cleanUrl}`);
   };
 
-  const handleLookup = async (e) => {
-    if (e) e.preventDefault();
-    if (!phoneQuery.trim()) return;
+  const handleLookup = async (e, overridePhone = null) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const phone = overridePhone || phoneQuery.trim();
+    if (!phone) return;
 
     if (status !== "success") setStatus("loading");
     setErrorMessage("");
 
     try {
-      const res = await fetch(`${API_BASE}/api/client/project?phone=${encodeURIComponent(phoneQuery.trim())}`);
+      const res = await fetch(`${API_BASE}/api/client/project?phone=${encodeURIComponent(phone)}`);
       
       if (res.status === 404) {
         setStatus("not_found");
@@ -67,6 +68,9 @@ const ClientPortal = () => {
       setProject(data.project);
       setBooking(data.booking);
       setStatus("success");
+      
+      // Save session to localStorage
+      localStorage.setItem("dreamwed_logged_phone", phone);
     } catch (err) {
       console.error("Lookup error:", err);
       setStatus("error");
@@ -74,6 +78,15 @@ const ClientPortal = () => {
       setShowDevServer(true);
     }
   };
+
+  // Auto-login on page load
+  useEffect(() => {
+    const savedPhone = localStorage.getItem("dreamwed_logged_phone");
+    if (savedPhone) {
+      setPhoneQuery(savedPhone);
+      handleLookup(null, savedPhone);
+    }
+  }, []);
 
   // Poll chats when client is on chat tab
   useEffect(() => {
@@ -452,6 +465,18 @@ const ClientPortal = () => {
                   <span className="text-zinc-300">|</span>
                   <MapPin size={13} className="text-[#b4975a] shrink-0" /> <span className="line-clamp-1">{project.event_venue}</span>
                 </p>
+                <button 
+                  onClick={() => {
+                    localStorage.removeItem("dreamwed_logged_phone");
+                    setProject(null);
+                    setBooking(null);
+                    setStatus("idle");
+                    setPhoneQuery("");
+                  }}
+                  className="text-[9px] text-[#b4975a] hover:text-amber-600 font-bold uppercase tracking-widest cursor-pointer bg-transparent border-none mt-2.5 transition-colors flex items-center gap-1 hover:scale-105 duration-200"
+                >
+                  🚪 Exit Workspace
+                </button>
               </div>
 
               {/* Topbar Tab Switches */}
