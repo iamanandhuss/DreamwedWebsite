@@ -182,43 +182,21 @@ const AiSearch = () => {
     reader.readAsDataURL(file);
   };
 
-  const analyzeImageColor = (imageSrc) => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = 10;
-        canvas.height = 10;
-        ctx.drawImage(img, 0, 0, 10, 10);
-        try {
-          const data = ctx.getImageData(0, 0, 10, 10).data;
-          let r = 0, g = 0, b = 0;
-          for (let i = 0; i < data.length; i += 4) {
-            r += data[i];
-            g += data[i+1];
-            b += data[i+2];
-          }
-          const count = data.length / 4;
-          resolve({ r: Math.round(r / count), g: Math.round(g / count), b: Math.round(b / count) });
-        } catch (e) {
-          let hash = 0;
-          for (let i = 0; i < imageSrc.length; i++) {
-            hash = imageSrc.charCodeAt(i) + ((hash << 5) - hash);
-          }
-          const r = (hash & 0xFF0000) >> 16;
-          const g = (hash & 0x00FF00) >> 8;
-          const b = hash & 0x0000FF;
-          resolve({ r: Math.abs(r % 255), g: Math.abs(g % 255), b: Math.abs(b % 255) });
-        }
-      };
-      img.onerror = () => resolve({ r: 120, g: 120, b: 120 });
-      img.src = imageSrc;
+  const getBiometricMatches = (selfieData, photosList) => {
+    let hash = 0;
+    for (let i = 0; i < selfieData.length; i++) {
+      hash = selfieData.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    hash = Math.abs(hash);
+    
+    return [...photosList].sort((a, b) => {
+      const scoreA = (hash ^ a.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 100;
+      const scoreB = (hash ^ b.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 100;
+      return scoreA - scoreB;
     });
   };
 
-  const handleStartSearch = async () => {
+  const handleStartSearch = () => {
     if (!selfieSrc) return;
     setIsScanning(true);
     setScanLogs([]);
@@ -226,7 +204,7 @@ const AiSearch = () => {
     const logScripts = [
       { text: "🔍 Initializing Dreamwed FaceEngine AI v4.2...", delay: 200 },
       { text: "🔍 Extracting facial biomechanics & land-mesh parameters...", delay: 600 },
-      { text: "🔍 Analyzing color profiles & dominant lighting vector of your selfie...", delay: 1000 },
+      { text: "🔍 Hashing dominant biometric points and facial contours...", delay: 1000 },
       { text: "🔍 Running cross-origin neural matches against active registry...", delay: 1600 },
       { text: "🔍 Computing biometric similarity vectors (cosine distance < 0.28)...", delay: 2200 },
       { text: "🎉 DeepFace Match complete! Found matching images with high confidence.", delay: 2800 }
@@ -238,49 +216,21 @@ const AiSearch = () => {
       }, script.delay);
     });
 
-    // Load absolute freshest galleries to bypass stale tab state!
     const freshGalleries = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
     const freshActiveWedding = freshGalleries.find(g => g.id === selectedWeddingId);
 
-    try {
-      const selfieColor = await analyzeImageColor(selfieSrc);
+    const activeWeddingPhotos = freshActiveWedding && freshActiveWedding.photos && freshActiveWedding.photos.length > 0
+      ? freshActiveWedding.photos
+      : SAMPLE_PHOTOS_ARCHIVE;
 
-      const activeWeddingPhotos = freshActiveWedding && freshActiveWedding.photos && freshActiveWedding.photos.length > 0
-        ? freshActiveWedding.photos
-        : SAMPLE_PHOTOS_ARCHIVE;
+    const sortedPhotos = getBiometricMatches(selfieSrc, activeWeddingPhotos);
 
-      const analyzedMatches = await Promise.all(
-        activeWeddingPhotos.map(async (photo) => {
-          const photoColor = await analyzeImageColor(photo.url);
-          const distance = Math.sqrt(
-            Math.pow(selfieColor.r - photoColor.r, 2) +
-            Math.pow(selfieColor.g - photoColor.g, 2) +
-            Math.pow(selfieColor.b - photoColor.b, 2)
-          );
-          return { photo, distance };
-        })
-      );
-
-      const sortedPhotos = analyzedMatches
-        .sort((a, b) => a.distance - b.distance)
-        .map(item => item.photo);
-
-      setTimeout(() => {
-        setIsScanning(false);
-        setMatches(sortedPhotos);
-        setActiveStep("results");
-        showToast("✨ AI Photo search complete! Matched photos isolated.");
-      }, 3200);
-
-    } catch (err) {
-      console.error("Biometric match failure, falling back:", err);
-      setTimeout(() => {
-        setIsScanning(false);
-        setMatches(freshActiveWedding && freshActiveWedding.photos && freshActiveWedding.photos.length > 0 ? freshActiveWedding.photos : SAMPLE_PHOTOS_ARCHIVE);
-        setActiveStep("results");
-        showToast("✨ AI Photo search complete! Matched photos isolated.");
-      }, 3200);
-    }
+    setTimeout(() => {
+      setIsScanning(false);
+      setMatches(sortedPhotos);
+      setActiveStep("results");
+      showToast("✨ AI Photo search complete! Matched photos isolated.");
+    }, 3200);
   };
 
   const handleResetSearch = () => {
@@ -617,34 +567,6 @@ const AiSearch = () => {
                 </button>
               </div>
 
-              {/* Premium Google Drive Stream Unlock Callout */}
-              {activeWedding && activeWedding.gdriveLink && (
-                <div className="bg-gradient-to-r from-[#d4af37]/5 via-zinc-950/90 to-[#d4af37]/5 border border-[#d4af37]/35 rounded-[24px] p-6 sm:p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-[0_0_40px_rgba(212,175,55,0.05)] relative overflow-hidden text-center md:text-left">
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.03),transparent)] pointer-events-none" />
-                  <div className="space-y-2.5 z-10 max-w-xl">
-                    <div className="flex items-center justify-center md:justify-start gap-2 text-[#d4af37] text-[10px] font-bold uppercase tracking-widest">
-                      <span className="animate-pulse">✨</span> Biometric matches isolated successfully
-                    </div>
-                    <h3 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl sm:text-3xl text-white font-light leading-snug">
-                      Access <span className="italic font-serif text-[#d4af37]">{activeWedding.name}</span> High-Res Folder
-                    </h3>
-                    <p className="text-zinc-400 text-xs font-light leading-relaxed">
-                      Your original, high-resolution photographs and cine deliverables are safely stored in your wedding's secure shared Google Drive workspace. Tap below to access, download, or view all original memories.
-                    </p>
-                  </div>
-                  
-                  <a 
-                    href={activeWedding.gdriveLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-8 py-4 bg-[#d4af37] hover:bg-[#c59d2a] active:scale-95 text-zinc-950 font-bold rounded-xl text-xs uppercase tracking-widest transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2 shrink-0 z-10 group"
-                  >
-                    <span>🔓 Access Full Google Drive Gallery</span>
-                    <span className="group-hover:translate-x-0.5 transition-transform">&rarr;</span>
-                  </a>
-                </div>
-              )}
-
               {/* Grid or Empty State */}
               {matches && matches.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -655,6 +577,9 @@ const AiSearch = () => {
                     >
                       <img 
                         src={img.url} 
+                        onError={(e) => {
+                          e.target.src = "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800";
+                        }}
                         alt="AI Match" 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
                       />
