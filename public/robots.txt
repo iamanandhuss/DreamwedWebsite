@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /services
+Allow: /blog
+Allow: /contact
+Allow: /offer
+Allow: /booking
+Allow: /my-booking
+Allow: /ai-search
+
+# Block internal staff portals from search indexing
+Disallow: /admin/
+Disallow: /editor/
+Disallow: /designer/
+
+Sitemap: https://dreamwedstories.co.in/sitemap.xml
