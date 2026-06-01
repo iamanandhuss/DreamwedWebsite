@@ -78,9 +78,39 @@ const INITIAL_ORDERS = [
   }
 ];
 
+const fetchPhotosFromGoogleDriveFolder = async (gdriveLink) => {
+  if (!gdriveLink) return [];
+  
+  const folderIdMatch = gdriveLink.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  if (!folderIdMatch || !folderIdMatch[1]) return [];
+  const folderId = folderIdMatch[1];
+  
+  try {
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://drive.google.com/drive/folders/${folderId}`)}`;
+    const res = await fetch(proxyUrl);
+    if (!res.ok) return [];
+    const html = await res.text();
+    
+    const matches = [...html.matchAll(/\/file\/d\/([a-zA-Z0-9_-]+)/g)];
+    const fileIds = [...new Set(matches.map(m => m[1]))];
+    
+    const photos = fileIds.map((id, index) => ({
+      id: `gdrive-photo-${id}-${index}`,
+      url: `https://lh3.googleusercontent.com/d/${id}`
+    }));
+    
+    return photos;
+  } catch (e) {
+    console.error("Failed to fetch folder files:", e);
+    return [];
+  }
+};
+
 const AiSearch = () => {
   const [galleries, setGalleries] = useState([]);
   const [selectedWeddingId, setSelectedWeddingId] = useState("");
+  const [gdrivePhotos, setGdrivePhotos] = useState([]);
+  const [gdriveLoading, setGdriveLoading] = useState(false);
   const [isInstaUnlocked, setIsInstaUnlocked] = useState(false);
   const [selfieSrc, setSelfieSrc] = useState(null);
   
@@ -150,12 +180,29 @@ const AiSearch = () => {
     setActiveStep(instaFollow ? "upload" : "gate");
   }, []);
 
-  // Scroll terminal logs automatically
   useEffect(() => {
     if (logScrollRef.current) {
       logScrollRef.current.scrollTop = logScrollRef.current.scrollHeight;
     }
   }, [scanLogs]);
+
+  useEffect(() => {
+    if (!selectedWeddingId || galleries.length === 0) return;
+    const activeWed = galleries.find(g => g.id === selectedWeddingId);
+    if (!activeWed || !activeWed.gdriveLink) {
+      setGdrivePhotos([]);
+      return;
+    }
+
+    const loadGdrivePhotos = async () => {
+      setGdriveLoading(true);
+      const photos = await fetchPhotosFromGoogleDriveFolder(activeWed.gdriveLink);
+      setGdrivePhotos(photos);
+      setGdriveLoading(false);
+    };
+
+    loadGdrivePhotos();
+  }, [selectedWeddingId, galleries]);
 
   const activeWedding = galleries.find(g => g.id === selectedWeddingId);
 
@@ -221,16 +268,21 @@ const AiSearch = () => {
     const freshGalleries = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
     const freshActiveWedding = freshGalleries.find(g => g.id === selectedWeddingId);
 
-    const activeWeddingPhotos = freshActiveWedding && freshActiveWedding.photos && freshActiveWedding.photos.length > 0
-      ? freshActiveWedding.photos
+    const activeWeddingPhotos = [
+      ...(freshActiveWedding && freshActiveWedding.photos ? freshActiveWedding.photos : []),
+      ...gdrivePhotos
+    ];
+
+    const finalPhotos = activeWeddingPhotos.length > 0
+      ? activeWeddingPhotos
       : SAMPLE_PHOTOS_ARCHIVE;
 
     let sortedPhotos = [];
     try {
-      sortedPhotos = getBiometricMatches(selfieSrc, activeWeddingPhotos);
+      sortedPhotos = getBiometricMatches(selfieSrc, finalPhotos);
     } catch (e) {
       console.error("Biometric matching calculation failure:", e);
-      sortedPhotos = activeWeddingPhotos;
+      sortedPhotos = finalPhotos;
     }
 
     setTimeout(() => {
