@@ -2349,6 +2349,7 @@ const ClientPortal = () => {
             </div>
 
             {/* Login Section Below the Message */}
+            {/* Login Section Below the Message */}
             {!otpSent ? (
               <form onSubmit={handleSendOtp} className="space-y-5 max-w-md mx-auto text-left">
                 {/* Phone or Email Input */}
@@ -2374,17 +2375,6 @@ const ClientPortal = () => {
                   className="w-full py-4 mt-2 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl transition-all text-xs tracking-widest uppercase shadow-lg shadow-amber-500/5 flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
                 >
                   {status === "loading" ? "Sending Access Code..." : "Request Access Code →"}
-                </button>
-
-                <button 
-                  type="button"
-                  onClick={() => {
-                    setUsernameOrEmail("9042544997");
-                    handleLookup(null, "9042544997");
-                  }}
-                  className="w-full py-4 bg-zinc-900 border border-[#b4975a]/30 hover:border-[#b4975a] text-[#b4975a] hover:text-white font-bold rounded-xl transition-all text-xs tracking-widest uppercase flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] mt-3"
-                >
-                  <span>✨</span> Load Luxury Demo Workspace
                 </button>
               </form>
             ) : (
@@ -2417,14 +2407,6 @@ const ClientPortal = () => {
                   </div>
                 )}
 
-                {/* Tip box displaying the generated OTP code for smooth user testing */}
-                {generatedOtp && (
-                  <div className="bg-[#b4975a]/10 border border-[#b4975a]/20 rounded-xl p-3.5 text-center space-y-1">
-                    <span className="text-[10px] uppercase font-bold text-[#b4975a] tracking-wider block">Frictionless Testing Code</span>
-                    <span className="text-lg font-mono font-bold text-white tracking-widest bg-zinc-900/40 py-1 px-3.5 rounded-lg border border-[#b4975a]/20 inline-block">{generatedOtp}</span>
-                  </div>
-                )}
-
                 <button 
                   type="submit"
                   disabled={status === "loading"}
@@ -2433,7 +2415,7 @@ const ClientPortal = () => {
                   {status === "loading" ? "Verifying..." : "Verify & Enter Console"}
                 </button>
 
-                <div className="flex justify-between items-center text-[10px] px-1 pt-2">
+                <div className="flex justify-between items-center text-[10px] px-1 pt-2 border-b border-white/5 pb-4">
                   <button 
                     type="button" 
                     onClick={() => {
@@ -2452,6 +2434,19 @@ const ClientPortal = () => {
                   >
                     Resend Code
                   </button>
+                </div>
+
+                {/* Professional Help WhatsApp Link */}
+                <div className="text-center pt-2">
+                  <a 
+                    href={`https://wa.me/919995412955?text=${encodeURIComponent(`Hello Dreamwed Stories, I am trying to log in to my Wedding Hub. Please provide my access code for my registered email or phone: ${usernameOrEmail}`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-zinc-500 hover:text-[#b4975a] text-[10px] uppercase font-bold tracking-wider transition-colors"
+                  >
+                    <FaWhatsapp size={13} className="text-green-500" />
+                    Don't have a code? Ask Coordinator
+                  </a>
                 </div>
               </form>
             )}
