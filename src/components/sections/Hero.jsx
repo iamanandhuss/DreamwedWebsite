@@ -1,14 +1,15 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Button from "../ui/Button";
-import { FaArrowRight } from "react-icons/fa6";
+import { FaArrowRight, FaPlay, FaXmark } from "react-icons/fa6";
 import RED from "../../assets/images/RED.jpg"
 
 const Hero = () => {
-  const [isVideoLoaded, setIsVideoLoaded] = React.useState(false);
-  const [isDesktop, setIsDesktop] = React.useState(false);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleResize = () => {
       setIsDesktop(window.innerWidth >= 768);
     };
@@ -66,9 +67,11 @@ const Hero = () => {
             Your special day, preserved forever.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-            <Button to="/offer" className="w-full sm:w-auto px-12 bg-gradient-to-r from-amber-500 via-[#d1a852] to-[#b4975a] text-white border-0 shadow-[0_0_30px_rgba(209,168,82,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 rounded-full font-bold uppercase tracking-wider text-[12px] flex items-center justify-center py-4">
-              Special Offer 🌟
-              <FaArrowRight className="ml-2" />
+            <Button 
+              onClick={() => setIsModalOpen(true)} 
+              className="w-full sm:w-auto px-12 bg-gradient-to-r from-amber-500 via-[#d1a852] to-[#b4975a] text-white border-0 shadow-[0_0_30px_rgba(209,168,82,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 rounded-full font-bold uppercase tracking-wider text-[12px] flex items-center justify-center py-4 gap-2"
+            >
+              <FaPlay className="animate-pulse" /> Play Prewedding Film
             </Button>
             <Button to="/services" variant="secondary" className="w-full sm:w-auto px-12">
               View Packages
@@ -79,6 +82,41 @@ const Hero = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* 4. Cinematic Video Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4 md:p-10 backdrop-blur-md"
+          >
+            <div className="absolute inset-0 cursor-pointer" onClick={() => setIsModalOpen(false)} />
+            <motion.div 
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="relative w-full max-w-4xl aspect-video bg-zinc-950 border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] z-10"
+            >
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-4 right-4 z-20 text-white/75 hover:text-white bg-black/40 hover:bg-black/80 p-2.5 rounded-full transition-all border border-white/10 cursor-pointer"
+              >
+                <FaXmark size={20} />
+              </button>
+              <iframe
+                src="https://www.youtube.com/embed/jnSAu-C6OmQ?autoplay=1&controls=1&rel=0"
+                title="Prewedding Film"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                className="w-full h-full border-0"
+                allowFullScreen
+              ></iframe>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
 
       <motion.div
         initial={{ opacity: 0 }}
