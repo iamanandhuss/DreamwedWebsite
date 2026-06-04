@@ -375,7 +375,7 @@ const TrivandrumOffer = () => {
   return (
     <div className="bg-[#fbfbfa] text-zinc-800 min-h-screen select-none overflow-hidden pb-20 font-sans">
       <SEO 
-        title="Exclusive Bride & Groom Wedding Packages | Dreamwed Stories"
+        title="Exclusive Bride & Groom Wedding Packages"
         description="Premium 4-Camera Wedding Photography Packages start @ Rs. 49,999/- only. Claim your slot today and receive a FREE pre-wedding shoot for a limited duration."
       />
 

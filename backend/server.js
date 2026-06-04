@@ -42,7 +42,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use('/dashboard', express.static(path.join(__dirname, 'dashboard')));
 
 // Serve static client website from DreamwedWebsite dist folder
-const websiteDist = path.join(__dirname, '../DreamwedWebsite/dist');
+const websiteDist = path.join(__dirname, '../dist');
 if (fs.existsSync(websiteDist)) {
   console.log(`📦 Serving React website static assets from: ${websiteDist}`);
   app.use(express.static(websiteDist, {

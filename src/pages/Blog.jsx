@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
+import SEO from '../components/SEO';
 
 // Import high-res portfolio images to eliminate stock/placeholders
 import pic1 from '../assets/images/pic1.jpeg';
@@ -41,9 +42,12 @@ const Blog = () => {
     }
   ];
 
-
   return (
     <div className="pt-24 bg-[var(--color-bg-light)]">
+      <SEO 
+        title="The Journal" 
+        description="Read our latest stories, tips, and wedding photography inspiration from Dreamwed Stories Trivandrum."
+      />
       <section>
         <div className="container">
           <SectionHeader subtitle="The Journal" title="Stories, Tips & Inspiration" />
