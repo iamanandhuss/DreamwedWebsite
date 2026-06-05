@@ -1947,6 +1947,46 @@ EDITED PHOTOS FOR SOCIAL MEDIA</textarea>
                     <i class="fa-solid fa-arrow-left"></i> Change Phone / Details
                 </button>
             </div>
+            
+            <!-- Step 3: Password Creation Overlay -->
+            <div id="bookingStepPassword" style="display: none;">
+                <div class="modal-header">
+                    <div class="modal-icon-wrapper alert-glow">
+                        <i class="fa-solid fa-key animate-pulse" style="color: var(--primary-gold);"></i>
+                    </div>
+                    <span class="modal-tag">Secure Onboarding Portal</span>
+                    <h2>Create Login Passwords</h2>
+                    <p>Set up password access for your personalized Wedding Hub dashboard.</p>
+                </div>
+                
+                <form id="customerPasswordForm">
+                    <!-- Bride Password Input -->
+                    <div class="form-group" id="bookingBridePassGroup" style="display: none;">
+                        <label for="custBridePassword"><i class="fa-solid fa-venus"></i> Bride's Access Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="custBridePassword" placeholder="Minimum 6 characters" minlength="6" autocomplete="new-password">
+                            <button type="button" class="btn-toggle-password" id="btnToggleBridePassword" title="Show/Hide Password">
+                                <i class="fa-solid fa-eye-slash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Groom Password Input -->
+                    <div class="form-group" id="bookingGroomPassGroup" style="display: none;">
+                        <label for="custGroomPassword"><i class="fa-solid fa-mars"></i> Groom's Access Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="custGroomPassword" placeholder="Minimum 6 characters" minlength="6" autocomplete="new-password">
+                            <button type="button" class="btn-toggle-password" id="btnToggleGroomPassword" title="Show/Hide Password">
+                                <i class="fa-solid fa-eye-slash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success btn-block" style="margin-top: 24px; font-weight: 700; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); border: none;">
+                        <span>Confirm & Complete Registration</span> <i class="fa-solid fa-circle-check"></i>
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
