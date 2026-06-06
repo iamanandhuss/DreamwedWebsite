@@ -1972,148 +1972,95 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
                 stay_charges: "Excluded"
             };
 
-            // Send OTP via Render backend (Twilio SMS + WhatsApp)
-            const sendBtn = customerBookingForm.querySelector('[type="submit"]');
-            if (sendBtn) { sendBtn.disabled = true; sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending OTP…'; }
+            // Save booking directly without OTP verification
+            const submitBtn = customerBookingForm.querySelector('[type="submit"]');
+            if (submitBtn) { 
+                submitBtn.disabled = true; 
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Booking Package & Logging In…'; 
+            }
 
-            fetch(`${API_BASE}/api/otp/send`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone, email })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    if (data.simulated) {
-                        generatedOtpCode = data.otp;
-                        alert(`📧 OTP Verification Fallback\n\nWe couldn't deliver the email (requires EMAIL_USER / EMAIL_PASS in Render dashboard env).\n\nYour temporary code is:\n\n🔐 ${generatedOtpCode}\n\nPlease enter it to proceed.`);
-                    } else {
-                        generatedOtpCode = 'REAL';
-                        alert(`📧 Verification Code Sent!\n\nWe have sent a 6-digit verification code to your email: ${email}\n\nPlease check your inbox (and spam folder) and enter it on the next screen.`);
-                    }
-                    if (bookingStepFields) bookingStepFields.style.display = 'none';
-                    if (bookingStepOtp) bookingStepOtp.style.display = 'block';
-                    startOtpResendTimer();
-                } else {
-                    alert('❌ Failed to send OTP. Please try again.');
+            apiSaveBooking(pendingBookingObject)
+            .then(savedBooking => {
+                if (!savedBooking) {
+                    alert('❌ Backend database error. Please verify the Express backend is running.');
+                    return;
                 }
+
+                let passwordAlertMsg = '';
+                if (savedBooking.coverage_scope === 'both') {
+                    passwordAlertMsg = `👰 BRIDE PASSWORD: ${savedBooking.bride_password}\n` +
+                                       `🤵 GROOM PASSWORD: ${savedBooking.groom_password}`;
+                } else if (savedBooking.coverage_scope === 'bride') {
+                    passwordAlertMsg = `👰 BRIDE PASSWORD: ${savedBooking.bride_password}`;
+                } else {
+                    passwordAlertMsg = `🤵 GROOM PASSWORD: ${savedBooking.groom_password}`;
+                }
+
+                // Auto login!
+                currentCustomerSession = {
+                    bookingId: savedBooking.id,
+                    name: savedBooking.name,
+                    phone: savedBooking.phone,
+                    role: savedBooking.coverage_scope === 'groom' ? 'groom' : 'bride',
+                    packageInterest: savedBooking.package_interest,
+                    driveLink: savedBooking.drive_link || '#'
+                };
+
+                // Set local and session storage values for unified React portal login
+                localStorage.setItem("dreamwed_logged_phone", savedBooking.phone);
+                localStorage.setItem("dreamwed_logged_role", savedBooking.coverage_scope === 'groom' ? 'groom' : 'bride');
+                sessionStorage.setItem("dreamwed_auto_login_phone", savedBooking.phone);
+
+                alert(`🎉 REGISTRATION COMPLETED SUCCESSFULLY!\n\n` +
+                      `🔓 Access Passwords Assigned:\n` +
+                      `${passwordAlertMsg}\n\n` +
+                      `You have been automatically logged in to your Wedding Hub workspace!`);
+
+                // WhatsApp booking confirm GPay prompt
+                const includesPrewedding = (parseInt(savedBooking.price_quoted) === 49999 || parseInt(savedBooking.price_quoted) === 99999 || parseInt(savedBooking.price_quoted) === 110000);
+                const surpriseBonusText = includesPrewedding ? `🎁 SURPRISE BONUS: Free Save the Date Photoshoot (worth ₹9,999/-) included!\n` : '';
+
+                const message = `Hi Unni! I have successfully completed registration on your website and locked in my Package slot booking!\n\n` +
+                                `👤 Name: ${savedBooking.name}\n` +
+                                `📞 Phone: ${savedBooking.phone}\n` +
+                                `📍 Pincode: ${savedBooking.pincode}\n` +
+                                `🏠 Address: ${savedBooking.address || ''}\n` +
+                                `📦 Plan: ${savedBooking.package_interest}\n` +
+                                `💰 Quote: ₹${parseInt(savedBooking.price_quoted).toLocaleString()}/- Net\n` +
+                                surpriseBonusText + `\n` +
+                                `Please guide me with the ₹5,000/- advance slot GPay address to approve my Digital Invoice!`;
+                
+                // Close modal
+                if (customerBookingModal) customerBookingModal.style.display = 'none';
+                
+                // Reset forms
+                customerBookingForm.reset();
+                if (customerOtpForm) customerOtpForm.reset();
+                if (bookingStepFields) bookingStepFields.style.display = 'block';
+                if (bookingStepOtp) bookingStepOtp.style.display = 'none';
+
+                // Load and display Selection Dashboard on packages.html immediately
+                loadCustomerDashboard();
+
+                let targetWhatsApp = '9995412955';
+                if (savedBooking.package_interest.includes('49999') || savedBooking.package_interest.includes('Prewedding') || savedBooking.price_quoted === '49999' || savedBooking.price_quoted === '110000') {
+                    targetWhatsApp = '7356297265';
+                }
+                window.open(`https://wa.me/91${targetWhatsApp}?text=${encodeURIComponent(message)}`, '_blank');
+
+                // Force immediate Admin fetch refresh if active
+                fetchBookings();
             })
             .catch(err => {
-                console.error('OTP send error:', err);
-                alert('❌ Could not reach the server. Please try again in a moment.');
+                console.error("Booking submit error:", err);
+                alert("❌ Could not save your booking. Please try again.");
             })
             .finally(() => {
-                if (sendBtn) { sendBtn.disabled = false; sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send OTP <i class="fa-solid fa-arrow-right"></i>'; }
+                if (submitBtn) { 
+                    submitBtn.disabled = false; 
+                    submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Complete Booking <i class="fa-solid fa-arrow-right"></i>'; 
+                }
             });
-        });
-    }
-
-    if (customerOtpForm) {
-        customerOtpForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const enteredOtp = document.getElementById('custOtp').value.trim();
-            const phone = document.getElementById('custPhone').value.trim();
-
-            if (generatedOtpCode === 'REAL') {
-                // Verify via Render backend (Twilio)
-                try {
-                    const res = await fetch(`${API_BASE}/api/otp/verify`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ phone, otp: enteredOtp })
-                    });
-                    const data = await res.json();
-                    if (!res.ok || !data.success) {
-                        alert('❌ Invalid OTP code. Please check your SMS/WhatsApp and try again.');
-                        return;
-                    }
-                } catch (err) {
-                    console.error(err);
-                    alert('❌ Connection to server failed during verification.');
-                    return;
-                }
-            } else {
-                // Simulated OTP (backend returned otp in response)
-                if (enteredOtp !== generatedOtpCode) {
-                    alert('❌ Invalid OTP code! Please check and enter again.');
-                    return;
-                }
-            }
-
-            // Clear resend timer
-            clearInterval(otpCountdownInterval);
-
-            // Successfully Verified! Add to database
-            const savedBooking = await apiSaveBooking(pendingBookingObject);
-            if (!savedBooking) {
-                alert('❌ Backend database error. Please verify the Express backend is running on port 3000.');
-                return;
-            }
-
-            let passwordAlertMsg = '';
-            if (savedBooking.coverage_scope === 'both') {
-                passwordAlertMsg = `👰 BRIDE PASSWORD: ${savedBooking.bride_password}\n` +
-                                   `🤵 GROOM PASSWORD: ${savedBooking.groom_password}`;
-            } else if (savedBooking.coverage_scope === 'bride') {
-                passwordAlertMsg = `👰 BRIDE PASSWORD: ${savedBooking.bride_password}`;
-            } else {
-                passwordAlertMsg = `🤵 GROOM PASSWORD: ${savedBooking.groom_password}`;
-            }
-
-            // Auto login!
-            currentCustomerSession = {
-                bookingId: savedBooking.id,
-                name: savedBooking.name,
-                phone: savedBooking.phone,
-                role: savedBooking.coverage_scope === 'groom' ? 'groom' : 'bride',
-                packageInterest: savedBooking.package_interest,
-                driveLink: savedBooking.drive_link || '#'
-            };
-
-            // Set local and session storage values for unified React portal login
-            localStorage.setItem("dreamwed_logged_phone", savedBooking.phone);
-            localStorage.setItem("dreamwed_logged_role", savedBooking.coverage_scope === 'groom' ? 'groom' : 'bride');
-            sessionStorage.setItem("dreamwed_auto_login_phone", savedBooking.phone);
-
-            alert(`🎉 REGISTRATION COMPLETED SUCCESSFULLY!\n\n` +
-                  `🔓 Access Passwords Assigned:\n` +
-                  `${passwordAlertMsg}\n\n` +
-                  `You have been automatically logged in to your Wedding Hub workspace!`);
-
-            // WhatsApp booking confirm GPay prompt
-            const includesPrewedding = (parseInt(savedBooking.price_quoted) === 49999 || parseInt(savedBooking.price_quoted) === 99999 || parseInt(savedBooking.price_quoted) === 110000);
-            const surpriseBonusText = includesPrewedding ? `🎁 SURPRISE BONUS: Free Save the Date Photoshoot (worth ₹9,999/-) included!\n` : '';
-
-            const message = `Hi Unni! I have successfully completed registration on your website and locked in my Package slot booking!\n\n` +
-                            `👤 Name: ${savedBooking.name}\n` +
-                            `📞 Phone: ${savedBooking.phone}\n` +
-                            `📍 Pincode: ${savedBooking.pincode}\n` +
-                            `🏠 Address: ${savedBooking.address || ''}\n` +
-                            `📦 Plan: ${savedBooking.package_interest}\n` +
-                            `💰 Quote: ₹${parseInt(savedBooking.price_quoted).toLocaleString()}/- Net\n` +
-                            surpriseBonusText + `\n` +
-                            `Please guide me with the ₹5,000/- advance slot GPay address to approve my Digital Invoice!`;
-            
-            // Close modal
-            if (customerBookingModal) customerBookingModal.style.display = 'none';
-            
-            // Reset forms
-            customerBookingForm.reset();
-            customerOtpForm.reset();
-            if (bookingStepFields) bookingStepFields.style.display = 'block';
-            if (bookingStepOtp) bookingStepOtp.style.display = 'none';
-
-            // Load and display Selection Dashboard on packages.html immediately
-            loadCustomerDashboard();
-
-            let targetWhatsApp = '9995412955';
-            if (savedBooking.package_interest.includes('49999') || savedBooking.package_interest.includes('Prewedding') || savedBooking.price_quoted === '49999' || savedBooking.price_quoted === '110000') {
-                targetWhatsApp = '7356297265';
-            }
-            window.open(`https://wa.me/91${targetWhatsApp}?text=${encodeURIComponent(message)}`, '_blank');
-
-            // Force immediate Admin fetch refresh if active
-            fetchBookings();
         });
     }
 
