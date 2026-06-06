@@ -1923,6 +1923,7 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
     let pendingBookingObject = null;
     let generatedOtpCode = null;
     let otpCountdownInterval = null;
+    let pendingPhone = null; // E.164 phone returned from dwSendOtp (Supabase)
 
     function startOtpResendTimer() {
         const timerSpan = document.getElementById('otpResendTimer');
@@ -1984,32 +1985,25 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
                 stay_charges: "Excluded"
             };
 
-            // Call Real Backend Twilio OTP Sender
-            fetch(`${API_BASE}/api/otp/send`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    if (data.simulated) {
-                        generatedOtpCode = data.otp;
-                        alert(`💬 Twilio SMS Gateway Simulator:\nOTP code sent to +91 ${phone} is: [ ${generatedOtpCode} ]`);
-                    } else {
-                        generatedOtpCode = 'REAL';
-                    }
-                    // Shift views
-                    if (bookingStepFields) bookingStepFields.style.display = 'none';
-                    if (bookingStepOtp) bookingStepOtp.style.display = 'block';
-                    startOtpResendTimer();
-                } else {
-                    alert('❌ Failed to send OTP verification code. Please verify your phone number and try again.');
-                }
+            // Send OTP via Supabase Phone Auth (backed by Twilio SMS)
+            const sendBtn = customerBookingForm.querySelector('[type="submit"]');
+            if (sendBtn) { sendBtn.disabled = true; sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending OTP…'; }
+
+            dwSendOtp(phone)
+            .then(e164 => {
+                generatedOtpCode = 'SUPABASE'; // mark as real Supabase OTP
+                pendingPhone = e164;
+                // Shift views
+                if (bookingStepFields) bookingStepFields.style.display = 'none';
+                if (bookingStepOtp) bookingStepOtp.style.display = 'block';
+                startOtpResendTimer();
             })
             .catch(err => {
-                console.error(err);
-                alert('❌ Server connection failed. Please ensure the backend is running.');
+                console.error('Supabase OTP send error:', err);
+                alert('❌ Failed to send OTP: ' + err.message + '\n\nPlease verify your phone number and try again.');
+            })
+            .finally(() => {
+                if (sendBtn) { sendBtn.disabled = false; sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send OTP <i class="fa-solid fa-arrow-right"></i>'; }
             });
         });
     }
@@ -2020,26 +2014,19 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
             const enteredOtp = document.getElementById('custOtp').value.trim();
             const phone = document.getElementById('custPhone').value.trim();
 
-            if (generatedOtpCode === 'REAL') {
+            if (generatedOtpCode === 'SUPABASE') {
+                // Verify via Supabase phone OTP
                 try {
-                    const res = await fetch(`${API_BASE}/api/otp/verify`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ phone, otp: enteredOtp })
-                    });
-                    const data = await res.json();
-                    if (!res.ok || !data.success) {
-                        alert('❌ Invalid OTP verification code. Please check your messages and try again.');
-                        return;
-                    }
+                    await dwVerifyOtp(pendingPhone, enteredOtp);
                 } catch (err) {
-                    console.error(err);
-                    alert('❌ Connection to server failed during verification.');
+                    console.error('Supabase OTP verify error:', err);
+                    alert('❌ Invalid OTP code. Please check your SMS and try again.\n\nError: ' + err.message);
                     return;
                 }
             } else {
+                // Simulated OTP fallback (dev/test mode)
                 if (enteredOtp !== generatedOtpCode) {
-                    alert('❌ Invalid OTP verification code! Please check your SMS simulator prompt and enter again.');
+                    alert('❌ Invalid OTP verification code! Please check your SMS and enter again.');
                     return;
                 }
             }
