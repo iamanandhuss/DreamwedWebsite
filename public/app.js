@@ -1940,7 +1940,14 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
             if (secondsLeft <= 0) {
                 clearInterval(otpCountdownInterval);
                 timerSpan.style.display = 'none';
-        if (customerBookingForm) {
+                resendBtn.style.display = 'inline-block';
+            } else {
+                timerSpan.textContent = `Resend OTP in ${secondsLeft}s`;
+            }
+        }, 1000);
+    }
+
+    if (customerBookingForm) {
         customerBookingForm.addEventListener('submit', (e) => {
             e.preventDefault();
 
