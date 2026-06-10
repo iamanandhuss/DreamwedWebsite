@@ -803,7 +803,7 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
         // Clear dynamically added cards, keeping only standard templates
         const cards = packagesGrid.querySelectorAll('.package-card');
         cards.forEach(c => {
-            if (c.id !== 'pkgStandardCard' && c.id !== 'pkgComboCard' && c.id !== 'pkgBrideGroomCard') {
+            if (c.id !== 'pkgWeddingBasicCard' && c.id !== 'pkgWeddingPreCard' && c.id !== 'pkgCandidCard' && c.id !== 'pkgCandidVideoCard' && c.id !== 'pkgBrideGroomCard') {
                 c.remove();
             }
         });

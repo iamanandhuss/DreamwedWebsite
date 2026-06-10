@@ -2402,6 +2402,14 @@ section {
 
 /* Mobile Responsiveness override for flyers */
 @media (max-width: 768px) {
+    .packages-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px;
+        padding: 0 16px;
+    }
+    .package-card {
+        padding: 24px 20px !important;
+    }
     .packages-grid.has-custom {
         grid-template-columns: 1fr !important;
     }
