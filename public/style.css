@@ -3896,3 +3896,178 @@ body.has-ticker .main-header {
         transform: scale(1.02);
     }
 }
+
+/* ==========================================================================
+   PREMIUM WEDDING PACKAGES VISUAL REDESIGN (PC RESPONSIVENESS & ELEGANT THEME)
+   ========================================================================== */
+
+/* 1. Desktop & Laptop Responsiveness BREAKPOINT Override (769px to 1400px) */
+@media (max-width: 1400px) and (min-width: 769px) {
+    .packages-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 30px !important;
+        max-width: 1100px !important;
+        padding: 0 20px !important;
+    }
+    
+    #pkgBrideGroomCard {
+        grid-column: 1 / span 2 !important;
+        max-width: 650px !important;
+        margin: 30px auto 0 !important;
+    }
+}
+
+/* 2. Visual Layout Redesign: Convert boxy cover headers to full-height image backgrounds */
+@media (min-width: 769px) {
+    .package-card {
+        position: relative !important;
+        overflow: hidden !important;
+        padding: 40px 30px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        border-radius: 40px !important;
+        transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease, border-color 0.4s ease !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: #0d0416 !important;
+        min-height: 760px !important;
+        height: auto !important;
+    }
+    
+    /* Cover image wrapper spans full card */
+    .package-card .package-cover-wrapper {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        border-radius: inherit !important;
+        border: none !important;
+        z-index: 1 !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+    }
+    
+    .package-card .package-cover-img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        opacity: 0.18 !important; /* Dimmed background for elite text legibility */
+        transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
+    }
+    
+    .package-card:hover .package-cover-img {
+        transform: scale(1.08) !important;
+    }
+    
+    /* Deep luxury gradient over cover photo to boost text contrast */
+    .package-card .package-cover-wrapper::after {
+        content: '' !important;
+        position: absolute !important;
+        inset: 0 !important;
+        background: linear-gradient(to bottom, rgba(13, 4, 22, 0.92) 0%, rgba(13, 4, 22, 0.75) 45%, rgba(10, 11, 14, 0.98) 100%) !important;
+        z-index: 2 !important;
+    }
+    
+    /* Ensure content is stacked above background cover */
+    .package-card .package-glow,
+    .package-card .package-header,
+    .package-card .package-event-sections,
+    .package-card .package-footer {
+        position: relative !important;
+        z-index: 3 !important;
+    }
+    
+    /* Center the package header content matching the Home page React design */
+    .package-card .package-header {
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        margin-bottom: 25px !important;
+    }
+    
+    /* Badge styling */
+    .package-card .package-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        color: #ffffff !important;
+        font-size: 9px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.15em !important;
+        padding: 6px 14px !important;
+        border-radius: 100px !important;
+        margin-bottom: 18px !important;
+    }
+    
+    /* Titles styling */
+    .package-card .package-header h3 {
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 26px !important;
+        font-weight: 300 !important;
+        letter-spacing: -0.02em !important;
+        text-transform: capitalize !important;
+        line-height: 1.2 !important;
+        margin-bottom: 8px !important;
+        color: #ffffff !important;
+    }
+    
+    .package-card .package-subtitle {
+        font-size: 11px !important;
+        color: #d1a852 !important; /* Premium Gold category subtitle */
+        text-transform: uppercase !important;
+        letter-spacing: 0.15em !important;
+        font-weight: 600 !important;
+        margin-bottom: 20px !important;
+        opacity: 0.95 !important;
+    }
+    
+    .package-card .package-subtitle strong {
+        font-weight: 600 !important;
+    }
+    
+    /* Slots Counter and Urgency boxes styling (clean glassmorphism) */
+    .package-card .premium-promo-card {
+        background: rgba(255, 255, 255, 0.03) !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 20px !important;
+        padding: 18px !important;
+        margin-top: 15px !important;
+        width: 100% !important;
+    }
+    
+    /* Pricing tag adjustments */
+    .package-card .package-price {
+        font-size: 28px !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
+        margin: 20px 0 10px 0 !important;
+    }
+    
+    /* White Secure Offer CTA buttons styling */
+    .package-card .btn-primary {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border: none !important;
+        border-radius: 24px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.15em !important;
+        font-size: 11px !important;
+        padding: 16px 24px !important;
+        box-shadow: 0 4px 15px rgba(255, 255, 255, 0.08) !important;
+        transition: all 0.3s ease !important;
+        margin-top: 20px !important;
+    }
+    
+    .package-card .btn-primary:hover {
+        background: #f3f4f6 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2) !important;
+    }
+}
+
