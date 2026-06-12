@@ -2,18 +2,15 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Hero from "../components/sections/Hero";
-import FeatureGrid from "../components/sections/FeatureGrid";
 import ExperienceBento from "../components/sections/ExperienceBento";
 import PricingSection from "../components/pricing/PricingSection";
 import TestimonialSection from "../components/sections/TestimonialSection";
 import ConsultationSection from "../components/sections/ConsultationSection";
 import InstagramFeed from "../components/sections/InstagramFeed";
 import StickyServices from "../components/sections/StickyServices";
-import PortraitShowcase from "../components/sections/PortraitShowcase";
 import Button from "../components/ui/Button";
 import { FaArrowRight } from "react-icons/fa6";
 import { Nicklo } from "../components/ui/Nicklo";
-import ServicesGrid from "../components/sections/ServicesGrid";
 import BeforeAfterSlider from "../components/sections/BeforeAfterSlider";
 import SEO from "../components/SEO";
 
@@ -26,9 +23,6 @@ const Home = () => {
       />
       {/* 1. Hero Section */}
       <Hero />
-
-      {/* 2. Portrait Gallery Preview */}
-      <PortraitShowcase />
 
       {/* 2b. AI Photo Search Section */}
       <section className="w-full py-24 px-8 lg:px-16 bg-black">
@@ -136,17 +130,12 @@ const Home = () => {
         </div>
       </section>
 
-      <ServicesGrid />
-
       <BeforeAfterSlider />
 
        <Nicklo />
 
       {/* 4. Sticky Services Section */}
       <StickyServices />
-
-      {/* 5. Expertise / Feature Grid */}
-      <FeatureGrid />
 
       {/* 6. Bento Grid Experience */}
       <ExperienceBento />
