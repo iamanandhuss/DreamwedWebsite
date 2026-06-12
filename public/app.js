@@ -2205,6 +2205,7 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
         // --- DETAILS MODAL CONTROLLER (screenshot style popup for checklists) ---
         // --- DETAILS MODAL CONTROLLER (screenshot style popup for checklists) ---
         // --- DETAILS MODAL CONTROLLER (screenshot style popup for checklists) ---
+        // --- DETAILS MODAL CONTROLLER (screenshot style popup for checklists) ---
     window.openDetailsModal = function(card) {
         // Remove existing modal if any
         const existing = document.getElementById('pkgDetailsModal');

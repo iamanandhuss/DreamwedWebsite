@@ -4662,3 +4662,19 @@ body.has-ticker .main-header {
     font-weight: 600 !important;
 }
 
+
+
+/* Override checklist item styles inside white details modal to make them dark and readable */
+.pkg-details-modal-checklist-container .package-features li {
+    color: #27272a !important;
+    font-size: 13.5px !important;
+}
+
+.pkg-details-modal-checklist-container .package-features li i {
+    color: #16a34a !important;
+    font-size: 14px !important;
+}
+
+.pkg-details-modal-checklist-container .package-event-section {
+    border-color: #e4e4e7 !important;
+}
