@@ -3374,7 +3374,7 @@ body.has-ticker .main-header {
     border-radius: 40px !important;
     transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease, border-color 0.4s ease !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    background: #0d0416 !important;
+    background: #050505 !important;
     min-height: auto !important;
     height: auto !important;
     overflow: visible !important;
@@ -4084,6 +4084,11 @@ body.has-ticker .main-header {
     display: none !important;
 }
 
+.packages-grid .package-card::before {
+    display: none !important;
+    content: none !important;
+}
+
 .packages-grid .package-card {
     min-height: 580px !important;
     display: flex !important;
@@ -4125,7 +4130,7 @@ body.has-ticker .main-header {
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
-    opacity: 0.55 !important;
+    opacity: 0.85 !important;
     transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
@@ -4136,7 +4141,7 @@ body.has-ticker .main-header {
 .packages-grid .package-card .package-cover-overlay {
     position: absolute !important;
     inset: 0 !important;
-    background: linear-gradient(to bottom, rgba(13, 4, 22, 0.4) 0%, rgba(13, 4, 22, 0.2) 40%, rgba(10, 11, 14, 0.98) 100%) !important;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.1) 40%, rgba(0, 0, 0, 0.96) 100%) !important;
     z-index: 2 !important;
 }
 
@@ -4150,6 +4155,25 @@ body.has-ticker .main-header {
     justify-content: space-between !important;
     align-items: center !important;
     z-index: 3 !important;
+}
+
+.package-card-top-row .flyer-ribbon-tag {
+    position: static !important;
+    transform: none !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    font-size: 8.5px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    padding: 6px 12px !important;
+    border-radius: 100px !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    line-height: 1 !important;
 }
 
 .card-heart-btn {
