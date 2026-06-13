@@ -4130,6 +4130,7 @@ body.has-ticker .main-header {
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
+    object-position: center 15% !important;
     opacity: 0.95 !important;
     transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
@@ -4384,12 +4385,30 @@ body.has-ticker .main-header {
 }
 
 @media (max-width: 768px) {
-    .pkg-details-modal-grid {
-        grid-template-columns: 1fr !important;
-        grid-template-rows: 200px 1fr !important;
-    }
     .pkg-details-modal-card {
+        height: auto !important;
         max-height: 85vh !important;
+        overflow-y: auto !important;
+    }
+    .pkg-details-modal-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
+    }
+    .pkg-details-modal-left {
+        height: 220px !important;
+        flex-shrink: 0 !important;
+    }
+    .pkg-details-modal-right {
+        height: auto !important;
+        overflow: visible !important;
+        padding: 24px 20px !important;
+    }
+    .pkg-details-modal-scroll-body {
+        overflow-y: visible !important;
+        height: auto !important;
+        max-height: none !important;
+        padding-right: 0 !important;
     }
 }
 
@@ -4405,6 +4424,7 @@ body.has-ticker .main-header {
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
+    object-position: center 15% !important;
     opacity: 0.85 !important;
 }
 

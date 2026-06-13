@@ -721,6 +721,102 @@ app.post('/api/upload-file', (req, res) => {
   }
 });
 
+// ========================= CUSTOM PACKAGE BUILDER APIs =========================
+
+// GET Package Configuration (Events, Coverage pricing, Deliverables pricing, Tiers)
+app.get('/api/public/package-config', (req, res) => {
+  try {
+    const configPath = path.join(__dirname, 'package-config.json');
+    if (fs.existsSync(configPath)) {
+      const configData = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      return res.json(configData);
+    }
+    return res.status(404).json({ error: 'Package configuration file not found' });
+  } catch (err) {
+    console.error('Error reading package configuration:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET Check Phone number for existing custom package enquiries
+app.get('/api/public/check-phone', (req, res) => {
+  try {
+    const phone = req.query.phone;
+    if (!phone) return res.status(400).json({ error: 'Phone parameter is required' });
+    
+    // Look up using existing database helper
+    const booking = getBookingByPhone(phone);
+    const exists = !!booking;
+    
+    res.json({ data: { exists, status: exists ? 'PENDING' : 'AVAILABLE' } });
+  } catch (err) {
+    console.error('Error checking phone:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST Custom Package Enquiry Submission
+app.post('/api/public/package-enquiry', (req, res) => {
+  try {
+    const { name, phone, email, message, events, guestCount, selectedCoverage, selectedDeliverables, totalPrice } = req.body;
+    
+    if (!name || !phone || !email) {
+      return res.status(400).json({ success: false, message: 'Name, phone number and email are required' });
+    }
+
+    // Prepare itemized details in the add_ons array
+    const addOnsList = [];
+    
+    if (guestCount) {
+      addOnsList.push(`Guest Count: ${guestCount}`);
+    }
+    
+    if (message && message.trim()) {
+      addOnsList.push(`User Note: ${message.trim()}`);
+    }
+
+    if (events && events.length > 0) {
+      const eventDetails = events.map(ev => `${ev.name} (Date: ${ev.date || 'TBD'}, Venue: ${ev.venue || 'TBD'})`).join(' | ');
+      addOnsList.push(`Events: ${eventDetails}`);
+    }
+
+    if (selectedCoverage && selectedCoverage.length > 0) {
+      selectedCoverage.forEach(cov => {
+        addOnsList.push(`Crew Option: ${cov.name} (Unit: ₹${cov.unitPrice.toLocaleString('en-IN')}, Events covered: ${cov.eventCount}, Count: x${cov.count || 1}, Line Total: ₹${cov.lineTotal.toLocaleString('en-IN')})`);
+      });
+    }
+
+    if (selectedDeliverables && selectedDeliverables.length > 0) {
+      selectedDeliverables.forEach(del => {
+        addOnsList.push(`Deliverable: ${del.name} (Price: ₹${del.price.toLocaleString('en-IN')})`);
+      });
+    }
+
+    // Save as a pending booking in SQLite using existing database helper
+    const bookingData = {
+      customer_name: name,
+      customer_phone: phone,
+      customer_email: email,
+      event_date: events && events[0] ? events[0].date : '',
+      event_venue: events && events[0] ? events[0].venue : '',
+      package_name: 'Custom Bespoke Package (Wizard)',
+      package_price: totalPrice || 0,
+      total_price: totalPrice || 0,
+      advance_paid: 0, // 0 paid initially for a custom quote request
+      add_ons: addOnsList,
+      status: 'pending'
+    };
+
+    const newBooking = saveBooking(bookingData);
+
+    console.log(`[STUDIO LOG] Saved Custom Package enquiry as Booking ID ${newBooking.id} / Invoice ${newBooking.invoice_number} from ${name}`);
+    res.json({ success: true, bookingId: newBooking.id, invoice: newBooking.invoice_number });
+  } catch (err) {
+    console.error('Error saving package enquiry:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // Initialize DB and start server
 initDB();
 startReminderScheduler();

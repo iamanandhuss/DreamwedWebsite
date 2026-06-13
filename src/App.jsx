@@ -19,6 +19,7 @@ import GroomBrideSignup from './pages/GroomBrideSignup';
 import NotFound from './pages/NotFound';
 import CustomCursor from './components/ui/CustomCursor';
 import TrivandrumOffer from './pages/TrivandrumOffer';
+import CustomPackage from './pages/CustomPackage';
 
 // Scroll to top on route change
 const ScrollToTop = () => {
@@ -61,6 +62,8 @@ const AnimatedRoutes = () => {
         <Route path="/designer" element={<PageWrapper><DesignerPortal /></PageWrapper>} />
         <Route path="/ai-search" element={<PageWrapper><AiSearch /></PageWrapper>} />
         <Route path="/trivandrum-offer" element={<PageWrapper><TrivandrumOffer /></PageWrapper>} />
+        <Route path="/custom-package" element={<PageWrapper><CustomPackage /></PageWrapper>} />
+        <Route path="/packages" element={<PageWrapper><CustomPackage /></PageWrapper>} />
         <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
       </Routes>
     </AnimatePresence>
