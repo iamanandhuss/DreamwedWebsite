@@ -2052,16 +2052,16 @@ const TrivandrumOffer = () => {
                     </p>
 
                     {/* Bonus highlight box */}
-                    <div className="bg-[#1e3f20]/5 border border-[#1e3f20]/15 p-4 rounded-2xl flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[#1e3f20]/15 flex items-center justify-center text-[#1e3f20] shrink-0">
+                    <div className="bg-[#d1a852]/5 border border-[#d1a852]/15 p-4 rounded-2xl flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-[#d1a852]/15 flex items-center justify-center text-[#b8903b] shrink-0">
                         <Gift size={16} />
                       </div>
                       <div>
-                        <span className="block text-[#1e3f20] text-xs font-bold uppercase tracking-wide">
-                          {packagesInfo[activeDetailPackage].bonus}
+                        <span className="block text-[#b8903b] text-xs font-bold uppercase tracking-wide">
+                          Free Pre-Wedding Shoot
                         </span>
-                        <span className="text-zinc-600 text-[10px] font-light leading-snug block mt-0.5">
-                          {packagesInfo[activeDetailPackage].bonusDesc}
+                        <span className="text-zinc-600 text-[10px] font-medium leading-snug block mt-0.5">
+                          Free Pre-Wedding (Save the date photography) is included with this package.
                         </span>
                       </div>
                     </div>

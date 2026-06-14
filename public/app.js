@@ -2277,15 +2277,17 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
                         <div class="pkg-details-modal-scroll-body">
                             <p class="pkg-details-modal-desc">${descriptionText}</p>
                             
-                            <div class="pkg-details-modal-standard-box">
-                                <div class="pkg-standard-box-icon">
+                            ${['pkgWeddingBasicCard', 'pkgWeddingPreCard', 'pkgCandidCard', 'pkgCandidVideoCard'].includes(cardId) ? `
+                            <div class="pkg-details-modal-standard-box" style="border-color: rgba(209, 168, 82, 0.25); background: rgba(209, 168, 82, 0.035);">
+                                <div class="pkg-standard-box-icon" style="background: rgba(209, 168, 82, 0.1); color: var(--primary-gold);">
                                     <i class="fa-solid fa-gift"></i>
                                 </div>
                                 <div class="pkg-standard-box-content">
-                                    <strong>DREAMWED STORIES STANDARD</strong>
-                                    <p>Premium color-grading, handcrafted album delivery, and a personalized story design consultation session.</p>
+                                    <strong style="color: var(--primary-gold);">FREE PRE-WEDDING SHOOT</strong>
+                                    <p style="color: var(--text-light); font-weight: 500;">Free Pre-Wedding (Save the date photography) is included with this package.</p>
                                 </div>
                             </div>
+                            ` : ''}
                             
                             <div class="pkg-details-modal-checklist-header">
                                 COMPLETE DELIVERABLES (SCROLL FOR ALL ${listItemsCount} ITEMS 👇):
