@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, Gift, Sparkles, Heart, Tag, Camera, Plane } from "lucide-react";
+import { Check, X, Gift, Sparkles, Heart, Tag, Camera, Plane, Lock, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import Button from "../ui/Button";
 
@@ -301,6 +301,7 @@ const PricingSection = () => {
                   <img
                     src={plan.images[0]}
                     alt={plan.title}
+                    style={{ objectPosition: "center 20%" }}
                     className="w-full h-full object-cover transition-transform duration-1000 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
                   />
                   {/* Luxury black gradients for extreme legibility */}
@@ -445,6 +446,28 @@ const PricingSection = () => {
               </motion.div>
             );
           })}
+        </div>
+
+
+        {/* Friction-Reduction Rates Lock Callout */}
+        <div className="mt-16 max-w-4xl mx-auto px-4 select-none">
+          <div className="bg-[#d1a852]/5 border border-dashed border-[#d1a852]/20 rounded-[32px] p-8 md:p-10 text-center shadow-2xl relative overflow-hidden">
+            <span className="inline-flex items-center gap-1.5 text-[#d1a852] text-[10px] md:text-[11px] tracking-[0.25em] uppercase font-bold mb-4">
+              <Lock size={12} className="text-[#d1a852]" /> Lock Current Promo Rates
+            </span>
+            <h3 className="text-2xl md:text-3xl font-serif font-light text-white mb-3 leading-tight">
+              Secure Your Wedding Date with Just <span className="text-[#d1a852] font-normal">₹5,000/-</span>
+            </h3>
+            <p className="text-[13px] text-zinc-400 font-light max-w-xl mx-auto leading-relaxed mb-6">
+              Reserve your date now to protect against seasonal price increases. The booking fee is fully adjustable to any package. Balance payment is required only on the wedding day.
+            </p>
+            <Link
+              to="/contact"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-[16px] bg-[#d1a852] hover:bg-[#b8903b] text-black text-xs uppercase tracking-widest font-bold transition-all shadow-[0_10px_25px_rgba(209,168,82,0.2)] hover:scale-[1.02]"
+            >
+              Secure My Promo Rates Now <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
 
         {/* Standalone & Special Coverage Collections */}

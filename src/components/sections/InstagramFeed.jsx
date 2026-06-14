@@ -149,7 +149,7 @@ const ALL_REELS = [
 
 const POSTS_PER_PAGE = 4;
 
-const InstagramCard = ({ post, index }) => {
+const InstagramCard = ({ post, index, dark = false }) => {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [likesCount, setLikesCount] = useState(post.likes);
@@ -190,14 +190,14 @@ const InstagramCard = ({ post, index }) => {
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: (index % POSTS_PER_PAGE) * 0.1, ease: [0.22, 1, 0.36, 1] }}
-      className="bg-white rounded-[24px] border border-[#ececea] overflow-hidden flex flex-col justify-between hover:shadow-[0_20px_45px_rgba(0,0,0,0.06)] transition-all duration-500 group"
+      className={`rounded-[24px] border overflow-hidden flex flex-col justify-between hover:shadow-[0_20px_45px_rgba(0,0,0,0.06)] transition-all duration-500 group ${dark ? "bg-[#121215] border-white/5 shadow-2xl hover:border-[#d1a852]/20" : "bg-white border-[#ececea]"}`}
       style={{ fontFamily: "Inter, sans-serif" }}
     >
       {/* HEADER */}
-      <div className="flex items-center justify-between p-4 border-b border-[#f5f5f3]">
+      <div className={`flex items-center justify-between p-4 border-b ${dark ? "border-white/5" : "border-[#f5f5f3]"}`}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]">
-            <div className="w-full h-full rounded-full bg-white p-[2px]">
+            <div className={`w-full h-full rounded-full p-[2px] ${dark ? "bg-[#121215]" : "bg-white"}`}>
               <img
                 src="/favicon.png"
                 alt="dreamwed_stories.co avatar"
@@ -207,14 +207,14 @@ const InstagramCard = ({ post, index }) => {
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[14px] font-semibold text-black leading-none">
+              <span className={`text-[14px] font-semibold leading-none ${dark ? "text-white" : "text-black"}`}>
                 dreamwed_stories.co
               </span>
               <svg className="w-4 h-4 text-[#0095f6]" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
               </svg>
             </div>
-            <span className="text-[12px] text-[#8e8e8e] leading-none block mt-0.5">
+            <span className={`text-[12px] leading-none block mt-0.5 ${dark ? "text-zinc-500" : "text-[#8e8e8e]"}`}>
               {post.location}
             </span>
           </div>
@@ -223,7 +223,7 @@ const InstagramCard = ({ post, index }) => {
           href={postUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-zinc-400 hover:text-black transition-colors"
+          className={dark ? "text-zinc-500 hover:text-white transition-colors" : "text-zinc-400 hover:text-black transition-colors"}
         >
           <FiExternalLink size={16} />
         </a>
@@ -232,7 +232,7 @@ const InstagramCard = ({ post, index }) => {
       {/* IMAGE CONTAINER WITH INTERACTIVE HOVER */}
       <div 
         onClick={handleDoubleTap}
-        className="relative aspect-square w-full overflow-hidden bg-[#fbfbfa] cursor-pointer select-none"
+        className={`relative aspect-square w-full overflow-hidden cursor-pointer select-none ${dark ? "bg-[#0a0a0c]" : "bg-[#fbfbfa]"}`}
       >
         <img
           src={post.image}
@@ -281,15 +281,15 @@ const InstagramCard = ({ post, index }) => {
               <FiHeart
                 size={24}
                 className={`transition-colors ${
-                  liked ? "text-[#ed4956] fill-[#ed4956]" : "text-black hover:text-[#8e8e8e]"
+                  liked ? "text-[#ed4956] fill-[#ed4956]" : (dark ? "text-white hover:text-zinc-400" : "text-black hover:text-[#8e8e8e]")
                 }`}
               />
             </button>
             <a href={postUrl} target="_blank" rel="noopener noreferrer">
-              <FiMessageCircle size={24} className="text-black hover:text-[#8e8e8e] transition-colors" />
+              <FiMessageCircle size={24} className={dark ? "text-white hover:text-zinc-400 transition-colors" : "text-black hover:text-[#8e8e8e] transition-colors"} />
             </a>
             <a href={postUrl} target="_blank" rel="noopener noreferrer">
-              <FiSend size={24} className="text-black hover:text-[#8e8e8e] transition-colors" />
+              <FiSend size={24} className={dark ? "text-white hover:text-zinc-400 transition-colors" : "text-black hover:text-[#8e8e8e] transition-colors"} />
             </a>
           </div>
           <button
@@ -299,20 +299,20 @@ const InstagramCard = ({ post, index }) => {
             <FiBookmark
               size={24}
               className={`transition-colors ${
-                saved ? "text-black fill-black" : "text-black hover:text-[#8e8e8e]"
+                saved ? (dark ? "text-white fill-white" : "text-black fill-black") : (dark ? "text-white hover:text-zinc-400" : "text-black hover:text-[#8e8e8e]")
               }`}
             />
           </button>
         </div>
 
         {/* LIKES */}
-        <div className="text-[14px] font-semibold text-black leading-none">
+        <div className={`text-[14px] font-semibold leading-none ${dark ? "text-white" : "text-black"}`}>
           {likesCount.toLocaleString()} likes
         </div>
 
         {/* CAPTION */}
-        <div className="text-[14px] text-zinc-800 leading-relaxed font-light mt-1">
-          <span className="font-semibold text-black mr-2">dreamwed_stories.co</span>
+        <div className={`text-[14px] leading-relaxed font-light mt-1 ${dark ? "text-zinc-400" : "text-zinc-800"}`}>
+          <span className={`font-semibold mr-2 ${dark ? "text-white" : "text-black"}`}>dreamwed_stories.co</span>
           {post.caption}
           <div className="mt-1.5 text-[13px] text-[#00376b] font-normal hover:underline cursor-pointer">
             #weddingphotography #keralawedding #dreamwedstories #candid
@@ -324,7 +324,7 @@ const InstagramCard = ({ post, index }) => {
           href={postUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[13px] text-[#8e8e8e] hover:underline mt-0.5 block"
+          className={`text-[13px] hover:underline mt-0.5 block ${dark ? "text-zinc-500" : "text-[#8e8e8e]"}`}
         >
           View all {post.comments} comments
         </a>
@@ -333,7 +333,7 @@ const InstagramCard = ({ post, index }) => {
   );
 };
 
-const InstagramReelCard = ({ reel, index }) => {
+const InstagramReelCard = ({ reel, index, dark = false }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -375,14 +375,14 @@ const InstagramReelCard = ({ reel, index }) => {
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: (index % POSTS_PER_PAGE) * 0.1, ease: [0.22, 1, 0.36, 1] }}
-      className="bg-white rounded-[24px] border border-[#ececea] overflow-hidden flex flex-col justify-between hover:shadow-[0_20px_45px_rgba(0,0,0,0.06)] transition-all duration-500 group"
+      className={`rounded-[24px] border overflow-hidden flex flex-col justify-between hover:shadow-[0_20px_45px_rgba(0,0,0,0.06)] transition-all duration-500 group ${dark ? "bg-[#121215] border-white/5 shadow-2xl hover:border-[#d1a852]/20" : "bg-white border-[#ececea]"}`}
       style={{ fontFamily: "Inter, sans-serif" }}
     >
       {/* HEADER */}
-      <div className="flex items-center justify-between p-4 border-b border-[#f5f5f3]">
+      <div className={`flex items-center justify-between p-4 border-b ${dark ? "border-white/5" : "border-[#f5f5f3]"}`}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]">
-            <div className="w-full h-full rounded-full bg-white p-[2px]">
+            <div className={`w-full h-full rounded-full p-[2px] ${dark ? "bg-[#121215]" : "bg-white"}`}>
               <img
                 src="/favicon.png"
                 alt="dreamwed_stories.co avatar"
@@ -392,14 +392,14 @@ const InstagramReelCard = ({ reel, index }) => {
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[14px] font-semibold text-black leading-none">
+              <span className={`text-[14px] font-semibold leading-none ${dark ? "text-white" : "text-black"}`}>
                 dreamwed_stories.co
               </span>
               <svg className="w-4 h-4 text-[#0095f6]" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
               </svg>
             </div>
-            <span className="text-[12px] text-[#8e8e8e] leading-none block mt-0.5">
+            <span className={`text-[12px] leading-none block mt-0.5 ${dark ? "text-zinc-500" : "text-[#8e8e8e]"}`}>
               {reel.location}
             </span>
           </div>
@@ -408,7 +408,7 @@ const InstagramReelCard = ({ reel, index }) => {
           href={reelUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-zinc-400 hover:text-black transition-colors"
+          className={dark ? "text-zinc-500 hover:text-white transition-colors" : "text-zinc-400 hover:text-black transition-colors"}
         >
           <FiExternalLink size={16} />
         </a>
@@ -500,15 +500,15 @@ const InstagramReelCard = ({ reel, index }) => {
               <FiHeart
                 size={24}
                 className={`transition-colors ${
-                  liked ? "text-[#ed4956] fill-[#ed4956]" : "text-black hover:text-[#8e8e8e]"
+                  liked ? "text-[#ed4956] fill-[#ed4956]" : (dark ? "text-white hover:text-zinc-400" : "text-black hover:text-[#8e8e8e]")
                 }`}
               />
             </button>
             <a href={reelUrl} target="_blank" rel="noopener noreferrer">
-              <FiMessageCircle size={24} className="text-black hover:text-[#8e8e8e] transition-colors" />
+              <FiMessageCircle size={24} className={dark ? "text-white hover:text-zinc-400 transition-colors" : "text-black hover:text-[#8e8e8e] transition-colors"} />
             </a>
             <a href={reelUrl} target="_blank" rel="noopener noreferrer">
-              <FiSend size={24} className="text-black hover:text-[#8e8e8e] transition-colors" />
+              <FiSend size={24} className={dark ? "text-white hover:text-zinc-400 transition-colors" : "text-black hover:text-[#8e8e8e] transition-colors"} />
             </a>
           </div>
           <button
@@ -518,20 +518,20 @@ const InstagramReelCard = ({ reel, index }) => {
             <FiBookmark
               size={24}
               className={`transition-colors ${
-                saved ? "text-black fill-black" : "text-black hover:text-[#8e8e8e]"
+                saved ? (dark ? "text-white fill-white" : "text-black fill-black") : (dark ? "text-white hover:text-zinc-400" : "text-black hover:text-[#8e8e8e]")
               }`}
             />
           </button>
         </div>
 
         {/* VIEWS / LIKES */}
-        <div className="text-[14px] font-semibold text-black leading-none">
+        <div className={`text-[14px] font-semibold leading-none ${dark ? "text-white" : "text-black"}`}>
           {likesCount.toLocaleString()} views
         </div>
 
         {/* CAPTION */}
-        <div className="text-[14px] text-zinc-800 leading-relaxed font-light mt-1">
-          <span className="font-semibold text-black mr-2">dreamwed_stories.co</span>
+        <div className={`text-[14px] leading-relaxed font-light mt-1 ${dark ? "text-zinc-400" : "text-zinc-800"}`}>
+          <span className={`font-semibold mr-2 ${dark ? "text-white" : "text-black"}`}>dreamwed_stories.co</span>
           {reel.caption}
           <div className="mt-1.5 text-[13px] text-[#00376b] font-normal hover:underline cursor-pointer">
             #weddingreels #cinematicwedding #weddinghighlights #dreamwedstories
@@ -543,7 +543,7 @@ const InstagramReelCard = ({ reel, index }) => {
           href={reelUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[13px] text-[#8e8e8e] hover:underline mt-0.5 block"
+          className={`text-[13px] hover:underline mt-0.5 block ${dark ? "text-zinc-500" : "text-[#8e8e8e]"}`}
         >
           View all {reel.comments} comments
         </a>
@@ -552,7 +552,7 @@ const InstagramReelCard = ({ reel, index }) => {
   );
 };
 
-const InstagramFeed = () => {
+const InstagramFeed = ({ dark = false }) => {
   const [activeTab, setActiveTab] = useState("photos");
   const [visibleCount, setVisibleCount] = useState(POSTS_PER_PAGE);
   const [isLoading, setIsLoading] = useState(false);
@@ -570,7 +570,7 @@ const InstagramFeed = () => {
   };
 
   return (
-    <section className="w-full bg-[#fbfbfa] py-28 px-6">
+    <section className={`w-full py-28 px-6 ${dark ? "bg-[#0a0a0c]" : "bg-[#fbfbfa]"}`}>
       <div className="max-w-7xl mx-auto">
         {/* TOP TAG */}
         <motion.div
@@ -604,13 +604,13 @@ const InstagramFeed = () => {
           className="text-center mt-10"
         >
           <h2
-            className="text-[56px] md:text-[76px] leading-[0.95] tracking-[-4px] text-black font-normal"
+            className={`text-[56px] md:text-[76px] leading-[0.95] tracking-[-4px] font-normal font-serif ${dark ? "text-white" : "text-black"}`}
             style={{ fontFamily: "Inter, sans-serif" }}
           >
             From our feed
           </h2>
           <p
-            className="mt-8 text-[20px] leading-relaxed text-[#6b736c] max-w-2xl mx-auto"
+            className={`mt-8 text-[20px] leading-relaxed max-w-2xl mx-auto ${dark ? "text-zinc-400" : "text-[#6b736c]"}`}
             style={{ fontFamily: "Inter, sans-serif" }}
           >
             Real moments, real couples. Follow us on Instagram for daily inspiration
@@ -620,7 +620,7 @@ const InstagramFeed = () => {
 
         {/* PREMIUM TAB TOGGLE */}
         <div className="flex justify-center mt-14">
-          <div className="bg-zinc-100/90 backdrop-blur-md p-1 rounded-full flex items-center gap-1 border border-zinc-200/50 shadow-inner">
+          <div className={`p-1 rounded-full flex items-center gap-1 border shadow-inner ${dark ? "bg-white/5 border-white/10" : "bg-zinc-100/90 border-zinc-200/50"}`}>
             {["photos", "reels"].map((tab) => (
               <button
                 key={tab}
@@ -631,7 +631,7 @@ const InstagramFeed = () => {
                 className="px-8 py-3 rounded-full text-[14px] font-medium transition-all duration-300 relative cursor-pointer outline-none select-none"
               >
                 {tab === "photos" ? (
-                  <span className={`flex items-center gap-2 relative z-10 transition-colors duration-300 ${activeTab === tab ? "text-black font-semibold" : "text-zinc-500"}`}>
+                  <span className={`flex items-center gap-2 relative z-10 transition-colors duration-300 ${activeTab === tab ? (dark ? "text-black font-semibold" : "text-black font-semibold") : (dark ? "text-zinc-400" : "text-zinc-500")}`}>
                     <FiInstagram size={14} className={activeTab === tab ? "text-[#bc1888]" : ""} />
                     Photos
                   </span>
@@ -655,7 +655,7 @@ const InstagramFeed = () => {
                 {activeTab === tab && (
                   <motion.div
                     layoutId="activeTabGlow"
-                    className="absolute inset-0 bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-zinc-200/50"
+                    className={`absolute inset-0 bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] border ${dark ? "border-white/20" : "border-zinc-200/50"}`}
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
@@ -669,9 +669,9 @@ const InstagramFeed = () => {
           <AnimatePresence mode="popLayout">
             {visiblePosts.map((post, i) => (
               activeTab === "photos" ? (
-                <InstagramCard key={post.id} post={post} index={i} />
+                <InstagramCard key={post.id} post={post} index={i} dark={dark} />
               ) : (
-                <InstagramReelCard key={post.id} reel={post} index={i} />
+                <InstagramReelCard key={post.id} reel={post} index={i} dark={dark} />
               )
             ))}
           </AnimatePresence>
@@ -689,7 +689,7 @@ const InstagramFeed = () => {
             <button
               onClick={handleLoadMore}
               disabled={isLoading}
-              className="flex items-center gap-3 px-10 py-4 rounded-full border-2 border-black text-black text-[16px] font-medium transition-all duration-300 hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed bg-white cursor-pointer"
+              className={`flex items-center gap-3 px-10 py-4 rounded-full border-2 text-[16px] font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${dark ? "border-white/20 text-white bg-transparent hover:bg-white hover:text-black hover:border-white" : "border-black text-black bg-white hover:bg-black hover:text-white"}`}
               style={{ fontFamily: "Inter, sans-serif" }}
             >
               {isLoading ? (

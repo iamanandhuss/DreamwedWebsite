@@ -38,9 +38,9 @@ const cardVariants = {
   }),
 };
 
-const TestimonialSection = () => {
+const TestimonialSection = ({ dark = false }) => {
   return (
-    <section className="w-full bg-[#f5f5f3] py-28 px-6">
+    <section className={`w-full py-28 px-6 ${dark ? "bg-[#0a0a0c]" : "bg-[#f5f5f3]"}`}>
       <div className="max-w-7xl mx-auto">
 
         {/* TOP TAG */}
@@ -52,7 +52,9 @@ const TestimonialSection = () => {
           className="flex justify-center"
         >
           <span
-            className="px-5 py-2 rounded-full bg-[#ececea] text-[#5e665f] text-[11px] md:text-[12px] tracking-[0.2em] uppercase font-semibold"
+            className={`px-5 py-2 rounded-full text-[11px] md:text-[12px] tracking-[0.2em] uppercase font-semibold ${
+              dark ? "bg-white/5 border border-white/10 text-[#d1a852]" : "bg-[#ececea] text-[#5e665f]"
+            }`}
             style={{ fontFamily: "Inter, sans-serif" }}
           >
             Testimonials
@@ -68,13 +70,16 @@ const TestimonialSection = () => {
           className="text-center mt-8"
         >
           <h2
-            className="text-[36px] sm:text-[44px] md:text-[56px] leading-[1.1] tracking-[-0.04em] text-black font-normal"
-            style={{ fontFamily: "Inter, sans-serif" }}
+            className={`text-[36px] sm:text-[44px] md:text-[56px] leading-[1.1] tracking-[-0.04em] font-normal font-serif ${
+              dark ? "text-white" : "text-black"
+            }`}
           >
             What our couples say
           </h2>
           <p
-            className="mt-4 md:mt-6 text-[15px] md:text-[18px] leading-relaxed text-[#6b736c] max-w-xl mx-auto font-light"
+            className={`mt-4 md:mt-6 text-[15px] md:text-[18px] leading-relaxed max-w-xl mx-auto font-light ${
+              dark ? "text-zinc-400" : "text-[#6b736c]"
+            }`}
             style={{ fontFamily: "Inter, sans-serif" }}
           >
             Every wedding is a once-in-a-lifetime moment. We're honoured our couples
@@ -93,20 +98,26 @@ const TestimonialSection = () => {
               whileInView="visible"
               viewport={{ once: true }}
               whileHover={{ y: -6, transition: { duration: 0.3 } }}
-              className="bg-[#ececea] rounded-[30px] md:rounded-[40px] p-8 md:p-10 min-h-[340px] flex flex-col justify-between cursor-default"
+              className={`rounded-[30px] md:rounded-[40px] p-8 md:p-10 min-h-[340px] flex flex-col justify-between cursor-default border ${
+                dark 
+                  ? "bg-[#121215] border-white/5 shadow-2xl hover:border-[#d1a852]/20 transition-all duration-300" 
+                  : "bg-[#ececea] border-transparent"
+              }`}
             >
               {/* TOP */}
               <div>
                 {/* STARS */}
                 <div className="flex gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} size={16} fill="black" stroke="black" />
+                    <Star key={i} size={16} fill={dark ? "#d1a852" : "black"} stroke={dark ? "#d1a852" : "black"} />
                   ))}
                 </div>
 
                 {/* REVIEW */}
                 <p
-                  className="mt-6 text-[15px] md:text-[17px] leading-relaxed text-[#66706a] font-light"
+                  className={`mt-6 text-[15px] md:text-[17px] leading-relaxed font-light ${
+                    dark ? "text-zinc-400" : "text-[#66706a]"
+                  }`}
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   "{item.review}"
@@ -118,17 +129,23 @@ const TestimonialSection = () => {
                 <img
                   src={item.image}
                   alt={item.name}
-                  className="w-11 h-11 rounded-full object-cover border-2 border-white shadow-sm"
+                  className={`w-11 h-11 rounded-full object-cover border-2 shadow-sm ${
+                    dark ? "border-[#d1a852]/30" : "border-white"
+                  }`}
                 />
                 <div>
                   <h3
-                    className="text-[17px] md:text-[18px] leading-none tracking-[-0.5px] text-black"
+                    className={`text-[17px] md:text-[18px] leading-none tracking-[-0.5px] ${
+                      dark ? "text-white" : "text-black"
+                    }`}
                     style={{ fontFamily: "Inter, sans-serif" }}
                   >
                     {item.name}
                   </h3>
                   <p
-                    className="mt-1.5 text-[12px] md:text-[13px] text-[#727972]"
+                    className={`mt-1.5 text-[12px] md:text-[13px] ${
+                      dark ? "text-zinc-500" : "text-[#727972]"
+                    }`}
                     style={{ fontFamily: "Inter, sans-serif" }}
                   >
                     {item.type}

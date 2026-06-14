@@ -349,15 +349,15 @@ export default function CustomPackage() {
   const getRecommendedCoverageIds = useCallback(() => {
     if (!config) return [];
     const recommendedSet = new Set();
-    const tier = selectedTier ? config.tiers.find(t => t.id === selectedTier) : null;
+    const tier = selectedTier ? (config.tiers || []).find(t => t.id === selectedTier) : null;
     
-    selectedEvents.forEach(evtId => {
-      if (tier && tier.eventCoverageMap[String(evtId)]) {
-        tier.eventCoverageMap[String(evtId)].forEach(id => recommendedSet.add(id));
+    (selectedEvents || []).forEach(evtId => {
+      if (tier && tier.eventCoverageMap && tier.eventCoverageMap[String(evtId)]) {
+        (tier.eventCoverageMap[String(evtId)] || []).forEach(id => recommendedSet.add(id));
       } else {
-        const evtType = config.eventTypes.find(e => e.id === evtId);
+        const evtType = (config.eventTypes || []).find(e => e.id === evtId);
         if (evtType && evtType.minimumCoverage) {
-          evtType.minimumCoverage.forEach(item => recommendedSet.add(item.coverageOptionId));
+          (evtType.minimumCoverage || []).forEach(item => recommendedSet.add(item.coverageOptionId));
         }
       }
     });
@@ -369,14 +369,14 @@ export default function CustomPackage() {
   const getCoverageMultipliers = useCallback(() => {
     if (!config) return {};
     const multipliers = {};
-    const tier = selectedTier ? config.tiers.find(t => t.id === selectedTier) : null;
+    const tier = selectedTier ? (config.tiers || []).find(t => t.id === selectedTier) : null;
 
-    selectedEvents.forEach(evtId => {
-      const tierMap = tier?.eventCoverageMap[String(evtId)];
-      const defaultMap = config.eventTypes.find(e => e.id === evtId)?.minimumCoverage.map(c => c.coverageOptionId) || [];
+    (selectedEvents || []).forEach(evtId => {
+      const tierMap = tier?.eventCoverageMap?.[String(evtId)];
+      const defaultMap = (config.eventTypes || []).find(e => e.id === evtId)?.minimumCoverage?.map(c => c.coverageOptionId) || [];
       const coverages = (tierMap && tierMap.length > 0) ? tierMap : defaultMap;
 
-      coverages.forEach(id => {
+      (coverages || []).forEach(id => {
         multipliers[id] = (multipliers[id] || 0) + 1;
       });
     });
@@ -386,19 +386,20 @@ export default function CustomPackage() {
 
   // Handle tier click selection
   const handleTierSelect = (tier) => {
+    if (!tier) return;
     setSelectedTier(tier.id);
     
     // Automatically select coverages in the tier
     const recommendedIds = new Set();
-    selectedEvents.forEach(evtId => {
-      const map = tier.eventCoverageMap[String(evtId)] || config.eventTypes.find(e => e.id === evtId)?.minimumCoverage.map(c => c.coverageOptionId) || [];
-      map.forEach(id => recommendedIds.add(id));
+    (selectedEvents || []).forEach(evtId => {
+      const map = tier.eventCoverageMap?.[String(evtId)] || (config.eventTypes || []).find(e => e.id === evtId)?.minimumCoverage?.map(c => c.coverageOptionId) || [];
+      (map || []).forEach(id => recommendedIds.add(id));
     });
     // Add explicitly required coverage IDs for the tier
-    tier.coverageIds.forEach(id => recommendedIds.add(id));
+    (tier.coverageIds || []).forEach(id => recommendedIds.add(id));
     
     setSelectedCoverage(Array.from(recommendedIds));
-    setSelectedDeliverables([...tier.deliverableIds]);
+    setSelectedDeliverables([...(tier.deliverableIds || [])]);
 
     // Scroll slightly down to checkout button/config accordion
     setTimeout(() => {
@@ -412,8 +413,8 @@ export default function CustomPackage() {
     if (!config) return 0;
     const multipliers = getCoverageMultipliers();
     
-    return selectedCoverage.reduce((total, id) => {
-      const option = config.coverage.find(c => c.id === id);
+    return (selectedCoverage || []).reduce((total, id) => {
+      const option = (config.coverage || []).find(c => c.id === id);
       if (!option) return total;
       
       const unitPrice = option.price;
@@ -426,12 +427,12 @@ export default function CustomPackage() {
 
   const calculateDeliverablesTotal = useCallback(() => {
     if (!config) return 0;
-    return selectedDeliverables.reduce((total, id) => {
-      const option = config.deliverables.find(d => d.id === id);
+    return (selectedDeliverables || []).reduce((total, id) => {
+      const option = (config.deliverables || []).find(d => d.id === id);
       if (!option) return total;
       
       // Some deliverables are scoped per event (e.g. Reels or Highlights per function, if any)
-      const multiplier = option.scope === "PER_EVENT" ? Math.max(1, selectedEvents.length) : 1;
+      const multiplier = option.scope === "PER_EVENT" ? Math.max(1, (selectedEvents || []).length) : 1;
       return total + (option.price * multiplier);
     }, 0);
   }, [config, selectedDeliverables, selectedEvents]);
@@ -507,25 +508,25 @@ export default function CustomPackage() {
     setErrors({});
     setSubmitting(true);
 
-    const compiledEvents = selectedEvents.map(id => {
-      const type = config.eventTypes.find(e => e.id === id);
+    const compiledEvents = (selectedEvents || []).map(id => {
+      const type = (config.eventTypes || []).find(e => e.id === id);
       return {
         id,
-        name: type.name,
+        name: type?.name || "",
         date: eventDetails[id]?.date || "",
         venue: eventDetails[id]?.venue || ""
       };
     });
 
     const multipliers = getCoverageMultipliers();
-    const coveragePayload = selectedCoverage.map(id => {
-      const option = config.coverage.find(c => c.id === id);
-      const unitPrice = option.price;
+    const coveragePayload = (selectedCoverage || []).map(id => {
+      const option = (config.coverage || []).find(c => c.id === id);
+      const unitPrice = option?.price || 0;
       const count = coverageCounts[id] || 1;
       const eventCount = multipliers[id] || 1;
       return {
         id,
-        name: option.name,
+        name: option?.name || "",
         unitPrice,
         count,
         eventCount,
@@ -533,12 +534,12 @@ export default function CustomPackage() {
       };
     });
 
-    const deliverablesPayload = selectedDeliverables.map(id => {
-      const option = config.deliverables.find(d => d.id === id);
+    const deliverablesPayload = (selectedDeliverables || []).map(id => {
+      const option = (config.deliverables || []).find(d => d.id === id);
       return {
         id,
-        name: option.name,
-        price: option.price
+        name: option?.name || "",
+        price: option?.price || 0
       };
     });
 
@@ -663,7 +664,8 @@ export default function CustomPackage() {
   // Option lists categorised
   const categoriseOptions = (items) => {
     const categories = {};
-    items.forEach(item => {
+    if (!items) return categories;
+    (items || []).forEach(item => {
       if (!categories[item.category]) {
         categories[item.category] = [];
       }
@@ -672,11 +674,11 @@ export default function CustomPackage() {
     return categories;
   };
 
-  const coverageCats = categoriseOptions(config.coverage);
-  const deliverableCats = categoriseOptions(config.deliverables);
+  const coverageCats = categoriseOptions(config?.coverage);
+  const deliverableCats = categoriseOptions(config?.deliverables);
 
   const recommendedCoverageIds = getRecommendedCoverageIds();
-  const recommendedDeliverableIds = selectedTier ? config.tiers.find(t => t.id === selectedTier)?.deliverableIds || [] : [];
+  const recommendedDeliverableIds = selectedTier ? (config?.tiers || []).find(t => t.id === selectedTier)?.deliverableIds || [] : [];
   const coverageMultipliers = getCoverageMultipliers();
 
   // Helper color map for tiers
