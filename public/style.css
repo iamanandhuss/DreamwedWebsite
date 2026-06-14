@@ -4383,7 +4383,8 @@ body.has-ticker .main-header {
 }
 
 .pkg-details-modal-card {
-    background: #ffffff !important;
+    background: #121215 !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
     width: 100% !important;
     max-width: 980px !important;
     height: 90vh !important;
@@ -4391,7 +4392,7 @@ body.has-ticker .main-header {
     border-radius: 40px !important;
     overflow: hidden !important;
     position: relative !important;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7) !important;
     animation: modalScaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
@@ -4539,7 +4540,7 @@ body.has-ticker .main-header {
 
 /* Right Panel (Content area) */
 .pkg-details-modal-right {
-    background: #ffffff !important;
+    background: #121215 !important;
     padding: 40px !important;
     display: flex !important;
     flex-direction: column !important;
@@ -4560,8 +4561,9 @@ body.has-ticker .main-header {
 
 .pkg-details-modal-badge {
     display: inline-block !important;
-    background: #f4f4f5 !important;
-    color: #71717a !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #d1a852 !important;
+    border: 1px solid rgba(209, 168, 82, 0.2) !important;
     font-size: 9px !important;
     font-weight: 800 !important;
     text-transform: uppercase !important;
@@ -4575,7 +4577,7 @@ body.has-ticker .main-header {
     font-family: 'Cormorant Garamond', serif !important;
     font-size: 32px !important;
     font-weight: 600 !important;
-    color: #09090b !important;
+    color: #ffffff !important;
     margin: 0 0 6px 0 !important;
     line-height: 1.2 !important;
 }
@@ -4583,7 +4585,7 @@ body.has-ticker .main-header {
 .pkg-details-modal-price {
     font-size: 28px !important;
     font-weight: 800 !important;
-    color: #15803d !important;
+    color: #d1a852 !important;
     font-family: 'Outfit', sans-serif !important;
 }
 
@@ -4594,7 +4596,7 @@ body.has-ticker .main-header {
     margin-bottom: 20px !important;
     /* Custom Scrollbar */
     scrollbar-width: thin !important;
-    scrollbar-color: #d4d4d8 #f4f4f5 !important;
+    scrollbar-color: rgba(255, 255, 255, 0.1) rgba(0, 0, 0, 0.2) !important;
 }
 
 .pkg-details-modal-scroll-body::-webkit-scrollbar {
@@ -4602,18 +4604,18 @@ body.has-ticker .main-header {
 }
 
 .pkg-details-modal-scroll-body::-webkit-scrollbar-track {
-    background: #f4f4f5 !important;
+    background: rgba(0, 0, 0, 0.2) !important;
     border-radius: 10px !important;
 }
 
 .pkg-details-modal-scroll-body::-webkit-scrollbar-thumb {
-    background: #d4d4d8 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
     border-radius: 10px !important;
 }
 
 .pkg-details-modal-desc {
     font-size: 13.5px !important;
-    color: #4b5563 !important;
+    color: #a1a1aa !important;
     line-height: 1.55 !important;
     margin: 0 0 20px 0 !important;
 }
@@ -4621,8 +4623,8 @@ body.has-ticker .main-header {
 .pkg-details-modal-standard-box {
     display: flex !important;
     gap: 14px !important;
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
+    background: rgba(209, 168, 82, 0.05) !important;
+    border: 1px solid rgba(209, 168, 82, 0.15) !important;
     border-radius: 16px !important;
     padding: 16px !important;
     margin-bottom: 24px !important;
@@ -4632,12 +4634,12 @@ body.has-ticker .main-header {
     width: 38px !important;
     height: 38px !important;
     border-radius: 50% !important;
-    background: #f1f5f9 !important;
-    border: 1px solid #e2e8f0 !important;
+    background: rgba(209, 168, 82, 0.15) !important;
+    border: 1px solid rgba(209, 168, 82, 0.25) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    color: #64748b !important;
+    color: #d1a852 !important;
     font-size: 15px !important;
     flex-shrink: 0 !important;
 }
@@ -4646,7 +4648,7 @@ body.has-ticker .main-header {
     display: block !important;
     font-size: 10.5px !important;
     font-weight: 800 !important;
-    color: #0f172a !important;
+    color: #d1a852 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.08em !important;
     margin-bottom: 4px !important;
@@ -4654,7 +4656,7 @@ body.has-ticker .main-header {
 
 .pkg-standard-box-content p {
     font-size: 12px !important;
-    color: #475569 !important;
+    color: #a1a1aa !important;
     margin: 0 !important;
     line-height: 1.45 !important;
 }
@@ -4662,14 +4664,14 @@ body.has-ticker .main-header {
 .pkg-details-modal-checklist-header {
     font-size: 10.5px !important;
     font-weight: 800 !important;
-    color: #4b5563 !important;
+    color: #ffffff !important;
     text-transform: uppercase !important;
     letter-spacing: 0.08em !important;
     margin-bottom: 14px !important;
 }
 
 .pkg-details-modal-checklist-container {
-    color: #374151 !important;
+    color: #a1a1aa !important;
 }
 
 .pkg-details-modal-checklist-container ul {
@@ -4688,22 +4690,22 @@ body.has-ticker .main-header {
 }
 
 .pkg-details-modal-checklist-container li i {
-    color: #16a34a !important;
+    color: #d1a852 !important;
     font-size: 13.5px !important;
     margin-top: 4px !important;
     flex-shrink: 0 !important;
 }
 
 .pkg-details-modal-footer {
-    border-top: 1px solid #e4e4e7 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
     padding-top: 18px !important;
-    background: #ffffff !important;
+    background: #121215 !important;
 }
 
 .pkg-modal-book-btn {
     width: 100% !important;
-    background: #18181b !important;
-    color: #ffffff !important;
+    background: #ffffff !important;
+    color: #000000 !important;
     border: none !important;
     padding: 16px 24px !important;
     border-radius: 16px !important;
@@ -4716,7 +4718,7 @@ body.has-ticker .main-header {
 }
 
 .pkg-modal-book-btn:hover {
-    background: #09090b !important;
+    background: #e4e4e7 !important;
     transform: translateY(-1px) !important;
 }
 
@@ -4736,15 +4738,15 @@ body.has-ticker .main-header {
 
 /* Override checklist item styles inside white details modal to make them dark and readable */
 .pkg-details-modal-checklist-container .package-features li {
-    color: #27272a !important;
+    color: #a1a1aa !important;
     font-size: 13.5px !important;
 }
 
 .pkg-details-modal-checklist-container .package-features li i {
-    color: #16a34a !important;
+    color: #d1a852 !important;
     font-size: 14px !important;
 }
 
 .pkg-details-modal-checklist-container .package-event-section {
-    border-color: #e4e4e7 !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
 }

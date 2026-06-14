@@ -236,23 +236,29 @@ const PricingSection = () => {
   }, []);
 
   return (
-    <section className="w-full bg-[#f5f5f3] py-20 md:py-24 px-4 md:px-6 overflow-hidden">
-      <div className="container">
+    <section className="w-full bg-[#0a0a0c] text-white py-24 md:py-32 px-4 md:px-6 overflow-hidden relative">
+      {/* Premium Luxury Orbs */}
+      <div className="absolute top-[-100px] left-1/4 w-[600px] h-[600px] bg-[#d1a852]/5 rounded-full blur-[150px] pointer-events-none select-none" />
+      <div className="absolute bottom-[200px] right-1/4 w-[600px] h-[600px] bg-[#b8903b]/3 rounded-full blur-[180px] pointer-events-none select-none" />
+
+      <div className="container relative z-10">
         
         {/* Header Section */}
-        <div className="text-center mb-12 md:mb-16 px-4">
+        <div className="text-center mb-16 md:mb-24 px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.8 }}
           >
-            <h2 className="text-[36px] sm:text-[44px] md:text-[56px] leading-[1.1] tracking-[-0.04em] text-black font-normal mb-4 md:mb-6 text-balance">
-              Wedding Packages
+            <span className="text-[#d1a852] text-[10px] md:text-[11px] tracking-[0.4em] uppercase font-extrabold block mb-4">
+              Timeless Stories
+            </span>
+            <h2 className="text-[40px] sm:text-[52px] md:text-[68px] leading-[1.05] tracking-[-0.03em] font-serif text-white font-light mb-6 text-balance">
+              Exclusive <span className="italic text-[#d1a852]">Wedding Collections</span>
             </h2>
-            <p className="text-[15px] md:text-[18px] leading-relaxed text-[#6f766f] max-w-xl mx-auto font-light">
-              Choose the package that fits your vision. All packages include a 
-              personalised story consultation before the wedding.
+            <p className="text-[15px] md:text-[18px] leading-relaxed text-zinc-400 max-w-xl mx-auto font-light">
+              Tailored for couples seeking unmatched cinematic artistry. Every package delivers physical heirlooms and full-spectrum digital storytelling.
             </p>
           </motion.div>
         </div>
@@ -442,15 +448,15 @@ const PricingSection = () => {
         </div>
 
         {/* Standalone & Special Coverage Collections */}
-        <div className="mt-28 pt-20 border-t border-zinc-300/60">
-          <div className="text-center mb-16 px-4">
-            <span className="inline-block px-5 py-2 rounded-full bg-[#ececea] text-[#5d665f] text-[11px] md:text-[12px] tracking-[0.2em] uppercase font-semibold mb-4 md:mb-6">
+        <div className="mt-32 pt-24 border-t border-white/5">
+          <div className="text-center mb-20 px-4">
+            <span className="inline-block px-5 py-2 rounded-full bg-white/5 border border-white/10 text-[#d1a852] text-[10px] md:text-[11px] tracking-[0.3em] uppercase font-bold mb-4 md:mb-6">
               Specialised Offerings
             </span>
-            <h2 className="text-[32px] sm:text-[40px] md:text-[50px] leading-[1.1] tracking-[-0.04em] text-black font-normal mb-4 md:mb-6 text-balance">
-              Single Event & Standalone Packages
+            <h2 className="text-[36px] sm:text-[48px] md:text-[56px] leading-[1.1] tracking-[-0.03em] font-serif text-white font-light mb-4 md:mb-6 text-balance">
+              Single Event & <span className="italic text-[#d1a852]">Standalone Collections</span>
             </h2>
-            <p className="text-[15px] md:text-[18px] leading-relaxed text-[#6f766f] max-w-xl mx-auto font-light">
+            <p className="text-[15px] md:text-[18px] leading-relaxed text-zinc-400 max-w-xl mx-auto font-light">
               Perfect for celebrating individual milestones or standalone day events with premium layflat albums and cinematic visuals.
             </p>
           </div>
@@ -459,68 +465,68 @@ const PricingSection = () => {
             
             {/* COLUMN 1: ENGAGEMENT SPECIAL COVERAGE */}
             <div className="space-y-6">
-              <div className="space-y-2 border-b border-zinc-300 pb-4">
-                <span className="text-[#5d665f] text-xs font-bold tracking-[0.2em] uppercase">Collection 01</span>
-                <h3 className="text-2xl text-zinc-900 font-normal tracking-tight font-serif italic">Engagement Special Coverage</h3>
+              <div className="space-y-2 border-b border-white/5 pb-4">
+                <span className="text-[#d1a852] text-xs font-bold tracking-[0.2em] uppercase">Collection 01</span>
+                <h3 className="text-2xl text-white font-normal tracking-tight font-serif italic">Engagement Special Coverage</h3>
               </div>
               
               <div className="space-y-6">
                 {/* Pack A: Engagement Photo Only */}
-                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#d1a852]/25">
+                <div className="bg-[#121215] p-6 sm:p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(209,168,82,0.06)] transition-all duration-500 h-full group hover:border-[#d1a852]/40">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Album</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Engagement Photography</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹19,999/-</p>
+                    <span className="inline-flex bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Album</span>
+                    <h4 className="text-[20px] font-normal leading-tight text-white">Engagement Photography</h4>
+                    <p className="text-[28px] font-normal text-[#d1a852] numbers-pro">₹19,999/-</p>
                     <ul className="space-y-3 pt-2">
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>Dedicated Candid & Traditional Photographer</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>4 Hours Coverage</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>150+ Edited High-Res Photos</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">Premium Layflat Panoramic Album</span>
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
+                        <span className="font-semibold text-zinc-100">Premium Layflat Panoramic Album</span>
                       </li>
                     </ul>
                   </div>
-                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-zinc-300 text-black hover:bg-zinc-50 transition-all text-center text-xs font-bold uppercase tracking-wider block">
+                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-white/10 text-white hover:bg-white/5 hover:border-[#d1a852]/30 transition-all text-center text-xs font-bold uppercase tracking-wider block">
                     Book Engagement
                   </Link>
                 </div>
 
                 {/* Pack B: Engagement Photo + Video */}
-                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#d1a852]/25">
+                <div className="bg-[#121215] p-6 sm:p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(209,168,82,0.06)] transition-all duration-500 h-full group hover:border-[#d1a852]/40">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Video</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Engagement with Videography</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹28,999/-</p>
+                    <span className="inline-flex bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Video</span>
+                    <h4 className="text-[20px] font-normal leading-tight text-white">Engagement with Videography</h4>
+                    <p className="text-[28px] font-normal text-[#d1a852] numbers-pro">₹28,999/-</p>
                     <ul className="space-y-3 pt-2">
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>1 Photographer + 1 Videographer</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>4 Hours Full Event Coverage</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>200+ Edited High-Res Photos</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">HD Cinematic Highlights Reel</span>
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
+                        <span className="font-semibold text-zinc-100">HD Cinematic Highlights Reel</span>
                       </li>
                     </ul>
                   </div>
-                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-zinc-300 text-black hover:bg-zinc-50 transition-all text-center text-xs font-bold uppercase tracking-wider block">
+                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-white/10 text-white hover:bg-white/5 hover:border-[#d1a852]/30 transition-all text-center text-xs font-bold uppercase tracking-wider block">
                     Book Full Event
                   </Link>
                 </div>
@@ -529,68 +535,68 @@ const PricingSection = () => {
 
             {/* COLUMN 2: STANDALONE EVENT COVERAGE */}
             <div className="space-y-6">
-              <div className="space-y-2 border-b border-zinc-300 pb-4">
-                <span className="text-[#5d665f] text-xs font-bold tracking-[0.2em] uppercase">Collection 02</span>
-                <h3 className="text-2xl text-zinc-900 font-normal tracking-tight font-serif italic">Standalone Event Coverage</h3>
+              <div className="space-y-2 border-b border-white/5 pb-4">
+                <span className="text-[#d1a852] text-xs font-bold tracking-[0.2em] uppercase">Collection 02</span>
+                <h3 className="text-2xl text-white font-normal tracking-tight font-serif italic">Standalone Event Coverage</h3>
               </div>
               
               <div className="space-y-6">
                 {/* Pack A: Wedding Day Only */}
-                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#d1a852]/25">
+                <div className="bg-[#121215] p-6 sm:p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(209,168,82,0.06)] transition-all duration-500 h-full group hover:border-[#d1a852]/40">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Wedding Day Only</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Standalone Wedding Day</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹39,999/-</p>
+                    <span className="inline-flex bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Wedding Day Only</span>
+                    <h4 className="text-[20px] font-normal leading-tight text-white">Standalone Wedding Day</h4>
+                    <p className="text-[28px] font-normal text-[#d1a852] numbers-pro">₹39,999/-</p>
                     <ul className="space-y-3 pt-2">
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>Professional Photo & Video Team</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>Up to 8 Hours Event Coverage</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">Premium 70-Page Layflat Album</span>
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
+                        <span className="font-semibold text-zinc-100">Premium 70-Page Layflat Album</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>Full HD Video Film + Reels</span>
                       </li>
                     </ul>
                   </div>
-                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-zinc-300 text-black hover:bg-zinc-50 transition-all text-center text-xs font-bold uppercase tracking-wider block">
+                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-white/10 text-white hover:bg-white/5 hover:border-[#d1a852]/30 transition-all text-center text-xs font-bold uppercase tracking-wider block">
                     Book Standalone Wedding
                   </Link>
                 </div>
 
                 {/* Pack B: Reception Day Only */}
-                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#d1a852]/25">
+                <div className="bg-[#121215] p-6 sm:p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(209,168,82,0.06)] transition-all duration-500 h-full group hover:border-[#d1a852]/40">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Reception Only</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Standalone Reception</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹29,999/-</p>
+                    <span className="inline-flex bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Reception Only</span>
+                    <h4 className="text-[20px] font-normal leading-tight text-white">Standalone Reception</h4>
+                    <p className="text-[28px] font-normal text-[#d1a852] numbers-pro">₹29,999/-</p>
                     <ul className="space-y-3 pt-2">
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>Professional Photo & Video Team</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>Up to 5 Hours Reception Coverage</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">Premium 50-Page Layflat Album</span>
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
+                        <span className="font-semibold text-zinc-100">Premium 50-Page Layflat Album</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>Full HD Video Film + Highlights</span>
                       </li>
                     </ul>
                   </div>
-                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-zinc-300 text-black hover:bg-zinc-50 transition-all text-center text-xs font-bold uppercase tracking-wider block">
+                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-white/10 text-white hover:bg-white/5 hover:border-[#d1a852]/30 transition-all text-center text-xs font-bold uppercase tracking-wider block">
                     Book Standalone Reception
                   </Link>
                 </div>
@@ -599,98 +605,98 @@ const PricingSection = () => {
 
             {/* COLUMN 3: HALDI SPECIAL COVERAGE */}
             <div className="space-y-6">
-              <div className="space-y-2 border-b border-zinc-300 pb-4">
-                <span className="text-[#5d665f] text-xs font-bold tracking-[0.25em] uppercase">Collection 03</span>
-                <h3 className="text-2xl text-zinc-900 font-normal tracking-tight font-serif italic">Haldi Special Coverage</h3>
+              <div className="space-y-2 border-b border-white/5 pb-4">
+                <span className="text-[#d1a852] text-xs font-bold tracking-[0.25em] uppercase">Collection 03</span>
+                <h3 className="text-2xl text-white font-normal tracking-tight font-serif italic">Haldi Special Coverage</h3>
               </div>
               
               <div className="space-y-6">
                 {/* Pack A: Just Haldi Photography */}
-                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#d1a852]/25">
+                <div className="bg-[#121215] p-6 sm:p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(209,168,82,0.06)] transition-all duration-500 h-full group hover:border-[#d1a852]/40">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo Only</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Haldi Photography (Only)</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹10,000/-</p>
+                    <span className="inline-flex bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo Only</span>
+                    <h4 className="text-[20px] font-normal leading-tight text-white">Haldi Photography (Only)</h4>
+                    <p className="text-[28px] font-normal text-[#d1a852] numbers-pro">₹10,000/-</p>
                     <ul className="space-y-3 pt-2">
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>Professional Photographer</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>2-3 Hours Event Coverage</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>50+ Edited High-Res Photos</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>Online Gallery Access</span>
                       </li>
                     </ul>
                   </div>
-                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-zinc-300 text-black hover:bg-zinc-50 transition-all text-center text-xs font-bold uppercase tracking-wider block">
+                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-white/10 text-white hover:bg-white/5 hover:border-[#d1a852]/30 transition-all text-center text-xs font-bold uppercase tracking-wider block">
                     Book Haldi Photo
                   </Link>
                 </div>
 
                 {/* Pack B: Haldi Photography with Album */}
-                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#d1a852]/25">
+                <div className="bg-[#121215] p-6 sm:p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(209,168,82,0.06)] transition-all duration-500 h-full group hover:border-[#d1a852]/40">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Album</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Haldi Photography with Album</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹15,000/-</p>
+                    <span className="inline-flex bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Album</span>
+                    <h4 className="text-[20px] font-normal leading-tight text-white">Haldi Photography with Album</h4>
+                    <p className="text-[28px] font-normal text-[#d1a852] numbers-pro">₹15,000/-</p>
                     <ul className="space-y-3 pt-2">
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>Dedicated Photographer</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>3-4 Hours Event Coverage</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>100+ Edited High-Res Photos</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">Premium Layflat Panoramic Album</span>
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
+                        <span className="font-semibold text-zinc-100">Premium Layflat Panoramic Album</span>
                       </li>
                     </ul>
                   </div>
-                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-zinc-300 text-black hover:bg-zinc-50 transition-all text-center text-xs font-bold uppercase tracking-wider block">
+                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-white/10 text-white hover:bg-white/5 hover:border-[#d1a852]/30 transition-all text-center text-xs font-bold uppercase tracking-wider block">
                     Book Haldi Album
                   </Link>
                 </div>
 
                 {/* Pack C: Haldi Photo & Videography */}
-                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#d1a852]/25">
+                <div className="bg-[#121215] p-6 sm:p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(209,168,82,0.06)] transition-all duration-500 h-full group hover:border-[#d1a852]/40">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Video</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Haldi Photo & Videography</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹28,000/-</p>
+                    <span className="inline-flex bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Video</span>
+                    <h4 className="text-[20px] font-normal leading-tight text-white">Haldi Photo & Videography</h4>
+                    <p className="text-[28px] font-normal text-[#d1a852] numbers-pro">₹28,000/-</p>
                     <ul className="space-y-3 pt-2">
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>1 Photographer + 1 Videographer</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>4 Hours Full Haldi Coverage</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
                         <span>150+ Edited High-Res Photos</span>
                       </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">Premium Layflat Album & Edited Video</span>
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
+                        <span className="font-semibold text-zinc-100">Premium Layflat Album & Edited Video</span>
                       </li>
                     </ul>
                   </div>
-                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-zinc-300 text-black hover:bg-zinc-50 transition-all text-center text-xs font-bold uppercase tracking-wider block">
+                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-white/10 text-white hover:bg-white/5 hover:border-[#d1a852]/30 transition-all text-center text-xs font-bold uppercase tracking-wider block">
                     Book Full Haldi
                   </Link>
                 </div>
@@ -708,7 +714,7 @@ const PricingSection = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/25 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
+            className="fixed inset-0 z-50 bg-black/65 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
             onClick={() => setActivePlanIndex(null)}
           >
             <motion.div
@@ -716,13 +722,13 @@ const PricingSection = () => {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.93, y: 30 }}
               transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="relative w-full max-w-4xl rounded-[40px] bg-white border border-zinc-100 overflow-y-auto md:overflow-hidden max-h-[90vh] md:max-h-[650px] shadow-[0_30px_80px_rgba(0,0,0,0.4)] grid grid-cols-1 md:grid-cols-2 text-zinc-800"
+              className="relative w-full max-w-4xl rounded-[40px] bg-[#121215] border border-white/5 overflow-y-auto md:overflow-hidden max-h-[90vh] md:max-h-[650px] shadow-[0_30px_80px_rgba(0,0,0,0.7)] grid grid-cols-1 md:grid-cols-2 text-white"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Extremely Prominent Close Button */}
               <button
                 onClick={() => setActivePlanIndex(null)}
-                className="absolute top-4 right-4 sm:top-6 sm:right-6 w-11 h-11 rounded-full bg-black/75 hover:bg-black/90 border border-white/20 flex items-center justify-center text-white shadow-2xl transition-all hover:rotate-90 hover:scale-105 duration-300 z-50 cursor-pointer"
+                className="absolute top-4 right-4 sm:top-6 sm:right-6 w-11 h-11 rounded-full bg-black/65 hover:bg-black/85 border border-white/10 flex items-center justify-center text-white shadow-2xl transition-all hover:rotate-90 hover:scale-105 duration-300 z-50 cursor-pointer"
                 title="Close popup"
               >
                 <X size={22} strokeWidth={2.5} />
@@ -791,14 +797,14 @@ const PricingSection = () => {
                 
                 {/* Header detail */}
                 <div className="space-y-2 select-none">
-                  <span className="inline-flex items-center gap-1 bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">
+                  <span className="inline-flex items-center gap-1 bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">
                     {pricingPlans[activePlanIndex].modalTag || "Premium"} Collection
                   </span>
-                  <h3 className="text-2xl sm:text-3xl text-zinc-900 font-semibold tracking-tight font-serif">
+                  <h3 className="text-2xl sm:text-3xl text-white font-semibold tracking-tight font-serif">
                     {pricingPlans[activePlanIndex].title} Package
                   </h3>
                   <div className="flex items-baseline gap-3">
-                    <span className="text-3xl font-bold text-[#1e3f20]">{pricingPlans[activePlanIndex].price}/-</span>
+                    <span className="text-3xl font-bold text-[#d1a852]">{pricingPlans[activePlanIndex].price}/-</span>
                   </div>
 
                   {/* Symbolic Animated Scroll Arrow for Mobile */}
@@ -820,7 +826,7 @@ const PricingSection = () => {
                 <div className="flex-grow md:overflow-y-auto pr-2 space-y-5 md:scrollbar-thin relative min-h-0 overflow-visible h-auto">
                   
                   {/* Short intro bio */}
-                  <p className="text-zinc-500 font-light text-xs leading-relaxed select-none">
+                  <p className="text-zinc-400 font-light text-xs leading-relaxed select-none">
                     {pricingPlans[activePlanIndex].desc}
                   </p>
 
@@ -833,17 +839,17 @@ const PricingSection = () => {
                       <span className="block text-[#b8903b] text-xs font-bold uppercase tracking-wide">
                         Free Pre-Wedding Shoot
                       </span>
-                      <span className="text-zinc-600 text-[10px] font-medium leading-snug block mt-0.5">
+                      <span className="text-zinc-400 text-[10px] font-medium leading-snug block mt-0.5">
                         Free Pre-Wedding (Save the date photography) is included with this package.
                       </span>
                     </div>
                   </div>
 
-                  <div className="w-full h-px bg-zinc-100" />
+                  <div className="w-full h-px bg-white/5" />
 
                   {/* Complete inclusions list */}
                   <div className="space-y-3.5 relative">
-                    <span className="text-[10px] text-zinc-800 tracking-wider uppercase font-bold block select-none">
+                    <span className="text-[10px] text-zinc-100 tracking-wider uppercase font-bold block select-none">
                       Complete Deliverables (Scroll for all {pricingPlans[activePlanIndex].features.length} items 👇):
                     </span>
                     <div className="space-y-3">
@@ -851,10 +857,10 @@ const PricingSection = () => {
                         const isFree = item.toLowerCase().includes("free") || item.toLowerCase().includes("pre-wedding");
                         return (
                           <div key={index} className={`flex items-start gap-3 text-xs leading-relaxed ${
-                            isFree ? "font-semibold text-[#b8903b]" : "text-zinc-600 font-light"
+                            isFree ? "font-semibold text-[#b8903b]" : "text-zinc-400 font-light"
                           }`}>
                             <span className={`w-4.5 h-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                              isFree ? "bg-[#d1a852]/25 text-[#b8903b] shadow-[0_0_8px_rgba(209,168,82,0.2)] animate-pulse" : "bg-[#1e3f20]/10 text-[#1e3f20]"
+                              isFree ? "bg-[#d1a852]/25 text-[#b8903b] shadow-[0_0_8px_rgba(209,168,82,0.2)] animate-pulse" : "bg-white/5 text-zinc-400"
                             }`}>
                               {isFree ? (
                                 <Sparkles size={10} strokeWidth={3} />
@@ -872,7 +878,7 @@ const PricingSection = () => {
                   <div className="h-4" />
                 </div>
 
-                <div className="w-full h-px bg-zinc-100 select-none" />
+                <div className="w-full h-px bg-white/5 select-none" />
 
                 {/* Book Consultation button */}
                 <div className="space-y-3">
