@@ -1,20 +1,359 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Video, BookOpen, Clock, Users, Heart, X, Check, Gift } from 'lucide-react';
+import { Camera, Video, BookOpen, Clock, Users, Heart, X, Check, Gift, Sparkles, CheckCircle, Tag, ArrowRight, Share2 } from 'lucide-react';
 import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
 import SEO from '../components/SEO';
 import customServiceImg from '../assets/images/new_portrait_3.jpg';
 
+const weddingPlans = [
+  {
+    shareId: "pkgWeddingBasicCard",
+    title: "Wedding Photography",
+    price: "₹39,999",
+    tag: "+ LIMITED TIME OFFER",
+    modalTag: "Essential",
+    subtitle: "ESSENTIAL SINGLE-SIDE",
+    preweddingOffer: "FREE PRE-WEDDING PHOTO (WORTH ₹12,000)",
+    desc: "Our highly sought-after single-side coverage package. Designed to capture every detail of your celebrations with elite creative precision and beautiful physical heirlooms.",
+    setup: "1 Photographer + 1 Videographer",
+    images: ["/uploaded_bride_yellow.jpg", "/athulraj.jpg", "/anandha_lekshmi.jpg"],
+    features: [
+      "Wedding Reception Photography",
+      "Wedding Reception Videography",
+      "Wedding Day Photography",
+      "Wedding Day Videography",
+      "One 70 Pages Premium Album",
+      "Highlights Video",
+      "Full HD Wedding Video",
+      "Wedding Reel",
+      "1 Photographer Setup",
+      "1 Videographer Setup",
+      "1 Calendar",
+      "1 Pen Drive",
+      "2 Wall Frames",
+      "Edited Photos & High-speed Pendrive"
+    ]
+  },
+  {
+    shareId: "pkgWeddingPreCard",
+    title: "Wedding Photo & Pre-Wedding",
+    price: "₹54,999",
+    tag: "+ FREE PRE-WEDDING PHOTO & VIDEO (LIMITED TIME)",
+    modalTag: "Premium",
+    subtitle: "PRE-WEDDING & PHOTO",
+    preweddingOffer: "FREE PRE-WEDDING PHOTO & VIDEO (WORTH ₹15,000)",
+    desc: "Perfect for capturing your beautiful pre-wedding love story and the complete wedding day celebrations. Includes comprehensive coverage and professional deliverables.",
+    setup: "1 Photographer + 1 Videographer",
+    images: ["/couple_fun_glasses.jpg", "/uploaded_couple_blackwhite.jpg", "/kochi_couple_carry.jpg"],
+    features: [
+      "Pre-Wedding Photo + Video (Save The Date)",
+      "Wedding Reception Photography",
+      "Wedding Reception Videography",
+      "Wedding Day Photography",
+      "Wedding Day Videography",
+      "One 80 Pages Premium Album",
+      "80 Pages Mini Album",
+      "Highlights Video",
+      "Full HD Wedding Video",
+      "Wedding Reel",
+      "1 Photographer Setup",
+      "1 Videographer Setup",
+      "1 Calendar",
+      "1 Pen Drive",
+      "2 Wall Frames",
+      "Edited Photos & High-speed Pendrive"
+    ]
+  },
+  {
+    shareId: "pkgCandidCard",
+    title: "Candid Photo & Videography",
+    price: "₹69,999",
+    tag: "+ LIMITED TIME OFFER",
+    modalTag: "Signature",
+    subtitle: "ARTISTIC CANDID SHOTS",
+    preweddingOffer: "FREE PHOTO CALENDAR + 1 WALL FRAME",
+    desc: "Our creative 3-camera setup featuring dedicated candid photography. Ideal for couples who want artistic, natural, and unstaged storytelling of their special day.",
+    setup: "1 Photographer + 1 Candid Photographer + 1 Videographer",
+    images: ["/uploaded_bride_traditional.jpg", "/uploaded_bride_gold.jpg", "/chindu.jpg"],
+    features: [
+      "Pre-Wedding Photo + Video (Save The Date)",
+      "Wedding Reception Photography",
+      "Wedding Reception Videography",
+      "Wedding Day Photography",
+      "Wedding Day Candid-Photography",
+      "Wedding Day Videography",
+      "One 80 Pages Premium Album",
+      "80 Pages Mini Album",
+      "Highlights Video",
+      "Full HD Wedding Video",
+      "Wedding Reel",
+      "1 Photographer Setup",
+      "1 Candid Photographer Setup",
+      "1 Videographer Setup",
+      "1 Calendar",
+      "1 Pen Drive",
+      "2 Wall Frames",
+      "Edited Photos & High-speed Pendrive"
+    ]
+  },
+  {
+    shareId: "pkgLuxuryCard",
+    title: "Bride & Groom Luxury Package",
+    price: "₹1,10,000",
+    tag: "+ LIMITED TIME OFFER",
+    modalTag: "Signature Luxury",
+    subtitle: "4-CAMERA DUAL-SIDE LUXURY COVERAGE",
+    preweddingOffer: "FREE DRONE + PREMIUM CUSTOM ALBUM BOX",
+    desc: "Our ultimate dual-side wedding collection. Features comprehensive coverage, drone photography, and physical custom boxes for your handcrafted albums.",
+    setup: "2 Photographers + 2 Videographers + Drone + Custom Album Box",
+    images: ["/bride_christian_white.jpg", "/uploaded_couple_blackwhite.jpg", "/kochi_couple_carry.jpg"],
+    features: [
+      "Pre-Wedding Photography & Videography (Save the Date)",
+      "Wedding & Reception Photography (Dual-side)",
+      "Wedding & Reception Videography (Dual-side)",
+      "Wedding Candid Photography & Videography",
+      "Helicam (Drone) Aerial Coverage",
+      "One 80-Pages Premium Album with Handcrafted Album Box",
+      "One 80-Pages Mini Album",
+      "Cinematic Highlights Film & Instagram Reels",
+      "Full HD Wedding Video Film",
+      "2 Premium Wall Frames",
+      "1 Customized Photo Calendar",
+      "1 High-Speed USB Pen Drive",
+      "Edited Photos & High-speed Pendrive"
+    ]
+  }
+];
+
+const weddingStandalonePlans = [
+  {
+    shareId: "pkgWeddingStandaloneDay",
+    title: "Standalone Wedding Day",
+    price: "₹39,999",
+    tag: "Wedding Day Only",
+    modalTag: "Standalone",
+    subtitle: "8-HOUR WEDDING DAY ONLY",
+    preweddingOffer: "FREE COMPLIMENTARY DESKTOP CALENDAR",
+    desc: "Dedicated professional photography & videography team for your wedding ceremony day coverage.",
+    setup: "1 Photographer + 1 Videographer Team",
+    images: ["/uploaded_couple_blackwhite.jpg"],
+    features: [
+      "Professional Photo & Video Team",
+      "Up to 8 Hours Event Coverage",
+      "Premium 70-Page Layflat Album",
+      "Full HD Video Film + Reels",
+      "Edited Photos & High-speed Pendrive"
+    ]
+  },
+  {
+    shareId: "pkgWeddingStandaloneReception",
+    title: "Standalone Reception",
+    price: "₹29,999",
+    tag: "Reception Only",
+    modalTag: "Standalone",
+    subtitle: "5-HOUR RECEPTION DAY ONLY",
+    preweddingOffer: "FREE COMPLIMENTARY DESKTOP CALENDAR",
+    desc: "Sleek professional photo & video coverage optimized for your grand reception event.",
+    setup: "1 Photographer + 1 Videographer Team",
+    images: ["/kochi_couple.jpg"],
+    features: [
+      "Professional Photo & Video Team",
+      "Up to 5 Hours Reception Coverage",
+      "Premium 50-Page Layflat Album",
+      "Full HD Video Film + Highlights",
+      "Edited Photos & High-speed Pendrive"
+    ]
+  }
+];
+
+const engagementPlans = [
+  {
+    shareId: "pkgEngagementBasicCard",
+    title: "Engagement Photography",
+    price: "₹12,000",
+    tag: "Photo Only",
+    modalTag: "Essential Engagement",
+    subtitle: "ESSENTIAL SINGLE-SIDE",
+    preweddingOffer: "FREE HIGH-RES DIGITAL ALBUM ACCESS",
+    desc: "Dedicated candid & traditional photographer coverage for your engagement ceremony.",
+    setup: "1 Dedicated Photographer",
+    images: ["/uploaded_bride_yellow.jpg"],
+    features: [
+      "Dedicated Candid & Traditional Photographer",
+      "4 Hours Coverage",
+      "Edited High-Res Photos"
+    ]
+  },
+  {
+    shareId: "pkgEngagementPreCard",
+    title: "Bride & Groom Engagement Package",
+    price: "₹28,999",
+    tag: "Single-Side Photo + Video + Album",
+    modalTag: "Standard Engagement",
+    subtitle: "COMPLETE SINGLE-SIDE COVERAGE",
+    preweddingOffer: "FREE TABLETOP CALENDAR + 2 WALL FRAMES",
+    desc: "Our complete single-side engagement package including cinematic video, premium layflat album, and creative reels.",
+    setup: "1 Photographer + 1 Videographer",
+    images: ["/couple_fun_glasses.jpg"],
+    features: [
+      "1 Photographer + 1 Videographer",
+      "4 Hours Full Event Coverage",
+      "Edited High-Res Photos",
+      "Premium Layflat Panoramic Album (50 Pages)",
+      "Cinematic Engagement Reel",
+      "Engagement Full HD Video",
+      "1 Tabletop Calendar",
+      "2 Premium Photo Frames",
+      "1 USB Pen Drive"
+    ]
+  },
+  {
+    shareId: "pkgPremiumCandidCard",
+    title: "Premium Candid Package",
+    price: "₹79,999",
+    tag: "Ultimate Engagement Coverage",
+    modalTag: "Premium Engagement",
+    subtitle: "4-CAMERA DUAL-SIDE & HELICAM",
+    preweddingOffer: "FREE DRONE AERIAL COVERAGE + MINI ALBUM",
+    desc: "Our ultimate premium engagement coverage. Designed for couples seeking elite dual-side candid & traditional coverage with aerial drone views and premium handcrafted dual-side albums.",
+    setup: "1 Candid Photo + 1 Candid Video + 1 Traditional Photo + 1 Traditional Video + Drone",
+    images: ["/couple_traditional_red.jpg", "/deepak.jpg", "/anandha_lekshmi.jpg"],
+    isSpecial: true,
+    features: [
+      "Engagement Day Candid Photography",
+      "Engagement Day Candid Videography",
+      "Engagement Day Traditional Photography",
+      "Engagement Day Traditional Videography",
+      "Helicam (Drone) Aerial Coverage",
+      "1 Premium 80-Page Album for Groom (with Complimentary Mini Album)",
+      "1 Premium 80-Page Album for Bride (with Complimentary Mini Album)",
+      "Highlights Video Film",
+      "Full HD Engagement Video",
+      "Engagement Reels",
+      "1 Tabletop Calendar",
+      "1 USB Pen Drive",
+      "2 Premium Photo Frames",
+      "Edited Photos & High-speed Pendrive"
+    ]
+  }
+];
+
+const haldiPlans = [
+  {
+    shareId: "pkgHaldiBasicCard",
+    title: "Haldi Photography (Only)",
+    price: "₹10,000",
+    tag: "Photo Only",
+    modalTag: "Essential Haldi",
+    subtitle: "ESSENTIAL HALDI COVERAGE",
+    preweddingOffer: "FREE HIGH-RES DIGITAL ACCESS",
+    desc: "Dedicated single photographer capturing the vibrant colors and joy of your Haldi ceremony.",
+    setup: "1 Photographer",
+    images: ["/athulraj.jpg"],
+    features: [
+      "Dedicated Candid & Traditional Photographer",
+      "4 Hours Coverage",
+      "Edited High-Res Photos"
+    ]
+  },
+  {
+    shareId: "pkgHaldiAlbumCard",
+    title: "Haldi Photography with Album",
+    price: "₹15,000",
+    tag: "Photo + Album",
+    modalTag: "Standard Haldi",
+    subtitle: "HALDI WITH HEIRLOOM",
+    preweddingOffer: "FREE COMPLIMENTARY WALL FRAME",
+    desc: "Premium Haldi photography including a beautifully printed customized layflat panoramic album.",
+    setup: "1 Photographer + Premium Album",
+    images: ["/anandha_lekshmi.jpg"],
+    features: [
+      "Dedicated Candid & Traditional Photographer",
+      "4 Hours Coverage",
+      "Edited High-Res Photos",
+      "Custom Layflat Panoramic Album (30 Pages)"
+    ]
+  },
+  {
+    shareId: "pkgHaldiPhotoVideoCard",
+    title: "Haldi Photo & Videography",
+    price: "₹28,000",
+    tag: "Complete Coverage",
+    modalTag: "Premium Haldi",
+    subtitle: "HALDI PHOTO + VIDEO",
+    preweddingOffer: "FREE HALDI TEASER HIGHLIGHT REEL",
+    desc: "Full-spectrum cinematic and traditional coverage of your Haldi celebrations.",
+    setup: "1 Photographer + 1 Videographer",
+    images: ["/kochi_couple.jpg"],
+    features: [
+      "1 Photographer + 1 Videographer",
+      "4 Hours Full Haldi Coverage",
+      "Edited High-Res Photos",
+      "Cinematic Haldi Highlight Reel",
+      "Full HD Event Video Film"
+    ]
+  }
+];
+
+const addOnPlans = [
+  {
+    shareId: "addonLedWall",
+    title: "LED Wall Setup",
+    price: "₹14,999",
+    tag: "Receptions & Events",
+    desc: "Massive high-definition modular LED screen setup for receptions, displaying live feeds and cinematic videos for your guests.",
+    details: "Single 8x10ft high-density LED screen with live mixer setup."
+  },
+  {
+    shareId: "addonLiveStream",
+    title: "Live Streaming Service",
+    price: "₹12,000",
+    tag: "Global Broadcast",
+    desc: "Multi-camera YouTube live streaming of your wedding ceremony in full HD, allowing remote family and friends to join in real-time.",
+    details: "High-stability broadcast link with overlay graphics."
+  },
+  {
+    shareId: "addonDrone",
+    title: "Aerial Drone (Helicam) Coverage",
+    price: "₹8,000",
+    tag: "Cinematic Drone",
+    desc: "Stunning 4K aerial drone coverage of your venue, entrance, and outdoor shoots for breathtaking grand perspectives.",
+    details: "Licensed operator, full day event coverage."
+  },
+  {
+    shareId: "addonPreWedding",
+    title: "Cinematic Pre-Wedding Shoot",
+    price: "₹9,999",
+    tag: "Save The Date",
+    desc: "A romantic cinematic pre-wedding photo and video session at your choice of location, including edited teaser film.",
+    details: "Full day shoot, cinematic output."
+  }
+];
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: { 
+      delay: i * 0.1, 
+      duration: 0.8, 
+      ease: [0.22, 1, 0.36, 1] 
+    },
+  }),
+};
+
 const Services = () => {
-  const [activePlanIndex, setActivePlanIndex] = useState(null);
+    const [activePlan, setActivePlan] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [likedPlans, setLikedPlans] = useState({});
 
   // Keyboard Escape listener to exit modal smoothly
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
-        setActivePlanIndex(null);
+        setActivePlan(null);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -23,63 +362,71 @@ const Services = () => {
 
   // Auto-play slideshow for active modal gallery
   useEffect(() => {
-    if (activePlanIndex === null) return;
+    if (activePlan === null) return;
     const interval = setInterval(() => {
       setCurrentSlide((prev) => prev + 1);
     }, 4500);
     return () => clearInterval(interval);
-  }, [activePlanIndex]);
+  }, [activePlan]);
 
-  const packages = [
-    {
-      title: "Wedding Photography",
-      price: "₹39,999",
-      tag: "Essential",
-      desc: "Our highly sought-after single-side coverage package. Designed to capture every detail of your celebrations with elite creative precision.",
-      images: ["/uploaded_bride_yellow.jpg", "/athulraj.jpg", "/anandha_lekshmi.jpg"],
-      icon: <Camera className="w-10 h-10" />,
-      features: [
-        "Free Pre-Wedding (Photo Coverage)",
-        "Wedding Day Photography & Videography",
-        "Layflat panoramic album & duplicate parent copy",
-        "Cinematic Highlights film & Full HD video",
-        "1 Photographer + 1 Videographer Setup",
-        "Premium Wall Frames & Desktop Calendar"
-      ]
-    },
-    {
-      title: "Wedding Photo & Pre-Wedding",
-      price: "₹54,999",
-      tag: "Premium",
-      desc: "Perfect for capturing your beautiful pre-wedding love story and the complete wedding day celebrations. Includes comprehensive coverage.",
-      images: ["/uploaded_couple_blackwhite.jpg", "/kochi_couple_carry.jpg", "/deepak.jpg"],
-      icon: <Heart className="w-10 h-10" />,
-      features: [
-        "Premium Pre-Wedding Photo Shoot included",
-        "Wedding Day Photography & Videography",
-        "Layflat panoramic album & duplicate parent copy",
-        "Cinematic Highlights film & Full HD video",
-        "1 Photographer + 1 Videographer Setup",
-        "Premium Wall Frames & Desktop Calendar"
-      ]
-    },
-    {
-      title: "Candid Photo & Videography",
-      price: "₹69,999",
-      tag: "Most Popular",
-      desc: "Our creative 3-camera setup featuring dedicated candid photography. Ideal for artistic, natural, and unstaged storytelling.",
-      images: ["/uploaded_bride_traditional.jpg", "/uploaded_bride_gold.jpg", "/chindu.jpg"],
-      icon: <Video className="w-10 h-10" />,
-      features: [
-        "Premium Pre-Wedding Photo Shoot included",
-        "Dedicated Candid photography coverage",
-        "Traditional Wedding photo & video coverage",
-        "Layflat panoramic album & duplicate parent copy",
-        "1 Photographer + 1 Candid + 1 Videographer",
-        "Premium Wall Frames & Desktop Calendar"
-      ]
-    }
-  ];
+  const toggleLike = (e, planId) => {
+    e.stopPropagation();
+    setLikedPlans((prev) => ({ ...prev, [planId]: !prev[planId] }));
+  };
+
+  const renderCard = (plan) => {
+    const isSpecial = plan.title.toLowerCase().includes("luxury") || plan.title.toLowerCase().includes("candid");
+    return (
+      <motion.div
+        key={plan.shareId}
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        whileHover={{ y: -8 }}
+        onClick={() => {
+          setActivePlan(plan);
+          setCurrentSlide(0);
+        }}
+        className={`relative bg-white p-8 md:p-10 rounded-[40px] shadow-sm hover:shadow-2xl transition-all duration-700 border border-transparent cursor-pointer group flex flex-col justify-between ${isSpecial ? 'border-zinc-200 shadow-lg' : ''}`}
+      >
+        {/* Click hint inside card */}
+        <div className="absolute top-4 left-8 text-[8px] font-bold tracking-widest uppercase opacity-40 group-hover:opacity-100 transition-opacity duration-300 text-zinc-500">
+          ✨ Click for photos & details
+        </div>
+
+        <div>
+          <div className="text-black mb-8 flex justify-center pt-2">
+            {plan.title.toLowerCase().includes("haldi") ? <Video className="w-10 h-10" /> :
+             plan.title.toLowerCase().includes("engagement") ? <Heart className="w-10 h-10" /> :
+             <Camera className="w-10 h-10" />}
+          </div>
+          <h3 className="text-[26px] font-normal text-center mb-4 tracking-tight leading-tight">{plan.title}</h3>
+          <p className="text-[36px] font-normal text-center mb-8 text-black numbers-pro">{plan.price}</p>
+          
+          <ul className="space-y-4 mb-10">
+            {plan.features.slice(0, 5).map((feat, idx) => (
+              <li key={idx} className="flex gap-3 items-start text-[#66706a]">
+                <Heart size={16} className="text-[#5d665f] shrink-0 mt-1" />
+                <span className="numbers-pro font-light text-sm">{feat}</span>
+              </li>
+            ))}
+            {plan.features.length > 5 && (
+              <li className="text-[11px] font-bold tracking-wider uppercase text-center mt-2 text-[#5d665f]">
+                + View ${plan.features.length - 5} More...
+              </li>
+            )}
+          </ul>
+        </div>
+        
+        <div className="text-center mt-auto">
+          <Button to="/contact" variant={isSpecial ? 'primary' : 'outline'} className="w-full" onClick={(e) => e.stopPropagation()}>
+            Book a Consultation
+          </Button>
+        </div>
+      </motion.div>
+    );
+  };
 
   return (
     <div className="pt-24 bg-[#f5f5f3] select-none">
@@ -94,55 +441,113 @@ const Services = () => {
             title="Curated Storytelling Packages" 
             description="Premium photography and cinematic videography tailored to your unique love story."
           />
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
-            {packages.map((pkg, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ y: -10 }}
-                onClick={() => {
-                  setActivePlanIndex(i);
-                  setCurrentSlide(0);
-                }}
-                className={`relative bg-white p-8 md:p-10 rounded-[40px] shadow-sm hover:shadow-2xl transition-all duration-700 border border-transparent cursor-pointer group flex flex-col justify-between ${i === 2 ? 'border-zinc-200 shadow-lg' : ''}`}
-              >
-                {/* Click hint inside card */}
-                <div className="absolute top-4 left-8 text-[8px] font-bold tracking-widest uppercase opacity-40 group-hover:opacity-100 transition-opacity duration-300 text-zinc-500">
-                  ✨ Click for photos & details
-                </div>
 
-                <div>
-                  <div className="text-black mb-8 flex justify-center pt-2">{pkg.icon}</div>
-                  <h3 className="text-[26px] font-normal text-center mb-4 tracking-tight leading-tight">{pkg.title}</h3>
-                  <p className="text-[36px] font-normal text-center mb-8 text-black numbers-pro">{pkg.price}</p>
-                  
-                  <ul className="space-y-4 mb-10">
-                    {pkg.features.slice(0, 5).map((feat, idx) => (
-                      <li key={idx} className="flex gap-3 items-start text-[#66706a]">
-                        <Heart size={16} className="text-[#5d665f] shrink-0 mt-1" />
-                        <span className="numbers-pro font-light text-sm">{feat}</span>
-                      </li>
-                    ))}
-                    {pkg.features.length > 5 && (
-                      <li className="text-[11px] font-bold tracking-wider uppercase text-center mt-2 text-[#5d665f]">
-                        + View {pkg.features.length - 5} More...
-                      </li>
-                    )}
-                  </ul>
-                </div>
-                
-                <div className="text-center mt-auto">
-                  <Button to="/contact" variant={i === 2 ? 'primary' : 'outline'} className="w-full" onClick={(e) => e.stopPropagation()}>
-                    Book a Consultation
-                  </Button>
-                </div>
-              </motion.div>
-            ))}
+          {/* Sticky Sub-navigation Bar (Light Theme) */}
+          <div className="sticky top-[72px] md:top-[88px] z-30 py-4 bg-[#f5f5f3]/90 backdrop-blur-md border-b border-zinc-200 mb-16 select-none flex justify-center">
+            <div className="flex gap-2 p-1 bg-white border border-zinc-200 rounded-full max-w-lg shadow-md">
+              {["Wedding", "Engagement", "Haldi", "Add-ons"].map((sec) => (
+                <button
+                  key={sec}
+                  onClick={() => {
+                    const id = `sec-${sec.toLowerCase().replace(" ", "-")}`;
+                    const target = document.getElementById(id);
+                    if (target) {
+                      const yOffset = -150;
+                      const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                      window.scrollTo({ top: y, behavior: 'smooth' });
+                    }
+                  }}
+                  className="px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-zinc-900 transition-all hover:bg-zinc-100 active:scale-95 cursor-pointer"
+                >
+                  {sec}
+                </button>
+              ))}
+            </div>
           </div>
+
+          <div id="pricing-grid-container" className="space-y-32">
+            {/* SECTION 1: WEDDING PACKAGES */}
+            <div id="sec-wedding" className="scroll-mt-36 space-y-12">
+              <div className="text-center space-y-3">
+                <span className="text-[#b4975a] text-xs font-bold tracking-[0.2em] uppercase">Collections 01</span>
+                <h3 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl sm:text-4xl text-zinc-900 font-light tracking-tight">
+                  Wedding <span className="italic font-serif text-[#b4975a]">Collections</span>
+                </h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto items-stretch">
+                {weddingPlans.map((plan) => renderCard(plan))}
+              </div>
+
+              {/* Standalone Wedding Row */}
+              <div className="space-y-8 pt-12 border-t border-zinc-200">
+                <div className="text-center space-y-2">
+                  <span className="text-zinc-500 text-[10px] font-bold tracking-[0.2em] uppercase">Standalone Wedding Coverages</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
+                  {weddingStandalonePlans.map((plan) => renderCard(plan))}
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 2: ENGAGEMENT PACKAGES */}
+            <div id="sec-engagement" className="scroll-mt-36 space-y-12">
+              <div className="text-center space-y-3">
+                <span className="text-[#b4975a] text-xs font-bold tracking-[0.2em] uppercase">Collections 02</span>
+                <h3 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl sm:text-4xl text-zinc-900 font-light tracking-tight">
+                  Engagement <span className="italic font-serif text-[#b4975a]">Collections</span>
+                </h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
+                {engagementPlans.map((plan) => renderCard(plan))}
+              </div>
+            </div>
+
+            {/* SECTION 3: HALDI PACKAGES */}
+            <div id="sec-haldi" className="scroll-mt-36 space-y-12">
+              <div className="text-center space-y-3">
+                <span className="text-[#b4975a] text-xs font-bold tracking-[0.2em] uppercase">Collections 03</span>
+                <h3 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl sm:text-4xl text-zinc-900 font-light tracking-tight">
+                  Haldi <span className="italic font-serif text-[#b4975a]">Collections</span>
+                </h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
+                {haldiPlans.map((plan) => renderCard(plan))}
+              </div>
+            </div>
+
+            {/* SECTION 4: ADD-ONS */}
+            <div id="sec-add-ons" className="scroll-mt-36 space-y-12">
+              <div className="text-center space-y-3">
+                <span className="text-[#b4975a] text-xs font-bold tracking-[0.25em] uppercase">Customizations</span>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl sm:text-4xl text-zinc-900 font-light tracking-tight">
+                  Premium <span className="italic font-serif text-[#b4975a]">Add-ons</span>
+                </h2>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto items-stretch">
+                {addOnPlans.map((addon, idx) => (
+                  <div key={idx} className="bg-white p-8 rounded-[40px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 hover:border-[#1e3f20]/25 group">
+                    <div className="space-y-4">
+                      <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Add-on Option</span>
+                      <h4 className="text-[20px] font-normal leading-tight text-zinc-900">{addon.title}</h4>
+                      <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">{addon.price}</p>
+                      <p className="text-zinc-500 text-xs font-light leading-relaxed">{addon.desc}</p>
+                      <div className="text-[10px] text-zinc-400 font-medium border-t border-zinc-100 pt-3">
+                        {addon.details}
+                      </div>
+                    </div>
+                    <Button to="/contact" variant="outline" className="w-full mt-8" onClick={(e) => e.stopPropagation()}>
+                      Inquire Add-on
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -217,475 +622,189 @@ const Services = () => {
 
       {/* DYNAMIC IMMERSIVE DETAILED MODAL */}
       <AnimatePresence>
-        {activePlanIndex !== null && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/25 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
-            onClick={() => setActivePlanIndex(null)}
-          >
+        {activePlan !== null && (() => {
+          const plan = activePlan;
+          const imagesLength = plan.images && plan.images.length ? plan.images.length : 1;
+          return (
             <motion.div
-              initial={{ scale: 0.93, y: 30 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.93, y: 30 }}
-              transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="relative w-full max-w-4xl rounded-[40px] bg-white border border-zinc-100 overflow-y-auto md:overflow-hidden max-h-[90vh] md:max-h-[650px] shadow-[0_30px_80px_rgba(0,0,0,0.4)] grid grid-cols-1 md:grid-cols-2 text-zinc-800"
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/25 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
+              onClick={() => setActivePlan(null)}
             >
-              {/* Extremely Prominent Close Button */}
-              <button
-                onClick={() => setActivePlanIndex(null)}
-                className="absolute top-4 right-4 sm:top-6 sm:right-6 w-11 h-11 rounded-full bg-black/75 hover:bg-black/90 border border-white/20 flex items-center justify-center text-white shadow-2xl transition-all hover:rotate-90 hover:scale-105 duration-300 z-50 cursor-pointer"
-                title="Close popup"
+              <motion.div
+                initial={{ scale: 0.93, y: 30 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.93, y: 30 }}
+                transition={{ type: "spring", damping: 25, stiffness: 220 }}
+                className="relative w-full max-w-4xl rounded-[40px] bg-white border border-zinc-100 overflow-y-auto md:overflow-hidden max-h-[90vh] md:max-h-[650px] shadow-[0_30px_80px_rgba(0,0,0,0.4)] grid grid-cols-1 md:grid-cols-2 text-zinc-800"
+                onClick={(e) => e.stopPropagation()}
               >
-                <X size={22} strokeWidth={2.5} />
-              </button>
+                {/* Extremely Prominent Close Button */}
+                <button
+                  onClick={() => setActivePlan(null)}
+                  className="absolute top-4 right-4 sm:top-6 sm:right-6 w-11 h-11 rounded-full bg-black/75 hover:bg-black/90 border border-white/20 flex items-center justify-center text-white shadow-2xl transition-all hover:rotate-90 hover:scale-105 duration-300 z-50 cursor-pointer"
+                  title="Close popup"
+                >
+                  <X size={22} strokeWidth={2.5} />
+                </button>
 
-              {/* Left Side: Auto-playing Wedding Photo Gallery with Dynamic Blurred Backdrop */}
-              <div className="relative aspect-[4/5] md:aspect-auto w-full h-full bg-zinc-950 overflow-hidden min-h-[300px] md:min-h-[550px] flex items-center justify-center group select-none">
-                
-                {/* Dynamic Auto-rotating slideshow wrapper */}
-                <div className="absolute inset-0 w-full h-full">
-                  {/* Zoomed Blurred Background Layer */}
-                  <motion.img
-                    key={`bg-${packages[activePlanIndex].images[currentSlide % packages[activePlanIndex].images.length]}`}
-                    src={packages[activePlanIndex].images[currentSlide % packages[activePlanIndex].images.length]}
-                    alt=""
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.25 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="absolute inset-0 w-full h-full object-cover filter blur-3xl scale-110 opacity-25 select-none pointer-events-none"
-                  />
-                  {/* Semi-transparent dark overlay to ensure dynamic color contrast and block clear leaks */}
-                  <div className="absolute inset-0 bg-black/45 z-0 pointer-events-none" />
-
-                  {/* Crisp Foreground Layer */}
-                  <motion.img
-                    key={`fg-${packages[activePlanIndex].images[currentSlide % packages[activePlanIndex].images.length]}`}
-                    src={packages[activePlanIndex].images[currentSlide % packages[activePlanIndex].images.length]}
-                    alt="Dreamwed Stories Actual Wedding Capture"
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="absolute inset-0 w-full h-full object-contain z-10"
-                  />
-                  {/* Subtle vignette shade overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none z-20" />
-                </div>
-
-                {/* Floating branding watermark */}
-                <div className="absolute bottom-6 left-6 right-6 space-y-1 text-white z-10 pointer-events-none">
-                  <span className="text-[#b4975a] text-[9px] font-bold tracking-[0.25em] uppercase block">Dreamwed Stories</span>
-                  <h4 className="text-lg font-light tracking-tight text-white font-serif italic">
-                    Actual Wedding Work Captures
-                  </h4>
-                  <p className="text-white/60 text-[9px] font-light">
-                    Every pixel captured with high-fidelity professional optics.
-                  </p>
-                </div>
-
-                {/* Slide indicator dots */}
-                <div className="absolute top-6 left-6 flex gap-1 bg-black/40 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/5 z-10 pointer-events-none">
-                  {packages[activePlanIndex].images.map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={`w-1 h-1 rounded-full transition-all duration-300 ${
-                        (currentSlide % packages[activePlanIndex].images.length) === i ? "bg-[#b4975a] scale-125" : "bg-white/40"
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Right Side: Package Inclusions and Booking Option (Redesigned with Fixed Headers/CTA & Dynamic Scroll checklist) */}
-              <div className="p-6 sm:p-10 flex flex-col justify-between gap-5 md:max-h-[650px] md:overflow-hidden overflow-visible h-auto">
-                
-                {/* Header detail */}
-                <div className="space-y-2 select-none">
-                  <span className="inline-flex items-center gap-1 bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">
-                    {packages[activePlanIndex].tag} Collection
-                  </span>
-                  <h3 className="text-2xl sm:text-3xl text-zinc-900 font-semibold tracking-tight font-serif">
-                    {packages[activePlanIndex].title}
-                  </h3>
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-3xl font-bold text-[#1e3f20]">{packages[activePlanIndex].price}/-</span>
-                  </div>
-
-                  {/* Symbolic Animated Scroll Arrow for Mobile */}
-                  <div className="md:hidden flex justify-center pt-2 select-none pointer-events-none">
-                    <motion.div
-                      animate={{ y: [0, 6, 0] }}
-                      transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                      className="text-[#b4975a] flex flex-col items-center gap-1"
-                    >
-                      <span className="text-[9px] font-semibold tracking-[0.25em] uppercase opacity-75">Scroll</span>
-                      <svg className="w-5 h-5 stroke-[3.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </motion.div>
-                  </div>
-                </div>
-
-                {/* Main Scroll Stream (Checklist) */}
-                <div className="flex-grow md:overflow-y-auto pr-2 space-y-5 md:scrollbar-thin relative min-h-0 overflow-visible h-auto">
+                {/* Left Side: Auto-playing Wedding Photo Gallery with Dynamic Blurred Backdrop */}
+                <div className="relative aspect-[4/5] md:aspect-auto w-full h-full bg-zinc-950 overflow-hidden min-h-[300px] md:min-h-[550px] flex items-center justify-center group select-none">
                   
-                  {/* Short intro bio */}
-                  <p className="text-zinc-500 font-light text-xs leading-relaxed select-none">
-                    {packages[activePlanIndex].desc}
-                  </p>
+                  {/* Dynamic Auto-rotating slideshow wrapper */}
+                  <div className="absolute inset-0 w-full h-full">
+                    {/* Zoomed Blurred Background Layer */}
+                    <motion.img
+                      key={`bg-${plan.images[currentSlide % imagesLength]}`}
+                      src={plan.images[currentSlide % imagesLength]}
+                      alt=""
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 0.25 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.8 }}
+                      className="absolute inset-0 w-full h-full object-cover filter blur-3xl scale-110 opacity-25 select-none pointer-events-none"
+                    />
+                    {/* Semi-transparent dark overlay to ensure dynamic color contrast and block clear leaks */}
+                    <div className="absolute inset-0 bg-black/45 z-0 pointer-events-none" />
 
-                  {/* Bonus highlight box */}
-                  <div className="bg-[#d1a852]/5 border border-[#d1a852]/15 p-4 rounded-2xl flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#d1a852]/15 flex items-center justify-center text-[#b8903b] shrink-0">
-                      <Gift size={16} />
-                    </div>
-                    <div>
-                      <span className="block text-[#b8903b] text-xs font-bold uppercase tracking-wide">
-                        Free Pre-Wedding Shoot
-                      </span>
-                      <span className="text-zinc-600 text-[10px] font-medium leading-snug block mt-0.5">
-                        Free Pre-Wedding (Save the date photography) is included with this package.
-                      </span>
-                    </div>
+                    {/* Crisp Foreground Layer */}
+                    <motion.img
+                      key={`fg-${plan.images[currentSlide % imagesLength]}`}
+                      src={plan.images[currentSlide % imagesLength]}
+                      alt="Dreamwed Stories Actual Wedding Capture"
+                      initial={{ opacity: 0, scale: 1.05 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.8 }}
+                      className="absolute inset-0 w-full h-full object-cover z-10" style={{ objectPosition: "center 30%" }}
+                    />
+                    {/* Subtle vignette shade overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none z-20" />
                   </div>
 
-                  <div className="w-full h-px bg-zinc-100" />
+                  {/* Floating branding watermark */}
+                  <div className="absolute bottom-6 left-6 right-6 space-y-1 text-white z-10 pointer-events-none">
+                    <span className="text-[#b4975a] text-[9px] font-bold tracking-[0.25em] uppercase block">Dreamwed Stories</span>
+                    <h4 className="text-lg font-light tracking-tight text-white font-serif italic">
+                      Actual Wedding Work Captures
+                    </h4>
+                    <p className="text-white/60 text-[9px] font-light">
+                      Every pixel captured with high-fidelity professional optics.
+                    </p>
+                  </div>
 
-                  {/* Complete inclusions list */}
-                  <div className="space-y-3.5 relative">
-                    <span className="text-[10px] text-zinc-800 tracking-wider uppercase font-bold block select-none">
-                      Complete Deliverables (Scroll for all {packages[activePlanIndex].features.length} items 👇):
+                  {/* Slide indicator dots */}
+                  <div className="absolute top-6 left-6 flex gap-1 bg-black/40 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/5 z-10 pointer-events-none">
+                    {plan.images && plan.images.map((_, i) => (
+                      <div 
+                        key={i} 
+                        className={`w-1 h-1 rounded-full transition-all duration-300 ${
+                          (currentSlide % imagesLength) === i ? "bg-[#b4975a] scale-125" : "bg-white/40"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right Side: Package Inclusions and Booking Option (Redesigned with Fixed Headers/CTA & Dynamic Scroll checklist) */}
+                <div className="p-6 sm:p-10 flex flex-col justify-between gap-5 md:max-h-[650px] md:overflow-hidden overflow-visible h-auto">
+                  
+                  {/* Header detail */}
+                  <div className="space-y-2 select-none">
+                    <span className="inline-flex items-center gap-1 bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">
+                      {plan.modalTag || plan.tag || "Collection"}
                     </span>
-                    <div className="space-y-3">
-                      {packages[activePlanIndex].features.map((item, index) => (
-                        <div key={index} className="flex items-start gap-3 text-xs text-zinc-600 font-light leading-relaxed">
-                          <span className="w-4.5 h-4.5 rounded-full bg-[#1e3f20]/10 text-[#1e3f20] flex items-center justify-center shrink-0 mt-0.5">
-                            <Check size={10} strokeWidth={3} />
-                          </span>
-                          {item}
-                        </div>
-                      ))}
+                    <h3 className="text-2xl sm:text-3xl text-zinc-900 font-semibold tracking-tight font-serif leading-tight">
+                      {plan.title.toLowerCase().includes("package") ? plan.title : `${plan.title} Package`}
+                    </h3>
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-3xl font-bold text-[#1e3f20]">{plan.price}/-</span>
+                    </div>
+
+                    {/* Symbolic Animated Scroll Arrow for Mobile */}
+                    <div className="md:hidden flex justify-center pt-2 select-none pointer-events-none">
+                      <motion.div
+                        animate={{ y: [0, 6, 0] }}
+                        transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                        className="text-[#b4975a] flex flex-col items-center gap-1"
+                      >
+                        <span className="text-[9px] font-semibold tracking-[0.25em] uppercase opacity-75">Scroll</span>
+                        <svg className="w-5 h-5 stroke-[3.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </motion.div>
                     </div>
                   </div>
 
-                  <div className="h-4" />
+                  {/* Main Scroll Stream (Checklist) */}
+                  <div className="flex-grow md:overflow-y-auto pr-2 space-y-5 md:scrollbar-thin relative min-h-0 overflow-visible h-auto">
+                    
+                    {/* Short intro bio */}
+                    <p className="text-zinc-500 font-light text-xs leading-relaxed select-none">
+                      {plan.desc}
+                    </p>
+
+                    {/* Bonus highlight box */}
+                    {plan.preweddingOffer && (
+                      <div className="bg-[#d1a852]/5 border border-[#d1a852]/15 p-4 rounded-2xl flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full bg-[#d1a852]/15 flex items-center justify-center text-[#b8903b] shrink-0">
+                          <Gift size={16} />
+                        </div>
+                        <div>
+                          <span className="block text-[#b8903b] text-xs font-bold uppercase tracking-wide">
+                            Special Inclusions
+                          </span>
+                          <span className="text-zinc-600 text-[10px] font-medium leading-snug block mt-0.5">
+                            {plan.preweddingOffer} is fully included in this offer.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="w-full h-px bg-zinc-100" />
+
+                    {/* Complete inclusions list */}
+                    <div className="space-y-3.5 relative">
+                      <span className="text-[10px] text-zinc-800 tracking-wider uppercase font-bold block select-none">
+                        Complete Deliverables (Scroll for all {plan.features ? plan.features.length : 0} items 👇):
+                      </span>
+                      <div className="space-y-3">
+                        {plan.features && plan.features.map((item, index) => (
+                          <div key={index} className="flex items-start gap-3 text-xs text-zinc-600 font-light leading-relaxed">
+                            <span className="w-4.5 h-4.5 rounded-full bg-[#1e3f20]/10 text-[#1e3f20] flex items-center justify-center shrink-0 mt-0.5">
+                              <Check size={10} strokeWidth={3} />
+                            </span>
+                            {item}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="h-4" />
+                  </div>
+
+                  <div className="w-full h-px bg-zinc-100 select-none" />
+
+                  {/* Book Consultation button */}
+                  <div className="space-y-3">
+                    <Button
+                      to="/contact"
+                      variant="primary"
+                      className="w-full py-4.5 rounded-2xl text-center text-xs uppercase tracking-widest font-bold select-none"
+                      onClick={() => setActivePlan(null)}
+                    >
+                      Book a Consultation Now 🌟
+                    </Button>
+                  </div>
                 </div>
 
-                <div className="w-full h-px bg-zinc-100 select-none" />
-
-                {/* Book Consultation button */}
-                <div className="space-y-3">
-                  <Button
-                    to="/contact"
-                    variant="primary"
-                    className="w-full py-4.5 rounded-2xl text-center text-xs uppercase tracking-widest font-bold select-none"
-                    onClick={() => setActivePlanIndex(null)}
-                  >
-                    Book a Consultation Now 🌟
-                  </Button>
-                </div>
-              </div>
-
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
+          );
+        })()}
       </AnimatePresence>
-
-      {/* Standalone & Special Coverage Collections */}
-      <section className="py-24 bg-[#ececea]/40 border-t border-b border-zinc-200/50">
-        <div className="container">
-          <SectionHeader 
-            subtitle="Specialised Offerings" 
-            title="Single Event & Standalone Packages" 
-            description="Perfect for celebrating individual milestones or standalone day events with premium layflat albums and cinematic visuals."
-          />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto mt-16 items-start">
-            
-            {/* COLUMN 1: ENGAGEMENT SPECIAL COVERAGE */}
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="space-y-8"
-            >
-              <div className="space-y-2 border-b border-zinc-300 pb-4">
-                <span className="text-[#5d665f] text-xs font-bold tracking-[0.2em] uppercase">Collection 01</span>
-                <h3 className="text-3xl text-zinc-900 font-normal tracking-tight font-serif italic">Engagement Special Coverage</h3>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* Pack A: Engagement Photo Only */}
-                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#1e3f20]/25">
-                  <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo Only</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Engagement Photography</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹12,000/-</p>
-                    <ul className="space-y-3 pt-2">
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Dedicated Candid & Traditional Photographer</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>4 Hours Coverage</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Edited High-Res Photos</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <Button to="/contact" variant="outline" className="w-full mt-8" onClick={(e) => e.stopPropagation()}>
-                    Book Engagement
-                  </Button>
-                </div>
-
-                {/* Pack B: Engagement Photo + Video */}
-                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#1e3f20]/25">
-                  <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Single-Side Photo + Video + Album</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Bride & Groom Engagement Package</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹28,999/-</p>
-                    <ul className="space-y-3 pt-2">
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>1 Photographer + 1 Videographer</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>4 Hours Full Event Coverage</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Edited High-Res Photos</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">Premium Layflat Panoramic Album (50 Pages)</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Cinematic Engagement Reel</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Engagement Full HD Video</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>1 Tabletop Calendar</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>2 Premium Photo Frames</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>1 USB Pen Drive</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <Button to="/contact" variant="outline" className="w-full mt-8" onClick={(e) => e.stopPropagation()}>
-                    Book Full Event
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-            
-            {/* COLUMN 2: STANDALONE EVENT COVERAGE */}
-
-
-            {/* COLUMN 2: STANDALONE EVENT COVERAGE */}
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-              className="space-y-8"
-            >
-              <div className="space-y-2 border-b border-zinc-300 pb-4">
-                <span className="text-[#5d665f] text-xs font-bold tracking-[0.2em] uppercase">Collection 02</span>
-                <h3 className="text-3xl text-zinc-900 font-normal tracking-tight font-serif italic">Standalone Event Coverage</h3>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* Pack A: Wedding Day Only */}
-                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#1e3f20]/25">
-                  <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Wedding Day Only</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Standalone Wedding Day</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹39,999/-</p>
-                    <ul className="space-y-3 pt-2">
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Professional Photo & Video Team</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Up to 8 Hours Event Coverage</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">Premium 70-Page Layflat Album</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Full HD Video Film + Reels</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <Button to="/contact" variant="outline" className="w-full mt-8" onClick={(e) => e.stopPropagation()}>
-                    Book Standalone Wedding
-                  </Button>
-                </div>
-
-                {/* Pack B: Reception Day Only */}
-                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#1e3f20]/25">
-                  <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Reception Only</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Standalone Reception</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹29,999/-</p>
-                    <ul className="space-y-3 pt-2">
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Professional Photo & Video Team</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Up to 5 Hours Reception Coverage</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">Premium 50-Page Layflat Album</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Full HD Video Film + Highlights</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <Button to="/contact" variant="outline" className="w-full mt-8" onClick={(e) => e.stopPropagation()}>
-                    Book Standalone Reception
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* COLUMN 3: HALDI SPECIAL COVERAGE */}
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="space-y-8"
-            >
-              <div className="space-y-2 border-b border-zinc-300 pb-4">
-                <span className="text-[#5d665f] text-xs font-bold tracking-[0.25em] uppercase">Collection 03</span>
-                <h3 className="text-3xl text-zinc-900 font-normal tracking-tight font-serif italic">Haldi Special Coverage</h3>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
-                {/* Pack A: Just Haldi Photography */}
-                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#d1a852]/25">
-                  <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo Only</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Haldi Photography (Only)</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹10,000/-</p>
-                    <ul className="space-y-3 pt-2">
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Professional Photographer</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>2-3 Hours Event Coverage</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Edited High-Res Photos</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Online Gallery Access</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <Button to="/contact" variant="outline" className="w-full mt-8" onClick={(e) => e.stopPropagation()}>
-                    Book Haldi Photo
-                  </Button>
-                </div>
-
-                {/* Pack B: Haldi Photography with Album */}
-                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#d1a852]/25">
-                  <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Album</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Haldi Photography with Album</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹15,000/-</p>
-                    <ul className="space-y-3 pt-2">
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Dedicated Photographer</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>3-4 Hours Event Coverage</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Edited High-Res Photos</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">Premium Layflat Panoramic Album</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <Button to="/contact" variant="outline" className="w-full mt-8" onClick={(e) => e.stopPropagation()}>
-                    Book Haldi Album
-                  </Button>
-                </div>
-
-                {/* Pack C: Haldi Photo & Videography */}
-                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#d1a852]/25 lg:col-span-1 sm:col-span-2">
-                  <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Video</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Haldi Photo & Videography</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹28,000/-</p>
-                    <ul className="space-y-3 pt-2">
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>1 Photographer + 1 Videographer</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>4 Hours Full Haldi Coverage</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>Edited High-Res Photos</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">Premium Layflat Album & Edited Video</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <Button to="/contact" variant="outline" className="w-full mt-8" onClick={(e) => e.stopPropagation()}>
-                    Book Full Haldi
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-
-          </div>
-        </div>
-      </section>
 
       {/* Additional Info Section */}
       <section className="bg-white py-32">
