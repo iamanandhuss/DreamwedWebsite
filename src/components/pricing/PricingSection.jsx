@@ -390,7 +390,7 @@ const PricingSection = () => {
 
   const handleShare = (e, plan) => {
     e.stopPropagation();
-    const shareUrl = `${window.location.origin}/packages?pkg=${plan.shareId}`;
+    const shareUrl = `${window.location.origin}/${plan.shareId}.html`;
     const featuresList = plan.features ? plan.features.slice(0, 5).map(f => `• ${f}`).join('\n') : "";
     const message = `📸 *DREAMWED STORIES — Premium Package* \n\n` +
                     `📦 *${plan.title}* (${plan.subtitle || ''})\n` +
