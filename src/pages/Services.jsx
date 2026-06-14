@@ -423,9 +423,9 @@ const Services = () => {
                 {/* Pack A: Engagement Photo Only */}
                 <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#1e3f20]/25">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Album</span>
+                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo Only</span>
                     <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Engagement Photography</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹19,999/-</p>
+                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹12,000/-</p>
                     <ul className="space-y-3 pt-2">
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
@@ -437,11 +437,7 @@ const Services = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>150+ Edited High-Res Photos</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">Premium Layflat Panoramic Album</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                     </ul>
                   </div>
@@ -453,8 +449,8 @@ const Services = () => {
                 {/* Pack B: Engagement Photo + Video */}
                 <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#1e3f20]/25">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Video</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Engagement with Videography</h4>
+                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Video + Album</span>
+                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Engagement Photo & Video</h4>
                     <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹28,999/-</p>
                     <ul className="space-y-3 pt-2">
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
@@ -467,11 +463,31 @@ const Services = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>200+ Edited High-Res Photos</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">HD Cinematic Highlights Reel</span>
+                        <span className="font-semibold text-zinc-800">Premium Layflat Panoramic Album (50 Pages)</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
+                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                        <span>Cinematic Engagement Reel</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
+                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                        <span>Engagement Full HD Video</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
+                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                        <span>1 Tabletop Calendar</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
+                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                        <span>2 Premium Photo Frames</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
+                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                        <span>1 USB Pen Drive</span>
                       </li>
                     </ul>
                   </div>
@@ -482,6 +498,9 @@ const Services = () => {
               </div>
             </motion.div>
             
+            {/* COLUMN 2: STANDALONE EVENT COVERAGE */}
+
+
             {/* COLUMN 2: STANDALONE EVENT COVERAGE */}
             <motion.div 
               initial={{ opacity: 0, y: 30 }}
@@ -589,7 +608,7 @@ const Services = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>50+ Edited High-Res Photos</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
@@ -619,7 +638,7 @@ const Services = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>100+ Edited High-Res Photos</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
@@ -649,7 +668,7 @@ const Services = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>150+ Edited High-Res Photos</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />

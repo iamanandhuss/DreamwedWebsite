@@ -143,10 +143,10 @@ const Header = () => {
             <button 
               onClick={() => setIsLoginOpen(!isLoginOpen)}
               className={`
-                text-sm
-                font-medium
+                text-xs
+                font-extrabold
+                tracking-[0.2em]
                 uppercase
-                tracking-[2px]
                 transition-all
                 duration-300
                 hover:-translate-y-1
@@ -156,7 +156,7 @@ const Header = () => {
                 ${isLoginOpen ? "text-[#b4975a]" : "text-zinc-300 hover:text-white"}
               `}
             >
-              Wedding Hub <span className="text-[8px] opacity-75">▼</span>
+              Client Portal <span className="text-[8px] opacity-75">▼</span>
             </button>
 
             <AnimatePresence>
@@ -178,7 +178,7 @@ const Header = () => {
                     to="/my-booking" 
                     className="px-4 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-zinc-300 hover:text-[#b4975a] hover:bg-white/5 transition-all text-left block"
                   >
-                    💍 Wedding Hub
+                    💍 Client Portal
                   </NavLink>
                   <NavLink 
                     to="/admin" 
@@ -290,7 +290,7 @@ const Header = () => {
                 onClick={() => setIsOpen(false)}
                 className="text-base text-zinc-300 hover:text-[#b4975a] tracking-wide transition-all uppercase"
               >
-                💍 Wedding Hub
+                💍 Client Portal
               </NavLink>
               <NavLink
                 to="/admin"

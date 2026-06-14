@@ -128,7 +128,7 @@ const TrivandrumOffer = () => {
         "1 Calendar",
         "1 Pen Drive",
         "2 Wall Frames",
-        "Edited Social-Media Photos & High-speed Pendrive"
+        "Edited Photos & High-speed Pendrive"
       ],
       description: "Our highly sought-after single-side coverage package. Designed to capture every detail of your celebrations with elite creative precision and beautiful physical heirlooms."
     },
@@ -140,7 +140,7 @@ const TrivandrumOffer = () => {
       offerPrice: "54,999",
       bonus: "LIMITED TIME OFFER",
       bonusDesc: "Save ₹20,001! Includes both Pre-wedding session and Wedding day coverage.",
-      images: ["/uploaded_couple_blackwhite.jpg", pic1, pic2],
+      images: ["/couple_fun_glasses.jpg", pic1, pic2],
       details: [
         "Pre-Wedding Photo + Video (Save The Date)",
         "Wedding Reception Photography",
@@ -157,7 +157,7 @@ const TrivandrumOffer = () => {
         "1 Calendar",
         "1 Pen Drive",
         "2 Wall Frames",
-        "Edited Social-Media Photos & High-speed Pendrive"
+        "Edited Photos & High-speed Pendrive"
       ],
       description: "Perfect for capturing your beautiful pre-wedding love story and the complete wedding day celebrations. Includes comprehensive coverage and professional deliverables."
     },
@@ -188,40 +188,62 @@ const TrivandrumOffer = () => {
         "1 Calendar",
         "1 Pen Drive",
         "2 Wall Frames",
-        "Edited Social-Media Photos & High-speed Pendrive"
+        "Edited Photos & High-speed Pendrive"
       ],
       description: "Our creative 3-camera setup featuring dedicated candid photography. Ideal for couples who want artistic, natural, and unstaged storytelling of their special day."
     },
     {
       id: 4,
-      title: "Candid Photo & Videography",
-      subtitle: "Cinematic Cinema Story",
+      title: "Premium Candid Package",
+      subtitle: "4-Camera Premium Coverage & Drone",
       regularPrice: "1,15,000",
       offerPrice: "79,999",
       bonus: "LIMITED TIME OFFER",
-      bonusDesc: "Save ₹35,001! Full cinematic storytelling with advanced post-production.",
-      images: ["/uploaded_couple_blackwhite.jpg", pic1, pic2],
+      bonusDesc: "Save ₹35,001! Full candid storytelling with advanced post-production.",
+      images: ["/couple_traditional_red.jpg", pic1, pic2],
       details: [
-        "Pre-Wedding Photo + Video (Save The Date)",
-        "Wedding Reception Photography",
-        "Wedding Reception Videography",
-        "Wedding Day Photography",
-        "Wedding Day Candid-Photography",
-        "Wedding Day Videography",
-        "One 100 Pages Premium Album",
-        "100 Pages Mini Album",
-        "Highlights Video",
+        "Wedding Day Candid Photography",
+        "Wedding Day Candid Videography",
+        "Wedding Day Traditional Photography",
+        "Wedding Day Traditional Videography",
+        "Helicam (Drone) Aerial Coverage",
+        "1 Premium 80-Page Album for Groom (with Complimentary Mini Album)",
+        "1 Premium 80-Page Album for Bride (with Complimentary Mini Album)",
+        "Highlights Video Film",
         "Full HD Wedding Video",
-        "Wedding Reel",
-        "1 Photographer Setup",
-        "1 Candid Photographer Setup",
-        "1 Videographer Setup",
-        "1 Calendar",
-        "1 Pen Drive",
-        "2 Wall Frames",
-        "Edited Social-Media Photos & High-speed Pendrive"
+        "Wedding Reels",
+        "1 Tabletop Calendar",
+        "1 USB Pen Drive",
+        "2 Premium Photo Frames",
+        "Edited Photos & High-speed Pendrive"
       ],
-      description: "Our signature high-production cinematic package. Includes both premium pre-wedding photo & cinema film, fine-art layflat albums, and full-spectrum cinema-grade wedding storytelling."
+      description: "Our comprehensive 4-camera premium package featuring dedicated candid & traditional teams. Includes dual custom 80-page albums for both bride & groom sides and complimentary mini albums."
+    },
+    {
+      id: 5,
+      title: "Bride & Groom Luxury Package",
+      subtitle: "4-Camera Dual-Side Luxury Coverage",
+      regularPrice: "1,30,000",
+      offerPrice: "1,10,000",
+      bonus: "LIMITED TIME OFFER",
+      bonusDesc: "Save ₹20,000! Ultimate luxury package with helicam, custom album boxes, and complete dual-side coverage.",
+      images: ["/bride_christian_white.jpg", pic1, pic2],
+      details: [
+        "Pre-Wedding Photography & Videography (Save the Date)",
+        "Wedding & Reception Photography (Dual-side)",
+        "Wedding & Reception Videography (Dual-side)",
+        "Wedding Candid Photography & Videography",
+        "Helicam (Drone) Aerial Coverage",
+        "One 80-Pages Premium Album with Handcrafted Album Box",
+        "One 80-Pages Mini Album",
+        "Cinematic Highlights Film & Instagram Reels",
+        "Full HD Wedding Video Film",
+        "2 Premium Wall Frames",
+        "1 Customized Photo Calendar",
+        "1 High-Speed USB Pen Drive",
+        "Edited Photos & High-speed Pendrive"
+      ],
+      description: "Our ultimate dual-side wedding collection. Features comprehensive coverage, drone photography, and physical custom boxes for your handcrafted albums."
     }
   ];
 
@@ -578,7 +600,7 @@ const TrivandrumOffer = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-7xl mx-auto items-stretch">
             {packagesInfo.map((pack, idx) => {
               const isBestDeal = pack.id === 3;
               const badgeText = isBestDeal ? "BEST DEAL (RECOMMENDED)" : pack.bonus;
@@ -719,9 +741,9 @@ const TrivandrumOffer = () => {
                 {/* Pack A: Engagement Photo Only */}
                 <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#1e3f20]/25">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Album</span>
+                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo Only</span>
                     <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Engagement Photography</h4>
-                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹19,999/-</p>
+                    <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹12,000/-</p>
                     <ul className="space-y-3 pt-2">
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
@@ -733,16 +755,12 @@ const TrivandrumOffer = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>150+ Edited High-Res Photos</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
-                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">Premium Layflat Panoramic Album</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                     </ul>
                   </div>
                   <button 
-                    onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, message: "Hi! I am interested in booking the Engagement Photography with Album package for ₹19,999/-." }); scrollToForm(); }}
+                    onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, message: "Hi! I am interested in booking the Engagement Photography package for ₹12,000/-." }); scrollToForm(); }}
                     className="w-full py-3 mt-8 bg-gradient-to-r from-zinc-50 to-zinc-100 border border-zinc-200 hover:border-zinc-300 text-zinc-800 text-[10px] tracking-widest uppercase font-bold rounded-xl transition-all hover:scale-[1.01] active:scale-[0.99] select-none cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
                   >
                     Book Engagement
@@ -752,8 +770,8 @@ const TrivandrumOffer = () => {
                 {/* Pack B: Engagement Photo + Video */}
                 <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#1e3f20]/25">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Video</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Engagement with Videography</h4>
+                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Video + Album</span>
+                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Engagement Photo & Video</h4>
                     <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹28,999/-</p>
                     <ul className="space-y-3 pt-2">
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
@@ -766,16 +784,36 @@ const TrivandrumOffer = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>200+ Edited High-Res Photos</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-800">HD Cinematic Highlights Reel</span>
+                        <span className="font-semibold text-zinc-800">Premium Layflat Panoramic Album (50 Pages)</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
+                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                        <span>Cinematic Engagement Reel</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
+                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                        <span>Engagement Full HD Video</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
+                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                        <span>1 Tabletop Calendar</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
+                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                        <span>2 Premium Photo Frames</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-500 text-xs">
+                        <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
+                        <span>1 USB Pen Drive</span>
                       </li>
                     </ul>
                   </div>
                   <button 
-                    onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, message: "Hi! I am interested in booking the Engagement with Videography package for ₹28,999/-." }); scrollToForm(); }}
+                    onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, message: "Hi! I am interested in booking the Engagement Photo & Video package for ₹28,999/-." }); scrollToForm(); }}
                     className="w-full py-3 mt-8 bg-gradient-to-r from-zinc-50 to-zinc-100 border border-zinc-200 hover:border-zinc-300 text-zinc-800 text-[10px] tracking-widest uppercase font-bold rounded-xl transition-all hover:scale-[1.01] active:scale-[0.99] select-none cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
                   >
                     Book Full Event
@@ -784,6 +822,9 @@ const TrivandrumOffer = () => {
               </div>
             </motion.div>
             
+            {/* COLUMN 2: STANDALONE EVENT COVERAGE */}
+
+
             {/* COLUMN 2: STANDALONE EVENT COVERAGE */}
             <motion.div 
               initial={{ opacity: 0, y: 30 }}
@@ -897,7 +938,7 @@ const TrivandrumOffer = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>50+ Edited High-Res Photos</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
@@ -930,7 +971,7 @@ const TrivandrumOffer = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>100+ Edited High-Res Photos</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
@@ -963,7 +1004,7 @@ const TrivandrumOffer = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
-                        <span>150+ Edited High-Res Photos</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
                         <Heart size={14} className="text-[#5d665f] shrink-0 mt-0.5" />
@@ -1982,7 +2023,7 @@ const TrivandrumOffer = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.8 }}
-                      className="absolute inset-0 w-full h-full object-contain z-10"
+                      className="absolute inset-0 w-full h-full object-cover z-10" style={{ objectPosition: "center 30%" }}
                     />
                     {/* Subtle vignette shade overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none z-20" />

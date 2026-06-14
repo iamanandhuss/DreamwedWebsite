@@ -29,7 +29,7 @@ const pricingPlans = [
       "1 Calendar",
       "1 Pen Drive",
       "2 Wall Frames",
-      "Edited Social-Media Photos & High-speed Pendrive"
+      "Edited Photos & High-speed Pendrive"
     ]
   },
   {
@@ -41,7 +41,7 @@ const pricingPlans = [
     preweddingOffer: "FREE PRE-WEDDING PHOTO & VIDEO (WORTH ₹15,000)",
     desc: "Perfect for capturing your beautiful pre-wedding love story and the complete wedding day celebrations. Includes comprehensive coverage and professional deliverables.",
     setup: "1 Photographer + 1 Videographer",
-    images: ["/uploaded_couple_blackwhite.jpg", "/kochi_couple_carry.jpg", "/deepak.jpg"],
+    images: ["/couple_fun_glasses.jpg", "/uploaded_couple_blackwhite.jpg", "/kochi_couple_carry.jpg"],
     features: [
       "Pre-Wedding Photo + Video (Save The Date)",
       "Wedding Reception Photography",
@@ -58,7 +58,7 @@ const pricingPlans = [
       "1 Calendar",
       "1 Pen Drive",
       "2 Wall Frames",
-      "Edited Social-Media Photos & High-speed Pendrive"
+      "Edited Photos & High-speed Pendrive"
     ]
   },
   {
@@ -89,38 +89,60 @@ const pricingPlans = [
       "1 Calendar",
       "1 Pen Drive",
       "2 Wall Frames",
-      "Edited Social-Media Photos & High-speed Pendrive"
+      "Edited Photos & High-speed Pendrive"
     ]
   },
   {
-    title: "Candid Photo & Videography",
+    title: "Premium Candid Package",
     price: "₹79,999",
     tag: "+ LIMITED TIME OFFER",
     modalTag: "Ultimate",
-    subtitle: "CINEMATIC CINEMA STORY",
+    subtitle: "4-CAMERA PREMIUM COVERAGE & DRONE",
     preweddingOffer: "FREE DRONE / HELICAM AERIAL COVERAGE",
-    desc: "Our signature high-production cinematic package. Includes both premium pre-wedding photo & cinema film, fine-art layflat albums, and full-spectrum cinema-grade wedding storytelling.",
-    setup: "1 Photographer + 1 Candid Photographer + 1 Videographer",
-    images: ["/uploaded_couple_blackwhite.jpg", "/kochi_couple_carry.jpg", "/deepak.jpg"],
+    desc: "Our comprehensive 4-camera premium package featuring dedicated candid & traditional teams. Includes dual custom 80-page albums for both bride & groom sides and complimentary mini albums.",
+    setup: "1 Candid Photo + 1 Candid Video + 1 Traditional Photo + 1 Traditional Video + Drone",
+    images: ["/couple_traditional_red.jpg", "/deepak.jpg", "/anandha_lekshmi.jpg"],
     features: [
-      "Pre-Wedding Photo + Video (Save The Date)",
-      "Wedding Reception Photography",
-      "Wedding Reception Videography",
-      "Wedding Day Photography",
-      "Wedding Day Candid-Photography",
-      "Wedding Day Videography",
-      "One 100 Pages Premium Album",
-      "100 Pages Mini Album",
-      "Highlights Video",
+      "Wedding Day Candid Photography",
+      "Wedding Day Candid Videography",
+      "Wedding Day Traditional Photography",
+      "Wedding Day Traditional Videography",
+      "Helicam (Drone) Aerial Coverage",
+      "1 Premium 80-Page Album for Groom (with Complimentary Mini Album)",
+      "1 Premium 80-Page Album for Bride (with Complimentary Mini Album)",
+      "Highlights Video Film",
       "Full HD Wedding Video",
-      "Wedding Reel",
-      "1 Photographer Setup",
-      "1 Candid Photographer Setup",
-      "1 Videographer Setup",
-      "1 Calendar",
-      "1 Pen Drive",
-      "2 Wall Frames",
-      "Edited Social-Media Photos & High-speed Pendrive"
+      "Wedding Reels",
+      "1 Tabletop Calendar",
+      "1 USB Pen Drive",
+      "2 Premium Photo Frames",
+      "Edited Photos & High-speed Pendrive"
+    ]
+  },
+  {
+    title: "Bride & Groom Luxury Package",
+    price: "₹1,10,000",
+    tag: "+ LIMITED TIME OFFER",
+    modalTag: "Signature Luxury",
+    subtitle: "4-CAMERA DUAL-SIDE LUXURY COVERAGE",
+    preweddingOffer: "FREE DRONE + PREMIUM CUSTOM ALBUM BOX",
+    desc: "Our ultimate dual-side wedding collection. Features comprehensive coverage, drone photography, and physical custom boxes for your handcrafted albums.",
+    setup: "2 Photographers + 2 Videographers + Drone + Custom Album Box",
+    images: ["/bride_christian_white.jpg", "/uploaded_couple_blackwhite.jpg", "/kochi_couple_carry.jpg"],
+    features: [
+      "Pre-Wedding Photography & Videography (Save the Date)",
+      "Wedding & Reception Photography (Dual-side)",
+      "Wedding & Reception Videography (Dual-side)",
+      "Wedding Candid Photography & Videography",
+      "Helicam (Drone) Aerial Coverage",
+      "One 80-Pages Premium Album with Handcrafted Album Box",
+      "One 80-Pages Mini Album",
+      "Cinematic Highlights Film & Instagram Reels",
+      "Full HD Wedding Video Film",
+      "2 Premium Wall Frames",
+      "1 Customized Photo Calendar",
+      "1 High-Speed USB Pen Drive",
+      "Edited Photos & High-speed Pendrive"
     ]
   }
 ];
@@ -191,7 +213,7 @@ const PricingSection = () => {
   const handleShare = (e, plan, idx) => {
     e.stopPropagation();
     
-    const ids = ["pkgWeddingBasicCard", "pkgWeddingPreCard", "pkgCandidCard", "pkgCandidVideoCard"];
+    const ids = ["pkgWeddingBasicCard", "pkgWeddingPreCard", "pkgCandidCard", "pkgPremiumCandidCard", "pkgLuxuryCard"];
     const cardId = ids[idx];
     const shareUrl = `${window.location.origin}/packages?pkg=${cardId}`;
     
@@ -218,7 +240,7 @@ const PricingSection = () => {
     if (pkgParam !== null) {
       let matchedIndex = parseInt(pkgParam);
       if (isNaN(matchedIndex)) {
-        const ids = ["pkgWeddingBasicCard", "pkgWeddingPreCard", "pkgCandidCard", "pkgCandidVideoCard"];
+        const ids = ["pkgWeddingBasicCard", "pkgWeddingPreCard", "pkgCandidCard", "pkgPremiumCandidCard", "pkgLuxuryCard"];
         matchedIndex = ids.indexOf(pkgParam);
       }
       if (matchedIndex >= 0 && matchedIndex < pricingPlans.length) {
@@ -264,7 +286,7 @@ const PricingSection = () => {
         </div>
 
         {/* Pricing Grid */}
-        <div id="pricing-grid-container" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto items-stretch">
+        <div id="pricing-grid-container" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-7xl mx-auto items-stretch">
           {pricingPlans.map((plan, index) => {
             const isSpecial = index === 3;
             
@@ -272,7 +294,9 @@ const PricingSection = () => {
             const getSplitTitle = (title, idx) => {
               if (idx === 0) return ["Wedding", "Photography"];
               if (idx === 1) return ["Wedding Photo &", "Pre-Wedding"];
-              if (idx === 2 || idx === 3) return ["Candid Photo &", "Videography"];
+              if (idx === 2) return ["Candid Photo &", "Videography"];
+              if (idx === 3) return ["Premium Candid", "Package"];
+              if (idx === 4) return ["Bride & Groom", "Luxury Package"];
               return [title, ""];
             };
 
@@ -301,7 +325,7 @@ const PricingSection = () => {
                   <img
                     src={plan.images[0]}
                     alt={plan.title}
-                    style={{ objectPosition: "center 20%" }}
+                    style={{ objectPosition: "center 30%" }}
                     className="w-full h-full object-cover transition-transform duration-1000 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
                   />
                   {/* Luxury black gradients for extreme legibility */}
@@ -497,9 +521,9 @@ const PricingSection = () => {
                 {/* Pack A: Engagement Photo Only */}
                 <div className="bg-[#121215] p-6 sm:p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(209,168,82,0.06)] transition-all duration-500 h-full group hover:border-[#d1a852]/40">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Album</span>
+                    <span className="inline-flex bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo Only</span>
                     <h4 className="text-[20px] font-normal leading-tight text-white">Engagement Photography</h4>
-                    <p className="text-[28px] font-normal text-[#d1a852] numbers-pro">₹19,999/-</p>
+                    <p className="text-[28px] font-normal text-[#d1a852] numbers-pro">₹12,000/-</p>
                     <ul className="space-y-3 pt-2">
                       <li className="flex gap-2 items-start text-zinc-400 text-xs">
                         <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
@@ -511,11 +535,7 @@ const PricingSection = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-400 text-xs">
                         <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
-                        <span>150+ Edited High-Res Photos</span>
-                      </li>
-                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
-                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-100">Premium Layflat Panoramic Album</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                     </ul>
                   </div>
@@ -527,8 +547,8 @@ const PricingSection = () => {
                 {/* Pack B: Engagement Photo + Video */}
                 <div className="bg-[#121215] p-6 sm:p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(209,168,82,0.06)] transition-all duration-500 h-full group hover:border-[#d1a852]/40">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Video</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-white">Engagement with Videography</h4>
+                    <span className="inline-flex bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Video + Album</span>
+                    <h4 className="text-[20px] font-normal leading-tight text-white">Engagement Photo & Video</h4>
                     <p className="text-[28px] font-normal text-[#d1a852] numbers-pro">₹28,999/-</p>
                     <ul className="space-y-3 pt-2">
                       <li className="flex gap-2 items-start text-zinc-400 text-xs">
@@ -541,11 +561,31 @@ const PricingSection = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-400 text-xs">
                         <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
-                        <span>200+ Edited High-Res Photos</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                       <li className="flex gap-2 items-start text-zinc-400 text-xs">
                         <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
-                        <span className="font-semibold text-zinc-100">HD Cinematic Highlights Reel</span>
+                        <span className="font-semibold text-zinc-100">Premium Layflat Panoramic Album (50 Pages)</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
+                        <span>Cinematic Engagement Reel</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
+                        <span>Engagement Full HD Video</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
+                        <span>1 Tabletop Calendar</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
+                        <span>2 Premium Photo Frames</span>
+                      </li>
+                      <li className="flex gap-2 items-start text-zinc-400 text-xs">
+                        <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
+                        <span>1 USB Pen Drive</span>
                       </li>
                     </ul>
                   </div>
@@ -651,7 +691,7 @@ const PricingSection = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-400 text-xs">
                         <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
-                        <span>50+ Edited High-Res Photos</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                       <li className="flex gap-2 items-start text-zinc-400 text-xs">
                         <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
@@ -681,7 +721,7 @@ const PricingSection = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-400 text-xs">
                         <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
-                        <span>100+ Edited High-Res Photos</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                       <li className="flex gap-2 items-start text-zinc-400 text-xs">
                         <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
@@ -711,7 +751,7 @@ const PricingSection = () => {
                       </li>
                       <li className="flex gap-2 items-start text-zinc-400 text-xs">
                         <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
-                        <span>150+ Edited High-Res Photos</span>
+                        <span>Edited High-Res Photos</span>
                       </li>
                       <li className="flex gap-2 items-start text-zinc-400 text-xs">
                         <Heart size={14} className="text-[#d1a852] shrink-0 mt-0.5" />
@@ -785,7 +825,7 @@ const PricingSection = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="absolute inset-0 w-full h-full object-contain z-10"
+                    className="absolute inset-0 w-full h-full object-cover z-10" style={{ objectPosition: "center 30%" }}
                   />
                   {/* Subtle vignette shade overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none z-20" />
