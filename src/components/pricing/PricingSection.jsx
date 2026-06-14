@@ -142,6 +142,25 @@ const PricingSection = () => {
   const [activePlanIndex, setActivePlanIndex] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [likedPlans, setLikedPlans] = useState({});
+  const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 14, seconds: 56 });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev.seconds > 0) {
+          return { ...prev, seconds: prev.seconds - 1 };
+        } else if (prev.minutes > 0) {
+          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        } else if (prev.hours > 0) {
+          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        } else {
+          // Reset to create infinite loop for urgency
+          return { hours: 2, minutes: 14, seconds: 56 };
+        }
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const toggleLike = (e, index) => {
     e.stopPropagation();
@@ -308,9 +327,33 @@ const PricingSection = () => {
                 </div>
 
                 {/* Click hint inside card */}
-                <div className="absolute top-20 left-0 right-0 z-20 text-center flex items-center justify-center gap-1.5 text-[8.5px] font-bold tracking-[0.2em] text-white/50 group-hover:text-white/90 transition-colors duration-300">
+                <div className={`absolute ${isSpecial ? "top-[150px]" : "top-20"} left-0 right-0 z-20 text-center flex items-center justify-center gap-1.5 text-[8.5px] font-bold tracking-[0.2em] text-white/50 group-hover:text-white/90 transition-colors duration-300`}>
                   <span className="text-amber-400">✈</span> CLICK FOR PHOTOS & DETAILS
                 </div>
+
+                {/* Premium Urgency Countdown Box */}
+                {isSpecial && (
+                  <div className="absolute top-[70px] left-6 right-6 z-20 bg-black/80 border border-[#d1a852]/50 backdrop-blur-md px-3.5 py-2.5 rounded-2xl text-center space-y-1.5 shadow-[0_0_25px_rgba(209,168,82,0.25)]">
+                    <div className="flex items-center justify-center gap-1.5 text-[#d1a852] text-[8.5px] font-black tracking-[0.15em] uppercase">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
+                      <span>🔥 Special limited offer</span>
+                    </div>
+                    <div className="text-white font-mono text-[9px] font-bold tracking-widest flex items-center justify-center gap-1">
+                      <span className="opacity-75">⏳ Closes in:</span>
+                      <span className="text-[#d1a852] bg-white/5 border border-white/10 px-1 py-0.5 rounded">
+                        {String(timeLeft.hours).padStart(2, '0')}h
+                      </span>
+                      <span>:</span>
+                      <span className="text-[#d1a852] bg-white/5 border border-white/10 px-1 py-0.5 rounded">
+                        {String(timeLeft.minutes).padStart(2, '0')}m
+                      </span>
+                      <span>:</span>
+                      <span className="text-[#d1a852] bg-white/5 border border-white/10 px-1 py-0.5 rounded animate-pulse">
+                        {String(timeLeft.seconds).padStart(2, '0')}s
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Card Content Overlaid on Bottom */}
                 <div className="relative z-10 flex flex-col h-full justify-end p-6 md:p-8 mt-auto select-none">
@@ -336,6 +379,22 @@ const PricingSection = () => {
                       <Sparkles size={10} className="text-[#d1a852] animate-pulse flex-shrink-0" />
                       <span className="text-[#d1a852] text-[8.5px] font-bold tracking-[0.12em] uppercase text-center leading-tight">
                         {plan.preweddingOffer}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Urgency Progress Bar & Alert for Special Card */}
+                  {isSpecial && (
+                    <div className="mb-4 max-w-[240px] mx-auto w-full space-y-1.5 bg-black/45 border border-white/10 p-3 rounded-2xl backdrop-blur-md shadow-lg">
+                      <div className="flex justify-between text-[8px] font-black tracking-widest uppercase">
+                        <span className="text-zinc-400">SLOTS RESERVED</span>
+                        <span className="text-[#d1a852] animate-pulse">92% SECURED</span>
+                      </div>
+                      <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden p-[1px] border border-white/5">
+                        <div className="h-full bg-gradient-to-r from-[#d1a852] via-[#b8903b] to-red-500 rounded-full w-[92%] shadow-[0_0_8px_rgba(209,168,82,0.4)]" />
+                      </div>
+                      <span className="block text-center text-[7.5px] font-bold tracking-wider text-red-400 uppercase select-none">
+                        ⚠️ 1 Slot Left - May Sell Out Shortly!
                       </span>
                     </div>
                   )}
