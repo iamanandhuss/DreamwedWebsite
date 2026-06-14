@@ -257,6 +257,190 @@ const PricingSection = () => {
     }
   }, []);
 
+  const renderCard = (plan, index) => {
+    const isSpecial = index === 3;
+    
+    // Helper to split title elegantly on two lines
+    const getSplitTitle = (title, idx) => {
+      if (idx === 0) return ["Wedding", "Photography"];
+      if (idx === 1) return ["Wedding Photo &", "Pre-Wedding"];
+      if (idx === 2) return ["Candid Photo &", "Videography"];
+      if (idx === 3) return ["Premium Candid", "Package"];
+      if (idx === 4) return ["Bride & Groom", "Luxury Package"];
+      return [title, ""];
+    };
+
+    const [titleLine1, titleLine2] = getSplitTitle(plan.title, index);
+
+    return (
+      <motion.div
+        key={index}
+        custom={index}
+        variants={cardVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        onClick={() => {
+          setActivePlanIndex(index);
+          setCurrentSlide(0);
+        }}
+        className={`relative rounded-[32px] md:rounded-[40px] overflow-hidden flex flex-col transition-all duration-700 ease-[0.22, 1, 0.36, 1] group cursor-pointer hover:scale-[1.02] ${
+          isSpecial 
+            ? "border-[3px] border-[#d1a852] shadow-[0_0_35px_rgba(209,168,82,0.3),_0_20px_50px_rgba(0,0,0,0.4)]" 
+            : "border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
+        } aspect-[9/17.2] min-h-[580px] md:min-h-[640px]`}
+      >
+        {/* Background Cover Image with Zoom Effect */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src={plan.images[0]}
+            alt={plan.title}
+            style={{ objectPosition: "center 30%" }}
+            className="w-full h-full object-cover transition-transform duration-1000 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
+          />
+          {/* Luxury black gradients for extreme legibility */}
+          <div className="absolute inset-0 bg-black/20 z-10 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-transparent to-black/95 z-10 pointer-events-none" />
+        </div>
+
+        {/* Floating Top Elements */}
+        <div className="absolute top-6 left-6 right-6 z-20 flex justify-between items-center">
+          {/* Badge */}
+          <div className={`px-3.5 py-1.5 rounded-full text-[8.5px] font-extrabold tracking-widest uppercase flex items-center gap-1 backdrop-blur-md transition-all duration-300 ${
+            isSpecial 
+              ? "bg-gradient-to-r from-[#d1a852] to-[#b8903b] text-black border border-[#d1a852] shadow-[0_0_15px_rgba(209,168,82,0.45)]" 
+              : "bg-black/50 border border-[#d1a852]/35 text-[#d1a852] shadow-[0_0_10px_rgba(209,168,82,0.2)]"
+          }`}>
+            {plan.tag}
+          </div>
+
+          {/* Floating Heart Icon Button */}
+          <button
+            onClick={(e) => toggleLike(e, index)}
+            className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95 cursor-pointer"
+            title="Add to wishlist"
+          >
+            <Heart
+              size={16}
+              className={`transition-colors duration-300 ${likedPlans[index] ? "fill-red-500 stroke-red-500" : "stroke-white"}`}
+            />
+          </button>
+        </div>
+
+        {/* Click hint inside card */}
+        <div className={`absolute ${isSpecial ? "top-[150px]" : "top-20"} left-0 right-0 z-20 text-center flex items-center justify-center gap-1.5 text-[8.5px] font-bold tracking-[0.2em] text-white/50 group-hover:text-white/90 transition-colors duration-300`}>
+          <span className="text-amber-400">✈</span> CLICK FOR PHOTOS & DETAILS
+        </div>
+
+        {/* Premium Urgency Countdown Box */}
+        {isSpecial && (
+          <div className="absolute top-[70px] left-6 right-6 z-20 bg-black/80 border border-[#d1a852]/50 backdrop-blur-md px-3.5 py-2.5 rounded-2xl text-center space-y-1.5 shadow-[0_0_25px_rgba(209,168,82,0.25)]">
+            <div className="flex items-center justify-center gap-1.5 text-[#d1a852] text-[8.5px] font-black tracking-[0.15em] uppercase">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
+              <span>🔥 Special limited offer</span>
+            </div>
+            <div className="text-white font-mono text-[9px] font-bold tracking-widest flex items-center justify-center gap-1">
+              <span className="opacity-75">⏳ Closes in:</span>
+              <span className="text-[#d1a852] bg-white/5 border border-white/10 px-1 py-0.5 rounded">
+                {String(timeLeft.hours).padStart(2, '0')}h
+              </span>
+              <span>:</span>
+              <span className="text-[#d1a852] bg-white/5 border border-white/10 px-1 py-0.5 rounded">
+                {String(timeLeft.minutes).padStart(2, '0')}m
+              </span>
+              <span>:</span>
+              <span className="text-[#d1a852] bg-white/5 border border-white/10 px-1 py-0.5 rounded animate-pulse">
+                {String(timeLeft.seconds).padStart(2, '0')}s
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Card Content Overlaid on Bottom */}
+        <div className="relative z-10 flex flex-col h-full justify-end p-6 md:p-8 mt-auto select-none">
+          {/* Title */}
+          <h3 className="text-[26px] sm:text-[28px] md:text-[32px] leading-tight font-serif text-white font-light text-center mb-1">
+            {titleLine1}
+            {titleLine2 && <span className="block mt-0.5">{titleLine2}</span>}
+          </h3>
+
+          {/* Category */}
+          <p className="text-[#d1a852] text-[9.5px] md:text-[10px] tracking-[0.2em] font-semibold uppercase text-center mb-3">
+            {plan.subtitle}
+          </p>
+
+          {/* Description */}
+          <p className="text-zinc-400 text-[11px] md:text-[12px] font-light text-center max-w-[255px] mx-auto mb-4 line-clamp-2 leading-relaxed">
+            {plan.desc}
+          </p>
+
+          {/* Luxury Pre-Wedding Offer Callout */}
+          {plan.preweddingOffer && (
+            <div className="mb-4 px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#d1a852]/12 via-[#d1a852]/3 to-transparent border border-[#d1a852]/30 backdrop-blur-md flex items-center justify-center gap-1.5 max-w-[260px] mx-auto shadow-[0_0_15px_rgba(209,168,82,0.08)]">
+              <Sparkles size={10} className="text-[#d1a852] animate-pulse flex-shrink-0" />
+              <span className="text-[#d1a852] text-[8.5px] font-bold tracking-[0.12em] uppercase text-center leading-tight">
+                {plan.preweddingOffer}
+              </span>
+            </div>
+          )}
+
+          {/* Urgency Progress Bar & Alert for Special Card */}
+          {isSpecial && (
+            <div className="mb-4 max-w-[240px] mx-auto w-full space-y-1.5 bg-black/45 border border-white/10 p-3 rounded-2xl backdrop-blur-md shadow-lg">
+              <div className="flex justify-between text-[8px] font-black tracking-widest uppercase">
+                <span className="text-zinc-400">SLOTS RESERVED</span>
+                <span className="text-[#d1a852] animate-pulse">92% SECURED</span>
+              </div>
+              <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden p-[1px] border border-white/5">
+                <div className="h-full bg-gradient-to-r from-[#d1a852] via-[#b8903b] to-red-500 rounded-full w-[92%] shadow-[0_0_8px_rgba(209,168,82,0.4)]" />
+              </div>
+              <span className="block text-center text-[7.5px] font-bold tracking-wider text-red-400 uppercase select-none">
+                ⚠️ 1 Slot Left - May Sell Out Shortly!
+              </span>
+            </div>
+          )}
+
+          {/* Pills Stack */}
+          <div className="flex flex-col items-center gap-2 mb-6">
+            {/* Price Pill */}
+            <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-white text-xs font-light">
+              <Tag size={12} className="text-[#d1a852]" />
+              <span>from <strong className="font-semibold text-white">{plan.price}</strong></span>
+            </div>
+
+            {/* Setup Pill */}
+            <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/5 text-white/90 text-xs font-light">
+              {plan.title.includes("Pack 04") ? (
+                <Plane size={12} className="text-amber-400 rotate-45" />
+              ) : (
+                <Camera size={12} className="text-zinc-300" />
+              )}
+              <span>{plan.setup}</span>
+            </div>
+          </div>
+
+          {/* CTA Secure Offer Button */}
+          <Link
+            to="/contact"
+            className="py-3.5 px-8 w-full max-w-[170px] mx-auto rounded-[20px] bg-white text-black hover:bg-zinc-100 hover:shadow-lg transition-all duration-300 text-[11px] font-extrabold tracking-[0.2em] flex flex-col items-center justify-center leading-tight shadow-md select-none cursor-pointer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span>SECURE</span>
+            <span>OFFER</span>
+          </Link>
+
+          {/* WhatsApp Share Button */}
+          <button
+            onClick={(e) => handleShare(e, plan, index)}
+            className="mt-3.5 py-2 px-6 w-full max-w-[170px] mx-auto rounded-[16px] bg-white/5 border border-white/10 hover:bg-white/10 text-white text-[9px] font-bold tracking-widest uppercase flex items-center justify-center gap-1.5 transition-all select-none cursor-pointer"
+          >
+            <span className="text-emerald-400">📲</span> Share Package
+          </button>
+        </div>
+      </motion.div>
+    );
+  };
+
   return (
     <section className="w-full bg-[#0a0a0c] text-white py-24 md:py-32 px-4 md:px-6 overflow-hidden relative">
       {/* Premium Luxury Orbs */}
@@ -547,8 +731,8 @@ const PricingSection = () => {
                 {/* Pack B: Engagement Photo + Video */}
                 <div className="bg-[#121215] p-6 sm:p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(209,168,82,0.06)] transition-all duration-500 h-full group hover:border-[#d1a852]/40">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Video + Album</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-white">Engagement Photo & Video</h4>
+                    <span className="inline-flex bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Single-Side Photo + Video + Album</span>
+                    <h4 className="text-[20px] font-normal leading-tight text-white">Bride & Groom Engagement Package</h4>
                     <p className="text-[28px] font-normal text-[#d1a852] numbers-pro">₹28,999/-</p>
                     <ul className="space-y-3 pt-2">
                       <li className="flex gap-2 items-start text-zinc-400 text-xs">

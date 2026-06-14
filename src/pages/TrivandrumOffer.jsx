@@ -413,6 +413,109 @@ const TrivandrumOffer = () => {
     document.getElementById("booking-form").scrollIntoView({ behavior: "smooth" });
   };
 
+  const renderPackageCard = (pack, idx) => {
+    const isBestDeal = pack.id === 3;
+    const badgeText = isBestDeal ? "BEST DEAL (RECOMMENDED)" : pack.bonus;
+    const badgeStyles = isBestDeal 
+      ? "bg-amber-500/20 text-amber-200 border border-amber-500/30" 
+      : "bg-zinc-500/25 text-zinc-200 border border-zinc-500/35";
+
+    // Inclusion tag
+    const inclusionLabel = 
+      pack.id === 1 ? "📷 1 Photographer Setup" 
+      : pack.id === 4 ? "🚁 Drone Aerial Coverage"
+      : "📷 4 Camera Setup";
+
+    return (
+      <motion.div
+        key={pack.id}
+        initial={{ opacity: 0, scale: 0.96 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        onClick={() => setActiveDetailPackage(idx)}
+        className={`relative rounded-[30px] md:rounded-[40px] overflow-hidden flex flex-col transition-all duration-700 ease-[0.22, 1, 0.36, 1] group cursor-pointer hover:scale-[1.02] shadow-xl hover:shadow-2xl aspect-[3/4.8] md:aspect-auto min-h-[540px] ${
+          isBestDeal ? "border-2 border-amber-500/80 shadow-amber-500/5" : "border border-zinc-800/20"
+        }`}
+      >
+        {/* Background Cover Image with Zoom Effect */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src={pack.images[0]}
+            alt={pack.title}
+            className="w-full h-full object-cover transition-transform duration-1000 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
+          />
+          {/* Rich dark gradient for high typography contrast and readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent z-10" />
+        </div>
+
+        {/* Click hint inside card in top-left */}
+        <div className="absolute top-6 left-6 text-[8px] font-bold tracking-widest uppercase text-white/50 group-hover:text-white/95 transition-colors duration-300 z-20">
+          ✨ CLICK FOR PHOTOS & DETAILS
+        </div>
+
+        {/* Floating Heart Icon Button in Top Right */}
+        <button
+          onClick={(e) => toggleLikePack(e, pack.id)}
+          className="absolute top-5 right-5 z-20 w-10 h-10 rounded-full bg-black/35 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95 cursor-pointer"
+          title="Add to wishlist"
+        >
+          <Heart
+            size={18}
+            className={`transition-colors duration-300 ${likedPacks[pack.id] ? "fill-red-500 stroke-red-500" : "stroke-white"}`}
+          />
+        </button>
+
+        {/* Card Content Overlaid on Bottom */}
+        <div className="relative z-10 flex flex-col h-full justify-between p-6 sm:p-8 flex-1">
+          {/* Top Tag */}
+          <div>
+            <span className={`inline-block px-3 py-1.5 rounded-full text-[8px] tracking-widest uppercase font-bold mt-4 ${badgeStyles}`}>
+              ✦ {badgeText}
+            </span>
+          </div>
+
+          {/* Bottom Info Details and CTA */}
+          <div className="mt-auto">
+            <h3 className="text-xl sm:text-2xl leading-[1.1] tracking-tight font-serif text-white font-normal mb-1">
+              {pack.title}
+            </h3>
+            <p className="text-[#b4975a] text-[9px] font-bold tracking-wider uppercase mb-2">
+              {pack.subtitle}
+            </p>
+            
+            <p className="text-zinc-300 text-xs font-light mb-4 line-clamp-2 leading-relaxed">
+              {pack.description}
+            </p>
+
+            {/* Info labels row matching the travel card style */}
+            <div className="flex flex-wrap items-center gap-2 mb-6 text-white/90 text-xs font-light">
+              <div className="flex items-center gap-1.2 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-white/5">
+                <Tag size={12} className="text-amber-400" />
+                <span>from <strong className="font-semibold text-white">₹{pack.offerPrice}</strong></span>
+              </div>
+              <div className="flex items-center gap-1.2 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-white/5">
+                <span>{inclusionLabel}</span>
+              </div>
+            </div>
+
+            {/* CTA Button centered at bottom - stacked on two lines as requested */}
+            <Button
+              variant="secondary"
+              className="w-full py-4 rounded-[24px] bg-white text-black hover:bg-zinc-100 hover:shadow-lg transition-all duration-300 text-[11px] font-bold tracking-wider flex flex-col items-center justify-center leading-snug"
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerBookingModal(pack.title, parseInt(pack.offerPrice.replace(/[^0-9]/g, "")));
+              }}
+            >
+              <span className="block">SECURE</span>
+              <span className="block">OFFER</span>
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
   return (
     <div className="bg-[#fbfbfa] text-zinc-800 min-h-screen select-none overflow-hidden pb-20 font-sans">
       <SEO 
@@ -600,109 +703,17 @@ const TrivandrumOffer = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-7xl mx-auto items-stretch">
-            {packagesInfo.map((pack, idx) => {
-              const isBestDeal = pack.id === 3;
-              const badgeText = isBestDeal ? "BEST DEAL (RECOMMENDED)" : pack.bonus;
-              const badgeStyles = isBestDeal 
-                ? "bg-amber-500/20 text-amber-200 border border-amber-500/30" 
-                : "bg-zinc-500/25 text-zinc-200 border border-zinc-500/35";
-
-              // Inclusion tag
-              const inclusionLabel = 
-                pack.id === 1 ? "📷 1 Photographer Setup" 
-                : pack.id === 4 ? "🚁 Drone Aerial Coverage"
-                : "📷 4 Camera Setup";
-
-              return (
-                <motion.div
-                  key={pack.id}
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  onClick={() => setActiveDetailPackage(idx)}
-                  className={`relative rounded-[30px] md:rounded-[40px] overflow-hidden flex flex-col transition-all duration-700 ease-[0.22, 1, 0.36, 1] group cursor-pointer hover:scale-[1.02] shadow-xl hover:shadow-2xl aspect-[3/4.8] md:aspect-auto min-h-[540px] ${
-                    isBestDeal ? "border-2 border-amber-500/80 shadow-amber-500/5" : "border border-zinc-800/20"
-                  }`}
-                >
-                  {/* Background Cover Image with Zoom Effect */}
-                  <div className="absolute inset-0 z-0">
-                    <img
-                      src={pack.images[0]}
-                      alt={pack.title}
-                      className="w-full h-full object-cover transition-transform duration-1000 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
-                    />
-                    {/* Rich dark gradient for high typography contrast and readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent z-10" />
-                  </div>
-
-                  {/* Click hint inside card in top-left */}
-                  <div className="absolute top-6 left-6 text-[8px] font-bold tracking-widest uppercase text-white/50 group-hover:text-white/95 transition-colors duration-300 z-20">
-                    ✨ CLICK FOR PHOTOS & DETAILS
-                  </div>
-
-                  {/* Floating Heart Icon Button in Top Right */}
-                  <button
-                    onClick={(e) => toggleLikePack(e, pack.id)}
-                    className="absolute top-5 right-5 z-20 w-10 h-10 rounded-full bg-black/35 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95 cursor-pointer"
-                    title="Add to wishlist"
-                  >
-                    <Heart
-                      size={18}
-                      className={`transition-colors duration-300 ${likedPacks[pack.id] ? "fill-red-500 stroke-red-500" : "stroke-white"}`}
-                    />
-                  </button>
-
-                  {/* Card Content Overlaid on Bottom */}
-                  <div className="relative z-10 flex flex-col h-full justify-between p-6 sm:p-8 flex-1">
-                    {/* Top Tag */}
-                    <div>
-                      <span className={`inline-block px-3 py-1.5 rounded-full text-[8px] tracking-widest uppercase font-bold mt-4 ${badgeStyles}`}>
-                        ✦ {badgeText}
-                      </span>
-                    </div>
-
-                    {/* Bottom Info Details and CTA */}
-                    <div className="mt-auto">
-                      <h3 className="text-xl sm:text-2xl leading-[1.1] tracking-tight font-serif text-white font-normal mb-1">
-                        {pack.title}
-                      </h3>
-                      <p className="text-[#b4975a] text-[9px] font-bold tracking-wider uppercase mb-2">
-                        {pack.subtitle}
-                      </p>
-                      
-                      <p className="text-zinc-300 text-xs font-light mb-4 line-clamp-2 leading-relaxed">
-                        {pack.description}
-                      </p>
-
-                      {/* Info labels row matching the travel card style */}
-                      <div className="flex flex-wrap items-center gap-2 mb-6 text-white/90 text-xs font-light">
-                        <div className="flex items-center gap-1.2 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-white/5">
-                          <Tag size={12} className="text-amber-400" />
-                          <span>from <strong className="font-semibold text-white">₹{pack.offerPrice}</strong></span>
-                        </div>
-                        <div className="flex items-center gap-1.2 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-white/5">
-                          <span>{inclusionLabel}</span>
-                        </div>
-                      </div>
-
-                      {/* CTA Button centered at bottom - stacked on two lines as requested */}
-                      <Button
-                        variant="secondary"
-                        className="w-full py-4 rounded-[24px] bg-white text-black hover:bg-zinc-100 hover:shadow-lg transition-all duration-300 text-[11px] font-bold tracking-wider flex flex-col items-center justify-center leading-snug"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          triggerBookingModal(pack.title, parseInt(pack.offerPrice.replace(/[^0-9]/g, "")));
-                        }}
-                      >
-                        <span className="block">SECURE</span>
-                        <span className="block">OFFER</span>
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+          {/* Pricing Grid Split in 2 Rows */}
+          <div id="pricing-grid-container" className="space-y-6 max-w-7xl mx-auto">
+            {/* Row 1: First 3 Packages */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
+              {packagesInfo.slice(0, 3).map((pack, idx) => renderPackageCard(pack, idx))}
+            </div>
+            
+            {/* Row 2: Remaining 2 Packages */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto items-stretch">
+              {packagesInfo.slice(3, 5).map((pack, idx) => renderPackageCard(pack, idx + 3))}
+            </div>
           </div>
 
         </div>
@@ -770,8 +781,8 @@ const TrivandrumOffer = () => {
                 {/* Pack B: Engagement Photo + Video */}
                 <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#1e3f20]/25">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Video + Album</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Engagement Photo & Video</h4>
+                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Single-Side Photo + Video + Album</span>
+                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Bride & Groom Engagement Package</h4>
                     <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹28,999/-</p>
                     <ul className="space-y-3 pt-2">
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
@@ -813,7 +824,7 @@ const TrivandrumOffer = () => {
                     </ul>
                   </div>
                   <button 
-                    onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, message: "Hi! I am interested in booking the Engagement Photo & Video package for ₹28,999/-." }); scrollToForm(); }}
+                    onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, message: "Hi! I am interested in booking the Bride & Groom Engagement Package for ₹28,999/-." }); scrollToForm(); }}
                     className="w-full py-3 mt-8 bg-gradient-to-r from-zinc-50 to-zinc-100 border border-zinc-200 hover:border-zinc-300 text-zinc-800 text-[10px] tracking-widest uppercase font-bold rounded-xl transition-all hover:scale-[1.01] active:scale-[0.99] select-none cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
                   >
                     Book Full Event

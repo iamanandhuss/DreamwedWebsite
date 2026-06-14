@@ -449,8 +449,8 @@ const Services = () => {
                 {/* Pack B: Engagement Photo + Video */}
                 <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/60 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-full group hover:border-[#1e3f20]/25">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Photo + Video + Album</span>
-                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Engagement Photo & Video</h4>
+                    <span className="inline-flex bg-[#1e3f20]/5 text-[#1e3f20] px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Single-Side Photo + Video + Album</span>
+                    <h4 className="text-[20px] font-normal leading-tight text-zinc-900">Bride & Groom Engagement Package</h4>
                     <p className="text-[28px] font-normal text-[#9b1c1c] numbers-pro">₹28,999/-</p>
                     <ul className="space-y-3 pt-2">
                       <li className="flex gap-2 items-start text-zinc-500 text-xs">
