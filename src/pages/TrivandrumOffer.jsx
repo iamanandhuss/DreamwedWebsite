@@ -286,7 +286,7 @@ const TrivandrumOffer = () => {
     {
       id: 21,
       shareId: "pkgEngagementPreCard",
-      title: "Bride & Groom Engagement Package",
+      title: "Bride or Groom Engagement Package",
       subtitle: "Complete Single-Side Coverage",
       regularPrice: "45,000",
       offerPrice: "28,999",
@@ -2139,7 +2139,7 @@ const TrivandrumOffer = () => {
                 </div>
 
                 {/* Right Side: Package Inclusions and Booking Option (Redesigned with Fixed Headers/CTA & Unified Scroll Stream) */}
-                <div className="p-6 sm:p-10 flex flex-col justify-between gap-5 md:max-h-[650px] md:overflow-hidden overflow-visible h-auto">
+                <div className="p-6 sm:p-10 flex flex-col justify-between gap-5 md:h-[650px] md:overflow-hidden overflow-visible h-auto">
                   
                   {/* Header detail */}
                   <div className="space-y-2 select-none">

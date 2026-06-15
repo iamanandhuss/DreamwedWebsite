@@ -187,7 +187,7 @@ const engagementPlans = [
   },
   {
     shareId: "pkgEngagementPreCard",
-    title: "Bride & Groom Engagement Package",
+    title: "Bride or Groom Engagement Package",
     price: "₹28,999",
     tag: "Single-Side Photo + Video + Album",
     modalTag: "Standard Engagement",
@@ -709,7 +709,7 @@ const Services = () => {
                 </div>
 
                 {/* Right Side: Package Inclusions and Booking Option (Redesigned with Fixed Headers/CTA & Dynamic Scroll checklist) */}
-                <div className="p-6 sm:p-10 flex flex-col justify-between gap-5 md:max-h-[650px] md:overflow-hidden overflow-visible h-auto">
+                <div className="p-6 sm:p-10 flex flex-col justify-between gap-5 md:h-[650px] md:overflow-hidden overflow-visible h-auto">
                   
                   {/* Header detail */}
                   <div className="space-y-2 select-none">

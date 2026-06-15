@@ -185,7 +185,7 @@ const engagementPlans = [
   },
   {
     shareId: "pkgEngagementPreCard",
-    title: "Bride & Groom Engagement Package",
+    title: "Bride or Groom Engagement Package",
     price: "₹28,999",
     tag: "Single-Side Photo + Video + Album",
     modalTag: "Standard Engagement",
@@ -433,7 +433,7 @@ const PricingSection = () => {
       if (title === "Candid Photo & Videography") return ["Candid Photo &", "Videography"];
       if (title === "Premium Candid Package") return ["Premium Candid", "Package"];
       if (title === "Bride & Groom Luxury Package") return ["Bride & Groom", "Luxury Package"];
-      if (title === "Bride & Groom Engagement Package") return ["Bride & Groom", "Engagement Package"];
+      if (title === "Bride or Groom Engagement Package") return ["Bride or Groom", "Engagement Package"];
       return [title, ""];
     };
 
@@ -813,7 +813,7 @@ const PricingSection = () => {
               </div>
 
               {/* Right Side Detail */}
-              <div className="p-6 sm:p-10 flex flex-col justify-between gap-5 md:max-h-[650px] md:overflow-hidden overflow-visible h-auto">
+              <div className="p-6 sm:p-10 flex flex-col justify-between gap-5 md:h-[650px] md:overflow-hidden overflow-visible h-auto">
                 <div className="space-y-2 select-none">
                   <span className="inline-flex items-center gap-1 bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">
                     {activePlan.modalTag || "Premium"} Collection
