@@ -149,7 +149,7 @@ const weddingStandalonePlans = [
   {
     shareId: "pkgWeddingStandaloneReception",
     title: "Standalone Reception",
-    price: "₹29,999",
+    price: "₹19,999",
     tag: "Reception Only",
     modalTag: "Standalone",
     subtitle: "5-HOUR RECEPTION DAY ONLY",
@@ -403,6 +403,26 @@ const Services = () => {
           </div>
           <h3 className="text-[26px] font-normal text-center mb-4 tracking-tight leading-tight">{plan.title}</h3>
           <p className="text-[36px] font-normal text-center mb-8 text-black numbers-pro">{plan.price}</p>
+          
+          {/* Standalone Value Proposition Badge */}
+          {plan.shareId.startsWith("pkgWedding") && !plan.shareId.includes("Standalone") && (
+            <div className="mb-6 text-center select-none">
+              <span className="inline-flex items-center gap-1.5 bg-[#1e3f20]/5 border border-[#1e3f20]/15 px-3 py-1.5 rounded-full text-[10px] font-medium text-[#1e3f20]">
+                <span className="text-[#1e3f20] font-bold">Total Value:</span>
+                <span className="font-semibold text-zinc-800">
+                  {plan.shareId === "pkgWeddingBasicCard" ? "₹71,998" : 
+                   plan.shareId === "pkgWeddingPreCard" ? "₹74,998" : 
+                   plan.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,24,998"}
+                </span>
+                <span className="text-zinc-300">|</span>
+                <span className="text-[#9b1c1c] font-bold">
+                  {plan.shareId === "pkgWeddingBasicCard" ? "Save 44%" : 
+                   plan.shareId === "pkgWeddingPreCard" ? "Save 27%" : 
+                   plan.shareId === "pkgCandidCard" ? "Save 22%" : "Save 12%"}
+                </span>
+              </span>
+            </div>
+          )}
           
           <ul className="space-y-4 mb-10">
             {plan.features.slice(0, 5).map((feat, idx) => (
@@ -745,6 +765,70 @@ const Services = () => {
                     <p className="text-zinc-500 font-light text-xs leading-relaxed select-none">
                       {plan.desc}
                     </p>
+
+                    {/* Standalone Value Breakdown */}
+                    {plan.shareId.startsWith("pkgWedding") && !plan.shareId.includes("Standalone") && (
+                      <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-2xl space-y-2.5 select-none text-left">
+                        <span className="block text-[#1e3f20] text-[9.5px] font-bold uppercase tracking-wider">
+                          💎 Combined Package Value Breakdown
+                        </span>
+                        <div className="space-y-1.5 text-xs text-zinc-600 font-light">
+                          <div className="flex justify-between">
+                            <span>Standalone Wedding Day Coverage</span>
+                            <span className="font-semibold text-zinc-800">₹39,999</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Standalone Reception Day Coverage</span>
+                            <span className="font-semibold text-zinc-800">₹19,999</span>
+                          </div>
+                          <div className="flex justify-between text-[#1e3f20] font-medium">
+                            <span>Complimentary Pre-Wedding Shoot</span>
+                            <span className="font-semibold">
+                              {plan.shareId === "pkgWeddingBasicCard" ? "Worth ₹12,000" : "Worth ₹15,000"}
+                            </span>
+                          </div>
+                          {plan.shareId === "pkgCandidCard" && (
+                            <div className="flex justify-between text-zinc-500">
+                              <span>Creative Candid Upgrade (3-Camera Setup)</span>
+                              <span className="font-semibold text-zinc-800">Worth ₹15,000</span>
+                            </div>
+                          )}
+                          {plan.shareId === "pkgLuxuryCard" && (
+                            <>
+                              <div className="flex justify-between text-zinc-500">
+                                <span>Dual-Side 4-Camera Upgrade & Drone</span>
+                                <span className="font-semibold text-zinc-800">Worth ₹35,000</span>
+                              </div>
+                              <div className="flex justify-between text-zinc-500">
+                                <span>Custom Handcrafted Album Box & Extras</span>
+                                <span className="font-semibold text-zinc-800">Worth ₹15,000</span>
+                              </div>
+                            </>
+                          )}
+                          <div className="h-px bg-zinc-200 my-1" />
+                          <div className="flex justify-between text-zinc-800 font-medium">
+                            <span>Total Standalone Value</span>
+                            <span className="font-bold">
+                              {plan.shareId === "pkgWeddingBasicCard" ? "₹71,998" :
+                               plan.shareId === "pkgWeddingPreCard" ? "₹74,998" :
+                               plan.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,24,998"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-[#9b1c1c] font-semibold text-[11px] pt-1">
+                            <span>Special Combined Deal Price</span>
+                            <span className="font-bold font-mono">{plan.price}/-</span>
+                          </div>
+                        </div>
+                        <div className="bg-[#1e3f20]/5 border border-[#1e3f20]/15 px-3 py-1.5 rounded-xl text-center text-[10px] text-[#1e3f20] font-bold uppercase tracking-wider mt-2">
+                          🎉 INSTANT SAVINGS OF {
+                            plan.shareId === "pkgWeddingBasicCard" ? "₹31,999 (44% OFF)" :
+                            plan.shareId === "pkgWeddingPreCard" ? "₹19,999 (27% OFF)" :
+                            plan.shareId === "pkgCandidCard" ? "₹19,999 (22% OFF)" :
+                            "₹14,998 (12% OFF)"
+                          }!
+                        </div>
+                      </div>
+                    )}
 
                     {/* Bonus highlight box */}
                     {plan.preweddingOffer && (

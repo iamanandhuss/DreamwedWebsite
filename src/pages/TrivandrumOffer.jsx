@@ -250,7 +250,7 @@ const TrivandrumOffer = () => {
       title: "Standalone Reception",
       subtitle: "5-Hour Reception Day Only",
       regularPrice: "40,000",
-      offerPrice: "29,999",
+      offerPrice: "19,999",
       bonus: "RECEPTION ONLY",
       bonusDesc: "Sleek professional photo & video coverage optimized for your grand reception event.",
       images: ["/kochi_couple.jpg"],
@@ -676,6 +676,26 @@ const TrivandrumOffer = () => {
             <p className="text-zinc-300 text-xs font-light mb-4 line-clamp-2 leading-relaxed">
               {pack.description}
             </p>
+
+            {/* Standalone Value Proposition Badge */}
+            {pack.shareId.startsWith("pkgWedding") && !pack.shareId.includes("Standalone") && (
+              <div className="mb-4 text-center select-none">
+                <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/5 px-3 py-1.5 rounded-full text-[10px] font-medium text-zinc-200">
+                  <span className="text-amber-400 font-bold">Total Value:</span>
+                  <span className="font-semibold text-white">
+                    {pack.shareId === "pkgWeddingBasicCard" ? "₹71,998" : 
+                     pack.shareId === "pkgWeddingPreCard" ? "₹74,998" : 
+                     pack.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,24,998"}
+                  </span>
+                  <span className="text-zinc-500">|</span>
+                  <span className="text-emerald-400 font-bold">
+                    {pack.shareId === "pkgWeddingBasicCard" ? "Save 44%" : 
+                     pack.shareId === "pkgWeddingPreCard" ? "Save 27%" : 
+                     pack.shareId === "pkgCandidCard" ? "Save 22%" : "Save 12%"}
+                  </span>
+                </span>
+              </div>
+            )}
 
             {/* Info labels row matching the travel card style */}
             <div className="flex flex-wrap items-center gap-2 mb-6 text-white/90 text-xs font-light">
@@ -2176,6 +2196,70 @@ const TrivandrumOffer = () => {
                     <p className="text-zinc-500 font-light text-xs leading-relaxed select-none">
                       {pack.description}
                     </p>
+
+                    {/* Standalone Value Breakdown */}
+                    {pack.shareId && pack.shareId.startsWith("pkgWedding") && !pack.shareId.includes("Standalone") && (
+                      <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-2xl space-y-2.5 select-none text-left">
+                        <span className="block text-[#1e3f20] text-[9.5px] font-bold uppercase tracking-wider">
+                          💎 Combined Package Value Breakdown
+                        </span>
+                        <div className="space-y-1.5 text-xs text-zinc-600 font-light">
+                          <div className="flex justify-between">
+                            <span>Standalone Wedding Day Coverage</span>
+                            <span className="font-semibold text-zinc-800">₹39,999</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Standalone Reception Day Coverage</span>
+                            <span className="font-semibold text-zinc-800">₹19,999</span>
+                          </div>
+                          <div className="flex justify-between text-[#1e3f20] font-medium">
+                            <span>Complimentary Pre-Wedding Shoot</span>
+                            <span className="font-semibold">
+                              {pack.shareId === "pkgWeddingBasicCard" ? "Worth ₹12,000" : "Worth ₹15,000"}
+                            </span>
+                          </div>
+                          {pack.shareId === "pkgCandidCard" && (
+                            <div className="flex justify-between text-zinc-500">
+                              <span>Creative Candid Upgrade (3-Camera Setup)</span>
+                              <span className="font-semibold text-zinc-800">Worth ₹15,000</span>
+                            </div>
+                          )}
+                          {pack.shareId === "pkgLuxuryCard" && (
+                            <>
+                              <div className="flex justify-between text-zinc-500">
+                                <span>Dual-Side 4-Camera Upgrade & Drone</span>
+                                <span className="font-semibold text-zinc-800">Worth ₹35,000</span>
+                              </div>
+                              <div className="flex justify-between text-zinc-500">
+                                <span>Custom Handcrafted Album Box & Extras</span>
+                                <span className="font-semibold text-zinc-800">Worth ₹15,000</span>
+                              </div>
+                            </>
+                          )}
+                          <div className="h-px bg-zinc-200 my-1" />
+                          <div className="flex justify-between text-zinc-800 font-medium">
+                            <span>Total Standalone Value</span>
+                            <span className="font-bold">
+                              {pack.shareId === "pkgWeddingBasicCard" ? "₹71,998" :
+                               pack.shareId === "pkgWeddingPreCard" ? "₹74,998" :
+                               pack.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,24,998"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-[#9b1c1c] font-semibold text-[11px] pt-1">
+                            <span>Special Combined Deal Price</span>
+                            <span className="font-bold font-mono">Rs. {pack.offerPrice}/-</span>
+                          </div>
+                        </div>
+                        <div className="bg-[#1e3f20]/5 border border-[#1e3f20]/15 px-3 py-1.5 rounded-xl text-center text-[10px] text-[#1e3f20] font-bold uppercase tracking-wider mt-2">
+                          🎉 INSTANT SAVINGS OF {
+                            pack.shareId === "pkgWeddingBasicCard" ? "₹31,999 (44% OFF)" :
+                            pack.shareId === "pkgWeddingPreCard" ? "₹19,999 (27% OFF)" :
+                            pack.shareId === "pkgCandidCard" ? "₹19,999 (22% OFF)" :
+                            "₹14,998 (12% OFF)"
+                          }!
+                        </div>
+                      </div>
+                    )}
 
                     {/* Bonus highlight box */}
                     {hasPrewed && (

@@ -147,7 +147,7 @@ const weddingStandalonePlans = [
   {
     shareId: "pkgWeddingStandaloneReception",
     title: "Standalone Reception",
-    price: "₹29,999",
+    price: "₹19,999",
     tag: "Reception Only",
     modalTag: "Standalone",
     subtitle: "5-HOUR RECEPTION DAY ONLY",
@@ -538,6 +538,26 @@ const PricingSection = () => {
             </div>
           )}
 
+          {/* Standalone Value Proposition Badge */}
+          {plan.shareId.startsWith("pkgWedding") && !plan.shareId.includes("Standalone") && (
+            <div className="mb-4 text-center select-none">
+              <span className="inline-flex items-center gap-1 bg-white/5 border border-white/10 px-3 py-1 rounded-full text-[9px] font-medium text-zinc-350">
+                <span className="text-[#d1a852] font-bold">Total Value:</span>
+                <span>
+                  {plan.shareId === "pkgWeddingBasicCard" ? "₹71,998" : 
+                   plan.shareId === "pkgWeddingPreCard" ? "₹74,998" : 
+                   plan.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,24,998"}
+                </span>
+                <span className="text-zinc-500">|</span>
+                <span className="text-emerald-400 font-bold">
+                  {plan.shareId === "pkgWeddingBasicCard" ? "Save 44%" : 
+                   plan.shareId === "pkgWeddingPreCard" ? "Save 27%" : 
+                   plan.shareId === "pkgCandidCard" ? "Save 22%" : "Save 12%"}
+                </span>
+              </span>
+            </div>
+          )}
+
           {isSpecial && (
             <div className="mb-4 max-w-[240px] mx-auto w-full space-y-1.5 bg-black/45 border border-white/10 p-3 rounded-2xl backdrop-blur-md shadow-lg">
               <div className="flex justify-between text-[8px] font-black tracking-widest uppercase">
@@ -843,6 +863,70 @@ const PricingSection = () => {
                   <p className="text-zinc-400 font-light text-xs leading-relaxed select-none">
                     {activePlan.desc}
                   </p>
+
+                  {/* Standalone Value Breakdown */}
+                  {activePlan.shareId.startsWith("pkgWedding") && !activePlan.shareId.includes("Standalone") && (
+                    <div className="bg-white/5 border border-white/10 p-4 rounded-2xl space-y-2.5 select-none">
+                      <span className="block text-[#d1a852] text-[9.5px] font-bold uppercase tracking-wider">
+                        💎 Combined Package Value Breakdown
+                      </span>
+                      <div className="space-y-1.5 text-xs text-zinc-400 font-light">
+                        <div className="flex justify-between">
+                          <span>Standalone Wedding Day Coverage</span>
+                          <span className="font-semibold text-zinc-200">₹39,999</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Standalone Reception Day Coverage</span>
+                          <span className="font-semibold text-zinc-200">₹19,999</span>
+                        </div>
+                        <div className="flex justify-between text-[#b8903b] font-medium">
+                          <span>Complimentary Pre-Wedding Shoot</span>
+                          <span className="font-semibold">
+                            {activePlan.shareId === "pkgWeddingBasicCard" ? "Worth ₹12,000" : "Worth ₹15,000"}
+                          </span>
+                        </div>
+                        {activePlan.shareId === "pkgCandidCard" && (
+                          <div className="flex justify-between text-zinc-400">
+                            <span>Creative Candid Upgrade (3-Camera Setup)</span>
+                            <span className="font-semibold text-zinc-200">Worth ₹15,000</span>
+                          </div>
+                        )}
+                        {activePlan.shareId === "pkgLuxuryCard" && (
+                          <>
+                            <div className="flex justify-between text-zinc-400">
+                              <span>Dual-Side 4-Camera Upgrade & Drone</span>
+                              <span className="font-semibold text-zinc-200">Worth ₹35,000</span>
+                            </div>
+                            <div className="flex justify-between text-zinc-400">
+                              <span>Custom Handcrafted Album Box & Extras</span>
+                              <span className="font-semibold text-zinc-200">Worth ₹15,000</span>
+                            </div>
+                          </>
+                        )}
+                        <div className="h-px bg-white/10 my-1" />
+                        <div className="flex justify-between text-zinc-200 font-medium">
+                          <span>Total Standalone Value</span>
+                          <span className="font-bold">
+                            {activePlan.shareId === "pkgWeddingBasicCard" ? "₹71,998" :
+                             activePlan.shareId === "pkgWeddingPreCard" ? "₹74,998" :
+                             activePlan.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,24,998"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-[#d1a852] font-semibold text-[11px] pt-1">
+                          <span>Special Combined Deal Price</span>
+                          <span className="font-bold font-mono">{activePlan.price}/-</span>
+                        </div>
+                      </div>
+                      <div className="bg-[#d1a852]/10 border border-[#d1a852]/20 px-3 py-1.5 rounded-xl text-center text-[10px] text-[#d1a852] font-black uppercase tracking-wider">
+                        🎉 INSTANT SAVINGS OF {
+                          activePlan.shareId === "pkgWeddingBasicCard" ? "₹31,999 (44% OFF)" :
+                          activePlan.shareId === "pkgWeddingPreCard" ? "₹19,999 (27% OFF)" :
+                          activePlan.shareId === "pkgCandidCard" ? "₹19,999 (22% OFF)" :
+                          "₹14,998 (12% OFF)"
+                        }!
+                      </div>
+                    </div>
+                  )}
 
                   {activePlan.preweddingOffer && (
                     <div className="bg-[#d1a852]/5 border border-[#d1a852]/15 p-4 rounded-2xl flex items-start gap-3">
