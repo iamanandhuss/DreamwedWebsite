@@ -1072,10 +1072,9 @@ const MyBooking = () => {
                       </select>
                     </div>
                     <div className="space-y-1.5 sm:col-span-2">
-                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Transaction ID / Reference No *</label>
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Transaction ID / Reference No (Optional)</label>
                       <input 
                         type="text" 
-                        required
                         placeholder="Enter 12-digit transaction ID or cash details"
                         value={transactionId}
                         onChange={(e) => setTransactionId(e.target.value)}
@@ -1107,7 +1106,7 @@ const MyBooking = () => {
               <button 
                 type="submit"
                 disabled={signingUp}
-                className="w-full py-4.5 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl transition-all text-xs tracking-widest uppercase shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] mt-2"
+                className="w-full py-4 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl transition-all text-xs tracking-widest uppercase shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] mt-2"
               >
                 {signingUp ? "Submitting Booking..." : "Submit Booking"}
               </button>
@@ -1301,7 +1300,7 @@ const MyBooking = () => {
                   {/* PDF Download Button */}
                   <button 
                     onClick={() => setIsInvoicePrintOpen(true)}
-                    className="w-full py-4.5 bg-[#b4975a] text-zinc-950 font-bold rounded-xl hover:bg-[#c5a86b] active:scale-98 transition-all text-xs tracking-widest uppercase shadow-md flex items-center justify-center gap-2.5 cursor-pointer font-Montserrat"
+                    className="w-full py-4 bg-[#b4975a] text-zinc-950 font-bold rounded-xl hover:bg-[#c5a86b] active:scale-98 transition-all text-xs tracking-widest uppercase shadow-md flex items-center justify-center gap-2.5 cursor-pointer font-Montserrat"
                   >
                     <Download size={15} />
                     Download Printable Invoice

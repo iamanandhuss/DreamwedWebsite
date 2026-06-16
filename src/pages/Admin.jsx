@@ -1949,7 +1949,7 @@ const Admin = () => {
               <div className="pt-4 border-t border-zinc-850">
                 <button 
                   onClick={() => setSelectedGalForPhotos(null)}
-                  className="w-full py-4.5 bg-zinc-900 hover:bg-zinc-850 text-white text-xs font-bold uppercase tracking-widest rounded-xl border border-zinc-800 transition-all cursor-pointer text-center"
+                  className="w-full py-4 bg-zinc-900 hover:bg-zinc-850 text-white text-xs font-bold uppercase tracking-widest rounded-xl border border-zinc-800 transition-all cursor-pointer text-center"
                 >
                   Save & Finish Management
                 </button>

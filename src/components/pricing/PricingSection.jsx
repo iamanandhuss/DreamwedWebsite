@@ -1080,7 +1080,7 @@ const PricingSection = () => {
                   <Button
                     to={`/booking?package=${encodeURIComponent(activePlan?.title || "")}&price=${encodeURIComponent((activePlan?.price || "").replace(/[^\d]/g, ""))}`}
                     variant="primary"
-                    className="w-full py-4.5 rounded-2xl text-center text-xs uppercase tracking-widest font-bold select-none"
+                    className="w-full py-4 rounded-2xl text-center text-xs uppercase tracking-widest font-bold select-none"
                     onClick={() => setActivePlan(null)}
                   >
                     Book Now 🌟

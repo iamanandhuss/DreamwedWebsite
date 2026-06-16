@@ -693,7 +693,7 @@ const Services = () => {
             </div>
 
             <div className="pt-4">
-              <Button to="/ai-search/" variant="primary" className="px-10 py-4.5 text-xs tracking-widest uppercase font-bold">
+              <Button to="/ai-search/" variant="primary" className="px-10 py-4 text-xs tracking-widest uppercase font-bold">
                 Experience AI Search Demo
               </Button>
             </div>
@@ -1018,7 +1018,7 @@ const Services = () => {
                     <Button
                       to="/contact"
                       variant="primary"
-                      className="w-full py-4.5 rounded-2xl text-center text-xs uppercase tracking-widest font-bold select-none"
+                      className="w-full py-4 rounded-2xl text-center text-xs uppercase tracking-widest font-bold select-none"
                       onClick={() => setActivePlan(null)}
                     >
                       Book Now 🌟

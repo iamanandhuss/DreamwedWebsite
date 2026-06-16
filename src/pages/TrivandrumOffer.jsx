@@ -1485,7 +1485,7 @@ const TrivandrumOffer = () => {
             <button 
               type="submit"
               disabled={status === "loading"}
-              className="w-full py-4.5 bg-[#9b1c1c] text-white font-bold rounded-xl hover:bg-[#801414] active:scale-98 transition-all text-xs tracking-widest uppercase shadow-md flex items-center justify-center gap-2"
+              className="w-full py-4 bg-[#9b1c1c] text-white font-bold rounded-xl hover:bg-[#801414] active:scale-98 transition-all text-xs tracking-widest uppercase shadow-md flex items-center justify-center gap-2"
             >
               {status === "loading" ? "Submitting Inquiry..." : "Lock in My Special Offer"}
             </button>
@@ -1522,13 +1522,13 @@ const TrivandrumOffer = () => {
               href="https://wa.me/919995412955?text=Hello%20Dreamwed%20Stories,%20I%20would%20like%20to%20claim%20the%20Bride%20and%20Groom%20Special%20Offer!"
               target="_blank" 
               rel="noopener noreferrer"
-              className="w-full sm:w-auto px-8 py-4.5 bg-[#25D366] hover:bg-[#1ebd57] text-white font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2.5 text-xs tracking-wider uppercase"
+              className="w-full sm:w-auto px-8 py-4 bg-[#25D366] hover:bg-[#1ebd57] text-white font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2.5 text-xs tracking-wider uppercase"
             >
               <FaWhatsapp size={18} /> Chat on WhatsApp
             </a>
             <a 
               href="tel:+919995412955"
-              className="w-full sm:w-auto px-8 py-4.5 bg-zinc-200 border border-zinc-300 hover:bg-zinc-300 text-zinc-800 font-bold rounded-xl transition-all flex items-center justify-center gap-2.5 text-xs tracking-wider uppercase"
+              className="w-full sm:w-auto px-8 py-4 bg-zinc-200 border border-zinc-300 hover:bg-zinc-300 text-zinc-800 font-bold rounded-xl transition-all flex items-center justify-center gap-2.5 text-xs tracking-wider uppercase"
             >
               Call +91 9995412955
             </a>
@@ -2559,7 +2559,7 @@ const TrivandrumOffer = () => {
                           scrollToForm();
                         }, 200);
                       }}
-                      className="w-full py-4.5 bg-[#9b1c1c] hover:bg-[#801414] text-white font-bold rounded-2xl hover:scale-[1.01] active:scale-[0.99] transition-all text-xs tracking-widest uppercase shadow-md cursor-pointer text-center select-none"
+                      className="w-full py-4 bg-[#9b1c1c] hover:bg-[#801414] text-white font-bold rounded-2xl hover:scale-[1.01] active:scale-[0.99] transition-all text-xs tracking-widest uppercase shadow-md cursor-pointer text-center select-none"
                     >
                       Secure Slot (Total: Rs. ${finalCalculatedPrice.toLocaleString("en-IN")}/-) 🌟
                     </button>

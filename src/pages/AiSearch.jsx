@@ -932,7 +932,7 @@ const AiSearch = () => {
                   <button 
                     onClick={handleStartSearch}
                     disabled={isScanning}
-                    className="px-10 py-4.5 bg-gradient-to-r from-amber-500 via-[#d1a852] to-[#b4975a] text-zinc-950 font-bold rounded-full hover:scale-105 active:scale-95 transition-all text-xs tracking-widest uppercase flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(212,175,55,0.25)] cursor-pointer disabled:opacity-75"
+                    className="px-10 py-4 bg-gradient-to-r from-amber-500 via-[#d1a852] to-[#b4975a] text-zinc-950 font-bold rounded-full hover:scale-105 active:scale-95 transition-all text-xs tracking-widest uppercase flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(212,175,55,0.25)] cursor-pointer disabled:opacity-75"
                   >
                     {isScanning ? (
                       <span className="flex items-center gap-2">🔍 FaceEngine Aligning...</span>
@@ -1293,7 +1293,7 @@ const AiSearch = () => {
 
                     <button 
                       type="submit"
-                      className="w-full py-4.5 bg-[#d4af37] hover:bg-[#c59d2a] text-zinc-950 text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="w-full py-4 bg-[#d4af37] hover:bg-[#c59d2a] text-zinc-950 text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       💎 Confirm and Place Order
                     </button>

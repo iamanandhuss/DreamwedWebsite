@@ -2783,7 +2783,7 @@ const ClientPortal = () => {
       <main ref={mainScrollRef} onScroll={handleMainScroll} className="flex-grow p-6 sm:p-10 md:p-14 space-y-10 md:h-screen md:overflow-y-auto bg-[#faf9f6]">
         
         {/* TOP COMPACT PROFILE NAV BAR */}
-        <header className="flex justify-between items-center bg-white px-6 py-4.5 rounded-[24px] border border-[#b4975a]/10 shadow-[0_15px_40px_rgba(180,151,90,0.02)]">
+        <header className="flex justify-between items-center bg-white px-6 py-4 rounded-[24px] border border-[#b4975a]/10 shadow-[0_15px_40px_rgba(180,151,90,0.02)]">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-[#b4975a]/10 flex items-center justify-center font-bold text-xs text-[#b4975a] uppercase">
               {brideName.charAt(0) || "W"}
