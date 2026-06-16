@@ -4,7 +4,7 @@ import {
   LogIn, LogOut, ShieldCheck, AlertCircle, Link2, Calendar, CheckCircle2,
   ChevronRight, FileText, Package, Users, MessageSquare, Plus, Trash2, Edit3,
   Eye, EyeOff, Save, X, Camera, Video, BookOpen, RefreshCw, Search, Share2,
-  Download, Heart
+  Download, Heart, Printer
 } from "lucide-react";
 import SEO from "../components/SEO";
 
@@ -43,6 +43,8 @@ const INITIAL_GALLERIES = [
     ]
   }
 ];
+
+const formatCurrency = (num) => Number(num || 0).toLocaleString("en-IN");
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -1967,254 +1969,497 @@ const Admin = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
-            onClick={() => setActiveInvoiceBooking(null)}
+            className="invoice-overlay !block"
           >
             <style dangerouslySetInnerHTML={{ __html: `
+              .invoice-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.85);
+                backdrop-filter: blur(8px);
+                color: #000;
+                z-index: 10000;
+                overflow-y: auto;
+                padding: 40px 0;
+              }
+              .invoice-container {
+                width: 800px;
+                margin: 0 auto;
+                background: #fff;
+                padding: 40px;
+                font-family: 'Inter', sans-serif;
+                position: relative;
+                color: #000;
+                border-radius: 8px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+              }
+              .invoice-brand {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-bottom: 1px solid #eaeaea;
+                padding-bottom: 24px;
+                margin-bottom: 30px;
+              }
+              .brand-logo-circle {
+                width: 42px;
+                height: 42px;
+                border: 1.5px solid #000;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 15px;
+                font-family: 'Inter', sans-serif;
+                color: #000;
+              }
+              .brand-text-name {
+                font-family: 'Montserrat', sans-serif;
+                font-size: 13px;
+                font-weight: 600;
+                letter-spacing: 0.2em;
+                text-transform: uppercase;
+                color: #000;
+                margin-left: 10px;
+              }
+              .invoice-header-title {
+                text-align: center;
+                margin: 20px 0 25px 0;
+              }
+              .invoice-header-title h2 {
+                font-family: 'Cormorant Garamond', serif;
+                font-size: 44px;
+                font-weight: 400;
+                letter-spacing: 0.02em;
+                color: #000;
+                font-style: italic;
+              }
+              .invoice-meta-section {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 30px;
+                font-size: 13px;
+                line-height: 1.7;
+              }
+              .invoice-to {
+                width: 50%;
+                text-align: left;
+              }
+              .invoice-to h3 {
+                font-size: 12px;
+                font-weight: 700;
+                color: #222;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: 6px;
+              }
+              .invoice-to-name {
+                font-size: 16px;
+                font-weight: 500;
+                color: #000;
+                margin-bottom: 2px;
+              }
+              .invoice-to-details {
+                color: #444;
+                font-size: 12px;
+                font-weight: 300;
+              }
+              .invoice-details-right {
+                text-align: right;
+                width: 45%;
+                font-size: 12px;
+              }
+              .invoice-details-right table {
+                width: 100%;
+                border-collapse: collapse;
+              }
+              .invoice-details-right td {
+                padding: 3px 0;
+                vertical-align: top;
+              }
+              .invoice-details-right td.lbl {
+                text-align: right;
+                color: #444;
+                font-weight: 500;
+                padding-right: 12px;
+              }
+              .invoice-details-right td.val {
+                text-align: right;
+                font-weight: 500;
+                color: #000;
+                width: 130px;
+              }
+              .invoice-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 30px;
+                font-size: 12px;
+              }
+              .invoice-table th {
+                background: #b69675;
+                color: #fff;
+                font-family: 'Montserrat', sans-serif;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                padding: 10px 14px;
+                text-align: left;
+                font-size: 11px;
+              }
+              .invoice-table th.amount-col {
+                text-align: right;
+              }
+              .invoice-table td {
+                padding: 14px;
+                border-bottom: 1px solid #eaeaea;
+                color: #333;
+                text-align: left;
+              }
+              .invoice-table td.amount-col {
+                text-align: right;
+                font-weight: 500;
+                color: #000;
+              }
+              .invoice-summary {
+                display: flex;
+                justify-content: flex-end;
+                margin-bottom: 40px;
+                font-size: 13px;
+              }
+              .invoice-summary-table {
+                width: 320px;
+                border-collapse: collapse;
+              }
+              .invoice-summary-table td {
+                padding: 5px 0;
+                text-align: right;
+              }
+              .invoice-summary-table td.lbl {
+                color: #555;
+                font-weight: 500;
+              }
+              .invoice-summary-table td.val {
+                font-weight: 600;
+                color: #000;
+                width: 120px;
+              }
+              .invoice-summary-table tr.total-payable-row td {
+                border-top: 1.5px solid #000;
+                padding-top: 10px;
+                font-size: 14px;
+                font-weight: 800;
+                color: #000;
+              }
+              .invoice-summary-table tr.total-payable-row td.val {
+                font-size: 16px;
+              }
+              .invoice-footer {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                border-top: 1px solid #eaeaea;
+                padding-top: 30px;
+                margin-top: 40px;
+                font-size: 11px;
+                text-align: left;
+              }
+              .payment-instructions {
+                color: #555;
+                line-height: 1.6;
+              }
+              .payment-instructions strong {
+                color: #000;
+                font-size: 12px;
+                display: block;
+                margin-bottom: 4px;
+              }
+              .signature-thankyou {
+                text-align: right;
+                font-family: 'Cormorant Garamond', serif;
+                font-size: 38px;
+                font-style: italic;
+                font-weight: 400;
+                color: #000;
+                margin-bottom: 8px;
+              }
+              .invoice-control-bar {
+                background: #161616;
+                padding: 12px 24px;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                display: flex;
+                justify-content: center;
+                gap: 16px;
+                border-bottom: 1px solid #2a2a2a;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+                z-index: 10001;
+              }
+              .invoice-control-bar .action-btn {
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                border: none;
+              }
               @media print {
                 body * {
                   visibility: hidden !important;
                 }
-                .invoice-print-container, .invoice-print-container * {
+                .invoice-overlay, .invoice-overlay * {
                   visibility: visible !important;
                 }
-                .invoice-print-container {
+                .invoice-overlay {
                   position: absolute !important;
                   left: 0 !important;
                   top: 0 !important;
                   width: 100% !important;
+                  height: auto !important;
+                  padding: 0 !important;
                   margin: 0 !important;
-                  padding: 24px !important;
-                  background: white !important;
-                  color: black !important;
+                  background: #fff !important;
+                  color: #000 !important;
+                }
+                .invoice-container {
+                  width: 100% !important;
+                  margin: 0 !important;
+                  padding: 10px !important;
                   box-shadow: none !important;
                   border: none !important;
                 }
                 .no-print {
                   display: none !important;
                 }
-                .print-gold-text {
-                  color: #947a46 !important;
-                }
-                .print-gray-bg {
-                  background-color: #f4f4f5 !important;
-                }
-                .print-border-zinc {
-                  border-color: #e4e4e7 !important;
+                .invoice-table th {
+                  background: #b69675 !important;
+                  -webkit-print-color-adjust: exact;
+                  print-color-adjust: exact;
+                  color: #fff !important;
                 }
               }
             `}} />
-            <motion.div
-              initial={{ scale: 0.95, y: 15 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 15 }}
-              className="invoice-print-container bg-zinc-950 border border-zinc-800 max-w-3xl w-full rounded-[32px] p-6 sm:p-8 space-y-6 text-zinc-300 relative shadow-2xl overflow-y-auto max-h-[90vh] text-left print:bg-white print:text-black print:max-h-none print:overflow-visible"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Close Button */}
+
+            {/* Control Bar (hidden during PDF print) */}
+            <div className="invoice-control-bar no-print">
               <button 
                 onClick={() => setActiveInvoiceBooking(null)}
-                className="no-print absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 hover:bg-white text-white hover:text-black border border-white/5 flex items-center justify-center transition-all cursor-pointer z-10"
+                className="action-btn"
+                style={{ background: "#222", color: "#fff", border: "1px solid #333" }}
               >
-                <X size={15} />
+                ✕ Close Receipt
               </button>
+              <button
+                onClick={() => {
+                  const includesPrewedding = (parseInt(activeInvoiceBooking.package_price || activeInvoiceBooking.total_price) === 49999 || parseInt(activeInvoiceBooking.package_price || activeInvoiceBooking.total_price) === 99999 || parseInt(activeInvoiceBooking.package_price || activeInvoiceBooking.total_price) === 110000);
+                  const surpriseBonusText = includesPrewedding ? `🎁 SURPRISE BONUS: Free Save the Date Photoshoot (worth ₹9,999/-) included!\n` : '';
+                  const message = `Hi ${activeInvoiceBooking.customer_name}! Here is your Digital Invoice Receipt for locking in your Wedding Package slot:\n\n` +
+                                  `Invoice Number: ${activeInvoiceBooking.invoice_number || `DW-2026-${String(activeInvoiceBooking.id).padStart(3, '0')}`}\n` +
+                                  `Plan: ${activeInvoiceBooking.package_name}\n` +
+                                  `Quote: ₹${parseInt(activeInvoiceBooking.package_price || activeInvoiceBooking.total_price).toLocaleString()}/- Net\n` +
+                                  `Advance Paid: ₹${(activeInvoiceBooking.advance_paid || 0).toLocaleString()}/-\n` +
+                                  surpriseBonusText + `\n` +
+                                  `Your Private Access Credentials:\n` +
+                                  `👰 Bride Password: ${activeInvoiceBooking.bride_password || '—'}\n` +
+                                  `🤵 Groom Password: ${activeInvoiceBooking.groom_password || '—'}\n` +
+                                  `Link to selections: ${window.location.origin}/`;
+                  window.open(`https://wa.me/91${activeInvoiceBooking.customer_phone}?text=${encodeURIComponent(message)}`, '_blank');
+                }}
+                className="action-btn"
+                style={{ background: "#10b981", color: "#fff" }}
+              >
+                <Share2 size={14} /> Share Details
+              </button>
+              <button 
+                onClick={() => window.print()}
+                className="action-btn"
+                style={{ background: "#b4975a", color: "#000" }}
+              >
+                <Printer size={14} /> Print / Save as PDF
+              </button>
+            </div>
 
-              {/* Logo / Header */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-800 pb-5 print:border-zinc-200">
-                <div className="text-left">
-                  <span className="text-[#b4975a] print-gold-text font-bold text-[10px] tracking-[0.3em] uppercase block mb-1">Tax Invoice & Receipt</span>
-                  <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl text-white font-light tracking-tight print:text-black">
-                    Dreamwed <span className="italic font-serif text-[#b4975a] print-gold-text">Stories</span>
-                  </h2>
-                  <p className="text-zinc-500 text-[10px] font-light print:text-zinc-700">Kochi & Trivandrum, India | contact@dreamwedstories.co.in</p>
+            {/* A4 Container */}
+            <div className="invoice-container">
+              {/* Branding header exactly styled like invoice images */}
+              <div className="invoice-brand">
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <div className="brand-logo-circle">DW</div>
+                  <div className="brand-text-name">Dreamwed Stories</div>
                 </div>
-                <div className="text-left sm:text-right">
-                  <span className="text-zinc-500 text-[9px] uppercase tracking-wider block print:text-zinc-700">Invoice Number</span>
-                  <span className="text-[#b4975a] print-gold-text font-mono font-bold text-sm block">
-                    {activeInvoiceBooking.invoice_number || `DW-2026-${String(activeInvoiceBooking.id).padStart(3, '0')}`}
-                  </span>
-                  <span className="text-zinc-500 text-[9px] uppercase tracking-wider block mt-1.5 print:text-zinc-700">Invoice Date</span>
-                  <span className="text-white print:text-black font-semibold text-xs block">
-                    {formatDateString(activeInvoiceBooking.invoice_date || activeInvoiceBooking.created_at)}
-                  </span>
+                <div style={{ fontSize: "11px", textAlign: "right", color: "#555", lineHeight: "1.5" }}>
+                  dreamwedstories.co.in<br />
+                  +91 98954 12895
                 </div>
               </div>
 
-              {/* Bill Details */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-zinc-900/40 p-5 border border-zinc-850 rounded-2xl print:bg-zinc-50 print:border-zinc-200 print:text-black">
-                <div className="space-y-1.5 text-left">
-                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block print:text-zinc-650">Billed To (Client):</span>
-                  <h4 className="text-sm font-bold text-white print:text-black">{activeInvoiceBooking.customer_name}</h4>
-                  <p className="text-xs text-zinc-400 print:text-zinc-700">📞 Phone: {activeInvoiceBooking.customer_phone}</p>
-                  {activeInvoiceBooking.customer_email && (
-                    <p className="text-xs text-zinc-400 print:text-zinc-700">✉ Email: {activeInvoiceBooking.customer_email}</p>
-                  )}
-                  {activeInvoiceBooking.pincode && (
-                    <p className="text-xs text-zinc-400 print:text-zinc-700">📍 Pincode: {activeInvoiceBooking.pincode}</p>
-                  )}
-                </div>
-                <div className="space-y-1.5 text-left sm:text-right sm:border-l sm:border-zinc-800 print:sm:border-zinc-200 sm:pl-6">
-                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block print:text-zinc-650">Event Details:</span>
-                  <p className="text-xs text-zinc-400 print:text-zinc-700">
-                    Venue: <strong className="text-white print:text-black">{activeInvoiceBooking.event_venue || "TBA"}</strong>
-                  </p>
-                  <p className="text-xs text-zinc-400 print:text-zinc-700">
-                    Date: <strong className="text-white print:text-black">{formatDateString(activeInvoiceBooking.event_date)}</strong>
-                  </p>
-                  <p className="text-xs text-zinc-400 print:text-zinc-700">
-                    Scope: <span className="uppercase text-[#b4975a] print-gold-text font-bold text-[10px]">
-                      {activeInvoiceBooking.coverage_scope === "both" ? "Bride & Groom Coverage" : `${activeInvoiceBooking.coverage_scope || 'Single'} Side`}
-                    </span>
-                  </p>
-                </div>
+              {/* Bold Minimalist Title */}
+              <div className="invoice-header-title">
+                <h2>Invoice</h2>
               </div>
 
-              {/* Items Table */}
-              <div className="border border-zinc-850 rounded-2xl overflow-hidden print:border-zinc-200">
-                <table className="w-full text-left text-xs leading-normal">
-                  <thead>
-                    <tr className="bg-zinc-900/60 text-[#b4975a] print-gold-text font-bold uppercase tracking-wider border-b border-zinc-850 print:border-zinc-200 print:bg-zinc-100">
-                      <th className="px-5 py-3">Description & Service Items</th>
-                      <th className="px-5 py-3 text-right">Amount (INR)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-850 print:divide-zinc-200">
-                    <tr>
-                      <td className="px-5 py-4">
-                        <span className="font-bold text-white print:text-black block">{activeInvoiceBooking.package_name}</span>
-                        <span className="text-[10px] text-zinc-500 print:text-zinc-700 block mt-0.5">
-                          Includes signature coverage, high-res editing workflows, and online photo/video portal hosting.
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 text-right text-white print:text-black font-semibold font-mono">
-                        ₹ {Number(activeInvoiceBooking.package_price || activeInvoiceBooking.total_price || 0).toLocaleString("en-IN")}/-
-                      </td>
-                    </tr>
-                    {activeInvoiceBooking.add_ons && activeInvoiceBooking.add_ons.map((addon, index) => (
-                      <tr key={index}>
-                        <td className="px-5 py-3 font-medium text-zinc-300 print:text-black">
-                          ➕ {addon.name || addon}
-                        </td>
-                        <td className="px-5 py-3 text-right text-zinc-300 print:text-black font-mono">
-                          ₹ {Number(addon.price || 0).toLocaleString("en-IN")}/-
-                        </td>
+              {/* Meta details split */}
+              <div className="invoice-meta-section">
+                <div className="invoice-to">
+                  <h3>INVOICE TO:</h3>
+                  <div className="invoice-to-name">{activeInvoiceBooking.customer_name}</div>
+                  <div className="invoice-to-details">
+                    <div>{activeInvoiceBooking.customer_phone}</div>
+                    <div>{formatDateString(activeInvoiceBooking.event_date)}</div>
+                  </div>
+                </div>
+
+                <div className="invoice-details-right">
+                  <table>
+                    <tbody>
+                      <tr>
+                        <td className="lbl">Issued:</td>
+                        <td className="val">{formatDateString(activeInvoiceBooking.invoice_date || activeInvoiceBooking.created_at)}</td>
                       </tr>
-                    ))}
-                    {/* Calculation rows */}
-                    <tr className="bg-zinc-900/20 print:bg-zinc-50/50">
-                      <td className="px-5 py-3 text-zinc-400 print:text-zinc-700 font-medium">Subtotal Amount:</td>
-                      <td className="px-5 py-3 text-right text-zinc-300 print:text-black font-semibold font-mono">
-                        ₹ {Number(activeInvoiceBooking.total_price || activeInvoiceBooking.package_price || 0).toLocaleString("en-IN")}/-
+                      <tr>
+                        <td className="lbl">Invoice:</td>
+                        <td className="val">{activeInvoiceBooking.invoice_number || `DW-2026-${String(activeInvoiceBooking.id).padStart(3, '0')}`}</td>
+                      </tr>
+                      <tr>
+                        <td className="lbl">Due:</td>
+                        <td className="val">On Receipt</td>
+                      </tr>
+                      <tr>
+                        <td className="lbl">{activeInvoiceBooking.package_name} Price:</td>
+                        <td className="val">₹ {formatCurrency(activeInvoiceBooking.package_price || activeInvoiceBooking.total_price)}</td>
+                      </tr>
+                      {activeInvoiceBooking.package_price > activeInvoiceBooking.total_price && (
+                        <tr>
+                          <td className="lbl">Discount:</td>
+                          <td className="val">₹ {formatCurrency(activeInvoiceBooking.package_price - activeInvoiceBooking.total_price)}</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Sub-header title */}
+              <div style={{ textAlign: "center", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "18px", color: "#000", marginBottom: "25px", fontWeight: "normal" }}>
+                Invoice For Photography Service
+              </div>
+
+              {/* Milestone items list */}
+              <table className="invoice-table">
+                <thead>
+                  <tr>
+                    <th>PRODUCT/SERVICE</th>
+                    <th className="amount-col" style={{ width: "140px" }}>PRICE</th>
+                    <th style={{ width: "150px", paddingLeft: "20px" }}>DATE</th>
+                    <th className="amount-col" style={{ width: "140px" }}>TOTAL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeInvoiceBooking.payment_milestones && activeInvoiceBooking.payment_milestones.length > 0 ? (
+                    activeInvoiceBooking.payment_milestones.map((m, index) => (
+                      <tr key={index}>
+                        <td>
+                          <div style={{ fontWeight: 500, color: "#000", marginBottom: "2px" }}>{m.label}</div>
+                        </td>
+                        <td className="amount-col">₹ {formatCurrency(m.amount)}</td>
+                        <td style={{ paddingLeft: "20px" }}>{m.date ? formatDateString(m.date) : "TBD"}</td>
+                        <td className="amount-col">₹ {formatCurrency(m.amount)}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td>
+                        <div style={{ fontWeight: 500, color: "#000", marginBottom: "2px" }}>{activeInvoiceBooking.package_name}</div>
+                      </td>
+                      <td className="amount-col">₹ {formatCurrency(activeInvoiceBooking.package_price || activeInvoiceBooking.total_price)}</td>
+                      <td style={{ paddingLeft: "20px" }}>{formatDateString(activeInvoiceBooking.event_date)}</td>
+                      <td className="amount-col">₹ {formatCurrency(activeInvoiceBooking.package_price || activeInvoiceBooking.total_price)}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+
+              {/* Right Summary breakdown */}
+              <div className="invoice-summary">
+                <table className="invoice-summary-table">
+                  <tbody>
+                    <tr>
+                      <td className="lbl">Subtotal:</td>
+                      <td className="val">
+                        ₹ {formatCurrency(activeInvoiceBooking.payment_milestones && activeInvoiceBooking.payment_milestones.length > 0
+                          ? activeInvoiceBooking.payment_milestones.reduce((sum, m) => sum + (Number(m.amount) || 0), 0)
+                          : (activeInvoiceBooking.total_price || activeInvoiceBooking.package_price || 0)
+                        )}/-
                       </td>
                     </tr>
-                    <tr className="bg-zinc-900/20 print:bg-zinc-50/50">
-                      <td className="px-5 py-3 text-zinc-400 print:text-zinc-700 font-medium">Advance Booking Paid:</td>
-                      <td className="px-5 py-3 text-right text-emerald-400 font-bold font-mono">
-                        - ₹ {Number(activeInvoiceBooking.advance_paid || 0).toLocaleString("en-IN")}/-
+                    <tr>
+                      <td className="lbl">Tax (0%):</td>
+                      <td className="val">₹ 0/-</td>
+                    </tr>
+                    <tr>
+                      <td className="lbl">Total:</td>
+                      <td className="val">
+                        ₹ {formatCurrency(activeInvoiceBooking.payment_milestones && activeInvoiceBooking.payment_milestones.length > 0
+                          ? activeInvoiceBooking.payment_milestones.reduce((sum, m) => sum + (Number(m.amount) || 0), 0)
+                          : (activeInvoiceBooking.total_price || activeInvoiceBooking.package_price || 0)
+                        )}/-
                       </td>
                     </tr>
-                    <tr className="bg-zinc-900/40 text-sm print:bg-zinc-100">
-                      <td className="px-5 py-4 text-[#b4975a] print-gold-text font-bold uppercase tracking-wider">Net Balance Due:</td>
-                      <td className="px-5 py-4 text-right text-white print:text-black font-extrabold text-base font-mono">
-                        ₹ {Number((activeInvoiceBooking.total_price || activeInvoiceBooking.package_price || 0) - (activeInvoiceBooking.advance_paid || 0)).toLocaleString("en-IN")}/-
-                      </td>
+                    <tr className="total-payable-row">
+                      <td className="lbl">Total Payable Amount:</td>
+                      <td className="val">₹ {formatCurrency(activeInvoiceBooking.total_price - activeInvoiceBooking.advance_paid)}/-</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
-              {/* Payment Milestones */}
-              {activeInvoiceBooking.payment_milestones && activeInvoiceBooking.payment_milestones.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 print:text-zinc-800">Scheduled Payment Milestones</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {activeInvoiceBooking.payment_milestones.map((m, idx) => (
-                      <div key={idx} className="bg-zinc-900/35 border border-zinc-850 p-3 rounded-xl flex flex-col justify-between gap-2 print:border-zinc-200 print:bg-zinc-50">
-                        <div>
-                          <span className="text-[10px] text-zinc-400 print:text-zinc-700 block font-semibold leading-snug">{m.label}</span>
-                          <span className="text-xs text-white print:text-black font-bold block mt-1 font-mono">₹ {Number(m.amount).toLocaleString("en-IN")}/-</span>
-                        </div>
-                        <div className="flex justify-between items-center mt-1">
-                          <span className="text-[8px] text-zinc-500 font-mono">{m.date ? formatDateString(m.date) : 'Upon Delivery'}</span>
-                          <span className={`text-[8px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                            m.status === "Paid" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-zinc-800 text-zinc-500 border border-zinc-700 print:border-zinc-300"
-                          }`}>
-                            {m.status}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+              {/* Cursive Signature script footer matching templates */}
+              <div className="invoice-footer">
+                <div className="payment-instructions">
+                  <strong>Send Payments To:</strong>
+                  Dreamwed Stories<br />
+                  UPI: dreamwedstories@okaxis<br />
+                  GPay / PhonePe: +91 98954 12895
                 </div>
-              )}
+                <div>
+                  <div className="signature-thankyou">Thank You!</div>
+                </div>
+              </div>
 
-              {/* Credentials Section */}
-              <div className="bg-zinc-900/30 border border-[#b4975a]/20 p-5 rounded-2xl space-y-3.5 print:border-zinc-200 print:bg-zinc-50">
-                <div className="flex items-center gap-2 border-b border-zinc-850 pb-2 print:border-zinc-200">
-                  <ShieldCheck size={16} className="text-[#b4975a] print-gold-text" />
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#b4975a] print-gold-text">Couple Client Portal Access Credentials</h4>
+            </div>
+
+            {/* Credentials Card (visible on screen but hidden during print) */}
+            <div className="no-print max-w-[800px] mx-auto mt-6 mb-12 px-4">
+              <div className="bg-zinc-900 border border-[#b4975a]/20 p-6 rounded-[24px] space-y-4 text-left shadow-xl">
+                <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
+                  <span className="text-base">🔑</span>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#b4975a]">Couple Client Portal Access Credentials</h4>
                 </div>
-                <p className="text-[10px] text-zinc-500 print:text-zinc-650 leading-relaxed mt-0.5">
-                  Share these credentials with the bride and groom so they can access their private selection lounge at the client portal page.
+                <p className="text-[11px] text-zinc-400 font-light leading-relaxed">
+                  Share these generated private passwords with the couple so they can sign into the Client Portal selection lounge:
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-zinc-950 p-3 border border-zinc-850 rounded-xl flex justify-between items-center print:bg-white print:border-zinc-200">
-                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold block">👰 Bride Password:</span>
-                    <span className="text-white print:text-black font-mono font-bold text-xs">{activeInvoiceBooking.bride_password || "—"}</span>
+                  <div className="bg-zinc-950 p-4 border border-zinc-800 rounded-xl flex justify-between items-center">
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">👰 Bride Password:</span>
+                    <span className="text-white font-mono font-bold text-xs">{activeInvoiceBooking.bride_password || "—"}</span>
                   </div>
-                  <div className="bg-zinc-950 p-3 border border-zinc-850 rounded-xl flex justify-between items-center print:bg-white print:border-zinc-200">
-                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold block">🤵 Groom Password:</span>
-                    <span className="text-white print:text-black font-mono font-bold text-xs">{activeInvoiceBooking.groom_password || "—"}</span>
+                  <div className="bg-zinc-950 p-4 border border-zinc-800 rounded-xl flex justify-between items-center">
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">🤵 Groom Password:</span>
+                    <span className="text-white font-mono font-bold text-xs">{activeInvoiceBooking.groom_password || "—"}</span>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Terms / Footer */}
-              <div className="border-t border-zinc-900 pt-4 text-center select-none print:border-zinc-200">
-                <p style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-lg text-[#b4975a] print-gold-text font-light italic">
-                  Thank you for letting us capture your forever stories! 💛
-                </p>
-                <p className="text-[8px] text-zinc-650 print:text-zinc-500 uppercase tracking-widest mt-1.5 leading-normal">
-                  All rights reserved © Dreamwed Stories Private Limited. Payments are subject to contract terms.
-                </p>
-              </div>
-
-              {/* Action Buttons (no-print) */}
-              <div className="no-print pt-4 border-t border-zinc-850 flex flex-col sm:flex-row justify-end gap-3">
-                <button
-                  onClick={() => {
-                    const includesPrewedding = (parseInt(activeInvoiceBooking.package_price || activeInvoiceBooking.total_price) === 49999 || parseInt(activeInvoiceBooking.package_price || activeInvoiceBooking.total_price) === 99999 || parseInt(activeInvoiceBooking.package_price || activeInvoiceBooking.total_price) === 110000);
-                    const surpriseBonusText = includesPrewedding ? `🎁 SURPRISE BONUS: Free Save the Date Photoshoot (worth ₹9,999/-) included!\n` : '';
-                    const message = `Hi ${activeInvoiceBooking.customer_name}! Here is your Digital Invoice Receipt for locking in your Wedding Package slot:\n\n` +
-                                    `Invoice Number: ${activeInvoiceBooking.invoice_number || `DW-2026-${String(activeInvoiceBooking.id).padStart(3, '0')}`}\n` +
-                                    `Plan: ${activeInvoiceBooking.package_name}\n` +
-                                    `Quote: ₹${parseInt(activeInvoiceBooking.package_price || activeInvoiceBooking.total_price).toLocaleString()}/- Net\n` +
-                                    `Advance Paid: ₹${(activeInvoiceBooking.advance_paid || 0).toLocaleString()}/-\n` +
-                                    surpriseBonusText + `\n` +
-                                    `Your Private Access Credentials:\n` +
-                                    `👰 Bride Password: ${activeInvoiceBooking.bride_password || '—'}\n` +
-                                    `🤵 Groom Password: ${activeInvoiceBooking.groom_password || '—'}\n` +
-                                    `Link to selections: ${window.location.origin}/`;
-                    window.open(`https://wa.me/91${activeInvoiceBooking.customer_phone}?text=${encodeURIComponent(message)}`, '_blank');
-                  }}
-                  className="px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
-                >
-                  <Share2 size={13} /> Share Details
-                </button>
-                <button
-                  onClick={() => window.print()}
-                  className="px-5 py-3.5 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 shadow-md"
-                >
-                  <Download size={13} /> Download & Print Invoice
-                </button>
-                <button
-                  onClick={() => setActiveInvoiceBooking(null)}
-                  className="px-5 py-3.5 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 border border-zinc-800"
-                >
-                  Close Receipt
-                </button>
-              </div>
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
