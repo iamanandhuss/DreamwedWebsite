@@ -171,6 +171,12 @@ const MyBooking = () => {
       setSelectedPackage(decodedPkg);
       setActiveMode("signup");
       
+      if (isSingleSidePackage(decodedPkg)) {
+        setBookingRole("bride");
+      } else {
+        setBookingRole("both");
+      }
+      
       // Attempt to set matching price or use parameter price
       if (prc) {
         setPackagePrice(Number(prc));
@@ -206,6 +212,11 @@ const MyBooking = () => {
 
   const handlePackageChange = (pName) => {
     setSelectedPackage(pName);
+    if (isSingleSidePackage(pName)) {
+      setBookingRole("bride");
+    } else {
+      setBookingRole("both");
+    }
     if (pName === "Elite Signature Package") setPackagePrice(180000);
     else if (pName === "Premium Couture Package") setPackagePrice(135000);
     else if (pName === "Classic Heritage Package") setPackagePrice(95000);
@@ -655,11 +666,10 @@ const MyBooking = () => {
                     <p className="text-[11px] text-zinc-550 font-light leading-relaxed">
                       This is a single-side coverage package. Please choose whose details you want to provide for this booking:
                     </p>
-                    <div className="grid grid-cols-3 gap-2 bg-zinc-200/50 p-1 rounded-xl border border-zinc-200 w-full relative z-10">
+                    <div className="grid grid-cols-2 gap-2 bg-zinc-200/50 p-1 rounded-xl border border-zinc-200 w-full relative z-10">
                       {[
                         { value: "bride", label: "👰 Bride" },
-                        { value: "groom", label: "🎩 Groom" },
-                        { value: "both", label: "💑 Both" }
+                        { value: "groom", label: "🎩 Groom" }
                       ].map((opt) => (
                         <button
                           key={opt.value}
