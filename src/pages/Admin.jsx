@@ -1330,11 +1330,65 @@ const Admin = () => {
                           });
                         }
 
+                        const downloadAdminPhotosOneClick = () => {
+                          if (list.length === 0) return;
+                          list.forEach((img, idx) => {
+                            setTimeout(() => {
+                              const a = document.createElement("a");
+                              a.href = img.url;
+                              a.download = `${(p.couple_name || "photo").replace(/\s+/g, "_")}_selected_${img.id}.jpg`;
+                              a.target = "_blank";
+                              a.rel = "noopener noreferrer";
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
+                            }, idx * 300);
+                          });
+                          alert(`📥 Downloading ${list.length} photos in one click. Please allow popups if prompted.`);
+                        };
+
+                        const downloadAdminPhotosLinksText = () => {
+                          if (list.length === 0) return;
+                          const urlsText = list.map(img => img.url).join("\n");
+                          const blob = new Blob([urlsText], { type: "text/plain;charset=utf-8" });
+                          const blobUrl = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = blobUrl;
+                          a.download = `${(p.couple_name || "project").replace(/\s+/g, "_")}_${activeClientPhotoTab}_photo_links.txt`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(blobUrl);
+                          alert(`📄 Text file with ${list.length} download links generated!`);
+                        };
+
                         return (
                           <div className="space-y-2">
-                            <p className="text-[10px] text-zinc-400">
-                              Total items: <strong>{list.length} photos</strong> found in {activeClientPhotoTab} list.
-                            </p>
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                              <p className="text-[10px] text-zinc-400">
+                                Total items: <strong>{list.length} photos</strong> found in {activeClientPhotoTab} list.
+                              </p>
+                              {list.length > 0 && (
+                                <div className="flex gap-1.5 mt-1 sm:mt-0">
+                                  <button
+                                    onClick={downloadAdminPhotosOneClick}
+                                    className="px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-white text-[9px] font-bold uppercase tracking-wider rounded flex items-center gap-1 transition-colors cursor-pointer border border-zinc-700"
+                                    title="Download all selected photos in one click (staggered)"
+                                  >
+                                    <Download size={10} />
+                                    Download (1-Click)
+                                  </button>
+                                  <button
+                                    onClick={downloadAdminPhotosLinksText}
+                                    className="px-2.5 py-1 bg-zinc-850 hover:bg-zinc-800 text-zinc-350 border border-zinc-800 hover:border-zinc-700 text-[9px] font-bold uppercase tracking-wider rounded flex items-center gap-1 transition-colors cursor-pointer"
+                                    title="Generate a text file containing direct download URLs"
+                                  >
+                                    <FileText size={10} />
+                                    Get Links (.txt)
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                             {list.length === 0 ? (
                               <div className="py-8 text-center text-[10px] text-zinc-600 border border-dashed border-zinc-800 rounded-xl">
                                 No hearted photos found for this filter.

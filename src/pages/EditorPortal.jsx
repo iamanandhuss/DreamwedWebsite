@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Video, LogIn, LogOut, Calendar, Clock, Send, ExternalLink, RefreshCw, Camera, Plus, Trash2, Copy, Play, Upload, Check } from "lucide-react";
+import { Video, LogIn, LogOut, Calendar, Clock, Send, ExternalLink, RefreshCw, Camera, Plus, Trash2, Copy, Play, Upload, Check, Download, FileText, Heart } from "lucide-react";
 import SEO from "../components/SEO";
 
 const API_BASE = typeof window !== "undefined"
@@ -32,6 +32,7 @@ const EditorPortal = () => {
   const [uploadingHighlight, setUploadingHighlight] = useState(false);
   const [uploadingFull, setUploadingFull] = useState(false);
   const [uploadingReel, setUploadingReel] = useState(false);
+  const [activeClientPhotoTab, setActiveClientPhotoTab] = useState("matches"); // "matches", "bride", "groom"
   const chatPollRef = useRef(null);
 
   // Check saved session on mount
@@ -983,6 +984,143 @@ const EditorPortal = () => {
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* Client Selected Photos Curation */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl text-left">
+                  <div className="border-b border-zinc-800 pb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#b4975a]/10 border border-[#b4975a]/20 flex items-center justify-center">
+                        <Heart className="text-[#b4975a]" size={18} />
+                      </div>
+                      <div>
+                        <h2 className="text-base font-semibold text-white font-sans">Client Selected Photos</h2>
+                        <p className="text-zinc-500 text-[10px] font-light mt-0.5">View and download client-favorited wedding photos for reference.</p>
+                      </div>
+                    </div>
+
+                    {/* Tabs switcher: matches, bride, groom */}
+                    <div className="flex gap-1 bg-zinc-950 p-1 border border-zinc-800 rounded-xl">
+                      {[
+                        { id: "matches", label: "Matches" },
+                        { id: "bride", label: "Bride" },
+                        { id: "groom", label: "Groom" }
+                      ].map((tab) => (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setActiveClientPhotoTab(tab.id)}
+                          className={`px-3 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all cursor-pointer text-center ${
+                            activeClientPhotoTab === tab.id 
+                              ? "bg-[#b4975a] text-zinc-950 shadow-sm" 
+                              : "text-zinc-500 hover:text-zinc-300"
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {(() => {
+                    let list = [];
+                    if (activeClientPhotoTab === "bride") {
+                      list = (selected.gallery_images || []).filter(img => img.selected_by_bride !== undefined ? img.selected_by_bride : img.favorited);
+                    } else if (activeClientPhotoTab === "groom") {
+                      list = (selected.gallery_images || []).filter(img => img.selected_by_groom !== undefined ? img.selected_by_groom : img.favorited);
+                    } else {
+                      list = (selected.gallery_images || []).filter(img => {
+                        const b = img.selected_by_bride !== undefined ? img.selected_by_bride : img.favorited;
+                        const g = img.selected_by_groom !== undefined ? img.selected_by_groom : img.favorited;
+                        return b && g;
+                      });
+                    }
+
+                    const downloadEditorPhotosOneClick = () => {
+                      if (list.length === 0) return;
+                      list.forEach((img, idx) => {
+                        setTimeout(() => {
+                          const a = document.createElement("a");
+                          a.href = img.url;
+                          a.download = `${(selected.couple_name || "photo").replace(/\s+/g, "_")}_selected_${img.id}.jpg`;
+                          a.target = "_blank";
+                          a.rel = "noopener noreferrer";
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                        }, idx * 300);
+                      });
+                      alert(`📥 Downloading ${list.length} photos in one click. Please allow popups if prompted.`);
+                    };
+
+                    const downloadEditorPhotosLinksText = () => {
+                      if (list.length === 0) return;
+                      const urlsText = list.map(img => img.url).join("\n");
+                      const blob = new Blob([urlsText], { type: "text/plain;charset=utf-8" });
+                      const blobUrl = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = blobUrl;
+                      a.download = `${(selected.couple_name || "project").replace(/\s+/g, "_")}_${activeClientPhotoTab}_photo_links.txt`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(blobUrl);
+                      alert(`📄 Text file with ${list.length} download links generated!`);
+                    };
+
+                    return (
+                      <div className="space-y-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                          <p className="text-xs text-zinc-400 font-light">
+                            Found <strong className="text-white">{list.length} photos</strong> curated in <span className="text-[#b4975a] font-semibold">{activeClientPhotoTab}</span> list.
+                          </p>
+                          {list.length > 0 && (
+                            <div className="flex gap-2 w-full sm:w-auto">
+                              <button
+                                type="button"
+                                onClick={downloadEditorPhotosOneClick}
+                                className="flex-1 sm:flex-initial px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-zinc-700"
+                              >
+                                <Download size={12} />
+                                Download (1-Click)
+                              </button>
+                              <button
+                                type="button"
+                                onClick={downloadEditorPhotosLinksText}
+                                className="flex-1 sm:flex-initial px-4 py-2 bg-zinc-950 hover:bg-black text-zinc-400 hover:text-white rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-zinc-800"
+                              >
+                                <FileText size={12} />
+                                Get Links (.txt)
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {list.length === 0 ? (
+                          <div className="py-12 text-center text-xs text-zinc-500 border border-dashed border-zinc-800 rounded-2xl">
+                            No curated photos found for this tab filter.
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 max-h-[300px] overflow-y-auto p-2 bg-zinc-950/40 rounded-2xl border border-zinc-800">
+                            {list.map(img => (
+                              <a 
+                                key={img.id} 
+                                href={img.url} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="block relative aspect-square group overflow-hidden rounded-xl bg-zinc-900 border border-zinc-850 hover:border-[#b4975a]/30 transition-colors"
+                              >
+                                <img src={img.url} className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300" alt="" />
+                                <span className="absolute bottom-2 right-2 bg-black/70 px-1.5 py-0.5 text-[8px] font-mono text-zinc-400 rounded">
+                                  #{img.id}
+                                </span>
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Client Chat */}

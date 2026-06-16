@@ -2365,6 +2365,66 @@ const ClientPortal = () => {
     }
   };
 
+  const getSelectedPhotosList = () => {
+    if (!project) return [];
+    const scope = booking?.coverage_scope || "both";
+    if (scope === "both") {
+      return (project.gallery_images || []).filter(img => {
+        const isBrideFav = img.selected_by_bride !== undefined ? img.selected_by_bride : img.favorited;
+        const isGroomFav = img.selected_by_groom !== undefined ? img.selected_by_groom : img.favorited;
+        return isBrideFav && isGroomFav;
+      });
+    } else if (scope === "bride") {
+      return (project.gallery_images || []).filter(img => {
+        return img.selected_by_bride !== undefined ? img.selected_by_bride : img.favorited;
+      });
+    } else {
+      return (project.gallery_images || []).filter(img => {
+        return img.selected_by_groom !== undefined ? img.selected_by_groom : img.favorited;
+      });
+    }
+  };
+
+  const downloadSelectedPhotosOneClick = () => {
+    const list = getSelectedPhotosList();
+    if (list.length === 0) {
+      alert("No selected photos to download.");
+      return;
+    }
+    list.forEach((img, idx) => {
+      setTimeout(() => {
+        const a = document.createElement("a");
+        a.href = img.url;
+        a.download = `${(project.couple_name || "photo").replace(/\s+/g, "_")}_selected_${img.id}.jpg`;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }, idx * 300);
+    });
+    alert(`📥 Downloading ${list.length} selected photos in one click. Your browser may request permission to allow multiple file downloads.`);
+  };
+
+  const downloadSelectedPhotosLinksText = () => {
+    const list = getSelectedPhotosList();
+    if (list.length === 0) {
+      alert("No selected photos to download.");
+      return;
+    }
+    const urlsText = list.map(img => img.url).join("\n");
+    const blob = new Blob([urlsText], { type: "text/plain;charset=utf-8" });
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = `${(project.couple_name || "project").replace(/\s+/g, "_")}_selected_photo_links.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+    alert(`📄 Text file with ${list.length} download links generated and saved!`);
+  };
+
   // CURRENCY & FORMATS
   const formatCurrency = (num) => {
     return Number(num).toLocaleString("en-IN", { style: "decimal", maximumFractionDigits: 0 });
@@ -3677,17 +3737,33 @@ const ClientPortal = () => {
 
                   {/* Read-only Curation Gallery */}
                   <div className="space-y-4 pt-6 border-t border-zinc-100">
-                    <div className="flex justify-between items-center pb-2">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-3 border-b border-zinc-100 mb-4">
                       <div>
                         <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
                           📸 Confirmed Selections ({getSelectedPhotosCount()})
                         </h3>
                         <p className="text-zinc-500 text-[10px] font-normal mt-0.5">These favorited photographs are officially compiled for the album layout.</p>
                       </div>
+                      <div className="flex flex-wrap gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                        <button
+                          onClick={downloadSelectedPhotosOneClick}
+                          className="px-4 py-2 bg-zinc-900 hover:bg-black text-white rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                        >
+                          <Download size={12} />
+                          Download All (1-Click)
+                        </button>
+                        <button
+                          onClick={downloadSelectedPhotosLinksText}
+                          className="px-4 py-2 bg-white hover:bg-zinc-50 text-zinc-700 border border-zinc-200 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                        >
+                          <FileText size={12} />
+                          Generate Links (.txt)
+                        </button>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-                      {project.gallery_images.filter(img => img.favorited).map((img) => (
+                      {getSelectedPhotosList().map((img) => (
                         <div key={img.id} className="group relative rounded-xl overflow-hidden border border-zinc-200 bg-zinc-50 aspect-square flex flex-col justify-end">
                           <img src={getOptimizedImageUrl(img.url)} alt="Confirmed selection" className="absolute inset-0 w-full h-full object-cover" />
                           <div className="absolute top-2 left-2 z-10">
@@ -3771,8 +3847,33 @@ const ClientPortal = () => {
                     </div>
                   ) : (
                     <div className="space-y-6">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-zinc-100">
+                        <div>
+                          <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+                            📸 Selected Photos Preview ({getSelectedPhotosCount()})
+                          </h3>
+                          <p className="text-zinc-500 text-[10px] font-normal mt-0.5">Preview of your currently favorited album selection.</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                          <button
+                            onClick={downloadSelectedPhotosOneClick}
+                            className="px-4 py-2 bg-zinc-900 hover:bg-black text-white rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                          >
+                            <Download size={12} />
+                            Download All (1-Click)
+                          </button>
+                          <button
+                            onClick={downloadSelectedPhotosLinksText}
+                            className="px-4 py-2 bg-white hover:bg-zinc-50 text-zinc-700 border border-zinc-200 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                          >
+                            <FileText size={12} />
+                            Generate Links (.txt)
+                          </button>
+                        </div>
+                      </div>
+
                       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-                        {project.gallery_images.filter(img => img.favorited).map((img) => (
+                        {getSelectedPhotosList().map((img) => (
                           <div key={img.id} className="group relative rounded-xl overflow-hidden border border-zinc-200 bg-zinc-50 aspect-square flex flex-col justify-end">
                             <img src={getOptimizedImageUrl(img.url)} alt="Selection thumbnail" className="absolute inset-0 w-full h-full object-cover" />
                             <button 
