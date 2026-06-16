@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Phone, Calendar, MapPin, Search, Download, CheckCircle, 
@@ -1149,12 +1150,12 @@ const MyBooking = () => {
                       </div>
                     </div>
                     <div className="pt-2">
-                      <a
-                        href="/client-portal"
+                      <Link
+                        to="/my-booking"
                         className="w-full py-3.5 bg-zinc-950 hover:bg-black text-white font-bold rounded-xl text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95"
                       >
                         🚀 Go to Client Portal Login
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </div>
