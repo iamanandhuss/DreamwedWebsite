@@ -1011,51 +1011,102 @@ const Admin = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
-                {bookings.map((b) => (
-                  <div key={b.id} className="bg-zinc-950 border border-zinc-800 p-6 rounded-[24px] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <h4 className="text-base font-bold text-white">{b.customer_name}</h4>
-                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
-                          b.status === "confirmed" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                        }`}>
-                          {b.status === "confirmed" ? "Approved" : "Pending Approval"}
-                        </span>
-                      </div>
-                      <p className="text-xs text-zinc-400 font-light leading-relaxed">
-                        Event Venue: <strong className="text-white">{b.event_venue}</strong> • Date: <strong className="text-white">{formatDateString(b.event_date)}</strong>
-                      </p>
-                      <p className="text-[10px] text-zinc-500 leading-normal">
-                        {b.coverage_type === "both" ? (
-                          <span>
-                            🤵 Groom: <strong className="text-zinc-300">{b.customer_phone}</strong> {b.customer_email && `(${b.customer_email})`} • 
-                            👰 Bride: <strong className="text-zinc-300">{b.customer_phone_2}</strong> {b.customer_email_2 && `(${b.customer_email_2})`}
+                {bookings.map((b) => {
+                  const groomName = b.customer_name ? b.customer_name.split(" & ")[0] : "Groom";
+                  const brideName = b.customer_name_2 || "Bride";
+                  return (
+                    <div key={b.id} className="bg-zinc-950 border border-zinc-800 p-6 rounded-[24px] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                      <div className="space-y-2 flex-1">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <h4 className="text-base font-bold text-white">
+                            👰 Bride: <span className="text-[#b4975a]">{brideName}</span> <span className="text-zinc-600 mx-1">❤️</span> 🤵 Groom: <span className="text-zinc-300">{groomName}</span>
+                          </h4>
+                          <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+                            b.status === "confirmed" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
+                            b.status === "rejected" ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" :
+                            b.status === "proof_requested" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
+                            "bg-zinc-800 text-zinc-400 border border-zinc-700"
+                          }`}>
+                            {b.status === "confirmed" ? "Approved" :
+                             b.status === "rejected" ? "Rejected" :
+                             b.status === "proof_requested" ? "Proof Requested" :
+                             "Pending Approval"}
                           </span>
-                        ) : (
+                        </div>
+                        <p className="text-xs text-zinc-400 font-light leading-relaxed">
+                          Event Venue: <strong className="text-white">{b.event_venue}</strong> • Date: <strong className="text-white">{formatDateString(b.event_date)}</strong>
+                        </p>
+                        <p className="text-[10px] text-zinc-500 leading-normal">
                           <span>
-                            Phone: {b.customer_phone} • Email: {b.customer_email || "—"}
+                            🤵 Groom Contact: <strong className="text-zinc-300">{b.customer_phone}</strong> {b.customer_email && `(${b.customer_email})`} • 
+                            👰 Bride Contact: <strong className="text-zinc-300">{b.customer_phone_2}</strong> {b.customer_email_2 && `(${b.customer_email_2})`}
+                          </span>
+                        </p>
+                        <p className="text-[10px] text-zinc-550 leading-normal">
+                          Package: <strong className="text-[#b4975a]">{b.package_name}</strong> (₹{Number(b.package_price || 0).toLocaleString("en-IN")}) • Advance paid: <strong className="text-emerald-400">₹{Number(b.advance_paid || 0).toLocaleString("en-IN")}</strong> via {b.payment_method || "UPI"} • Transaction ID: <strong className="text-zinc-350">{b.transaction_id || "N/A"}</strong>
+                        </p>
+                        
+                        {/* File attachments review */}
+                        <div className="flex flex-wrap gap-2 pt-2">
+                          {b.invitation_file_data ? (
+                            <button
+                              onClick={() => setViewingInvitation({ url: b.invitation_file_data, name: `${groomName}_${brideName}_Invitation` })}
+                              className="px-3 py-1.5 bg-zinc-905 hover:bg-zinc-900 text-zinc-300 text-[10px] font-bold rounded-lg border border-zinc-800 transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+                            >
+                              📂 View Invitation Card
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-zinc-600 bg-zinc-950 px-3 py-1.5 border border-zinc-900 rounded-lg inline-block">No Invitation Uploaded</span>
+                          )}
+
+                          {b.screenshot_file_data ? (
+                            <button
+                              onClick={() => setViewingProof({ url: b.screenshot_file_data, name: `${groomName}_${brideName}_PaymentProof`, transId: b.transaction_id })}
+                              className="px-3 py-1.5 bg-zinc-905 hover:bg-zinc-900 text-zinc-300 text-[10px] font-bold rounded-lg border border-zinc-800 transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+                            >
+                              🧾 View Payment Proof
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-zinc-650 bg-zinc-950 px-3 py-1.5 border border-zinc-900 rounded-lg inline-block">No Payment Screenshot</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 shrink-0 w-full md:w-auto items-center">
+                        {b.status !== "confirmed" ? (
+                          <>
+                            <button 
+                              onClick={() => handleApproveBooking(b.id)}
+                              className="px-4 py-2.5 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl text-[11px] uppercase tracking-widest transition-all cursor-pointer flex items-center gap-1 active:scale-95 hover:shadow-lg"
+                            >
+                              <CheckCircle2 size={12} /> Approve
+                            </button>
+                            {b.status !== "proof_requested" && (
+                              <button 
+                                onClick={() => handleRequestNewProof(b.id)}
+                                className="px-4 py-2.5 bg-zinc-900 border border-zinc-850 hover:bg-zinc-800 text-amber-400 font-bold rounded-xl text-[11px] uppercase tracking-widest transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+                              >
+                                ⚠️ Request Proof
+                              </button>
+                            )}
+                            {b.status !== "rejected" && (
+                              <button 
+                                onClick={() => handleRejectBooking(b.id)}
+                                className="px-4 py-2.5 bg-zinc-900 border border-zinc-850 hover:bg-rose-950/20 text-rose-400 font-bold rounded-xl text-[11px] uppercase tracking-widest transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+                              >
+                                ❌ Reject
+                              </button>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-zinc-500 text-xs font-semibold px-4 py-2 border border-zinc-800 rounded-xl inline-block bg-zinc-900/30 font-bold uppercase tracking-wider">
+                            Workspace Unlocked ✓
                           </span>
                         )}
-                        {" "}• Package: {b.package_name} (₹{Number(b.package_price).toLocaleString("en-IN")})
-                      </p>
+                      </div>
                     </div>
-
-                    <div className="flex gap-3 shrink-0 w-full md:w-auto">
-                      {b.status !== "confirmed" ? (
-                        <button 
-                          onClick={() => handleApproveBooking(b.id)}
-                          className="w-full md:w-auto px-5 py-3 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl text-xs uppercase tracking-widest transition-all cursor-pointer hover:shadow-lg active:scale-95 flex items-center justify-center gap-1.5"
-                        >
-                          <CheckCircle2 size={13} /> Approve Booking
-                        </button>
-                      ) : (
-                        <span className="text-zinc-500 text-xs font-semibold px-4 py-2 border border-zinc-800 rounded-xl inline-block bg-zinc-900/30 font-bold uppercase tracking-wider">
-                          Workspace Unlocked ✓
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -2124,6 +2175,132 @@ const Admin = () => {
                   className="px-5 py-3.5 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 border border-zinc-800"
                 >
                   Close Receipt
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Viewing Payment Proof Modal */}
+      <AnimatePresence>
+        {viewingProof && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md no-print"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-zinc-950 border border-zinc-800 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl p-6 relative flex flex-col max-h-[90vh]"
+            >
+              <div className="flex items-center justify-between border-b border-zinc-850 pb-4 mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-white">Payment Proof Screenshot</h3>
+                  {viewingProof.transId && (
+                    <p className="text-[10px] text-zinc-500 font-light mt-0.5">Transaction ID: <span className="font-mono text-zinc-300 font-bold">{viewingProof.transId}</span></p>
+                  )}
+                </div>
+                <button 
+                  onClick={() => setViewingProof(null)}
+                  className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="flex-1 overflow-auto rounded-2xl bg-zinc-900 border border-zinc-850 flex items-center justify-center p-2 min-h-[300px]">
+                {viewingProof.url.startsWith("data:") || viewingProof.url.startsWith("http") ? (
+                  <img 
+                    src={viewingProof.url} 
+                    alt="Payment Proof" 
+                    className="max-h-[50vh] object-contain rounded-xl"
+                  />
+                ) : (
+                  <div className="text-center p-8 text-zinc-500 text-xs">
+                    📁 Filename: {viewingProof.url} (Preview unavailable)
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-zinc-850">
+                {viewingProof.url.startsWith("data:") && (
+                  <a 
+                    href={viewingProof.url} 
+                    download={`${viewingProof.name}.png`}
+                    className="px-4 py-2 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl text-[11px] uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center active:scale-95"
+                  >
+                    Download File
+                  </a>
+                )}
+                <button 
+                  onClick={() => setViewingProof(null)}
+                  className="px-4 py-2 bg-zinc-900 hover:bg-zinc-850 text-white rounded-xl text-[11px] uppercase tracking-wider transition-all border border-zinc-800 cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Viewing Invitation Modal */}
+      <AnimatePresence>
+        {viewingInvitation && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md no-print"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-zinc-950 border border-zinc-800 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl p-6 relative flex flex-col max-h-[90vh]"
+            >
+              <div className="flex items-center justify-between border-b border-zinc-850 pb-4 mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-white">Client Invitation Details</h3>
+                  <p className="text-[10px] text-zinc-500 font-light mt-0.5">Uploaded during booking registration</p>
+                </div>
+                <button 
+                  onClick={() => setViewingInvitation(null)}
+                  className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="flex-1 overflow-auto rounded-2xl bg-zinc-900 border border-zinc-850 flex items-center justify-center p-2 min-h-[300px]">
+                {viewingInvitation.url.startsWith("data:") || viewingInvitation.url.startsWith("http") ? (
+                  <img 
+                    src={viewingInvitation.url} 
+                    alt="Invitation Card" 
+                    className="max-h-[50vh] object-contain rounded-xl"
+                  />
+                ) : (
+                  <div className="text-center p-8 text-zinc-500 text-xs">
+                    📁 Filename: {viewingInvitation.url} (Preview unavailable)
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-[#3f3f46]">
+                {viewingInvitation.url.startsWith("data:") && (
+                  <a 
+                    href={viewingInvitation.url} 
+                    download={`${viewingInvitation.name}.png`}
+                    className="px-4 py-2 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl text-[11px] uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center active:scale-95"
+                  >
+                    Download File
+                  </a>
+                )}
+                <button 
+                  onClick={() => setViewingInvitation(null)}
+                  className="px-4 py-2 bg-zinc-900 hover:bg-zinc-850 text-white rounded-xl text-[11px] uppercase tracking-wider transition-all border border-zinc-800 cursor-pointer"
+                >
+                  Close
                 </button>
               </div>
             </motion.div>

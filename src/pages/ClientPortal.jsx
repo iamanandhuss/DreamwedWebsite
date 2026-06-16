@@ -1116,6 +1116,7 @@ const ClientPortal = () => {
   const [chatMessages, setChatMessages] = useState([]);
   const [newMsgText, setNewMsgText] = useState("");
   const [galleryFilter, setGalleryFilter] = useState("all");
+  const [galleryCategory, setGalleryCategory] = useState("all");
   const [sessionRole, setSessionRole] = useState(localStorage.getItem("dreamwed_logged_role") || "bride");
   const [isInvoicePrintOpen, setIsInvoicePrintOpen] = useState(false);
   const [photoComments, setPhotoComments] = useState({}); // photoId -> comment text
@@ -1504,7 +1505,8 @@ const ClientPortal = () => {
       const match = bookings.find(b => 
         b.customer_email?.toLowerCase() === query.toLowerCase() ||
         b.customer_phone?.replace(/\D/g, '') === query.replace(/\D/g, '') ||
-        (b.customer_phone_2 && b.customer_phone_2.replace(/\D/g, '') === query.replace(/\D/g, ''))
+        (b.customer_phone_2 && b.customer_phone_2.replace(/\D/g, '') === query.replace(/\D/g, '')) ||
+        (b.invoice_number && b.invoice_number.toLowerCase().replace(/-/g, '') === query.toLowerCase().replace(/-/g, ''))
       );
 
       if (!match) {
@@ -2137,9 +2139,15 @@ const ClientPortal = () => {
     steps[1].completed = true;
     steps[1].updated_at = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
+    const updatedDeliveries = {
+      ...(project.deliveries || {}),
+      album_selected_zip_url: "https://dreamwedstories.co.in/downloads/Album_Selected.zip"
+    };
+
     const payload = {
       current_step: 3, 
-      timeline_steps: steps
+      timeline_steps: steps,
+      deliveries: updatedDeliveries
     };
 
     try {
@@ -2171,6 +2179,7 @@ const ClientPortal = () => {
       if (idx !== -1) {
         localProjects[idx].current_step = 3;
         localProjects[idx].timeline_steps = steps;
+        localProjects[idx].deliveries = updatedDeliveries;
         localStorage.setItem("dreamwed_projects", JSON.stringify(localProjects));
         setProject(localProjects[idx]);
         
@@ -2296,6 +2305,19 @@ const ClientPortal = () => {
   const getFilteredPhotos = () => {
     if (!project) return [];
     let photos = project.gallery_images || [];
+    
+    // Categorize dynamically: Save The Date, Wedding, Reception, Couple Shoot
+    const categoriesList = ["Save The Date", "Wedding", "Reception", "Couple Shoot"];
+    
+    if (galleryCategory && galleryCategory !== "all") {
+      photos = photos.filter(img => {
+        const cat = img.categories && img.categories.length > 0 
+          ? img.categories[0] 
+          : categoriesList[img.id % 4];
+        return cat.toLowerCase() === galleryCategory.toLowerCase();
+      });
+    }
+
     if (galleryFilter === "fav") {
       return photos.filter(img => img.favorited);
     }
@@ -2938,6 +2960,36 @@ const ClientPortal = () => {
                     </span>
                   </div>
                 </div>
+
+                {/* Premium Payment Overview Box */}
+                {booking && (
+                  <div className="mt-6 p-5 rounded-2xl bg-zinc-950 border border-zinc-800 text-left space-y-4 shadow-md select-none">
+                    <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">💳 Account & Billing Status</span>
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-[#b4975a] font-mono px-2.5 py-0.5 bg-[#b4975a]/10 border border-[#b4975a]/20 rounded-full">
+                        Invoice ID: {booking.invoice_number || `DW-2026-${String(booking.id).padStart(3, '0')}`}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-1">
+                      <div className="space-y-1">
+                        <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest block">Selected Package</span>
+                        <span className="text-xs font-bold text-white block truncate">{booking.package_name}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest block">Total Quote Value</span>
+                        <span className="text-xs font-bold text-white block font-mono">₹{Number(booking.package_price || booking.total_price || 0).toLocaleString("en-IN")}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-widest block">Paid (Advance)</span>
+                        <span className="text-xs font-bold text-emerald-400 block font-mono">₹{Number(booking.advance_paid || 0).toLocaleString("en-IN")}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[9px] text-[#b4975a] font-bold uppercase tracking-widest block">Net Balance Due</span>
+                        <span className="text-xs font-extrabold text-[#b4975a] block font-mono">₹{Number((booking.package_price || booking.total_price || 0) - (booking.advance_paid || 0)).toLocaleString("en-IN")}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Progress Tracker Widget */}
@@ -3062,6 +3114,32 @@ const ClientPortal = () => {
                 </div>
               </div>
 
+              {/* Category Folder Filter row */}
+              <div className="flex flex-wrap gap-2 pb-4 border-b border-zinc-100 select-none">
+                {[
+                  { id: "all", name: "All Folders" },
+                  { id: "save the date", name: "Save The Date" },
+                  { id: "wedding", name: "Wedding" },
+                  { id: "reception", name: "Reception" },
+                  { id: "couple shoot", name: "Couple Shoot" }
+                ].map((folder) => (
+                  <button
+                    key={folder.id}
+                    onClick={() => {
+                      setGalleryCategory(folder.id);
+                      setVisiblePhotosCount(24);
+                    }}
+                    className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+                      galleryCategory === folder.id
+                        ? "bg-[#b4975a] text-zinc-950 shadow-md font-extrabold"
+                        : "bg-zinc-50 border border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100"
+                    }`}
+                  >
+                    📁 {folder.name}
+                  </button>
+                ))}
+              </div>
+
               {/* Dynamic Role Switcher inside Portal */}
               {booking?.coverage_scope === "both" && (
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-zinc-50 p-5 rounded-2xl border border-zinc-200 shadow-sm">
@@ -3162,6 +3240,13 @@ const ClientPortal = () => {
                         </span>
                       </div>
                     )}
+
+                    {/* Folder Category Badge */}
+                    <div className="absolute bottom-3.5 left-3.5 z-20 select-none">
+                      <span className="bg-black/60 backdrop-blur-md text-zinc-300 text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded border border-white/10 flex items-center gap-1 shadow-sm">
+                        📁 {["Save The Date", "Wedding", "Reception", "Couple Shoot"][img.id % 4]}
+                      </span>
+                    </div>
 
                     {/* Selection indicators */}
                     {(img.selected_by_bride || img.selected_by_groom || img.favorited) && (
@@ -3461,6 +3546,81 @@ const ClientPortal = () => {
                           <Copy size={13} />
                         </button>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* SECTION 4: HIGH-SPEED ZIP DOWNLOADS */}
+              <div className="space-y-4 pt-2">
+                <div className="border-b border-zinc-100 pb-3 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#b4975a] block shrink-0" />
+                  <h3 className="text-xs font-bold text-zinc-900 uppercase tracking-widest">High-Speed ZIP Archive Downloads</h3>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { 
+                      label: "Selected Album Photos", 
+                      zipName: "Album_Selected.zip", 
+                      url: project.deliveries?.album_selected_zip_url || "", 
+                      available: !!project.deliveries?.album_selected_zip_url,
+                      desc: "Contains all photos selected/hearted for the layflat album layout." 
+                    },
+                    { 
+                      label: "Wedding Photos Zip", 
+                      zipName: "Wedding_Photos.zip", 
+                      url: "https://dreamwedstories.co.in/downloads/Wedding_Photos.zip", 
+                      available: true,
+                      desc: "Complete retouched archive of the main wedding day." 
+                    },
+                    { 
+                      label: "Reception Photos Zip", 
+                      zipName: "Reception_Photos.zip", 
+                      url: "https://dreamwedstories.co.in/downloads/Reception_Photos.zip", 
+                      available: true,
+                      desc: "Complete retouched archive of the wedding reception." 
+                    },
+                    { 
+                      label: "All files Vault Zip", 
+                      zipName: "All_Deliverables.zip", 
+                      url: "https://dreamwedstories.co.in/downloads/All_Deliverables.zip", 
+                      available: true,
+                      desc: "Includes all high-resolution photos, reels, and PDFs." 
+                    }
+                  ].map((item, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`p-5 rounded-2xl border flex flex-col justify-between h-40 transition-all ${
+                        item.available 
+                          ? "bg-zinc-50 border-zinc-200 text-zinc-900 hover:border-[#b4975a]/25 hover:shadow-sm" 
+                          : "bg-zinc-50/50 border-zinc-205/50 text-zinc-400 opacity-60"
+                      }`}
+                    >
+                      <div className="space-y-1 text-left">
+                        <span className="text-[10px] text-[#b4975a] font-bold uppercase tracking-wider block">ZIP ARCHIVE</span>
+                        <h4 className="text-xs font-semibold text-zinc-900">{item.label}</h4>
+                        <p className="text-zinc-500 text-[9px] font-normal leading-tight mt-1">{item.desc}</p>
+                      </div>
+
+                      {item.available ? (
+                        <a 
+                          href={item.url} 
+                          download={item.zipName}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            alert(`📦 Simulating download of ${item.zipName}...`);
+                            window.open(item.url, '_blank');
+                          }}
+                          className="w-full py-2 bg-zinc-950 hover:bg-black text-white text-[10px] font-bold uppercase tracking-wider text-center rounded-lg block transition-colors"
+                        >
+                          Download {item.zipName}
+                        </a>
+                      ) : (
+                        <span className="w-full py-2 bg-zinc-200/40 border border-zinc-200/50 rounded-lg text-[9px] font-bold uppercase tracking-widest text-center text-zinc-400 select-none">
+                          Lock Selections to Unlock
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -4288,6 +4448,44 @@ const ClientPortal = () => {
                       <p className="text-zinc-500 text-xs font-light leading-relaxed">
                         Tap to bookmark this photo with a heart icon for your Wedding Album.
                       </p>
+
+                      {/* Explicit Voting Indicators */}
+                      {(() => {
+                        const isBrideFav = activePhoto.selected_by_bride !== undefined ? activePhoto.selected_by_bride : (sessionRole === 'bride' && activePhoto.favorited);
+                        const isGroomFav = activePhoto.selected_by_groom !== undefined ? activePhoto.selected_by_groom : (sessionRole === 'groom' && activePhoto.favorited);
+                        return (
+                          <div className="bg-zinc-950 p-4 border border-zinc-800 rounded-2xl space-y-3 mt-4 text-left select-none">
+                            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Lounge Voting Status</span>
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="flex items-center gap-1.5 text-zinc-400">
+                                  <span>👰</span> Bride Selection:
+                                </span>
+                                <span className={`font-bold font-mono px-2 py-0.5 rounded text-[10px] ${
+                                  isBrideFav ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" : "bg-zinc-900 text-zinc-600"
+                                }`}>
+                                  {isBrideFav ? "❤️ Selected" : "—"}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="flex items-center gap-1.5 text-zinc-400">
+                                  <span>🤵</span> Groom Selection:
+                                </span>
+                                <span className={`font-bold font-mono px-2 py-0.5 rounded text-[10px] ${
+                                  isGroomFav ? "bg-sky-500/10 text-sky-400 border border-sky-500/20" : "bg-zinc-900 text-zinc-600"
+                                }`}>
+                                  {isGroomFav ? "❤️ Selected" : "—"}
+                                </span>
+                              </div>
+                            </div>
+                            {isBrideFav && isGroomFav && (
+                              <div className="pt-2 border-t border-zinc-850 flex items-center justify-center gap-1.5 text-xs text-[#b4975a] font-bold">
+                                <span>✨</span> Agreed Album Match!
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
 
                     {/* Retouch Notes */}

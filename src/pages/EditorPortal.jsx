@@ -136,11 +136,24 @@ const EditorPortal = () => {
       video_full_url: videoFullUrl.trim(),
       wedding_reels: weddingReels
     };
+    const steps = [...(selected.timeline_steps || [])];
+    if (steps[2]) {
+      steps[2].completed = true;
+      steps[2].updated_at = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    }
+    const updatedCurrentStep = Math.max(selected.current_step || 1, 4);
+
+    const payload = {
+      deliveries: updatedDeliveries,
+      current_step: updatedCurrentStep,
+      timeline_steps: steps
+    };
+
     try {
       const res = await fetch(`${API_BASE}/api/projects/${selected.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deliveries: updatedDeliveries })
+        body: JSON.stringify(payload)
       });
       if (res.ok) {
         const updated = await res.json();
@@ -152,6 +165,17 @@ const EditorPortal = () => {
         const updatedLocal = localProjects.map(p => p.id === updated.id ? updated : p);
         localStorage.setItem("dreamwed_projects", JSON.stringify(updatedLocal));
         
+        // Log activity
+        const localLogs = JSON.parse(localStorage.getItem(`dreamwed_logs_${selected.id}`) || "[]");
+        localLogs.push({
+          id: localLogs.length + 1,
+          project_id: selected.id,
+          user: "Editor",
+          action: "Uploaded cinematic wedding video film drafts & reels",
+          timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19)
+        });
+        localStorage.setItem(`dreamwed_logs_${selected.id}`, JSON.stringify(localLogs));
+
         alert("✅ All video links saved and client notified!");
       } else {
         throw new Error("API error");
@@ -160,7 +184,9 @@ const EditorPortal = () => {
       console.error("Saving video links locally:", e);
       const updatedSelected = {
         ...selected,
-        deliveries: updatedDeliveries
+        deliveries: updatedDeliveries,
+        current_step: updatedCurrentStep,
+        timeline_steps: steps
       };
       setSelected(updatedSelected);
       setProjects(ps => ps.map(p => p.id === updatedSelected.id ? updatedSelected : p));
@@ -169,6 +195,17 @@ const EditorPortal = () => {
       const updatedLocal = localProjects.map(p => p.id === updatedSelected.id ? updatedSelected : p);
       localStorage.setItem("dreamwed_projects", JSON.stringify(updatedLocal));
       
+      // Log activity
+      const localLogs = JSON.parse(localStorage.getItem(`dreamwed_logs_${selected.id}`) || "[]");
+      localLogs.push({
+        id: localLogs.length + 1,
+        project_id: selected.id,
+        user: "Editor",
+        action: "Uploaded cinematic wedding video film drafts & reels (Local Sync)",
+        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      });
+      localStorage.setItem(`dreamwed_logs_${selected.id}`, JSON.stringify(localLogs));
+
       alert("✅ All video links saved locally (Offline Sync Active)!");
     } finally { setSaving(false); }
   };

@@ -103,11 +103,31 @@ const DesignerPortal = () => {
     const url = urlToSave !== undefined ? urlToSave : albumUrl;
     if (!selected || !url.trim()) return;
     setSaving(true);
+    
+    const updatedDeliveries = {
+      ...selected.deliveries,
+      album_pdf_url: url.trim(),
+      album_status: "pending"
+    };
+
+    const steps = [...(selected.timeline_steps || [])];
+    if (steps[2]) {
+      steps[2].completed = true;
+      steps[2].updated_at = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    }
+    const updatedCurrentStep = Math.max(selected.current_step || 1, 4);
+
+    const payload = {
+      deliveries: updatedDeliveries,
+      current_step: updatedCurrentStep,
+      timeline_steps: steps
+    };
+
     try {
       const res = await fetch(`${API_BASE}/api/projects/${selected.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deliveries: { ...selected.deliveries, album_pdf_url: url.trim(), album_status: "pending" } })
+        body: JSON.stringify(payload)
       });
       if (res.ok) {
         const updated = await res.json();
@@ -119,6 +139,17 @@ const DesignerPortal = () => {
         const updatedLocal = localProjects.map(p => p.id === updated.id ? updated : p);
         localStorage.setItem("dreamwed_projects", JSON.stringify(updatedLocal));
         
+        // Log activity
+        const localLogs = JSON.parse(localStorage.getItem(`dreamwed_logs_${selected.id}`) || "[]");
+        localLogs.push({
+          id: localLogs.length + 1,
+          project_id: selected.id,
+          user: "Designer",
+          action: "Uploaded layflat wedding album draft design PDF for preview",
+          timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19)
+        });
+        localStorage.setItem(`dreamwed_logs_${selected.id}`, JSON.stringify(localLogs));
+
         alert("✅ Album PDF link saved! Client can now view and approve it.");
       } else {
         throw new Error("API error");
@@ -127,11 +158,9 @@ const DesignerPortal = () => {
       console.log("Saving locally");
       const updatedSelected = {
         ...selected,
-        deliveries: {
-          ...selected.deliveries,
-          album_pdf_url: url.trim(),
-          album_status: "pending"
-        }
+        deliveries: updatedDeliveries,
+        current_step: updatedCurrentStep,
+        timeline_steps: steps
       };
       setSelected(updatedSelected);
       setProjects(ps => ps.map(p => p.id === updatedSelected.id ? updatedSelected : p));
@@ -140,6 +169,17 @@ const DesignerPortal = () => {
       const updatedLocal = localProjects.map(p => p.id === updatedSelected.id ? updatedSelected : p);
       localStorage.setItem("dreamwed_projects", JSON.stringify(updatedLocal));
       
+      // Log activity
+      const localLogs = JSON.parse(localStorage.getItem(`dreamwed_logs_${selected.id}`) || "[]");
+      localLogs.push({
+        id: localLogs.length + 1,
+        project_id: selected.id,
+        user: "Designer",
+        action: "Uploaded layflat wedding album draft design PDF for preview (Local Sync)",
+        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      });
+      localStorage.setItem(`dreamwed_logs_${selected.id}`, JSON.stringify(localLogs));
+
       alert("✅ Album PDF link saved locally (Offline Sync Active)! Client can now view and approve it.");
     } finally { setSaving(false); }
   };
