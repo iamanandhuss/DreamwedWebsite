@@ -441,7 +441,7 @@ const Services = () => {
         
         <div className="text-center mt-auto">
           <Button to="/contact" variant={isSpecial ? 'primary' : 'outline'} className="w-full" onClick={(e) => e.stopPropagation()}>
-            Book a Consultation
+            Book Now
           </Button>
         </div>
       </motion.div>
@@ -832,15 +832,16 @@ const Services = () => {
 
                     {/* Bonus highlight box */}
                     {plan.preweddingOffer && (
-                      <div className="bg-[#d1a852]/5 border border-[#d1a852]/15 p-4 rounded-2xl flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#d1a852]/15 flex items-center justify-center text-[#b8903b] shrink-0">
+                      <div className="bg-red-50 border-2 border-red-200 p-4 rounded-2xl flex items-start gap-3 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.08)] select-none">
+                        <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
                           <Gift size={16} />
                         </div>
-                        <div>
-                          <span className="block text-[#b8903b] text-xs font-bold uppercase tracking-wide">
+                        <div className="text-left">
+                          <span className="block text-red-600 text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
                             Special Inclusions
                           </span>
-                          <span className="text-zinc-600 text-[10px] font-medium leading-snug block mt-0.5">
+                          <span className="text-zinc-800 text-xs font-bold leading-snug block mt-0.5">
                             {plan.preweddingOffer} is fully included in this offer.
                           </span>
                         </div>
@@ -879,7 +880,7 @@ const Services = () => {
                       className="w-full py-4.5 rounded-2xl text-center text-xs uppercase tracking-widest font-bold select-none"
                       onClick={() => setActivePlan(null)}
                     >
-                      Book a Consultation Now 🌟
+                      Book Now 🌟
                     </Button>
                   </div>
                 </div>

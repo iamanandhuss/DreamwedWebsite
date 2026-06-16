@@ -654,7 +654,7 @@ const Admin = () => {
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-5 border-b border-zinc-800">
           <div>
-            <span className="text-[#b4975a] font-bold text-[10px] tracking-[0.3em] uppercase block mb-1">Wedding Hub Console</span>
+            <span className="text-[#b4975a] font-bold text-[10px] tracking-[0.3em] uppercase block mb-1">Client Portal Console</span>
             <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl sm:text-4xl text-white font-light tracking-tight">
               Admin <span className="italic font-serif text-[#b4975a]">Control Panel</span>
             </h1>
@@ -1960,7 +1960,7 @@ const Admin = () => {
               <div className="bg-zinc-900/30 border border-[#b4975a]/20 p-5 rounded-2xl space-y-3.5 print:border-zinc-200 print:bg-zinc-50">
                 <div className="flex items-center gap-2 border-b border-zinc-850 pb-2 print:border-zinc-200">
                   <ShieldCheck size={16} className="text-[#b4975a] print-gold-text" />
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#b4975a] print-gold-text">Couple Wedding Hub Access Credentials</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#b4975a] print-gold-text">Couple Client Portal Access Credentials</h4>
                 </div>
                 <p className="text-[10px] text-zinc-500 print:text-zinc-650 leading-relaxed mt-0.5">
                   Share these credentials with the bride and groom so they can access their private selection lounge at the client portal page.
