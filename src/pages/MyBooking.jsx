@@ -1128,6 +1128,35 @@ const MyBooking = () => {
                     <Download size={15} />
                     Download Printable Invoice
                   </button>
+
+                  {/* Private Access Credentials */}
+                  <div className="bg-zinc-50 border border-[#b4975a]/25 p-5 rounded-2xl space-y-3.5 text-left mt-4 shadow-sm select-none">
+                    <div className="flex items-center gap-2 border-b border-zinc-200 pb-2">
+                      <span className="text-base">🔑</span>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#b4975a]">Couple Client Portal Access Credentials</h4>
+                    </div>
+                    <p className="text-[11px] text-zinc-500 font-light leading-relaxed">
+                      Use these private access credentials to log into your wedding dashboard workspace client portal (instead of OTP):
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="bg-white p-3 border border-zinc-200 rounded-xl flex justify-between items-center">
+                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold block">👰 Bride Password:</span>
+                        <span className="text-zinc-900 font-mono font-bold text-xs">{booking.bride_password || "—"}</span>
+                      </div>
+                      <div className="bg-white p-3 border border-zinc-200 rounded-xl flex justify-between items-center">
+                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold block">🤵 Groom Password:</span>
+                        <span className="text-zinc-900 font-mono font-bold text-xs">{booking.groom_password || "—"}</span>
+                      </div>
+                    </div>
+                    <div className="pt-2">
+                      <a
+                        href="/client-portal"
+                        className="w-full py-3.5 bg-zinc-950 hover:bg-black text-white font-bold rounded-xl text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+                      >
+                        🚀 Go to Client Portal Login
+                      </a>
+                    </div>
+                  </div>
                 </div>
               )}
             </motion.div>

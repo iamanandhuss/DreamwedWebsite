@@ -343,6 +343,24 @@ const cardVariants = {
 };
 
 const PricingSection = () => {
+  const getRegularPrice = (priceStr) => {
+    if (!priceStr) return "";
+    const num = parseInt(priceStr.replace(/[^0-9]/g, ""));
+    if (isNaN(num)) return "₹0";
+    if (num === 39999) return "₹59,999";
+    if (num === 54999) return "₹79,999";
+    if (num === 69999) return "₹99,999";
+    if (num === 110000) return "₹1,65,000";
+    if (num === 19999) return "₹29,999";
+    if (num === 28999) return "₹45,000";
+    if (num === 79999) return "₹1,20,000";
+    if (num === 10000) return "₹15,000";
+    if (num === 15000) return "₹25,000";
+    if (num === 28000) return "₹45,000";
+    const calculated = Math.round((num * 1.5) / 5000) * 5000;
+    return `₹${calculated.toLocaleString("en-IN")}`;
+  };
+
   const [activePlan, setActivePlan] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [likedPlans, setLikedPlans] = useState({});
@@ -488,11 +506,11 @@ const PricingSection = () => {
           </button>
         </div>
 
-        <div className={`absolute ${isSpecial ? "top-[150px]" : "top-20"} left-0 right-0 z-20 text-center flex items-center justify-center gap-1.5 text-[8.5px] font-bold tracking-[0.2em] text-white/50 group-hover:text-white/90 transition-colors duration-300`}>
+        <div className="absolute top-[150px] left-0 right-0 z-20 text-center flex items-center justify-center gap-1.5 text-[8.5px] font-bold tracking-[0.2em] text-white/50 group-hover:text-white/90 transition-colors duration-300">
           <span className="text-amber-400">✈</span> CLICK FOR PHOTOS & DETAILS
         </div>
 
-        {isSpecial && (
+        {plan.price && (
           <div className="absolute top-[70px] left-6 right-6 z-20 bg-black/80 border border-[#d1a852]/50 backdrop-blur-md px-3.5 py-2.5 rounded-2xl text-center space-y-1.5 shadow-[0_0_25px_rgba(209,168,82,0.25)]">
             <div className="flex items-center justify-center gap-1.5 text-[#d1a852] text-[8.5px] font-black tracking-[0.15em] uppercase">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
@@ -575,8 +593,8 @@ const PricingSection = () => {
 
           <div className="flex flex-col items-center gap-2 mb-6">
             <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-white text-xs font-light">
-              <Tag size={12} className="text-[#d1a852]" />
-              <span>from <strong className="font-semibold text-white">{plan.price}</strong></span>
+              <Tag size={12} className="text-red-500" />
+              <span>Offer: <strong className="font-extrabold text-red-500">{plan.price}</strong> <span className="text-zinc-500 line-through text-[10px] ml-1">{getRegularPrice(plan.price)}</span></span>
             </div>
 
             <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/5 text-white/90 text-xs font-light">
@@ -841,8 +859,33 @@ const PricingSection = () => {
                   <h3 className="text-2xl sm:text-3xl text-white font-semibold tracking-tight font-serif">
                     {activePlan.title.toLowerCase().includes("package") ? activePlan.title : `${activePlan.title} Package`}
                   </h3>
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-3xl font-bold text-[#d1a852]">{activePlan.price}/-</span>
+                  {/* Dynamic Double Pricing & Countdown Timer Block */}
+                  <div className="flex flex-col gap-2 bg-[#9b1c1c]/5 border border-[#9b1c1c]/15 p-4.5 rounded-2xl select-none text-left">
+                    <div className="flex items-baseline gap-3 flex-wrap">
+                      <span className="text-red-500 text-3xl font-extrabold tracking-tight select-none">
+                        Offer Price: {activePlan.price}/-
+                      </span>
+                      <span className="text-zinc-500 text-sm line-through decoration-zinc-650 select-none">
+                        Regular: {getRegularPrice(activePlan.price)}/-
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-zinc-300 font-mono text-[11px] border-t border-white/5 pt-2.5 mt-0.5">
+                      <span className="text-red-500 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
+                        ⏳ OFFER CLOSING IN:
+                      </span>
+                      <span className="text-[#d1a852] bg-white/5 border border-white/10 px-2 py-0.5 rounded font-bold">
+                        {String(timeLeft.hours).padStart(2, '0')}h
+                      </span>
+                      <span>:</span>
+                      <span className="text-[#d1a852] bg-white/5 border border-white/10 px-2 py-0.5 rounded font-bold">
+                        {String(timeLeft.minutes).padStart(2, '0')}m
+                      </span>
+                      <span>:</span>
+                      <span className="text-[#d1a852] bg-white/5 border border-white/10 px-2 py-0.5 rounded font-bold animate-pulse">
+                        {String(timeLeft.seconds).padStart(2, '0')}s
+                      </span>
+                    </div>
                   </div>
 
                   <div className="md:hidden flex justify-center pt-2 select-none pointer-events-none">
@@ -863,6 +906,43 @@ const PricingSection = () => {
                   <p className="text-zinc-400 font-light text-xs leading-relaxed select-none">
                     {activePlan.desc}
                   </p>
+
+                  {/* Why Book This Package Highlights */}
+                  <div className="border border-red-500/20 bg-red-500/5 p-4 rounded-2xl space-y-3 select-none text-left">
+                    <span className="block text-red-500 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles size={11} className="animate-pulse text-red-500" />
+                      Why Book This Package?
+                    </span>
+                    <div className="space-y-2.5 text-xs">
+                      <div className="flex gap-2.5 items-start">
+                        <span className="text-red-500 mt-0.5 shrink-0">📁</span>
+                        <div>
+                          <strong className="text-zinc-100 block">Full Photos in Google Drive</strong>
+                          <span className="text-zinc-400 font-light text-[11px] block mt-0.5">
+                            Get 100% original, uncompressed high-resolution digital files instantly shared via Google Drive for lifetime backup.
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2.5 items-start">
+                        <span className="text-red-500 mt-0.5 shrink-0">🌐</span>
+                        <div>
+                          <strong className="text-zinc-100 block">Personal Couples Website Support</strong>
+                          <span className="text-zinc-400 font-light text-[11px] block mt-0.5">
+                            Receive a stunning, private online interactive gallery website to view, select, and share your photos with family.
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2.5 items-start">
+                        <span className="text-red-500 mt-0.5 shrink-0">💬</span>
+                        <div>
+                          <strong className="text-zinc-100 block">Direct WhatsApp Previews & Live Support</strong>
+                          <span className="text-zinc-400 font-light text-[11px] block mt-0.5">
+                            Optimized mobile previews and direct WhatsApp integration for sharing reels and highlights on the go.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
                   {/* Standalone Value Breakdown */}
                   {activePlan.shareId.startsWith("pkgWedding") && !activePlan.shareId.includes("Standalone") && (
@@ -980,6 +1060,24 @@ const PricingSection = () => {
                 <div className="w-full h-px bg-white/5 select-none" />
 
                 <div className="space-y-3">
+                  {/* Scroll Price Reminder */}
+                  <div className="bg-[#9b1c1c]/10 border border-[#9b1c1c]/20 px-4 py-3 rounded-xl flex items-center justify-between text-xs select-none">
+                    <div className="space-y-0.5 text-left">
+                      <span className="text-zinc-400 block text-[9px] uppercase font-bold tracking-wider">YOUR EXCLUSIVE PRICE</span>
+                      <span className="text-zinc-550 text-[10px] line-through font-mono block leading-none">
+                        Reg: {getRegularPrice(activePlan.price)}/-
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-red-500 font-black font-mono text-xl block leading-none">
+                        {activePlan.price}/-
+                      </span>
+                      <span className="text-emerald-400 text-[9.5px] font-bold block mt-0.5 uppercase tracking-wider">
+                        Special Promo Rate
+                      </span>
+                    </div>
+                  </div>
+
                   <Button
                     to={`/booking?package=${encodeURIComponent(activePlan?.title || "")}&price=${encodeURIComponent((activePlan?.price || "").replace(/[^\d]/g, ""))}`}
                     variant="primary"

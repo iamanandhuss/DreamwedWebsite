@@ -392,6 +392,29 @@ const Admin = () => {
     }
   };
 
+  const handleSaveAdminNotes = async (bookingId, notesText) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/bookings/${bookingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ admin_notes: notesText })
+      });
+      if (res.ok) {
+        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, admin_notes: notesText } : b));
+      }
+    } catch (e) {
+      console.warn("Save notes error, falling back locally:", e);
+      const localBookings = JSON.parse(localStorage.getItem("dreamwed_bookings") || "[]");
+      const match = localBookings.find(b => b.id === Number(bookingId));
+      if (match) {
+        match.admin_notes = notesText;
+        match.updated_at = new Date().toISOString();
+        localStorage.setItem("dreamwed_bookings", JSON.stringify(localBookings));
+        setBookings(localBookings);
+      }
+    }
+  };
+
   const loadChats = async () => {
     if (!chatProject) return;
     setChatLoading(true);
@@ -1069,6 +1092,20 @@ const Admin = () => {
                           ) : (
                             <span className="text-[10px] text-zinc-650 bg-zinc-950 px-3 py-1.5 border border-zinc-900 rounded-lg inline-block">No Payment Screenshot</span>
                           )}
+                        </div>
+
+                        {/* Admin Description / Notes Box */}
+                        <div className="pt-3 space-y-1 w-full max-w-xl">
+                          <label className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Admin Internal Description / Custom Details</label>
+                          <textarea 
+                            placeholder="Type private notes, special discounts, custom billing milestones details, or scheduling info..."
+                            defaultValue={b.admin_notes || ""}
+                            onBlur={(e) => {
+                              const text = e.target.value.trim();
+                              handleSaveAdminNotes(b.id, text);
+                            }}
+                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white text-xs focus:border-[#b4975a] focus:outline-none resize-none h-14"
+                          />
                         </div>
                       </div>
 

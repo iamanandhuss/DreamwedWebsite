@@ -1,0 +1,517 @@
+{
+  "coverage": [
+    {
+      "id": 8,
+      "name": "Traditional Photographer",
+      "description": "A skilled photographer specialising in classic, well-composed wedding photography. Captures formal portraits, family groups, rituals, and key moments with perfect lighting and timeless framing. The backbone of every complete wedding album.",
+      "price": 10000,
+      "category": "Photography",
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "id": 9,
+      "name": "Candid Photographer",
+      "description": "A documentary-style photographer who captures real emotions, unposed reactions, and spontaneous moments as they happen. Works invisibly with a long lens — laughter, tears, stolen glances. The images that make you feel the day all over again.",
+      "price": 12000,
+      "category": "Photography",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": 10,
+      "name": "Traditional Videographer",
+      "description": "Full-day video coverage of your wedding in the traditional style — complete ritual documentation, family speeches, and ceremony footage. Delivers a comprehensive video record of every important moment, perfect for families who want nothing missed.",
+      "price": 10000,
+      "category": "Videography",
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": 11,
+      "name": "Candid Videographer",
+      "description": "A videographer who shoots in a fly-on-the-wall documentary style — capturing candid moments, natural interactions, and raw emotion on video. Pairs beautifully with a candid photographer to build a complete candid storytelling package.",
+      "price": 12000,
+      "category": "Videography",
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": 12,
+      "name": "Cinematic Videographer",
+      "description": "A cinema-grade filmmaker who treats your wedding like a short film. Uses professional cinema cameras, gimbals, and wireless audio to produce a colour-graded, score-matched wedding film. Delivers a highlight film and full-length edit that moves audiences every time it plays.",
+      "price": 25000,
+      "category": "Videography",
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": 13,
+      "name": "Motion Candid Videographer",
+      "description": "Combines the emotional spontaneity of candid videography with cinematic motion techniques — slow motion, creative angles, and dynamic movement. Specialises in capturing the energy of dances, processions, and crowd moments in a way that static coverage cannot.",
+      "price": 20000,
+      "category": "Videography",
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": 14,
+      "name": "Helicam (Drone)",
+      "description": "DGCA-certified aerial drone operator with cinema-grade equipment. Captures sweeping overhead shots of your venue, aerial couple portraits, procession coverage, and landscape sequences. Adds a cinematic scale impossible from the ground. Subject to airspace clearance.",
+      "price": 10000,
+      "category": "Aerial & Tech",
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "id": 15,
+      "name": "Live Streaming",
+      "description": "Professional multi-camera live stream of your ceremony broadcast to a private link, so family and friends who cannot attend in person can watch in real time. Includes a dedicated streaming technician, HD cameras, and a private URL shared with your guest list.",
+      "price": 15000,
+      "category": "Aerial & Tech",
+      "sortOrder": 7,
+      "isActive": true
+    },
+    {
+      "id": 16,
+      "name": "Live Print",
+      "description": "An on-site instant printing station that produces high-quality 4×6 prints within seconds of being captured. Guests collect their photographs in real time throughout the function. Includes a dedicated print attendant, branded print frames, and unlimited prints for the duration.",
+      "price": 10000,
+      "category": "Experiences",
+      "sortOrder": 8,
+      "isActive": true
+    },
+    {
+      "id": 17,
+      "name": "AI Photo Sharing",
+      "description": "An AI-powered face-recognition photo sharing system. Guests register their face via a QR code and automatically receive every photo they appear in — straight to their phone, in real time. No more waiting weeks for a gallery. Everyone leaves with their memories the same day.",
+      "price": 15000,
+      "category": "Experiences",
+      "sortOrder": 9,
+      "isActive": true
+    },
+    {
+      "id": 18,
+      "name": "Photo Booth",
+      "description": "A fully styled, staffed photo booth with a premium backdrop, props, and instant prints. Guests receive branded printed keepsakes on the day; you receive a complete digital gallery of all booth images. A crowd favourite at every age group — from grandparents to children.",
+      "price": 15000,
+      "category": "Experiences",
+      "sortOrder": 10,
+      "isActive": true
+    }
+  ],
+  "deliverables": [
+    {
+      "id": 10,
+      "name": "Wedding E-Invitation",
+      "description": "A beautifully designed digital wedding invitation card, personalised with your names, event details, and theme. Ready to share instantly via WhatsApp, Instagram, and email. Includes animated and static versions.",
+      "price": 500,
+      "category": "Digital",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": 11,
+      "name": "Photographs — Soft Copies (200 Edited)",
+      "description": "200 professionally edited and highlighted images from your event, carefully selected and colour-graded by our team. Perfect for sharing on social media, printing, and framing. Delivered via a private high-resolution download gallery.",
+      "price": 3000,
+      "category": "Digital",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": 12,
+      "name": "All Unprocessed & Unsorted Pics - Soft Copies",
+      "description": "The complete raw photograph collection from your event - every frame captured throughout the day, delivered as high-resolution unedited files.",
+      "price": 0,
+      "category": "Digital",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": 13,
+      "name": "Signature Album",
+      "description": "A premium handcrafted signature wedding album featuring your most treasured photographs, designed by our team. Lay-flat binding, archival print quality, available in leather or linen cover. The centrepiece of your wedding collection.",
+      "price": 10000,
+      "category": "Printing Materials",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": 14,
+      "name": "4 Designed Albums — 12\"×15\", 80 Pages",
+      "description": "Four matching premium designed albums, each 12\"×15\" with 40 leaves (80 pages), featuring the same layout and print quality. Ideal for gifting to both sets of parents and close family — everyone gets a copy of the full story.",
+      "price": 128000,
+      "category": "Printing Materials",
+      "quantity": 4,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": 15,
+      "name": "4 Mini Notebook Albums",
+      "description": "Four compact notebook-style albums that replicate the design and page layout of the main albums in a smaller, portable format. A charming keepsake for siblings, grandparents, and the wedding party.",
+      "price": 8000,
+      "category": "Printing Materials",
+      "quantity": 4,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "id": 16,
+      "name": "Two Premium Family Photo Frames",
+      "description": "Two large-format premium framed prints, ready to hang. Each frame is customised with a photograph selected by you, printed on archival canvas or fine art paper and mounted in a solid wood or metal frame. A lasting centrepiece for your home.",
+      "price": 8000,
+      "category": "Printing Materials",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 7,
+      "isActive": true
+    },
+    {
+      "id": 17,
+      "name": "Memory Box",
+      "description": "A handcrafted keepsake memory box housing your most treasured wedding mementos — prints, the invitation, a USB with your digital gallery, and personalised inserts. Presented as a complete archival package. A gift that lasts generations.",
+      "price": 3500,
+      "category": "Printing Materials",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 8,
+      "isActive": true
+    },
+    {
+      "id": 18,
+      "name": "Pre-Wedding / Post-Wedding Video (3–5 min)",
+      "description": "A cinematic short film shot at a location of your choice before or after your wedding — your love story told as a visual narrative. Score-matched, colour-graded, and delivered in 4K. Perfect as a film opener or a standalone keepsake.",
+      "price": 15000,
+      "category": "4K Wedding Films",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 9,
+      "isActive": true
+    },
+    {
+      "id": 19,
+      "name": "Four Reels — Any Function (30 sec–1 min)",
+      "description": "Four short, punchy social media reels from any four functions of your wedding — mehendi, sangeet, ceremony, reception. Each reel is 30 seconds to 1 minute, music-driven, and optimised for Instagram and WhatsApp sharing.",
+      "price": 12000,
+      "category": "4K Wedding Films",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 10,
+      "isActive": true
+    },
+    {
+      "id": 20,
+      "name": "Event Teaser (1–2 min)",
+      "description": "A fast-paced, music-driven teaser edit of your wedding, typically delivered within 48 hours of your event. 1 to 2 minutes of your most cinematic moments — the first film you share with the world while the full edit is in production.",
+      "price": 12000,
+      "category": "4K Wedding Films",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 11,
+      "isActive": true
+    },
+    {
+      "id": 21,
+      "name": "Cinematic Highlights (7–10 min)",
+      "description": "A crafted 7–10 minute cinematic highlights film — the definitive version of your wedding day on screen. Covers every key moment from getting ready to the last dance, score-matched to music that fits your story, colour-graded to a cinematic look.",
+      "price": 20000,
+      "category": "4K Wedding Films",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 12,
+      "isActive": true
+    },
+    {
+      "id": 22,
+      "name": "Full Function Film",
+      "description": "Complete documentary coverage of your full wedding function — every ritual, every speech, every dance, in full. Duration varies based on the length of your function. The uncut record of your day exactly as it happened, for families who want nothing left out.",
+      "price": 20000,
+      "category": "4K Wedding Films",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 13,
+      "isActive": true
+    },
+    {
+      "id": 23,
+      "name": "Photographs — Soft Copies (100 Edited)",
+      "description": "100 professionally edited and highlighted images from your event, carefully selected and colour-graded by our team. Ideal for social media sharing, printing, and framing. Delivered via a private high-resolution download gallery.",
+      "price": 10000,
+      "category": "Digital",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 14,
+      "isActive": true
+    },
+    {
+      "id": 24,
+      "name": "2 Designed Albums — 12\"×15\", 100 Pages",
+      "description": "Two premium designed albums, each 12\"×15\" with 50 leaves (100 pages), featuring a full custom layout crafted by our design team. Archival print quality with lay-flat binding. Perfect for both sets of parents.",
+      "price": 80000,
+      "category": "Printing Materials",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 15,
+      "isActive": true
+    },
+    {
+      "id": 25,
+      "name": "2 Mini Notebook Albums",
+      "description": "Two compact notebook-style albums replicating the design and page layout of the main albums in a smaller, portable format. A charming keepsake for grandparents or the wedding party.",
+      "price": 4000,
+      "category": "Printing Materials",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 16,
+      "isActive": true
+    },
+    {
+      "id": 26,
+      "name": "Two Wall Calendars",
+      "description": "Two large-format wall calendars featuring a curated selection of your best wedding photographs — one image per month. Printed on premium art paper with a spiral bind. A beautiful daily reminder of your special day, gifted to family.",
+      "price": 3000,
+      "category": "Printing Materials",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 17,
+      "isActive": true
+    },
+    {
+      "id": 27,
+      "name": "Two Table Top Calendars",
+      "description": "Two stylish desk calendars featuring your favourite wedding photographs, designed to sit on a table or office desk. Compact, elegantly designed, and printed on premium paper. A thoughtful keepsake for parents or close family.",
+      "price": 3000,
+      "category": "Printing Materials",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 18,
+      "isActive": true
+    },
+    {
+      "id": 28,
+      "name": "Two Photo Frames — 12\"×18\"",
+      "description": "Two 12\"×18\" premium photo frames with your chosen wedding photographs, printed and mounted ready to hang. Available in classic wood or modern metal finish. A timeless addition to your home or a heartfelt gift for parents.",
+      "price": 8000,
+      "category": "Printing Materials",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 19,
+      "isActive": true
+    },
+    {
+      "id": 29,
+      "name": "Two Reels — Any Function (30 sec–1 min)",
+      "description": "Two short, punchy social media reels from any two functions of your wedding. Each reel is 30 seconds to 1 minute, music-driven, and optimised for Instagram and WhatsApp. Share your celebration with the world while your full film is still in edit.",
+      "price": 6000,
+      "category": "Full HD Films",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 20,
+      "isActive": true
+    },
+    {
+      "id": 30,
+      "name": "Highlight Film — 1080p Full HD (3–5 min)",
+      "description": "A professionally edited 1080p Full HD highlight film capturing the essence of your wedding in 3 to 5 minutes. Score-matched, colour-graded, and crafted to showcase your most beautiful moments. Perfect for sharing with family and on social media.",
+      "price": 12000,
+      "category": "Full HD Films",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 21,
+      "isActive": true
+    },
+    {
+      "id": 31,
+      "name": "Full Function Film — 1080p Full HD",
+      "description": "Complete 1080p Full HD documentary coverage of your full wedding function — every ritual, vow, speech, and dance. Duration varies based on function length. The uncut, full-resolution record of your day, delivered for families who want nothing left out.",
+      "price": 20000,
+      "category": "Full HD Films",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 22,
+      "isActive": true
+    },
+    {
+      "id": 32,
+      "name": "Custom Made Pendrive Box",
+      "description": "A beautifully crafted custom pendrive box containing your complete digital gallery and wedding films on a branded USB drive. Presented in a personalised keepsake box engraved or printed with your names and wedding date. A premium physical delivery of your digital memories.",
+      "price": 1500,
+      "category": "Complementary",
+      "quantity": 1,
+      "materials": "Digital output",
+      "scope": "SHARED",
+      "sortOrder": 23,
+      "isActive": true
+    }
+  ],
+  "eventTypes": [
+    {
+      "id": 1,
+      "name": "Wedding Ceremony",
+      "description": "The main wedding ceremony — Nikkah, Hindu wedding, Christian wedding, or civil ceremony.",
+      "icon": "Heart",
+      "sortOrder": 1,
+      "isActive": true,
+      "minimumCoverage": [
+        { "coverageOptionId": 8 },
+        { "coverageOptionId": 10 }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Reception / Party",
+      "description": "The wedding reception, dinner, and evening celebration with family and friends.",
+      "icon": "Sparkles",
+      "sortOrder": 2,
+      "isActive": true,
+      "minimumCoverage": [
+        { "coverageOptionId": 9 },
+        { "coverageOptionId": 11 }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Engagement Ceremony",
+      "description": "The formal engagement ceremony and ring exchange.",
+      "icon": "Ring",
+      "sortOrder": 3,
+      "isActive": true,
+      "minimumCoverage": [
+        { "coverageOptionId": 9 }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Mehendi / Haldi",
+      "description": "Pre-wedding mehendi application, haldi ceremony, and related functions.",
+      "icon": "Flower2",
+      "sortOrder": 4,
+      "isActive": true,
+      "minimumCoverage": [
+        { "coverageOptionId": 8 }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Pre-wedding Shoot",
+      "description": "A dedicated pre-wedding or engagement photo session at a location of your choice.",
+      "icon": "Camera",
+      "sortOrder": 5,
+      "isActive": true,
+      "minimumCoverage": [
+        { "coverageOptionId": 9 }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Sangeet / Music Night",
+      "description": "An evening of music, dance performances, and family celebrations.",
+      "icon": "Music",
+      "sortOrder": 6,
+      "isActive": true,
+      "minimumCoverage": [
+        { "coverageOptionId": 8 },
+        { "coverageOptionId": 11 }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Naming Ceremony",
+      "description": "Baby naming ceremony or baptism celebration.",
+      "icon": "Baby",
+      "sortOrder": 7,
+      "isActive": true,
+      "minimumCoverage": [
+        { "coverageOptionId": 8 }
+      ]
+    }
+  ],
+  "tiers": [
+    {
+      "id": 4,
+      "name": "Silver",
+      "tagline": "Essential wedding coverage — everything you need beautifully captured",
+      "badge": null,
+      "color": "silver",
+      "sortOrder": 1,
+      "isActive": true,
+      "coverageIds": [8, 10, 9],
+      "deliverableIds": [10, 23, 13, 20, 30, 29, 32],
+      "eventCoverageMap": {}
+    },
+    {
+      "id": 5,
+      "name": "Gold",
+      "tagline": "Classic wedding package — cinematic films, albums & full day coverage",
+      "badge": "Most Popular",
+      "color": "gold",
+      "sortOrder": 2,
+      "isActive": true,
+      "coverageIds": [8, 10, 9, 11, 14, 15],
+      "deliverableIds": [10, 11, 24, 25, 28, 26, 21, 22, 20, 19, 32, 12],
+      "eventCoverageMap": {
+        "1": [8, 10, 14, 9, 11],
+        "2": [8, 10, 9, 11],
+        "3": [8, 10, 14, 9, 11],
+        "4": [8, 10, 9, 11],
+        "5": [14, 9, 11],
+        "6": [10, 11, 9, 8],
+        "7": [8, 10]
+      }
+    },
+    {
+      "id": 6,
+      "name": "Platinum",
+      "tagline": "Luxury full-service wedding — every detail captured, every memory preserved",
+      "badge": "Premium",
+      "color": "platinum",
+      "sortOrder": 3,
+      "isActive": true,
+      "coverageIds": [8, 10, 9, 11, 12, 13, 14, 15, 16, 17, 18],
+      "deliverableIds": [10, 11, 14, 15, 16, 17, 26, 27, 18, 21, 22, 20, 19, 32],
+      "eventCoverageMap": {
+        "1": [8, 10, 12, 14, 9, 11, 13, 15, 17, 16, 18],
+        "2": [8, 10, 12, 14, 9, 11, 13, 17],
+        "3": [8, 10, 12, 14, 16, 18, 9, 11, 13, 15, 17],
+        "4": [8, 10, 12, 13, 11, 9, 14],
+        "5": [12, 13, 11, 9, 14, 8],
+        "6": [8, 10, 12, 13, 11, 9, 14],
+        "7": [10, 12, 14, 11, 13, 9, 8]
+      }
+    }
+  ]
+}

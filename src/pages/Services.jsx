@@ -345,9 +345,45 @@ const cardVariants = {
 };
 
 const Services = () => {
-    const [activePlan, setActivePlan] = useState(null);
+  const getRegularPrice = (priceStr) => {
+    if (!priceStr) return "";
+    const num = parseInt(priceStr.replace(/[^0-9]/g, ""));
+    if (isNaN(num)) return "₹0";
+    if (num === 39999) return "₹59,999";
+    if (num === 54999) return "₹79,999";
+    if (num === 69999) return "₹99,999";
+    if (num === 110000) return "₹1,65,000";
+    if (num === 19999) return "₹29,999";
+    if (num === 28999) return "₹45,000";
+    if (num === 79999) return "₹1,20,000";
+    if (num === 10000) return "₹15,000";
+    if (num === 15000) return "₹25,000";
+    if (num === 28000) return "₹45,000";
+    const calculated = Math.round((num * 1.5) / 5000) * 5000;
+    return `₹${calculated.toLocaleString("en-IN")}`;
+  };
+
+  const [activePlan, setActivePlan] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [likedPlans, setLikedPlans] = useState({});
+  const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 14, seconds: 56 });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev.seconds > 0) {
+          return { ...prev, seconds: prev.seconds - 1 };
+        } else if (prev.minutes > 0) {
+          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        } else if (prev.hours > 0) {
+          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        } else {
+          return { hours: 2, minutes: 14, seconds: 56 };
+        }
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Keyboard Escape listener to exit modal smoothly
   useEffect(() => {
@@ -402,7 +438,33 @@ const Services = () => {
              <Camera className="w-10 h-10" />}
           </div>
           <h3 className="text-[26px] font-normal text-center mb-4 tracking-tight leading-tight">{plan.title}</h3>
-          <p className="text-[36px] font-normal text-center mb-8 text-black numbers-pro">{plan.price}</p>
+          <div className="text-center mb-4 select-none">
+            <span className="block text-[36px] font-bold text-red-650 leading-none mb-1 numbers-pro">{plan.price}</span>
+            <span className="text-zinc-400 text-xs line-through leading-none">Reg: {getRegularPrice(plan.price)}</span>
+          </div>
+
+          {/* Urgency countdown timer bar inside card */}
+          {plan.price && (
+            <div className="mb-6 bg-red-50 border border-red-100 rounded-2xl py-2 px-3 text-center space-y-1">
+              <div className="flex items-center justify-center gap-1 text-red-650 text-[9px] font-black uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
+                <span>🔥 Offer Closing Soon</span>
+              </div>
+              <div className="text-zinc-800 font-mono text-[10px] font-bold tracking-wider flex items-center justify-center gap-1">
+                <span className="text-[#1e3f20] bg-zinc-100 border border-zinc-200 px-1.5 py-0.5 rounded">
+                  {String(timeLeft.hours).padStart(2, '0')}h
+                </span>
+                <span>:</span>
+                <span className="text-[#1e3f20] bg-zinc-100 border border-zinc-200 px-1.5 py-0.5 rounded">
+                  {String(timeLeft.minutes).padStart(2, '0')}m
+                </span>
+                <span>:</span>
+                <span className="text-[#1e3f20] bg-zinc-100 border border-zinc-200 px-1.5 py-0.5 rounded animate-pulse">
+                  {String(timeLeft.seconds).padStart(2, '0')}s
+                </span>
+              </div>
+            </div>
+          )}
           
           {/* Standalone Value Proposition Badge */}
           {plan.shareId.startsWith("pkgWedding") && !plan.shareId.includes("Standalone") && (
@@ -739,8 +801,33 @@ const Services = () => {
                     <h3 className="text-2xl sm:text-3xl text-zinc-900 font-semibold tracking-tight font-serif leading-tight">
                       {plan.title.toLowerCase().includes("package") ? plan.title : `${plan.title} Package`}
                     </h3>
-                    <div className="flex items-baseline gap-3">
-                      <span className="text-3xl font-bold text-[#1e3f20]">{plan.price}/-</span>
+                    {/* Dynamic Double Pricing & Countdown Timer Block */}
+                    <div className="flex flex-col gap-2 bg-[#9b1c1c]/5 border border-[#9b1c1c]/15 p-4.5 rounded-2xl select-none text-left">
+                      <div className="flex items-baseline gap-3 flex-wrap">
+                        <span className="text-red-650 text-3xl font-extrabold tracking-tight select-none">
+                          Offer Price: {plan.price}/-
+                        </span>
+                        <span className="text-zinc-400 text-sm line-through decoration-zinc-400 select-none">
+                          Regular: {getRegularPrice(plan.price)}/-
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-zinc-600 font-mono text-[11px] border-t border-zinc-100 pt-2.5 mt-0.5">
+                        <span className="text-red-650 flex items-center gap-1 font-sans">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
+                          ⏳ OFFER CLOSING IN:
+                        </span>
+                        <span className="text-[#1e3f20] bg-zinc-50 border border-zinc-200 px-2 py-0.5 rounded font-bold">
+                          {String(timeLeft.hours).padStart(2, '0')}h
+                        </span>
+                        <span>:</span>
+                        <span className="text-[#1e3f20] bg-zinc-50 border border-zinc-200 px-2 py-0.5 rounded font-bold">
+                          {String(timeLeft.minutes).padStart(2, '0')}m
+                        </span>
+                        <span>:</span>
+                        <span className="text-[#1e3f20] bg-zinc-50 border border-zinc-200 px-2 py-0.5 rounded font-bold animate-pulse">
+                          {String(timeLeft.seconds).padStart(2, '0')}s
+                        </span>
+                      </div>
                     </div>
 
                     {/* Symbolic Animated Scroll Arrow for Mobile */}
@@ -765,6 +852,43 @@ const Services = () => {
                     <p className="text-zinc-500 font-light text-xs leading-relaxed select-none">
                       {plan.desc}
                     </p>
+
+                    {/* Why Book This Package Highlights */}
+                    <div className="border border-red-500/30 bg-red-50/70 p-4 rounded-2xl space-y-3 select-none text-left">
+                      <span className="block text-red-650 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles size={11} className="animate-pulse text-red-650" />
+                        Why Book This Package?
+                      </span>
+                      <div className="space-y-2.5 text-xs text-zinc-700">
+                        <div className="flex gap-2.5 items-start">
+                          <span className="text-red-600 mt-0.5 shrink-0">📁</span>
+                          <div>
+                            <strong className="text-zinc-900 block">Full Photos in Google Drive</strong>
+                            <span className="text-zinc-650 font-light text-[11px] block mt-0.5">
+                              Get 100% original, uncompressed high-resolution digital files instantly shared via Google Drive for lifetime backup.
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2.5 items-start">
+                          <span className="text-red-600 mt-0.5 shrink-0">🌐</span>
+                          <div>
+                            <strong className="text-zinc-900 block">Personal Couples Website Support</strong>
+                            <span className="text-zinc-650 font-light text-[11px] block mt-0.5">
+                              Receive a stunning, private online interactive gallery website to view, select, and share your photos with family.
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2.5 items-start">
+                          <span className="text-red-600 mt-0.5 shrink-0">💬</span>
+                          <div>
+                            <strong className="text-zinc-900 block">Direct WhatsApp Previews & Live Support</strong>
+                            <span className="text-zinc-650 font-light text-[11px] block mt-0.5">
+                              Optimized mobile previews and direct WhatsApp integration for sharing reels and highlights on the go.
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
                     {/* Standalone Value Breakdown */}
                     {plan.shareId.startsWith("pkgWedding") && !plan.shareId.includes("Standalone") && (
@@ -874,6 +998,24 @@ const Services = () => {
 
                   {/* Book Consultation button */}
                   <div className="space-y-3">
+                    {/* Scroll Price Reminder */}
+                    <div className="bg-[#9b1c1c]/10 border border-[#9b1c1c]/20 px-4 py-3 rounded-xl flex items-center justify-between text-xs select-none text-left">
+                      <div className="space-y-0.5">
+                        <span className="text-zinc-550 block text-[9px] uppercase font-bold tracking-wider">YOUR EXCLUSIVE PRICE</span>
+                        <span className="text-zinc-455 text-[10px] line-through font-mono block leading-none">
+                          Reg: {getRegularPrice(plan.price)}/-
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-red-600 font-black font-mono text-xl block leading-none">
+                          {plan.price}/-
+                        </span>
+                        <span className="text-emerald-605 text-[9.5px] font-bold block mt-0.5 uppercase tracking-wider">
+                          Special Promo Rate
+                        </span>
+                      </div>
+                    </div>
+
                     <Button
                       to="/contact"
                       variant="primary"
