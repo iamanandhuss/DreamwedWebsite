@@ -11,16 +11,36 @@ import SEO from "../components/SEO";
 const isSingleSidePackage = (pName) => {
   if (!pName) return false;
   const name = pName.toLowerCase();
-  if (name.includes("dual") || name.includes("both") || name.includes("bride & groom") || name.includes("elite") || name.includes("signature") || name.includes("couture")) {
+  
+  // Explicitly dual-side packages:
+  if (
+    name.includes("elite signature") || 
+    name.includes("premium couture") || 
+    name.includes("bride & groom luxury") || 
+    name.includes("premium candid")
+  ) {
     return false;
   }
-  return name.includes("single") || 
-         name.includes("classic") || 
-         name.includes("heritage") || 
-         name.includes("essential") || 
-         name.includes("standalone") || 
-         name.includes("promo") || 
-         name.includes("photography");
+  
+  // Explicitly single-side packages:
+  if (
+    name.includes("classic heritage") ||
+    name.includes("wedding photography") ||
+    name.includes("wedding photo & pre-wedding") ||
+    name.includes("candid photo & videography") ||
+    name.includes("engagement package") || // "Bride or Groom Engagement Package"
+    name.includes("standalone") ||
+    name.includes("haldi") ||
+    name.includes("promo")
+  ) {
+    return true;
+  }
+  
+  // General fallback
+  if (name.includes("dual") || name.includes("both") || name.includes("bride & groom") || name.includes("luxury")) {
+    return false;
+  }
+  return true; // Default to single-side for other packages
 };
 
 const MyBooking = () => {
@@ -155,12 +175,30 @@ const MyBooking = () => {
       if (prc) {
         setPackagePrice(Number(prc));
       } else {
-        if (decodedPkg.toLowerCase().includes("signature") || decodedPkg.toLowerCase().includes("candid")) {
-          setPackagePrice(180000);
-        } else if (decodedPkg.toLowerCase().includes("couture") || decodedPkg.toLowerCase().includes("photo & pre")) {
-          setPackagePrice(135000);
-        } else {
-          setPackagePrice(95000);
+        const pName = decodedPkg;
+        if (pName === "Elite Signature Package") setPackagePrice(180000);
+        else if (pName === "Premium Couture Package") setPackagePrice(135000);
+        else if (pName === "Classic Heritage Package") setPackagePrice(95000);
+        else if (pName === "Wedding Photography") setPackagePrice(39999);
+        else if (pName === "Wedding Photo & Pre-Wedding") setPackagePrice(54999);
+        else if (pName === "Candid Photo & Videography") setPackagePrice(69999);
+        else if (pName === "Bride & Groom Luxury Package") setPackagePrice(110000);
+        else if (pName === "Premium Candid Package") setPackagePrice(79999);
+        else if (pName === "Bride or Groom Engagement Package") setPackagePrice(28999);
+        else if (pName === "Standalone Wedding Day") setPackagePrice(39999);
+        else if (pName === "Standalone Reception") setPackagePrice(19999);
+        else if (pName === "Haldi Photography (Only)") setPackagePrice(10000);
+        else if (pName === "Haldi Photography with Album") setPackagePrice(15000);
+        else if (pName === "Haldi & Madhuram") setPackagePrice(28000);
+        else if (pName === "Promo Rates Booking") setPackagePrice(5000);
+        else {
+          if (decodedPkg.toLowerCase().includes("signature")) {
+            setPackagePrice(180000);
+          } else if (decodedPkg.toLowerCase().includes("couture")) {
+            setPackagePrice(135000);
+          } else {
+            setPackagePrice(95000);
+          }
         }
       }
     }
@@ -168,9 +206,27 @@ const MyBooking = () => {
 
   const handlePackageChange = (pName) => {
     setSelectedPackage(pName);
-    if (pName === "Elite Signature Package" || pName.toLowerCase().includes("signature")) setPackagePrice(180000);
-    else if (pName === "Premium Couture Package" || pName.toLowerCase().includes("couture") || pName.toLowerCase().includes("pre-wedding")) setPackagePrice(135000);
-    else setPackagePrice(95000);
+    if (pName === "Elite Signature Package") setPackagePrice(180000);
+    else if (pName === "Premium Couture Package") setPackagePrice(135000);
+    else if (pName === "Classic Heritage Package") setPackagePrice(95000);
+    else if (pName === "Wedding Photography") setPackagePrice(39999);
+    else if (pName === "Wedding Photo & Pre-Wedding") setPackagePrice(54999);
+    else if (pName === "Candid Photo & Videography") setPackagePrice(69999);
+    else if (pName === "Bride & Groom Luxury Package") setPackagePrice(110000);
+    else if (pName === "Premium Candid Package") setPackagePrice(79999);
+    else if (pName === "Bride or Groom Engagement Package") setPackagePrice(28999);
+    else if (pName === "Standalone Wedding Day") setPackagePrice(39999);
+    else if (pName === "Standalone Reception") setPackagePrice(19999);
+    else if (pName === "Haldi Photography (Only)") setPackagePrice(10000);
+    else if (pName === "Haldi Photography with Album") setPackagePrice(15000);
+    else if (pName === "Haldi & Madhuram") setPackagePrice(28000);
+    else if (pName === "Promo Rates Booking") setPackagePrice(5000);
+    else {
+      if (pName.toLowerCase().includes("signature")) setPackagePrice(180000);
+      else if (pName.toLowerCase().includes("couture")) setPackagePrice(135000);
+      else if (pName.toLowerCase().includes("heritage")) setPackagePrice(95000);
+      else setPackagePrice(95000);
+    }
   };
 
   const handleInvitationChange = (e) => {
@@ -551,10 +607,24 @@ const MyBooking = () => {
                       onChange={(e) => handlePackageChange(e.target.value)}
                       className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none"
                     >
-                      <option value="Elite Signature Package">Elite Signature Package</option>
-                      <option value="Premium Couture Package">Premium Couture Package</option>
-                      <option value="Classic Heritage Package">Classic Heritage Package</option>
-                      <option value="Promo Rates Booking">Promo Rates Booking</option>
+                      <option value="Elite Signature Package">Elite Signature Package (₹1,80,000)</option>
+                      <option value="Premium Couture Package">Premium Couture Package (₹1,35,000)</option>
+                      <option value="Classic Heritage Package">Classic Heritage Package (₹95,000)</option>
+                      <option value="Wedding Photography">Wedding Photography (₹39,999)</option>
+                      <option value="Wedding Photo & Pre-Wedding">Wedding Photo & Pre-Wedding (₹54,999)</option>
+                      <option value="Candid Photo & Videography">Candid Photo & Videography (₹69,999)</option>
+                      <option value="Bride & Groom Luxury Package">Bride & Groom Luxury Package (₹1,10,000)</option>
+                      <option value="Premium Candid Package">Premium Candid Package (₹79,999)</option>
+                      <option value="Bride or Groom Engagement Package">Bride or Groom Engagement Package (₹28,999)</option>
+                      <option value="Standalone Wedding Day">Standalone Wedding Day (₹39,999)</option>
+                      <option value="Standalone Reception">Standalone Reception (₹19,999)</option>
+                      <option value="Haldi Photography (Only)">Haldi Photography (Only) (₹10,000)</option>
+                      <option value="Haldi Photography with Album">Haldi Photography with Album (₹15,000)</option>
+                      <option value="Haldi & Madhuram">Haldi & Madhuram (₹28,000)</option>
+                      <option value="Promo Rates Booking">Promo Rates Booking (₹5,000)</option>
+                      {!["Elite Signature Package", "Premium Couture Package", "Classic Heritage Package", "Wedding Photography", "Wedding Photo & Pre-Wedding", "Candid Photo & Videography", "Bride & Groom Luxury Package", "Premium Candid Package", "Bride or Groom Engagement Package", "Standalone Wedding Day", "Standalone Reception", "Haldi Photography (Only)", "Haldi Photography with Album", "Haldi & Madhuram", "Promo Rates Booking"].includes(selectedPackage) && (
+                        <option value={selectedPackage}>{selectedPackage}</option>
+                      )}
                     </select>
                   </div>
                   <div className="space-y-1.5">
