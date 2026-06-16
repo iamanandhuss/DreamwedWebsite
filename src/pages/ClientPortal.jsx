@@ -4192,6 +4192,280 @@ const ClientPortal = () => {
             exit={{ opacity: 0 }}
             className="invoice-overlay !block"
           >
+            <style dangerouslySetInnerHTML={{ __html: `
+              .invoice-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: #fff;
+                color: #000;
+                z-index: 10000;
+                overflow-y: auto;
+                padding: 40px 0;
+              }
+              .invoice-container {
+                width: 800px;
+                margin: 0 auto;
+                background: #fff;
+                padding: 40px;
+                font-family: 'Inter', sans-serif;
+                position: relative;
+                color: #000;
+              }
+              .invoice-brand {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-bottom: 1px solid #eaeaea;
+                padding-bottom: 24px;
+                margin-bottom: 30px;
+              }
+              .brand-logo-circle {
+                width: 42px;
+                height: 42px;
+                border: 1.5px solid #000;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 15px;
+                font-family: 'Inter', sans-serif;
+                color: #000;
+              }
+              .brand-text-name {
+                font-family: 'Montserrat', sans-serif;
+                font-size: 13px;
+                font-weight: 600;
+                letter-spacing: 0.2em;
+                text-transform: uppercase;
+                color: #000;
+                margin-left: 10px;
+              }
+              .invoice-header-title {
+                text-align: center;
+                margin: 20px 0 25px 0;
+              }
+              .invoice-header-title h2 {
+                font-family: 'Cormorant Garamond', serif;
+                font-size: 44px;
+                font-weight: 400;
+                letter-spacing: 0.02em;
+                color: #000;
+                font-style: italic;
+              }
+              .invoice-meta-section {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 30px;
+                font-size: 13px;
+                line-height: 1.7;
+              }
+              .invoice-to {
+                width: 50%;
+                text-align: left;
+              }
+              .invoice-to h3 {
+                font-size: 12px;
+                font-weight: 700;
+                color: #222;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: 6px;
+              }
+              .invoice-to-name {
+                font-size: 16px;
+                font-weight: 500;
+                color: #000;
+                margin-bottom: 2px;
+              }
+              .invoice-to-details {
+                color: #444;
+                font-size: 12px;
+                font-weight: 300;
+              }
+              .invoice-details-right {
+                text-align: right;
+                width: 45%;
+                font-size: 12px;
+              }
+              .invoice-details-right table {
+                width: 100%;
+                border-collapse: collapse;
+              }
+              .invoice-details-right td {
+                padding: 3px 0;
+                vertical-align: top;
+              }
+              .invoice-details-right td.lbl {
+                text-align: right;
+                color: #444;
+                font-weight: 500;
+                padding-right: 12px;
+              }
+              .invoice-details-right td.val {
+                text-align: right;
+                font-weight: 500;
+                color: #000;
+                width: 130px;
+              }
+              .invoice-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 30px;
+                font-size: 12px;
+              }
+              .invoice-table th {
+                background: #b69675;
+                color: #fff;
+                font-family: 'Montserrat', sans-serif;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                padding: 10px 14px;
+                text-align: left;
+                font-size: 11px;
+              }
+              .invoice-table th.amount-col {
+                text-align: right;
+              }
+              .invoice-table td {
+                padding: 14px;
+                border-bottom: 1px solid #eaeaea;
+                color: #333;
+                text-align: left;
+              }
+              .invoice-table td.amount-col {
+                text-align: right;
+                font-weight: 500;
+                color: #000;
+              }
+              .invoice-summary {
+                display: flex;
+                justify-content: flex-end;
+                margin-bottom: 40px;
+                font-size: 13px;
+              }
+              .invoice-summary-table {
+                width: 320px;
+                border-collapse: collapse;
+              }
+              .invoice-summary-table td {
+                padding: 5px 0;
+                text-align: right;
+              }
+              .invoice-summary-table td.lbl {
+                color: #555;
+                font-weight: 500;
+              }
+              .invoice-summary-table td.val {
+                font-weight: 600;
+                color: #000;
+                width: 120px;
+              }
+              .invoice-summary-table tr.total-payable-row td {
+                border-top: 1.5px solid #000;
+                padding-top: 10px;
+                font-size: 14px;
+                font-weight: 800;
+                color: #000;
+              }
+              .invoice-summary-table tr.total-payable-row td.val {
+                font-size: 16px;
+              }
+              .invoice-footer {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                border-top: 1px solid #eaeaea;
+                padding-top: 30px;
+                margin-top: 40px;
+                font-size: 11px;
+                text-align: left;
+              }
+              .payment-instructions {
+                color: #555;
+                line-height: 1.6;
+              }
+              .payment-instructions strong {
+                color: #000;
+                font-size: 12px;
+                display: block;
+                margin-bottom: 4px;
+              }
+              .signature-thankyou {
+                text-align: right;
+                font-family: 'Cormorant Garamond', serif;
+                font-size: 38px;
+                font-style: italic;
+                font-weight: 400;
+                color: #000;
+                margin-bottom: 8px;
+              }
+              .invoice-control-bar {
+                background: #161616;
+                padding: 12px 24px;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                display: flex;
+                justify-content: center;
+                gap: 16px;
+                border-bottom: 1px solid #2a2a2a;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+                z-index: 10001;
+              }
+              .invoice-control-bar .action-btn {
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                border: none;
+              }
+              @media print {
+                body * {
+                  visibility: hidden !important;
+                }
+                .invoice-overlay, .invoice-overlay * {
+                  visibility: visible !important;
+                }
+                .invoice-overlay {
+                  position: absolute !important;
+                  left: 0 !important;
+                  top: 0 !important;
+                  width: 100% !important;
+                  height: auto !important;
+                  padding: 0 !important;
+                  margin: 0 !important;
+                  background: #fff !important;
+                  color: #000 !important;
+                }
+                .invoice-container {
+                  width: 100% !important;
+                  margin: 0 !important;
+                  padding: 10px !important;
+                  box-shadow: none !important;
+                  border: none !important;
+                }
+                .no-print {
+                  display: none !important;
+                }
+                .invoice-table th {
+                  background: #b69675 !important;
+                  -webkit-print-color-adjust: exact;
+                  print-color-adjust: exact;
+                  color: #fff !important;
+                }
+              }
+            `}} />
             {/* Control Bar (hidden during PDF print) */}
             <div className="invoice-control-bar no-print">
               <button 
@@ -4212,7 +4486,7 @@ const ClientPortal = () => {
 
             {/* A4 Container */}
             <div className="invoice-container">
-              {/* Branding header */}
+              {/* Branding header exactly styled like invoice images */}
               <div className="invoice-brand">
                 <div style={{ display: "flex", alignItems: "center" }}>
                   <div className="brand-logo-circle">DW</div>
@@ -4224,7 +4498,7 @@ const ClientPortal = () => {
                 </div>
               </div>
 
-              {/* Bold Title */}
+              {/* Bold Minimalist Title */}
               <div className="invoice-header-title">
                 <h2>Invoice</h2>
               </div>
@@ -4232,12 +4506,11 @@ const ClientPortal = () => {
               {/* Meta details split */}
               <div className="invoice-meta-section">
                 <div className="invoice-to">
-                  <h3>Invoice To:</h3>
+                  <h3>INVOICE TO:</h3>
                   <div className="invoice-to-name">{booking.customer_name}</div>
                   <div className="invoice-to-details">
-                    <div>{booking.event_venue}</div>
-                    <div>Ph: {booking.customer_phone}</div>
-                    {booking.customer_email && <div>Email: {booking.customer_email}</div>}
+                    <div>{booking.customer_phone}</div>
+                    <div>{formatDateString(booking.event_date)}</div>
                   </div>
                 </div>
 
@@ -4257,34 +4530,40 @@ const ClientPortal = () => {
                         <td className="val">On Receipt</td>
                       </tr>
                       <tr>
-                        <td className="lbl">Package Price:</td>
-                        <td className="val">₹ {formatCurrency(booking.package_price)}/-</td>
+                        <td className="lbl">{booking.package_name} Price:</td>
+                        <td className="val">₹ {formatCurrency(booking.package_price)}</td>
                       </tr>
-                      <tr>
-                        <td className="lbl">Element:</td>
-                        <td className="val">{booking.package_name}</td>
-                      </tr>
+                      {booking.package_price > booking.total_price && (
+                        <tr>
+                          <td className="lbl">Discount:</td>
+                          <td className="val">₹ {formatCurrency(booking.package_price - booking.total_price)}</td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
+              </div>
+
+              {/* Sub-header title */}
+              <div style={{ textAlign: "center", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "18px", color: "#000", marginBottom: "25px", fontWeight: "normal" }}>
+                Invoice For Photography Service
               </div>
 
               {/* Milestone items list */}
               <table className="invoice-table">
                 <thead>
                   <tr>
-                    <th>Product / Service</th>
-                    <th className="amount-col" style={{ width: "140px" }}>Price</th>
-                    <th style={{ width: "150px", paddingLeft: "20px" }}>Date</th>
-                    <th className="amount-col" style={{ width: "140px" }}>Total</th>
+                    <th>PRODUCT/SERVICE</th>
+                    <th className="amount-col" style={{ width: "140px" }}>PRICE</th>
+                    <th style={{ width: "150px", paddingLeft: "20px" }}>DATE</th>
+                    <th className="amount-col" style={{ width: "140px" }}>TOTAL</th>
                   </tr>
                 </thead>
                 <tbody>
                   {booking.payment_milestones.map((m, index) => (
                     <tr key={index}>
                       <td>
-                        <div style={{ fontWeight: 700, color: "#000", marginBottom: "2px" }}>{m.label}</div>
-                        <div style={{ fontSize: "10px", color: "#666", fontStyle: "italic" }}>Stage {index + 1} ({m.status})</div>
+                        <div style={{ fontWeight: 500, color: "#000", marginBottom: "2px" }}>{m.label}</div>
                       </td>
                       <td className="amount-col">₹ {formatCurrency(m.amount)}</td>
                       <td style={{ paddingLeft: "20px" }}>{m.date ? formatDateString(m.date) : "TBD"}</td>
@@ -4322,7 +4601,7 @@ const ClientPortal = () => {
                 </table>
               </div>
 
-              {/* Signature script footer */}
+              {/* Cursive Signature script footer matching templates */}
               <div className="invoice-footer">
                 <div className="payment-instructions">
                   <strong>Send Payments To:</strong>
