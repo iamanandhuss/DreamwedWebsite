@@ -81,9 +81,9 @@ app.get('/packages.html', (req, res) => {
         title = "Candid Photography Package - ₹69,999 | Dreamwed Stories";
         desc = "Creative Candid & Traditional. Inclusions: 1 Lead Candid Photographer, 1 Assistant Photographer, 80-Page layflat album, 2 Wall Frames, Free Pre-wedding photos.";
         image = "https://dreamwedstories.co.in/images/DSC00470-min.jpg";
-      } else if (pkgId === 'pkgCandidVideoCard') {
-        title = "Candid Photo & Video Package - ₹79,999 | Dreamwed Stories";
-        desc = "Premium Candid Photography + Cinematic Videography. Inclusions: 1 Lead Candid Photographer, 1 Traditional Photographer, 1 Cinema Videographer, highlights, 80-Page Album.";
+      } else if (pkgId === 'pkgCandidVideoCard' || pkgId === 'pkgPremiumCandidCard') {
+        title = "Premium Candid Package - ₹79,999 | Dreamwed Stories";
+        desc = "Complete single-side wedding & reception coverage including pre-wedding photo + video, drone, and 100-pages premium album.";
         image = "https://dreamwedstories.co.in/images/package3_cover.jpg";
       } else if (pkgId === 'pkgBrideGroomCard') {
         title = "Bride & Groom Package 1 - ₹1,10,000 | Dreamwed Stories";

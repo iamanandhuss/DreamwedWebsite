@@ -16,8 +16,7 @@ const isSingleSidePackage = (pName) => {
   if (
     name.includes("elite signature") || 
     name.includes("premium couture") || 
-    name.includes("bride & groom luxury") || 
-    name.includes("premium candid")
+    name.includes("bride & groom luxury")
   ) {
     return false;
   }
@@ -29,6 +28,7 @@ const isSingleSidePackage = (pName) => {
     name.includes("wedding photo & pre-wedding") ||
     name.includes("candid photo & videography") ||
     name.includes("engagement package") || // "Bride or Groom Engagement Package"
+    name.includes("premium candid") ||
     name.includes("standalone") ||
     name.includes("haldi") ||
     name.includes("promo")

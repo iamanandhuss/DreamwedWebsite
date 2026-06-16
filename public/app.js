@@ -2398,16 +2398,16 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
                 highlighted: false
             },
             'pkgCandidVideoCard': {
-                title: 'Candid Photo &<br>Videography',
-                category: 'CINEMATIC CINEMA STORY',
-                desc: 'Our signature high-production cinematic package. Includes both premium pre-wedding photo & cinema film, fine-art layflat albums, and full-spectrum cinema-grade wedding storytelling.',
+                title: 'Premium Candid Package',
+                category: 'COMPLETE SINGLE-SIDE & DRONE',
+                desc: 'Our comprehensive single-side coverage package. Designed for couples seeking complete pre-wedding story, wedding day, and reception coverage with aerial drone views and a premium handcrafted 100-page album.',
                 priceText: 'from ₹79,999',
                 priceVal: '79999',
-                setup: '<i class="fa-solid fa-camera"></i> 1 Photographer + 1 Candid + 1 Videographer',
+                setup: '<i class="fa-solid fa-camera"></i> Candid & Traditional Team + Drone + Pre-Wedding',
                 ribbon: '+ LIMITED TIME OFFER',
                 ribbonClass: 'best-deal-ribbon',
-                preweddingOffer: 'FREE BOTH PRE-WEDDING PHOTO & VIDEO (WORTH ₹30,000)',
-                img: 'uploaded_couple_blackwhite.jpg',
+                preweddingOffer: 'FREE DRONE AERIAL COVERAGE + 100 PAGES ALBUM',
+                img: 'couple_traditional_red.jpg',
                 highlighted: true
             }
         };

@@ -58,8 +58,8 @@ const packagesMetadata = [
   },
   {
     shareId: "pkgPremiumCandidCard",
-    title: "Premium Candid Package (Engagement)",
-    desc: "Our comprehensive 4-camera premium package featuring dedicated candid & traditional teams with helicam drone.",
+    title: "Premium Candid Package",
+    desc: "Complete single-side wedding & reception coverage including pre-wedding photo + video, drone, and 100-pages album.",
     cover: "/couple_traditional_red.jpg"
   },
   {
