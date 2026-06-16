@@ -586,12 +586,12 @@ const PricingSection = () => {
           </div>
 
           <Link
-            to="/contact"
-            className="py-3.5 px-8 w-full max-w-[170px] mx-auto rounded-[20px] bg-white text-black hover:bg-zinc-100 hover:shadow-lg transition-all duration-300 text-[11px] font-extrabold tracking-[0.2em] flex flex-col items-center justify-center leading-tight shadow-md select-none cursor-pointer"
+            to={`/booking?package=${encodeURIComponent(plan.title)}&price=${encodeURIComponent(plan.price.replace(/[^\d]/g, ""))}`}
+            className="py-3.5 px-8 w-full max-w-[170px] mx-auto rounded-[20px] bg-white text-black hover:bg-[#b4975a] hover:text-white hover:shadow-lg transition-all duration-300 text-[11px] font-extrabold tracking-[0.2em] flex flex-col items-center justify-center leading-tight shadow-md select-none cursor-pointer uppercase"
             onClick={(e) => e.stopPropagation()}
           >
-            <span>SECURE</span>
-            <span>OFFER</span>
+            <span>BOOK</span>
+            <span>NOW</span>
           </Link>
 
           <button
@@ -724,8 +724,8 @@ const PricingSection = () => {
                       {addon.details}
                     </div>
                   </div>
-                  <Link to="/contact" className="mt-8 py-3 w-full rounded-[16px] border border-white/10 text-white hover:bg-white/5 hover:border-[#d1a852]/30 transition-all text-center text-xs font-bold uppercase tracking-wider block">
-                    Add to Booking
+                  <Link to={`/booking?package=${encodeURIComponent(addon.title)}&price=${encodeURIComponent(addon.price.replace(/[^\d]/g, ""))}`} className="mt-8 py-3 w-full rounded-[16px] border border-white/10 text-white hover:bg-[#b4975a] hover:text-white hover:border-[#b4975a] transition-all text-center text-xs font-bold uppercase tracking-wider block">
+                    Book This Pack
                   </Link>
                 </div>
               ))}
@@ -746,7 +746,7 @@ const PricingSection = () => {
               Reserve your date now to protect against seasonal price increases. The booking fee is fully adjustable to any package. Balance payment is required only on the wedding day.
             </p>
             <Link
-              to="/contact"
+              to="/booking?package=Promo%20Rates%20Booking&price=5000"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-[16px] bg-[#d1a852] hover:bg-[#b8903b] text-black text-xs uppercase tracking-widest font-bold transition-all shadow-[0_10px_25px_rgba(209,168,82,0.2)] hover:scale-[1.02]"
             >
               Secure My Promo Rates Now <ArrowRight size={14} />
@@ -981,7 +981,7 @@ const PricingSection = () => {
 
                 <div className="space-y-3">
                   <Button
-                    to="/contact"
+                    to={`/booking?package=${encodeURIComponent(activePlan?.title || "")}&price=${encodeURIComponent((activePlan?.price || "").replace(/[^\d]/g, ""))}`}
                     variant="primary"
                     className="w-full py-4.5 rounded-2xl text-center text-xs uppercase tracking-widest font-bold select-none"
                     onClick={() => setActivePlan(null)}

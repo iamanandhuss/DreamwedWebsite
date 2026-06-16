@@ -16,27 +16,54 @@ const MyBooking = () => {
   const [isInvoicePrintOpen, setIsInvoicePrintOpen] = useState(false);
 
   // Signup form states
-  const [coverageType, setCoverageType] = useState("both"); // "single" or "both"
-  const [coverageSide, setCoverageSide] = useState("groom"); // "groom" or "bride"
-  
-  // Single side credentials
-  const [singleName, setSingleName] = useState("");
-  const [singlePhone, setSinglePhone] = useState("");
-  const [singleEmail, setSingleEmail] = useState("");
-  
-  // Both sides credentials
   const [groomName, setGroomName] = useState("");
   const [groomPhone, setGroomPhone] = useState("");
   const [groomEmail, setGroomEmail] = useState("");
+  const [groomAddress, setGroomAddress] = useState("");
+
   const [brideName, setBrideName] = useState("");
   const [bridePhone, setBridePhone] = useState("");
   const [brideEmail, setBrideEmail] = useState("");
+  const [brideAddress, setBrideAddress] = useState("");
 
-  const [eventDate, setEventDate] = useState("");
-  const [eventVenue, setEventVenue] = useState("");
+  // Wedding Date & Venue Selection details
+  const [weddingReceptionMode, setWeddingReceptionMode] = useState("same"); // same, different
+  const [eventDate, setEventDate] = useState(""); // Same date: date
+  const [eventVenue, setEventVenue] = useState(""); // Same date: wedding venue
+  const [receptionVenue, setReceptionVenue] = useState(""); // Same date: reception venue
+  const [weddingTime, setWeddingTime] = useState(""); // Same date: wedding time
+  const [receptionTime, setReceptionTime] = useState(""); // Same date: reception time
+
+  // Different dates states
+  const [weddingDateDiff, setWeddingDateDiff] = useState("");
+  const [weddingTimeDiff, setWeddingTimeDiff] = useState("");
+  const [weddingVenueDiff, setWeddingVenueDiff] = useState("");
+  const [receptionDateDiff, setReceptionDateDiff] = useState("");
+  const [receptionTimeDiff, setReceptionTimeDiff] = useState("");
+  const [receptionVenueDiff, setReceptionVenueDiff] = useState("");
+
+  // Additional details states
+  const [needDrone, setNeedDrone] = useState("no"); // yes, no
+  const [needCinematic, setNeedCinematic] = useState("no"); // yes, no
+  const [preferredAlbumSize, setPreferredAlbumSize] = useState("12x18");
+  const [specialNotes, setSpecialNotes] = useState("");
+
+  // Package & Price selection
   const [selectedPackage, setSelectedPackage] = useState("Elite Signature Package");
   const [packagePrice, setPackagePrice] = useState(180000);
+  const minAdvance = 5000;
+  
+  // Payment States
   const [advancePaid, setAdvancePaid] = useState(5000);
+  const [paymentMethod, setPaymentMethod] = useState("UPI");
+  const [transactionId, setTransactionId] = useState("");
+
+  // Uploaded Files (Invitations & Screenshot)
+  const [invitationFileName, setInvitationFileName] = useState("");
+  const [invitationFileData, setInvitationFileData] = useState("");
+  const [screenshotFileName, setScreenshotFileName] = useState("");
+  const [screenshotFileData, setScreenshotFileData] = useState("");
+
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
 
@@ -97,67 +124,141 @@ const MyBooking = () => {
     if (!localStorage.getItem("dreamwed_bookings")) {
       localStorage.setItem("dreamwed_bookings", JSON.stringify(INITIAL_BOOKINGS));
     }
+    
+    // Parse package parameters from URL
+    const params = new URLSearchParams(window.location.search);
+    const pkg = params.get("package");
+    const prc = params.get("price");
+    if (pkg) {
+      const decodedPkg = decodeURIComponent(pkg);
+      setSelectedPackage(decodedPkg);
+      setActiveMode("signup");
+      
+      // Attempt to set matching price or use parameter price
+      if (prc) {
+        setPackagePrice(Number(prc));
+      } else {
+        if (decodedPkg.toLowerCase().includes("signature") || decodedPkg.toLowerCase().includes("candid")) {
+          setPackagePrice(180000);
+        } else if (decodedPkg.toLowerCase().includes("couture") || decodedPkg.toLowerCase().includes("photo & pre")) {
+          setPackagePrice(135000);
+        } else {
+          setPackagePrice(95000);
+        }
+      }
+    }
   }, []);
 
   const handlePackageChange = (pName) => {
     setSelectedPackage(pName);
-    if (pName === "Elite Signature Package") setPackagePrice(180000);
-    else if (pName === "Premium Couture Package") setPackagePrice(135000);
+    if (pName === "Elite Signature Package" || pName.toLowerCase().includes("signature")) setPackagePrice(180000);
+    else if (pName === "Premium Couture Package" || pName.toLowerCase().includes("couture") || pName.toLowerCase().includes("pre-wedding")) setPackagePrice(135000);
     else setPackagePrice(95000);
+  };
+
+  const handleInvitationChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setInvitationFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setInvitationFileData(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleScreenshotChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setScreenshotFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setScreenshotFileData(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
     
-    let payload = {};
-    if (coverageType === "both") {
-      if (!groomName.trim() || !groomPhone.trim() || !brideName.trim() || !bridePhone.trim() || !eventDate.trim() || !eventVenue.trim()) {
-        alert("Please fill in all required fields for both Bride & Groom.");
-        return;
-      }
-      payload = {
-        customer_name: `${groomName.trim()} & ${brideName.trim()}`,
-        customer_phone: groomPhone.trim(),
-        customer_email: groomEmail.trim(),
-        customer_name_2: brideName.trim(),
-        customer_phone_2: bridePhone.trim(),
-        customer_email_2: brideEmail.trim(),
-        coverage_type: "both",
-        coverage_side: "",
-        event_date: eventDate,
-        event_venue: eventVenue.trim(),
-        package_name: selectedPackage,
-        package_price: packagePrice,
-        total_price: packagePrice,
-        advance_paid: Number(advancePaid) || 0,
-        status: "pending"
-      };
-    } else {
-      if (!singleName.trim() || !singlePhone.trim() || !eventDate.trim() || !eventVenue.trim()) {
-        alert("Please fill in all required fields.");
-        return;
-      }
-      payload = {
-        customer_name: `${singleName.trim()} (${coverageSide === "groom" ? "Groom's Side" : "Bride's Side"})`,
-        customer_phone: singlePhone.trim(),
-        customer_email: singleEmail.trim(),
-        customer_name_2: "",
-        customer_phone_2: "",
-        customer_email_2: "",
-        coverage_type: "single",
-        coverage_side: coverageSide,
-        event_date: eventDate,
-        event_venue: eventVenue.trim(),
-        package_name: selectedPackage,
-        package_price: packagePrice,
-        total_price: packagePrice,
-        advance_paid: Number(advancePaid) || 0,
-        status: "pending"
-      };
+    if (!groomName.trim() || !groomPhone.trim() || !brideName.trim() || !bridePhone.trim()) {
+      alert("Bride & Groom names and phone numbers are required.");
+      return;
     }
+
+    if (weddingReceptionMode === "same" && (!eventDate || !eventVenue.trim())) {
+      alert("Wedding Date and Wedding Venue are required.");
+      return;
+    }
+
+    if (weddingReceptionMode === "different" && (!weddingDateDiff || !weddingVenueDiff.trim())) {
+      alert("Wedding Date and Wedding Venue are required.");
+      return;
+    }
+
+    if (Number(advancePaid) < minAdvance) {
+      alert(`Minimum advance payment is ₹${minAdvance.toLocaleString("en-IN")}.`);
+      return;
+    }
+
+    const eventDateFinal = weddingReceptionMode === "same" ? eventDate : weddingDateDiff;
+    const eventVenueFinal = weddingReceptionMode === "same" ? eventVenue.trim() : weddingVenueDiff.trim();
+
+    const addOns = [];
+    if (needDrone === "yes") addOns.push("Drone Coverage Upgrade");
+    if (needCinematic === "yes") addOns.push("Cinematic Video Upgrade");
+
+    const payload = {
+      customer_name: `${groomName.trim()} & ${brideName.trim()}`,
+      customer_phone: groomPhone.trim(),
+      customer_email: groomEmail.trim(),
+      customer_address: groomAddress.trim(),
+      customer_name_2: brideName.trim(),
+      customer_phone_2: bridePhone.trim(),
+      customer_email_2: brideEmail.trim(),
+      customer_address_2: brideAddress.trim(),
+      
+      coverage_type: "both",
+      wedding_reception_mode: weddingReceptionMode,
+      event_date: eventDateFinal,
+      event_venue: eventVenueFinal,
+      reception_venue: weddingReceptionMode === "same" ? receptionVenue.trim() : receptionVenueDiff.trim(),
+      
+      same_date_details: weddingReceptionMode === "same" ? {
+        wedding_venue: eventVenue.trim(),
+        reception_venue: receptionVenue.trim(),
+        wedding_time: weddingTime,
+        reception_time: receptionTime
+      } : null,
+      
+      different_date_details: weddingReceptionMode === "different" ? {
+        wedding: { date: weddingDateDiff, time: weddingTimeDiff, venue: weddingVenueDiff },
+        reception: { date: receptionDateDiff, time: receptionTimeDiff, venue: receptionVenueDiff }
+      } : null,
+      
+      need_drone: needDrone,
+      need_cinematic: needCinematic,
+      preferred_album_size: preferredAlbumSize,
+      special_notes: specialNotes.trim(),
+      add_ons: addOns,
+
+      invitation_file_name: invitationFileName,
+      invitation_file_data: invitationFileData,
+
+      package_name: selectedPackage,
+      package_price: packagePrice,
+      total_price: packagePrice,
+      advance_paid: Number(advancePaid) || 0,
+      payment_method: paymentMethod,
+      transaction_id: transactionId.trim(),
+      screenshot_file_name: screenshotFileName,
+      screenshot_file_data: screenshotFileData,
+      status: "pending"
+    };
     
     setSigningUp(true);
     setSignupSuccess(false);
+    
     try {
       const res = await fetch(`${API_BASE}/api/bookings`, {
         method: "POST",
@@ -167,24 +268,11 @@ const MyBooking = () => {
       if (res.ok) {
         const newBooking = await res.json();
         
-        // Save locally in sync
+        // Save locally
         const localBookings = JSON.parse(localStorage.getItem("dreamwed_bookings") || "[]");
         localStorage.setItem("dreamwed_bookings", JSON.stringify([newBooking, ...localBookings]));
-
         setSignupSuccess(true);
-        setSingleName("");
-        setSinglePhone("");
-        setSingleEmail("");
-        setGroomName("");
-        setGroomPhone("");
-        setGroomEmail("");
-        setBrideName("");
-        setBridePhone("");
-        setBrideEmail("");
-        setEventDate("");
-        setEventVenue("");
-        setAdvancePaid(5000);
-        alert("✅ Wedding booking request submitted! Admin will review and approve shortly.");
+        alert("✅ Wedding booking request submitted! Awaiting Admin Approval.");
       } else {
         throw new Error("Server error");
       }
@@ -211,21 +299,8 @@ const MyBooking = () => {
       };
 
       localStorage.setItem("dreamwed_bookings", JSON.stringify([newBooking, ...localBookings]));
-
       setSignupSuccess(true);
-      setSingleName("");
-      setSinglePhone("");
-      setSingleEmail("");
-      setGroomName("");
-      setGroomPhone("");
-      setGroomEmail("");
-      setBrideName("");
-      setBridePhone("");
-      setBrideEmail("");
-      setEventDate("");
-      setEventVenue("");
-      setAdvancePaid(5000);
-      alert("✅ Wedding booking request submitted (Local Offline Sync Active)! Admin will review and approve shortly.");
+      alert("✅ Booking submitted locally (Offline Sync Active)! Awaiting Admin Review.");
     } finally {
       setSigningUp(false);
     }
@@ -390,226 +465,464 @@ const MyBooking = () => {
                 {status === "loading" ? "Searching Booking DB..." : "Find Invoice"}
               </button>
             </form>
-          ) : (
-            <form onSubmit={handleSignupSubmit} className="space-y-5 text-left">
-              {/* Coverage Scope Select Radio Toggles */}
-              <div className="space-y-2">
-                <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase block">Coverage Scope *</label>
-                <div className="grid grid-cols-2 gap-3 bg-zinc-100 p-1 rounded-xl border border-zinc-200 shadow-xs relative z-10 w-full">
-                  <button 
-                    type="button"
-                    onClick={() => setCoverageType("both")}
-                    className={`py-3 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                      coverageType === "both" ? "bg-zinc-900 text-white shadow-xs" : "bg-white text-zinc-500 hover:text-zinc-800"
-                    }`}
-                  >
-                    💍 Both Sides (Bride & Groom)
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => setCoverageType("single")}
-                    className={`py-3 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                      coverageType === "single" ? "bg-zinc-900 text-white shadow-xs" : "bg-white text-zinc-500 hover:text-zinc-800"
-                    }`}
-                  >
-                    👤 Single Side
-                  </button>
+          ) : !signupSuccess ? (
+            <form onSubmit={handleSignupSubmit} className="space-y-6 text-left">
+              
+              {/* SECTION: Package Details (Auto Filled) */}
+              <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-4">
+                <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-2">
+                  <span>📦</span> Package Details
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest block">Package Name</label>
+                    <select 
+                      value={selectedPackage}
+                      onChange={(e) => handlePackageChange(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none"
+                    >
+                      <option value="Elite Signature Package">Elite Signature Package</option>
+                      <option value="Premium Couture Package">Premium Couture Package</option>
+                      <option value="Classic Heritage Package">Classic Heritage Package</option>
+                      <option value="Promo Rates Booking">Promo Rates Booking</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest block">Package Price (₹)</label>
+                    <input 
+                      type="text" 
+                      readOnly
+                      value={`₹ ${formatCurrency(packagePrice)}`}
+                      className="w-full bg-zinc-100 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-600 text-xs focus:outline-none font-bold"
+                    />
+                  </div>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <div className="text-[10px] text-[#b4975a] font-bold uppercase flex justify-between bg-[#b4975a]/5 border border-[#b4975a]/10 p-3.5 rounded-xl">
+                      <span>Min Advance Required:</span>
+                      <span>₹ {formatCurrency(minAdvance)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Dynamic Form Sections */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {coverageType === "both" ? (
-                  <>
-                    {/* Groom's Account Block */}
-                    <div className="col-span-2 sm:col-span-1 p-4 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-3">
-                      <div className="flex items-center gap-1.5 text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-1.5">
-                        <span>🎩</span> Groom's Account Details
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Groom Name *</label>
-                        <input 
-                          type="text" 
-                          required={coverageType === "both"}
-                          placeholder="Groom's Name"
-                          value={groomName}
-                          onChange={(e) => setGroomName(e.target.value)}
-                          className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Groom WhatsApp Phone *</label>
-                        <input 
-                          type="tel" 
-                          required={coverageType === "both"}
-                          placeholder="e.g. 9895412895"
-                          value={groomPhone}
-                          onChange={(e) => setGroomPhone(e.target.value)}
-                          className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Groom Email</label>
-                        <input 
-                          type="email" 
-                          placeholder="groom@gmail.com"
-                          value={groomEmail}
-                          onChange={(e) => setGroomEmail(e.target.value)}
-                          className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                        />
-                      </div>
-                    </div>
+              {/* SECTION: Bride Details */}
+              <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-4">
+                <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-2">
+                  <span>👰</span> Bride Details
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Full Name *</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="Bride's Full Name"
+                      value={brideName}
+                      onChange={(e) => setBrideName(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Phone Number *</label>
+                    <input 
+                      type="tel" 
+                      required
+                      placeholder="Bride's Phone Number"
+                      value={bridePhone}
+                      onChange={(e) => setBridePhone(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Email</label>
+                    <input 
+                      type="email" 
+                      placeholder="bride@example.com"
+                      value={brideEmail}
+                      onChange={(e) => setBrideEmail(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                    />
+                  </div>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Address</label>
+                    <textarea 
+                      rows={2}
+                      placeholder="Bride's Address"
+                      value={brideAddress}
+                      onChange={(e) => setBrideAddress(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                    />
+                  </div>
+                </div>
+              </div>
 
-                    {/* Bride's Account Block */}
-                    <div className="col-span-2 sm:col-span-1 p-4 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-3">
-                      <div className="flex items-center gap-1.5 text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-1.5">
-                        <span>👰</span> Bride's Account Details
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Bride Name *</label>
-                        <input 
-                          type="text" 
-                          required={coverageType === "both"}
-                          placeholder="Bride's Name"
-                          value={brideName}
-                          onChange={(e) => setBrideName(e.target.value)}
-                          className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Bride WhatsApp Phone *</label>
-                        <input 
-                          type="tel" 
-                          required={coverageType === "both"}
-                          placeholder="e.g. 9895412896"
-                          value={bridePhone}
-                          onChange={(e) => setBridePhone(e.target.value)}
-                          className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Bride Email</label>
-                        <input 
-                          type="email" 
-                          placeholder="bride@gmail.com"
-                          value={brideEmail}
-                          onChange={(e) => setBrideEmail(e.target.value)}
-                          className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                        />
-                      </div>
+              {/* SECTION: Groom Details */}
+              <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-4">
+                <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-2">
+                  <span>🎩</span> Groom Details
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Full Name *</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="Groom's Full Name"
+                      value={groomName}
+                      onChange={(e) => setGroomName(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Phone Number *</label>
+                    <input 
+                      type="tel" 
+                      required
+                      placeholder="Groom's Phone Number"
+                      value={groomPhone}
+                      onChange={(e) => setGroomPhone(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Email</label>
+                    <input 
+                      type="email" 
+                      placeholder="groom@example.com"
+                      value={groomEmail}
+                      onChange={(e) => setGroomEmail(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                    />
+                  </div>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Address</label>
+                    <textarea 
+                      rows={2}
+                      placeholder="Groom's Address"
+                      value={groomAddress}
+                      onChange={(e) => setGroomAddress(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION: Wedding & Reception Schedule */}
+              <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-4">
+                <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-2">
+                  <span>📅</span> Event Schedule Details
+                </div>
+                <div className="space-y-3">
+                  <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase block">Schedule Configuration</label>
+                  <div className="grid grid-cols-2 gap-3 bg-zinc-200/50 p-1 rounded-xl border border-zinc-200 w-full relative z-10">
+                    <button 
+                      type="button"
+                      onClick={() => setWeddingReceptionMode("same")}
+                      className={`py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                        weddingReceptionMode === "same" ? "bg-zinc-900 text-white shadow-xs" : "bg-white text-zinc-500 hover:text-zinc-800"
+                      }`}
+                    >
+                      Same Date
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setWeddingReceptionMode("different")}
+                      className={`py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                        weddingReceptionMode === "different" ? "bg-zinc-900 text-white shadow-xs" : "bg-white text-zinc-500 hover:text-zinc-800"
+                      }`}
+                    >
+                      Different Dates
+                    </button>
+                  </div>
+                </div>
+
+                {weddingReceptionMode === "same" ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Event Date *</label>
+                      <input 
+                        type="date" 
+                        required={weddingReceptionMode === "same"}
+                        value={eventDate}
+                        onChange={(e) => setEventDate(e.target.value)}
+                        style={{ colorScheme: "light" }}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none"
+                      />
                     </div>
-                  </>
+                    <div className="space-y-1.5">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Wedding Venue *</label>
+                      <input 
+                        type="text" 
+                        required={weddingReceptionMode === "same"}
+                        placeholder="Wedding Venue"
+                        value={eventVenue}
+                        onChange={(e) => setEventVenue(e.target.value)}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Reception Venue</label>
+                      <input 
+                        type="text" 
+                        placeholder="Reception Venue"
+                        value={receptionVenue}
+                        onChange={(e) => setReceptionVenue(e.target.value)}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Wedding Time</label>
+                      <input 
+                        type="time" 
+                        value={weddingTime}
+                        onChange={(e) => setWeddingTime(e.target.value)}
+                        style={{ colorScheme: "light" }}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Reception Time</label>
+                      <input 
+                        type="time" 
+                        value={receptionTime}
+                        onChange={(e) => setReceptionTime(e.target.value)}
+                        style={{ colorScheme: "light" }}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none"
+                      />
+                    </div>
+                  </div>
                 ) : (
-                  <>
-                    {/* Single Side Account Block */}
-                    <div className="col-span-2 p-4 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-4">
-                      <div className="flex items-center justify-between text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-2">
-                        <div className="flex items-center gap-1.5">
-                          <span>👤</span> Client Account Details
+                  <div className="space-y-4 pt-2">
+                    {/* Wedding Date Info */}
+                    <div className="p-4 bg-zinc-200/30 rounded-2xl border border-zinc-200 space-y-3">
+                      <span className="text-[9px] text-[#b4975a] font-bold uppercase tracking-wider block">Wedding details</span>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest">Date *</label>
+                          <input 
+                            type="date" 
+                            required={weddingReceptionMode === "different"}
+                            value={weddingDateDiff}
+                            onChange={(e) => setWeddingDateDiff(e.target.value)}
+                            style={{ colorScheme: "light" }}
+                            className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none"
+                          />
                         </div>
-                        {/* Side selector */}
-                        <div className="flex gap-1 bg-zinc-200/60 p-0.5 rounded-lg border border-zinc-200 w-fit">
-                          <button 
-                            type="button"
-                            onClick={() => setCoverageSide("groom")}
-                            className={`px-3 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                              coverageSide === "groom" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-800"
-                            }`}
-                          >
-                            Groom
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={() => setCoverageSide("bride")}
-                            className={`px-3 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                              coverageSide === "bride" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-800"
-                            }`}
-                          >
-                            Bride
-                          </button>
+                        <div className="space-y-1">
+                          <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest">Time</label>
+                          <input 
+                            type="time" 
+                            value={weddingTimeDiff}
+                            onChange={(e) => setWeddingTimeDiff(e.target.value)}
+                            style={{ colorScheme: "light" }}
+                            className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none"
+                          />
                         </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1.5 sm:col-span-2">
-                          <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Client Name *</label>
+                        <div className="space-y-1">
+                          <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest">Venue *</label>
                           <input 
                             type="text" 
-                            required={coverageType === "single"}
-                            placeholder="Client Name"
-                            value={singleName}
-                            onChange={(e) => setSingleName(e.target.value)}
-                            className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-3 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">WhatsApp Phone Number *</label>
-                          <input 
-                            type="tel" 
-                            required={coverageType === "single"}
-                            placeholder="e.g. 9895412895"
-                            value={singlePhone}
-                            onChange={(e) => setSinglePhone(e.target.value)}
-                            className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-3 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Email Address</label>
-                          <input 
-                            type="email" 
-                            placeholder="e.g. yourname@gmail.com"
-                            value={singleEmail}
-                            onChange={(e) => setSingleEmail(e.target.value)}
-                            className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-3 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                            required={weddingReceptionMode === "different"}
+                            placeholder="Wedding Venue"
+                            value={weddingVenueDiff}
+                            onChange={(e) => setWeddingVenueDiff(e.target.value)}
+                            className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
                           />
                         </div>
                       </div>
                     </div>
-                  </>
+
+                    {/* Reception Date Info */}
+                    <div className="p-4 bg-zinc-200/30 rounded-2xl border border-zinc-200 space-y-3">
+                      <span className="text-[9px] text-[#b4975a] font-bold uppercase tracking-wider block">Reception details</span>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest">Date</label>
+                          <input 
+                            type="date" 
+                            value={receptionDateDiff}
+                            onChange={(e) => setReceptionDateDiff(e.target.value)}
+                            style={{ colorScheme: "light" }}
+                            className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest">Time</label>
+                          <input 
+                            type="time" 
+                            value={receptionTimeDiff}
+                            onChange={(e) => setReceptionTimeDiff(e.target.value)}
+                            style={{ colorScheme: "light" }}
+                            className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest">Venue</label>
+                          <input 
+                            type="text" 
+                            placeholder="Reception Venue"
+                            value={receptionVenueDiff}
+                            onChange={(e) => setReceptionVenueDiff(e.target.value)}
+                            className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
-                <div className="space-y-1.5">
-                  <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase block">Wedding Date *</label>
-                  <input 
-                    type="date" 
-                    required
-                    value={eventDate}
-                    onChange={(e) => setEventDate(e.target.value)}
-                    style={{ colorScheme: "light" }}
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                  />
+              </div>
+
+              {/* SECTION: Additional Details */}
+              <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-4">
+                <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-2">
+                  <span>✨</span> Additional Details
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase block">Select Package *</label>
-                  <select 
-                    value={selectedPackage}
-                    onChange={(e) => handlePackageChange(e.target.value)}
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                  >
-                    <option value="Elite Signature Package">Elite Signature (₹1,80,000)</option>
-                    <option value="Premium Couture Package">Premium Couture (₹1,35,000)</option>
-                    <option value="Classic Heritage Package">Classic Heritage (₹95,000)</option>
-                  </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Need Drone?</label>
+                    <select 
+                      value={needDrone}
+                      onChange={(e) => setNeedDrone(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none"
+                    >
+                      <option value="no">No</option>
+                      <option value="yes">Yes</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Need Cinematic Video?</label>
+                    <select 
+                      value={needCinematic}
+                      onChange={(e) => setNeedCinematic(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none"
+                    >
+                      <option value="no">No</option>
+                      <option value="yes">Yes</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Preferred Album Size</label>
+                    <select 
+                      value={preferredAlbumSize}
+                      onChange={(e) => setPreferredAlbumSize(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none"
+                    >
+                      <option value="12x18">12 x 18 Premium Couture (Standard)</option>
+                      <option value="12x15">12 x 15 Couture</option>
+                      <option value="10x15">10 x 15 Signature</option>
+                      <option value="8x12">8 x 12 Mini Companion</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Special Notes</label>
+                    <textarea 
+                      rows={3}
+                      placeholder="Add any specific requests or questions..."
+                      value={specialNotes}
+                      onChange={(e) => setSpecialNotes(e.target.value)}
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1.5 col-span-2">
-                  <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase block">Wedding Venue Location *</label>
-                  <input 
-                    type="text" 
-                    required
-                    placeholder="e.g. Taj Green Cove, Kovalam, Trivandrum"
-                    value={eventVenue}
-                    onChange={(e) => setEventVenue(e.target.value)}
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                  />
+              </div>
+
+              {/* SECTION: Wedding Invitation Upload */}
+              <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-4">
+                <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-2">
+                  <span>✉️</span> Wedding Invitation
                 </div>
-                <div className="space-y-1.5 col-span-2">
-                  <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase block">Advance Paid Amount (₹)</label>
-                  <input 
-                    type="number" 
-                    placeholder="5000"
-                    value={advancePaid}
-                    onChange={(e) => setAdvancePaid(e.target.value)}
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                  />
+                <div className="space-y-2">
+                  <label className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest block text-left">Upload Invitation (JPG, PNG, PDF)</label>
+                  <div className="flex items-center gap-3">
+                    <label className="px-4 py-2 bg-zinc-900 hover:bg-zinc-850 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-sm select-none">
+                      Choose File
+                      <input 
+                        type="file" 
+                        accept="image/*,application/pdf"
+                        onChange={handleInvitationChange}
+                        className="hidden"
+                      />
+                    </label>
+                    <span className="text-zinc-500 text-xs font-light truncate">
+                      {invitationFileName || "No file uploaded (PDF or Images)"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION: Advance Payment */}
+              <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-4">
+                <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-2">
+                  <span>💳</span> Advance Payment
+                </div>
+                <div className="space-y-4">
+                  <div className="bg-[#b4975a]/10 border border-[#b4975a]/20 p-4 rounded-xl text-left space-y-1.5 text-zinc-700">
+                    <span className="block text-[9px] font-bold text-[#b4975a] uppercase tracking-wider">Payment Details</span>
+                    <p className="text-xs font-light leading-normal">
+                      Please send your advance booking fee of <strong>₹5,000/-</strong> using the credentials below:
+                    </p>
+                    <div className="text-[10px] font-mono bg-white/60 p-2.5 rounded-lg border border-[#b4975a]/10 space-y-1">
+                      <div>UPI ID: <strong className="text-zinc-900">dreamwedstories@okaxis</strong></div>
+                      <div>GPay / PhonePe: <strong className="text-zinc-900">+91 98954 12895</strong></div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Amount Paying (₹) *</label>
+                      <input 
+                        type="number" 
+                        required
+                        placeholder="5000"
+                        value={advancePaid}
+                        onChange={(e) => setAdvancePaid(e.target.value)}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Payment Method *</label>
+                      <select 
+                        value={paymentMethod}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none"
+                      >
+                        <option value="UPI">UPI</option>
+                        <option value="Google Pay">Google Pay</option>
+                        <option value="PhonePe">PhonePe</option>
+                        <option value="Bank Transfer">Bank/IMPS Transfer</option>
+                        <option value="Cash">Cash</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Transaction ID / Reference No *</label>
+                      <input 
+                        type="text" 
+                        required
+                        placeholder="Enter 12-digit transaction ID or cash details"
+                        value={transactionId}
+                        onChange={(e) => setTransactionId(e.target.value)}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Upload Payment Screenshot *</label>
+                      <div className="flex items-center gap-3">
+                        <label className="px-4 py-2 bg-zinc-900 hover:bg-zinc-850 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-sm select-none">
+                          Choose Screenshot
+                          <input 
+                            type="file" 
+                            required
+                            accept="image/*"
+                            onChange={handleScreenshotChange}
+                            className="hidden"
+                          />
+                        </label>
+                        <span className="text-zinc-500 text-xs font-light truncate">
+                          {screenshotFileName || "No screenshot uploaded"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -618,9 +931,34 @@ const MyBooking = () => {
                 disabled={signingUp}
                 className="w-full py-4.5 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl transition-all text-xs tracking-widest uppercase shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] mt-2"
               >
-                {signingUp ? "Submitting Request..." : "Submit Booking Request"}
+                {signingUp ? "Submitting Booking..." : "Submit Booking"}
               </button>
             </form>
+          ) : (
+            <div className="p-6 text-center space-y-6">
+              <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/30 rounded-full flex items-center justify-center mx-auto text-xl animate-pulse">
+                🟡
+              </div>
+              <div className="space-y-2">
+                <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest block">Awaiting Admin Approval</span>
+                <h3 className="text-lg font-bold text-zinc-900">Booking Request Received</h3>
+                <p className="text-zinc-500 text-xs font-light leading-relaxed max-w-sm mx-auto">
+                  Thank you! Your wedding booking request and advance payment proof (Transaction ID: <span className="font-mono font-medium">{transactionId}</span>) have been received.
+                </p>
+                <p className="text-zinc-500 text-xs font-light leading-relaxed max-w-sm mx-auto">
+                  Our coordinator is verifying your payment and calendar slot. Once approved, your invoice will generate, and couple credentials will be created.
+                </p>
+              </div>
+              <button 
+                onClick={() => {
+                  setSignupSuccess(false);
+                  setActiveMode("lookup");
+                }}
+                className="px-6 py-2.5 rounded-xl border border-zinc-200 text-zinc-650 hover:bg-zinc-50 transition-colors text-xs font-semibold uppercase tracking-wider cursor-pointer"
+              >
+                Go to Invoice Search
+              </button>
+            </div>
           )}
 
           {/* Feedback states */}

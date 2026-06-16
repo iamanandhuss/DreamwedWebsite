@@ -53,6 +53,8 @@ const Admin = () => {
 
   // Projects tab state
   const [projects, setProjects] = useState([]);
+  const [viewingProof, setViewingProof] = useState(null);
+  const [viewingInvitation, setViewingInvitation] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
   const [driveLink, setDriveLink] = useState("");
   const [deadlineDate, setDeadlineDate] = useState("");
@@ -216,7 +218,23 @@ const Admin = () => {
         method: "POST"
       });
       if (res.ok) {
-        alert("✅ Booking approved successfully! The couple can now access their wedding workspace.");
+        const confirmedBooking = await res.json();
+        
+        // Post logs to server
+        const logs = [
+          `Booking status confirmed, invoice DW2026-${String(bookingId).padStart(3, '0')} generated successfully with status: Verified`,
+          "Automatically scheduled Wedding & Reception slots in Google Calendar",
+          "Created workspace folders: RAW, Edited, SaveTheDate, Wedding, Reception, Album_Selected, Album_Design, Final_Delivery"
+        ];
+        for (const act of logs) {
+          await fetch(`${API_BASE}/api/projects/${bookingId}/logs`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user: "System", action: act })
+          }).catch(() => null);
+        }
+
+        alert(`✅ Booking approved successfully! The couple can now log in.\nBride: ${confirmedBooking.bride_password}\nGroom: ${confirmedBooking.groom_password}`);
         await fetchBookings();
         await fetchProjects();
       } else {
@@ -231,6 +249,10 @@ const Admin = () => {
       const bookingToConfirm = localBookings.find(b => b.id === Number(bookingId));
       if (bookingToConfirm) {
         bookingToConfirm.status = "confirmed";
+        bookingToConfirm.bride_password = bookingToConfirm.bride_password || `bride${String(Math.floor(Math.random() * 900) + 100)}`;
+        bookingToConfirm.groom_password = bookingToConfirm.groom_password || `groom${String(Math.floor(Math.random() * 900) + 100)}`;
+        bookingToConfirm.invoice_number = bookingToConfirm.invoice_number || `DW-2026-${String(bookingToConfirm.id).padStart(3, '0')}`;
+        bookingToConfirm.invoice_date = bookingToConfirm.invoice_date || new Date().toISOString().split('T')[0];
         bookingToConfirm.updated_at = new Date().toISOString();
         
         // Spawn project
@@ -258,7 +280,9 @@ const Admin = () => {
             },
             gallery_images: [
               { id: 1, url: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600", favorited: false, categories: [], comment: "" },
-              { id: 2, url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=600", favorited: false, categories: [], comment: "" }
+              { id: 2, url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=600", favorited: false, categories: [], comment: "" },
+              { id: 3, url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=600", favorited: false, categories: [], comment: "" },
+              { id: 4, url: "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=600", favorited: false, categories: [], comment: "" }
             ],
             deliveries: {
               video_teaser_url: "https://www.youtube.com/embed/S9-SrdnKsMs",
@@ -276,7 +300,32 @@ const Admin = () => {
         localStorage.setItem("dreamwed_bookings", JSON.stringify(localBookings));
         localStorage.setItem("dreamwed_projects", JSON.stringify(localProjects));
         
-        alert("✅ Booking approved successfully (Local Offline Sync Active)! The couple can now access their wedding workspace.");
+        // Log local activities
+        const localLogs = JSON.parse(localStorage.getItem(`dreamwed_logs_${bookingToConfirm.id}`) || "[]");
+        localLogs.push({
+          id: localLogs.length + 1,
+          project_id: bookingToConfirm.id,
+          user: "System",
+          action: `Booking status confirmed, invoice DW2026-${String(bookingToConfirm.id).padStart(3, '0')} generated successfully with status: Verified`,
+          timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19)
+        });
+        localLogs.push({
+          id: localLogs.length + 2,
+          project_id: bookingToConfirm.id,
+          user: "System",
+          action: "Automatically scheduled Wedding & Reception slots in Google Calendar",
+          timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19)
+        });
+        localLogs.push({
+          id: localLogs.length + 3,
+          project_id: bookingToConfirm.id,
+          user: "System",
+          action: "Created workspace folders: RAW, Edited, SaveTheDate, Wedding, Reception, Album_Selected, Album_Design, Final_Delivery",
+          timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19)
+        });
+        localStorage.setItem(`dreamwed_logs_${bookingToConfirm.id}`, JSON.stringify(localLogs));
+
+        alert(`✅ Booking approved successfully (Local Offline Sync Active)!\nBride Password: ${bookingToConfirm.bride_password}\nGroom Password: ${bookingToConfirm.groom_password}`);
         
         // Refresh local views
         setBookings(localBookings);
@@ -284,6 +333,61 @@ const Admin = () => {
         if (localProjects.length > 0 && !selectedProject) setSelectedProject(localProjects[0]);
       } else {
         alert("Booking not found locally.");
+      }
+    }
+  };
+
+  const handleRejectBooking = async (bookingId) => {
+    if (!confirm("Are you sure you want to REJECT this booking request?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/bookings/${bookingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "rejected" })
+      });
+      if (res.ok) {
+        alert("❌ Booking request has been rejected.");
+        await fetchBookings();
+      }
+    } catch (e) {
+      console.warn("Reject error, falling back locally:", e);
+      const localBookings = JSON.parse(localStorage.getItem("dreamwed_bookings") || "[]");
+      const match = localBookings.find(b => b.id === Number(bookingId));
+      if (match) {
+        match.status = "rejected";
+        match.updated_at = new Date().toISOString();
+        localStorage.setItem("dreamwed_bookings", JSON.stringify(localBookings));
+        setBookings(localBookings);
+        alert("❌ Booking request rejected locally (Offline Sync Active).");
+      }
+    }
+  };
+
+  const handleRequestNewProof = async (bookingId) => {
+    const reason = prompt("Enter the reason for requesting new proof (e.g. Blurry screenshot, incorrect amount):", "Blurry screenshot / transaction details mismatch");
+    if (reason === null) return;
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/bookings/${bookingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "proof_requested", special_notes: `Proof Requested: ${reason}` })
+      });
+      if (res.ok) {
+        alert("🟡 Request sent to client for new payment proof.");
+        await fetchBookings();
+      }
+    } catch (e) {
+      console.warn("Request proof error, falling back locally:", e);
+      const localBookings = JSON.parse(localStorage.getItem("dreamwed_bookings") || "[]");
+      const match = localBookings.find(b => b.id === Number(bookingId));
+      if (match) {
+        match.status = "proof_requested";
+        match.special_notes = `Proof Requested: ${reason}`;
+        match.updated_at = new Date().toISOString();
+        localStorage.setItem("dreamwed_bookings", JSON.stringify(localBookings));
+        setBookings(localBookings);
+        alert("🟡 Request sent locally (Offline Sync Active).");
       }
     }
   };

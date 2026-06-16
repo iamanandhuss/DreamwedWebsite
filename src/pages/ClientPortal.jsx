@@ -2458,7 +2458,7 @@ const ClientPortal = () => {
           Back to Home
         </a>
         <SEO 
-          title="DreamWed Wedding Hub"
+          title="DreamWed Client Portal"
           description="Your personal wedding dashboard where you can track progress, download files, chat with us, and view wedding photos."
         />
         
@@ -2490,7 +2490,7 @@ const ClientPortal = () => {
             {/* Luxury Welcome Board */}
             <div className="space-y-6 text-center">
               <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl sm:text-4xl text-white font-light tracking-tight leading-tight">
-                Welcome to <span className="italic font-serif text-[#b4975a]">DreamWed Wedding Hub</span> 💍
+                Welcome to <span className="italic font-serif text-[#b4975a]">DreamWed Client Portal</span> 💍
               </h1>
               
               <div className="space-y-4 text-zinc-200 text-xs sm:text-sm font-light leading-relaxed max-w-xl mx-auto">
@@ -2504,7 +2504,7 @@ const ClientPortal = () => {
 
               {/* Premium Gold Bullet Features List */}
               <div className="bg-white/5 border border-white/5 rounded-2xl p-5 sm:p-6 text-left max-w-md mx-auto space-y-3">
-                <p className="text-[10px] text-[#b4975a] font-bold uppercase tracking-wider">Inside your Wedding Hub, you can:</p>
+                <p className="text-[10px] text-[#b4975a] font-bold uppercase tracking-wider">Inside your Client Portal, you can:</p>
                 <div className="space-y-2.5">
                   {[
                     "View wedding photos and videos",
@@ -2590,7 +2590,7 @@ const ClientPortal = () => {
                   <span className="text-[10px] font-bold uppercase tracking-widest">New Customer? Sign Up Here</span>
                 </div>
                 <p className="text-zinc-300 text-xs font-light leading-relaxed max-w-xs mx-auto">
-                  Create your custom Wedding Hub Workspace to access your cinematic films, photo approvals, and milestone trackers in real-time.
+                  Create your custom Client Workspace to access your cinematic films, photo approvals, and milestone trackers in real-time.
                 </p>
                 <a 
                   href="/groom/bride" 
@@ -2685,7 +2685,7 @@ const ClientPortal = () => {
   return (
     <div className="min-h-screen bg-[#faf9f6] text-zinc-800 font-sans select-none overflow-x-hidden flex flex-col md:grid md:grid-cols-[280px_1fr]">
       <SEO 
-        title="DreamWed Wedding Hub"
+        title="DreamWed Client Portal"
         description="Interact with your premium wedding project timeline, favorite layflat album selections, comment on retouches, and download finalized high-res wedding files."
       />
 
@@ -2696,7 +2696,7 @@ const ClientPortal = () => {
           <div className="flex items-center gap-3 border-b border-[#b4975a]/10 pb-5">
             <img src="/appIcon.png" alt="Logo" className="w-10 h-10 object-contain filter drop-shadow-[0_2px_8px_rgba(180,151,90,0.15)]" />
             <div className="text-left">
-              <span className="text-[#b4975a] text-[8px] font-bold tracking-[0.3em] uppercase block">DreamWed Hub</span>
+              <span className="text-[#b4975a] text-[8px] font-bold tracking-[0.3em] uppercase block">DreamWed Portal</span>
               <span className="text-zinc-900 font-medium text-sm tracking-tight block leading-tight">Client Workspace</span>
             </div>
           </div>
