@@ -8,8 +8,24 @@ import {
 import { FaWhatsapp } from "react-icons/fa6";
 import SEO from "../components/SEO";
 
+const isSingleSidePackage = (pName) => {
+  if (!pName) return false;
+  const name = pName.toLowerCase();
+  if (name.includes("dual") || name.includes("both") || name.includes("bride & groom") || name.includes("elite") || name.includes("signature") || name.includes("couture")) {
+    return false;
+  }
+  return name.includes("single") || 
+         name.includes("classic") || 
+         name.includes("heritage") || 
+         name.includes("essential") || 
+         name.includes("standalone") || 
+         name.includes("promo") || 
+         name.includes("photography");
+};
+
 const MyBooking = () => {
   const [activeMode, setActiveMode] = useState("lookup");
+  const [bookingRole, setBookingRole] = useState("both"); // bride, groom, both
   const [phoneQuery, setPhoneQuery] = useState("");
   const [booking, setBooking] = useState(null);
   const [status, setStatus] = useState("idle"); // idle, loading, success, error, not_found
@@ -182,9 +198,30 @@ const MyBooking = () => {
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
     
-    if (!groomName.trim() || !groomPhone.trim() || !brideName.trim() || !bridePhone.trim()) {
-      alert("Bride & Groom names and phone numbers are required.");
-      return;
+    const isSingleSide = isSingleSidePackage(selectedPackage);
+    
+    if (isSingleSide) {
+      if (bookingRole === "bride") {
+        if (!brideName.trim() || !bridePhone.trim()) {
+          alert("Bride name and phone number are required.");
+          return;
+        }
+      } else if (bookingRole === "groom") {
+        if (!groomName.trim() || !groomPhone.trim()) {
+          alert("Groom name and phone number are required.");
+          return;
+        }
+      } else {
+        if (!groomName.trim() || !groomPhone.trim() || !brideName.trim() || !bridePhone.trim()) {
+          alert("Bride & Groom names and phone numbers are required.");
+          return;
+        }
+      }
+    } else {
+      if (!groomName.trim() || !groomPhone.trim() || !brideName.trim() || !bridePhone.trim()) {
+        alert("Bride & Groom names and phone numbers are required.");
+        return;
+      }
     }
 
     if (weddingReceptionMode === "same" && (!eventDate || !eventVenue.trim())) {
@@ -209,15 +246,47 @@ const MyBooking = () => {
     if (needDrone === "yes") addOns.push("Drone Coverage Upgrade");
     if (needCinematic === "yes") addOns.push("Cinematic Video Upgrade");
 
+    let customerNameFinal = "";
+    let customerPhoneFinal = "";
+    let customerEmailFinal = "";
+    let customerAddressFinal = "";
+    
+    let customerName2Final = "";
+    let customerPhone2Final = "";
+    let customerEmail2Final = "";
+    let customerAddress2Final = "";
+
+    if (isSingleSide && bookingRole === "bride") {
+      customerNameFinal = brideName.trim();
+      customerPhoneFinal = bridePhone.trim();
+      customerEmailFinal = brideEmail.trim();
+      customerAddressFinal = brideAddress.trim();
+    } else if (isSingleSide && bookingRole === "groom") {
+      customerNameFinal = groomName.trim();
+      customerPhoneFinal = groomPhone.trim();
+      customerEmailFinal = groomEmail.trim();
+      customerAddressFinal = groomAddress.trim();
+    } else {
+      customerNameFinal = `${groomName.trim()} & ${brideName.trim()}`;
+      customerPhoneFinal = groomPhone.trim();
+      customerEmailFinal = groomEmail.trim();
+      customerAddressFinal = groomAddress.trim();
+      
+      customerName2Final = brideName.trim();
+      customerPhone2Final = bridePhone.trim();
+      customerEmail2Final = brideEmail.trim();
+      customerAddress2Final = brideAddress.trim();
+    }
+
     const payload = {
-      customer_name: `${groomName.trim()} & ${brideName.trim()}`,
-      customer_phone: groomPhone.trim(),
-      customer_email: groomEmail.trim(),
-      customer_address: groomAddress.trim(),
-      customer_name_2: brideName.trim(),
-      customer_phone_2: bridePhone.trim(),
-      customer_email_2: brideEmail.trim(),
-      customer_address_2: brideAddress.trim(),
+      customer_name: customerNameFinal,
+      customer_phone: customerPhoneFinal,
+      customer_email: customerEmailFinal,
+      customer_address: customerAddressFinal,
+      customer_name_2: customerName2Final,
+      customer_phone_2: customerPhone2Final,
+      customer_email_2: customerEmail2Final,
+      customer_address_2: customerAddress2Final,
       
       coverage_type: "both",
       wedding_reception_mode: weddingReceptionMode,
@@ -506,107 +575,145 @@ const MyBooking = () => {
                 </div>
               </div>
 
+              {/* SECTION: Role Selection (Single-side only) */}
+              {isSingleSidePackage(selectedPackage) && (
+                <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-4">
+                  <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-2">
+                    <span>👤</span> Booking Side / Role
+                  </div>
+                  <div className="space-y-3 text-left">
+                    <p className="text-[11px] text-zinc-550 font-light leading-relaxed">
+                      This is a single-side coverage package. Please choose whose details you want to provide for this booking:
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 bg-zinc-200/50 p-1 rounded-xl border border-zinc-200 w-full relative z-10">
+                      {[
+                        { value: "bride", label: "👰 Bride" },
+                        { value: "groom", label: "🎩 Groom" },
+                        { value: "both", label: "💑 Both" }
+                      ].map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setBookingRole(opt.value)}
+                          className={`py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                            bookingRole === opt.value
+                              ? "bg-zinc-900 text-white shadow-xs"
+                              : "bg-white text-zinc-500 hover:text-zinc-800"
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* SECTION: Bride Details */}
-              <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-4">
-                <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-2">
-                  <span>👰</span> Bride Details
+              {(!isSingleSidePackage(selectedPackage) || bookingRole === "bride" || bookingRole === "both") && (
+                <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-4">
+                  <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-2">
+                    <span>👰</span> Bride Details
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Full Name *</label>
+                      <input 
+                        type="text" 
+                        required={!isSingleSidePackage(selectedPackage) || bookingRole === "bride" || bookingRole === "both"}
+                        placeholder="Bride's Full Name"
+                        value={brideName}
+                        onChange={(e) => setBrideName(e.target.value)}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Phone Number *</label>
+                      <input 
+                        type="tel" 
+                        required={!isSingleSidePackage(selectedPackage) || bookingRole === "bride" || bookingRole === "both"}
+                        placeholder="Bride's Phone Number"
+                        value={bridePhone}
+                        onChange={(e) => setBridePhone(e.target.value)}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Email</label>
+                      <input 
+                        type="email" 
+                        placeholder="bride@example.com"
+                        value={brideEmail}
+                        onChange={(e) => setBrideEmail(e.target.value)}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Address</label>
+                      <textarea 
+                        rows={2}
+                        placeholder="Bride's Address"
+                        value={brideAddress}
+                        onChange={(e) => setBrideAddress(e.target.value)}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Full Name *</label>
-                    <input 
-                      type="text" 
-                      required
-                      placeholder="Bride's Full Name"
-                      value={brideName}
-                      onChange={(e) => setBrideName(e.target.value)}
-                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Phone Number *</label>
-                    <input 
-                      type="tel" 
-                      required
-                      placeholder="Bride's Phone Number"
-                      value={bridePhone}
-                      onChange={(e) => setBridePhone(e.target.value)}
-                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Email</label>
-                    <input 
-                      type="email" 
-                      placeholder="bride@example.com"
-                      value={brideEmail}
-                      onChange={(e) => setBrideEmail(e.target.value)}
-                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                    />
-                  </div>
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Address</label>
-                    <textarea 
-                      rows={2}
-                      placeholder="Bride's Address"
-                      value={brideAddress}
-                      onChange={(e) => setBrideAddress(e.target.value)}
-                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                    />
-                  </div>
-                </div>
-              </div>
+              )}
 
               {/* SECTION: Groom Details */}
-              <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-4">
-                <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-2">
-                  <span>🎩</span> Groom Details
+              {(!isSingleSidePackage(selectedPackage) || bookingRole === "groom" || bookingRole === "both") && (
+                <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-4">
+                  <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs border-b border-zinc-200 pb-2">
+                    <span>🎩</span> Groom Details
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Full Name *</label>
+                      <input 
+                        type="text" 
+                        required={!isSingleSidePackage(selectedPackage) || bookingRole === "groom" || bookingRole === "both"}
+                        placeholder="Groom's Full Name"
+                        value={groomName}
+                        onChange={(e) => setGroomName(e.target.value)}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Phone Number *</label>
+                      <input 
+                        type="tel" 
+                        required={!isSingleSidePackage(selectedPackage) || bookingRole === "groom" || bookingRole === "both"}
+                        placeholder="Groom's Phone Number"
+                        value={groomPhone}
+                        onChange={(e) => setGroomPhone(e.target.value)}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Email</label>
+                      <input 
+                        type="email" 
+                        placeholder="groom@example.com"
+                        value={groomEmail}
+                        onChange={(e) => setGroomEmail(e.target.value)}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Address</label>
+                      <textarea 
+                        rows={2}
+                        placeholder="Groom's Address"
+                        value={groomAddress}
+                        onChange={(e) => setGroomAddress(e.target.value)}
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Full Name *</label>
-                    <input 
-                      type="text" 
-                      required
-                      placeholder="Groom's Full Name"
-                      value={groomName}
-                      onChange={(e) => setGroomName(e.target.value)}
-                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Phone Number *</label>
-                    <input 
-                      type="tel" 
-                      required
-                      placeholder="Groom's Phone Number"
-                      value={groomPhone}
-                      onChange={(e) => setGroomPhone(e.target.value)}
-                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Email</label>
-                    <input 
-                      type="email" 
-                      placeholder="groom@example.com"
-                      value={groomEmail}
-                      onChange={(e) => setGroomEmail(e.target.value)}
-                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                    />
-                  </div>
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest block">Address</label>
-                    <textarea 
-                      rows={2}
-                      placeholder="Groom's Address"
-                      value={groomAddress}
-                      onChange={(e) => setGroomAddress(e.target.value)}
-                      className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none font-light"
-                    />
-                  </div>
-                </div>
-              </div>
+              )}
 
               {/* SECTION: Wedding & Reception Schedule */}
               <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-4">
