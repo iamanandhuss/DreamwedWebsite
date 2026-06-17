@@ -277,7 +277,9 @@ function saveBooking(booking) {
       { label: 'Second Payment (Event Day)', amount: 0, date: booking.event_date || '', status: 'Pending' },
       { label: 'Final Payment (Before Delivery)', amount: (Number(booking.total_price) || 0) - (Number(booking.advance_paid) || 0), date: '', status: 'Pending' }
     ],
-    bride_password: booking.bride_password || `bride${String(Math.floor(Math.random() * 900) + 100)}`,
+    bride_password: (booking.coverage_type === 'both' || booking.coverage_scope === 'both')
+      ? (booking.bride_password || `bride${String(Math.floor(Math.random() * 900) + 100)}`)
+      : null,
     groom_password: booking.groom_password || `groom${String(Math.floor(Math.random() * 900) + 100)}`,
     bride_selections: booking.bride_selections || [],
     groom_selections: booking.groom_selections || [],

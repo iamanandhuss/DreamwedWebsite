@@ -213,7 +213,11 @@ const Admin = () => {
           }).catch(() => null);
         }
 
-        alert(`✅ Booking approved successfully! The couple can now log in.\nBride: ${confirmedBooking.bride_password}\nGroom: ${confirmedBooking.groom_password}`);
+        const isBoth = confirmedBooking.coverage_type === 'both' || confirmedBooking.coverage_scope === 'both';
+        const loginMsg = isBoth
+          ? `Bride: ${confirmedBooking.bride_password}\nGroom: ${confirmedBooking.groom_password}`
+          : `Login: ${confirmedBooking.groom_password}`;
+        alert(`✅ Booking approved successfully! The client can now log in.\n${loginMsg}`);
         await fetchBookings();
         await fetchProjects();
       } else {
@@ -228,7 +232,12 @@ const Admin = () => {
       const bookingToConfirm = localBookings.find(b => b.id === Number(bookingId));
       if (bookingToConfirm) {
         bookingToConfirm.status = "confirmed";
-        bookingToConfirm.bride_password = bookingToConfirm.bride_password || `bride${String(Math.floor(Math.random() * 900) + 100)}`;
+        const isBothSide = bookingToConfirm.coverage_type === 'both' || bookingToConfirm.coverage_scope === 'both';
+        if (isBothSide) {
+          bookingToConfirm.bride_password = bookingToConfirm.bride_password || `bride${String(Math.floor(Math.random() * 900) + 100)}`;
+        } else {
+          bookingToConfirm.bride_password = null;
+        }
         bookingToConfirm.groom_password = bookingToConfirm.groom_password || `groom${String(Math.floor(Math.random() * 900) + 100)}`;
         bookingToConfirm.invoice_number = bookingToConfirm.invoice_number || `DW-2026-${String(bookingToConfirm.id).padStart(3, '0')}`;
         bookingToConfirm.invoice_date = bookingToConfirm.invoice_date || new Date().toISOString().split('T')[0];
@@ -304,7 +313,10 @@ const Admin = () => {
         });
         localStorage.setItem(`dreamwed_logs_${bookingToConfirm.id}`, JSON.stringify(localLogs));
 
-        alert(`✅ Booking approved successfully (Local Offline Sync Active)!\nBride Password: ${bookingToConfirm.bride_password}\nGroom Password: ${bookingToConfirm.groom_password}`);
+        const loginDisplay = isBothSide
+          ? `Bride Password: ${bookingToConfirm.bride_password}\nGroom Password: ${bookingToConfirm.groom_password}`
+          : `Login Password: ${bookingToConfirm.groom_password}`;
+        alert(`✅ Booking approved successfully (Local Offline Sync Active)!\n${loginDisplay}`);
         
         // Refresh local views
         setBookings(localBookings);
@@ -1476,8 +1488,7 @@ const Admin = () => {
                                               surpriseBonusText + `\n` +
                                               `UPI: dreamwedstories@okaxis\n` +
                                               `Passwords Assigned:\n` +
-                                              `Bride: ${selectedClient.bride_password}\n` +
-                                              `Groom: ${selectedClient.groom_password}`;
+                                              (selectedClient.coverage_type === 'both' || selectedClient.coverage_scope === 'both' ? `Bride: ${selectedClient.bride_password}\nGroom: ${selectedClient.groom_password}` : `Login: ${selectedClient.groom_password}`);
                               window.open(`https://wa.me/91${selectedClient.customer_phone}?text=${encodeURIComponent(message)}`, '_blank');
                             }}
                             className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer flex items-center gap-1"
@@ -2353,7 +2364,9 @@ const Admin = () => {
                                   `Advance Paid: ₹${(activeInvoiceBooking.advance_paid || 0).toLocaleString()}/-\n` +
                                   surpriseBonusText + `\n` +
                                   `Your Private Access Credentials:\n` +
-                                  `👰 Bride Password: ${activeInvoiceBooking.bride_password || '—'}\n` +
+                                  (activeInvoiceBooking.coverage_type === 'both' || activeInvoiceBooking.coverage_scope === 'both'
+                                    ? `👰 Bride Password: ${activeInvoiceBooking.bride_password || '—'}\n`
+                                    : '') +
                                   `🤵 Groom Password: ${activeInvoiceBooking.groom_password || '—'}\n` +
                                   `Link to selections: ${window.location.origin}/`;
                   window.open(`https://wa.me/91${activeInvoiceBooking.customer_phone}?text=${encodeURIComponent(message)}`, '_blank');
@@ -2532,10 +2545,12 @@ const Admin = () => {
                   Share these generated private passwords with the couple so they can sign into the Client Portal selection lounge:
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-zinc-950 p-4 border border-zinc-800 rounded-xl flex justify-between items-center">
-                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">👰 Bride Password:</span>
-                    <span className="text-white font-mono font-bold text-xs">{activeInvoiceBooking.bride_password || "—"}</span>
-                  </div>
+                  {(activeInvoiceBooking.coverage_type === 'both' || activeInvoiceBooking.coverage_scope === 'both') && activeInvoiceBooking.bride_password && (
+                    <div className="bg-zinc-950 p-4 border border-zinc-800 rounded-xl flex justify-between items-center">
+                      <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">👰 Bride Password:</span>
+                      <span className="text-white font-mono font-bold text-xs">{activeInvoiceBooking.bride_password}</span>
+                    </div>
+                  )}
                   <div className="bg-zinc-950 p-4 border border-zinc-800 rounded-xl flex justify-between items-center">
                     <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">🤵 Groom Password:</span>
                     <span className="text-white font-mono font-bold text-xs">{activeInvoiceBooking.groom_password || "—"}</span>
