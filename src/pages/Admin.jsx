@@ -122,6 +122,12 @@ const Admin = () => {
       const storedOrds = JSON.parse(localStorage.getItem("dreamwed_orders") || "[]");
       setAiGalleries(storedGals);
       setAiOrders(storedOrds);
+
+      // Auto-poll for new booking requests every 15 seconds
+      const bookingPoller = setInterval(() => {
+        fetchBookings();
+      }, 15000);
+      return () => clearInterval(bookingPoller);
     }
   }, [isAuthenticated]);
 
@@ -801,24 +807,54 @@ const Admin = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-1.5 bg-zinc-900 p-1 rounded-xl border border-zinc-800 mb-8 w-fit">
-          {[
-            { id: "projects", label: "🗂 Projects", icon: Package },
-            { id: "bookings", label: "📖 Booking Approvals", icon: CheckCircle2 },
-            { id: "clients", label: "👑 Client Management", icon: Users },
-            { id: "staff", label: "👥 Staff Management", icon: Users },
-            { id: "chats", label: "💬 Chat Viewer", icon: MessageSquare },
-            { id: "ai-galleries", label: "💍 AI Galleries", icon: Camera },
-            { id: "ai-orders", label: "🧾 AI Print Orders", icon: Package }
-          ].map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                activeTab === tab.id ? "bg-[#b4975a] text-zinc-950 shadow-sm" : "text-zinc-400 hover:text-white"
-              }`}>
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        {(() => {
+          const pendingCount = bookings.filter(b => b.status !== "confirmed" && b.status !== "rejected").length;
+          return (
+            <>
+              {/* New Request Alert Banner */}
+              {pendingCount > 0 && activeTab !== "bookings" && (
+                <button
+                  onClick={() => setActiveTab("bookings")}
+                  className="flex items-center gap-3 w-full mb-4 px-5 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/15 transition-all cursor-pointer text-left group"
+                >
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping shrink-0" />
+                  <span className="text-amber-400 text-xs font-bold uppercase tracking-wider flex-1">
+                    🔔 New Request ({pendingCount}) — {pendingCount === 1 ? "1 booking" : `${pendingCount} bookings`} pending approval! Click to review.
+                  </span>
+                  <span className="text-amber-400/60 text-[10px] font-bold uppercase tracking-widest group-hover:text-amber-400 transition-colors">
+                    Review →
+                  </span>
+                </button>
+              )}
+
+              <div className="flex flex-wrap gap-1.5 bg-zinc-900 p-1 rounded-xl border border-zinc-800 mb-8 w-fit">
+                {[
+                  { id: "projects", label: "🗂 Projects" },
+                  { id: "bookings", label: "📖 Booking Approvals", badge: pendingCount },
+                  { id: "clients", label: "👑 Client Management" },
+                  { id: "staff", label: "👥 Staff Management" },
+                  { id: "chats", label: "💬 Chat Viewer" },
+                  { id: "ai-galleries", label: "💍 AI Galleries" },
+                  { id: "ai-orders", label: "🧾 AI Print Orders" }
+                ].map((tab) => (
+                  <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                    className={`relative px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                      activeTab === tab.id ? "bg-[#b4975a] text-zinc-950 shadow-sm" : "text-zinc-400 hover:text-white"
+                    }`}>
+                    {tab.label}
+                    {tab.badge > 0 && (
+                      <span className={`absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-black flex items-center justify-center shadow-lg ${
+                        activeTab === tab.id ? "bg-red-600 text-white" : "bg-red-500 text-white animate-bounce"
+                      }`}>
+                        {tab.badge}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </>
+          );
+        })()}
 
         {/* =============================== PROJECTS TAB ================================ */}
         {activeTab === "projects" && (
@@ -1021,14 +1057,35 @@ const Admin = () => {
         )}
 
         {/* =============================== BOOKINGS APPROVAL TAB ================================ */}
-        {activeTab === "bookings" && (
+        {activeTab === "bookings" && (() => {
+          const pendingCount = bookings.filter(b => b.status !== "confirmed" && b.status !== "rejected").length;
+          return (
           <div className="space-y-6 text-left">
-            <div>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl text-white font-light">
-                Booking <span className="italic font-serif text-[#b4975a]">Approvals</span>
-              </h2>
-              <p className="text-zinc-500 text-[11px] font-light mt-1">Review new client registration requests and approve invoices to unlock workspaces.</p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl text-white font-light">
+                  Booking <span className="italic font-serif text-[#b4975a]">Approvals</span>
+                </h2>
+                <p className="text-zinc-500 text-[11px] font-light mt-1">Review new client registration requests and approve invoices to unlock workspaces.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                {pendingCount > 0 && (
+                  <span className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/25 rounded-xl text-amber-400 text-xs font-bold uppercase tracking-wider">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                    {pendingCount} New Request{pendingCount !== 1 ? "s" : ""}
+                  </span>
+                )}
+                <button
+                  onClick={fetchBookings}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-xs font-bold text-zinc-400 hover:text-white uppercase tracking-wider transition-all cursor-pointer"
+                  title="Refresh bookings list"
+                >
+                  <RefreshCw size={12} />
+                  Refresh
+                </button>
+              </div>
             </div>
+
 
             {bookings.length === 0 ? (
               <div className="text-center py-16 border-2 border-dashed border-zinc-800 rounded-[24px] text-zinc-500 text-xs">
@@ -1149,7 +1206,9 @@ const Admin = () => {
               </div>
             )}
           </div>
-        )}
+          );
+        })()}
+
 
         {/* =============================== CLIENT MANAGEMENT TAB ================================ */}
         {activeTab === "clients" && (
