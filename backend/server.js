@@ -29,7 +29,10 @@ const {
   createStaffUser,
   updateStaffUser,
   deleteStaffUser,
-  authenticateStaff
+  authenticateStaff,
+  deleteProject,
+  deleteAllBookings,
+  deleteAllProjects
 } = require('./bot/database');
 const { startReminderScheduler } = require('./bot/reminders');
 
@@ -139,6 +142,11 @@ if (fs.existsSync(websiteDist)) {
 } else {
   console.log(`⚠️ React website build not found at: ${websiteDist}. Run a local Vite build first.`);
 }
+
+// Health check / warm-up ping endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 // WhatsApp Webhook (Twilio sends messages here)
 app.post('/webhook', async (req, res) => {
@@ -479,6 +487,37 @@ app.put('/api/projects/:id', (req, res) => {
     }
     
     res.json(project);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete a single project
+app.delete('/api/projects/:id', (req, res) => {
+  try {
+    const deleted = deleteProject(req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Project not found' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Bulk delete ALL projects (admin reset)
+app.delete('/api/projects', (req, res) => {
+  try {
+    deleteAllProjects();
+    res.json({ success: true, message: 'All projects deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Bulk delete ALL bookings (admin reset)
+app.delete('/api/bookings', (req, res) => {
+  try {
+    deleteAllBookings();
+    res.json({ success: true, message: 'All bookings deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

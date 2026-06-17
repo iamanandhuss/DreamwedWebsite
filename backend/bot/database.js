@@ -558,6 +558,30 @@ function authenticateStaff(username, password) {
   return null;
 }
 
+function deleteProject(id) {
+  data.projects = data.projects || [];
+  const before = data.projects.length;
+  data.projects = data.projects.filter(p => p.id !== Number(id));
+  if (data.projects.length < before) {
+    saveToDisk();
+    return true;
+  }
+  return false;
+}
+
+function deleteAllBookings() {
+  data.bookings = [];
+  saveToDisk();
+  return true;
+}
+
+function deleteAllProjects() {
+  data.projects = [];
+  saveToDisk();
+  return true;
+}
+
+
 function getProjectAllChats(projectId) {
   data.project_chats = data.project_chats || [];
   return data.project_chats
@@ -573,5 +597,7 @@ module.exports = {
   getBookingByPhone,
   getProjects, getProject, updateProject, logActivity, getProjectLogs,
   saveProjectMessage, getProjectChats, getProjectAllChats, createProjectFromBooking, getProjectByPhone,
-  getStaffUsers, getStaffUser, createStaffUser, updateStaffUser, deleteStaffUser, authenticateStaff
+  getStaffUsers, getStaffUser, createStaffUser, updateStaffUser, deleteStaffUser, authenticateStaff,
+  deleteProject, deleteAllBookings, deleteAllProjects
 };
+

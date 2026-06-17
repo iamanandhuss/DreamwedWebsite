@@ -13,36 +13,7 @@ const API_BASE = typeof window !== "undefined"
   ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? window.location.origin : "https://dreamwed-backend.onrender.com"))
   : "http://localhost:3000";
 
-const INITIAL_GALLERIES = [
-  {
-    id: "wedding-aarav-meera",
-    name: "Aarav & Meera's Royal Wedding",
-    gdriveLink: "https://drive.google.com/drive/folders/1AaravMeeraRoyalWeddingDreamwedDemo",
-    type: "After Event Gallery",
-    coverUrl: "/ai_search_banner.png",
-    photos: [
-      { id: "am-1", url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800" },
-      { id: "am-2", url: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=800" },
-      { id: "am-3", url: "https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?q=80&w=800" },
-      { id: "am-4", url: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=800" },
-      { id: "am-5", url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800" }
-    ]
-  },
-  {
-    id: "wedding-rohan-dia",
-    name: "Rohan & Dia's Mumbai Sangeet",
-    gdriveLink: "https://drive.google.com/drive/folders/2RohanDiaMumbaiSangeetDreamwedDemo",
-    type: "Live Gallery",
-    coverUrl: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800",
-    photos: [
-      { id: "rd-1", url: "https://images.unsplash.com/photo-1507504038482-76210f5c0be6?q=80&w=800" },
-      { id: "rd-2", url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?q=80&w=800" },
-      { id: "rd-3", url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=800" },
-      { id: "rd-4", url: "https://images.unsplash.com/photo-1519225495810-7517cbdb222d?q=80&w=800" },
-      { id: "rd-5", url: "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?q=80&w=800" }
-    ]
-  }
-];
+const INITIAL_GALLERIES = [];
 
 const formatCurrency = (num) => Number(num || 0).toLocaleString("en-IN");
 

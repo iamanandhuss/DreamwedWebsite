@@ -488,6 +488,9 @@ const TrivandrumOffer = () => {
       venue: formData.message || prev.venue
     }));
     setIsConfirmBookingOpen(true);
+    // Silently ping the backend to pre-warm Render server before user submits
+    const _apiBase = localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com";
+    fetch(`${_apiBase}/api/health`).catch(() => {});
   };
 
   const handleConfirmBookingSubmit = async (e) => {
