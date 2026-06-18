@@ -477,7 +477,7 @@ const PricingSection = () => {
             : "border border-[#2a2218]"
           }
           ${isGridOfFour ? "w-full" : ""}`}
-        style={{ background: "#110f0c", outline: "none", WebkitTapHighlightColor: "transparent" }}
+        style={{ background: "#1e1b15", outline: "none", WebkitTapHighlightColor: "transparent" }}
       >
         {/* ── COVER PHOTO ── */}
         <div className="relative w-full" style={{ paddingBottom: "62%" }}>
@@ -487,7 +487,7 @@ const PricingSection = () => {
             style={{ objectPosition: "center 30%" }}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-[#110f0c]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/5 to-[#1e1b15]" />
 
           {/* Badge top-left */}
           <div className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-[8px] font-extrabold tracking-widest uppercase flex items-center gap-1 backdrop-blur-sm
@@ -516,8 +516,13 @@ const PricingSection = () => {
           </div>
         </div>
 
+        {/* ── GOLD SEPARATOR GAP ── */}
+        <div style={{ background: "linear-gradient(90deg, #2a2218, #d1a852, #c9922a, #d1a852, #2a2218)", height: "2.5px" }} />
+
         {/* ── DETAILS PANEL ── */}
-        <div className="flex flex-col flex-1 px-5 pt-4 pb-5 gap-3.5">
+        <div className="flex flex-col flex-1 px-5 pt-5 pb-5 gap-3.5"
+          style={{ background: "linear-gradient(180deg, #1e1b15 0%, #181410 100%)" }}
+        >
 
           {/* 1. Package identity */}
           <div>
@@ -559,10 +564,10 @@ const PricingSection = () => {
           <div className="flex items-end justify-between">
             <div>
               {/* Strikethrough old price */}
-              <p className="text-[#4a4030] text-[10px] line-through font-light leading-none mb-0.5">{regularStr}</p>
+              <p className="text-[#7a6a52] text-[10px] line-through font-light leading-none mb-0.5">{regularStr}</p>
               {/* Big bold offer price */}
               <p className="text-[#f0e6d3] text-2xl font-extrabold leading-none tracking-tight">
-                {plan.price}<span className="text-[11px] font-normal text-[#6a5a42] ml-0.5">/-</span>
+                {plan.price}<span className="text-[12px] font-normal text-[#8a7a62] ml-0.5">/-</span>
               </p>
               {/* Green savings badge */}
               {savePercent && savedAmount > 0 && (
@@ -580,8 +585,8 @@ const PricingSection = () => {
                   {String(timeLeft.hours).padStart(2,"0")}:{String(timeLeft.minutes).padStart(2,"0")}:{String(timeLeft.seconds).padStart(2,"0")}
                 </span>
               </div>
-              <p className="text-[8px] text-[#4a4030] font-light mt-0.5">Offer ends tonight</p>
-              {plan.setup && <p className="text-[8px] text-[#4a4030] font-light mt-0.5 leading-tight">{plan.setup}</p>}
+              <p className="text-[8px] text-[#7a6a52] font-light mt-0.5">Offer ends tonight</p>
+              {plan.setup && <p className="text-[8px] text-[#7a6a52] font-light mt-0.5 leading-tight">{plan.setup}</p>}
             </div>
           </div>
 
