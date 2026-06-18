@@ -442,24 +442,22 @@ const PricingSection = () => {
   }, []);
 
   const renderCard = (plan, isGridOfFour = false) => {
-    const isSpecial = plan.isSpecial || false;
-
-    // Calculate exact savings in ₹
-    const offerNum  = plan.price ? parseInt(plan.price.replace(/[^\d]/g, "")) : 0;
-    const regularStr = getRegularPrice(plan.price);
-    const regularNum = regularStr ? parseInt(regularStr.replace(/[^\d]/g, "")) : 0;
+    const isSpecial   = plan.isSpecial || false;
+    const offerNum    = plan.price ? parseInt(plan.price.replace(/[^\d]/g, "")) : 0;
+    const regularStr  = getRegularPrice(plan.price);
+    const regularNum  = regularStr ? parseInt(regularStr.replace(/[^\d]/g, "")) : 0;
     const savedAmount = regularNum - offerNum;
     const savePercent =
-      plan.shareId === "pkgWeddingBasicCard" ? "44%" :
-      plan.shareId === "pkgWeddingPreCard"   ? "27%" :
-      plan.shareId === "pkgCandidCard"       ? "22%" :
-      plan.shareId === "pkgPremiumCandidCard"? "33%" :
-      plan.shareId === "pkgLuxuryCard"       ? "15%" : null;
+      plan.shareId === "pkgWeddingBasicCard"  ? "44%" :
+      plan.shareId === "pkgWeddingPreCard"    ? "27%" :
+      plan.shareId === "pkgCandidCard"        ? "22%" :
+      plan.shareId === "pkgPremiumCandidCard" ? "33%" :
+      plan.shareId === "pkgLuxuryCard"        ? "15%" : null;
 
-    // Pick top 4 inclusions for 2-col checklist
-    const topFeatures = (plan.features || []).slice(0, 4);
-    const extraCount  = (plan.features || []).length - 4;
-    const openModal = () => { setActivePlan(plan); setCurrentSlide(0); };
+    const allFeatures = plan.features || [];
+    const chipFeatures = allFeatures.slice(0, 4);
+    const extraCount  = allFeatures.length - 4;
+    const openModal   = () => { setActivePlan(plan); setCurrentSlide(0); };
 
     return (
       <motion.div
@@ -469,154 +467,140 @@ const PricingSection = () => {
         whileInView="visible"
         viewport={{ once: true }}
         onClick={openModal}
-        className={`group relative rounded-[28px] overflow-hidden flex flex-col cursor-pointer select-none
-          shadow-2xl hover:shadow-[0_32px_80px_rgba(0,0,0,0.55)]
-          transition-all duration-700 hover:scale-[1.015]
-          ${isSpecial
-            ? "border-2 border-[#d1a852]"
-            : "border border-[#2a2218]"
-          }
+        className={`group relative rounded-[24px] overflow-hidden flex flex-col cursor-pointer select-none
+          shadow-2xl hover:shadow-[0_30px_70px_rgba(0,0,0,0.6)]
+          transition-all duration-500 hover:scale-[1.02]
+          ${isSpecial ? "border border-[#d1a852]/60" : "border border-white/[0.07]"}
           ${isGridOfFour ? "w-full" : ""}`}
-        style={{ background: "#1e1b15", outline: "none", WebkitTapHighlightColor: "transparent" }}
+        style={{ background: "#191917", outline: "none", WebkitTapHighlightColor: "transparent" }}
       >
-        {/* ── COVER PHOTO ── */}
-        <div className="relative w-full" style={{ paddingBottom: "62%" }}>
+        {/* ── PHOTO — title + price overlaid at bottom like mockup ── */}
+        <div className="relative w-full overflow-hidden" style={{ paddingBottom: "68%" }}>
           <img
             src={plan.images[0]}
             alt={plan.title}
-            style={{ objectPosition: "center 30%" }}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+            style={{ objectPosition: "center 20%" }}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/5 to-[#1e1b15]" />
 
-          {/* Badge top-left */}
-          <div className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-[8px] font-extrabold tracking-widest uppercase flex items-center gap-1 backdrop-blur-sm
-            ${isSpecial
-              ? "bg-[#d1a852] text-black shadow-[0_0_18px_rgba(209,168,82,0.6)]"
-              : "bg-black/60 border border-[#d1a852]/50 text-[#d1a852]"
-            }`}
-          >
-            {isSpecial && <span>⭐</span>} {plan.tag}
-          </div>
+          {/* Gradient only at bottom for text readability */}
+          <div className="absolute inset-0"
+            style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, transparent 35%, rgba(0,0,0,0.72) 75%, rgba(0,0,0,0.88) 100%)" }}
+          />
 
-          {/* Heart top-right */}
+          {/* Tag pill — top left */}
+          {isSpecial ? (
+            <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-full text-[8px] font-extrabold tracking-widest uppercase bg-[#d1a852] text-black shadow-lg">
+              ⭐ Best Deal
+            </div>
+          ) : plan.tag ? (
+            <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-full text-[8px] font-bold tracking-widest uppercase backdrop-blur-sm text-white"
+              style={{ background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.18)" }}>
+              {plan.tag}
+            </div>
+          ) : null}
+
+          {/* Heart — white circle, top right, like mockup bookmark */}
           <button
             onClick={(e) => { e.stopPropagation(); toggleLike(e, plan.shareId); }}
-            className="absolute top-3.5 right-3.5 z-10 w-9 h-9 rounded-full bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center transition-all hover:scale-110 active:scale-90 cursor-pointer"
-            style={{ outline: "none", WebkitTapHighlightColor: "transparent" }}
+            className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-90 cursor-pointer shadow-md"
+            style={{ background: "rgba(255,255,255,0.88)", outline: "none", WebkitTapHighlightColor: "transparent" }}
           >
-            <Heart size={15} className={likedPlans[plan.shareId] ? "fill-red-500 stroke-red-500" : "stroke-[#f0e6d3]"} />
+            <Heart size={15} className={likedPlans[plan.shareId] ? "fill-red-500 stroke-red-500" : "stroke-[#1a1a1a]"} />
           </button>
 
-          {/* Tap hint */}
-          <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10 pointer-events-none">
-            <span className="bg-black/70 backdrop-blur-sm text-[#d4c4a0] text-[8px] font-bold tracking-widest uppercase px-4 py-1.5 rounded-full border border-[#d1a852]/20 group-hover:text-[#d1a852] group-hover:border-[#d1a852]/50 transition-all">
-              ✨ Tap to see all photos
-            </span>
+          {/* Title + Price overlaid at bottom of photo */}
+          <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 z-10">
+            <h3 className="text-white text-[1.25rem] font-bold leading-[1.2] tracking-tight mb-1 drop-shadow-lg">
+              {plan.title}
+            </h3>
+            <p className="text-[#f0e6d3] text-[1.05rem] font-extrabold leading-none tracking-tight drop-shadow-lg">
+              {plan.price}
+            </p>
           </div>
         </div>
 
-        {/* ── GOLD SEPARATOR GAP ── */}
-        <div style={{ background: "linear-gradient(90deg, #2a2218, #d1a852, #c9922a, #d1a852, #2a2218)", height: "2.5px" }} />
-
-        {/* ── DETAILS PANEL ── */}
-        <div className="flex flex-col flex-1 px-5 pt-5 pb-5 gap-3.5"
-          style={{ background: "linear-gradient(180deg, #1e1b15 0%, #181410 100%)" }}
+        {/* ── CONTENT PANEL ── */}
+        <div
+          className="flex flex-col flex-1 px-4 pt-4 pb-4 gap-3"
+          style={{ background: "#191917" }}
         >
-
-          {/* 1. Package identity */}
-          <div>
-            <p className="text-[#d1a852] text-[8px] font-black tracking-[0.28em] uppercase mb-1">{plan.subtitle}</p>
-            <h3 className="text-[#f0e6d3] text-[1.2rem] font-light leading-[1.15] tracking-tight" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic" }}>
-              {plan.title}
-            </h3>
-          </div>
-
-          {/* 2. ✓ 2-column checklist — 4 key inclusions */}
-          {topFeatures.length > 0 && (
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-              {topFeatures.map((f, i) => (
-                <div key={i} className="flex items-start gap-1.5">
-                  <Check size={9} className="text-[#d1a852] shrink-0 mt-[2.5px]" />
-                  <span className="text-[#e8dcc8] text-[9.5px] font-medium leading-tight">{f.split("(")[0].trim()}</span>
-                </div>
+          {/* Feature pill chips — like mockup */}
+          {chipFeatures.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {/* First chip with star rating feel */}
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[8.5px] font-semibold"
+                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", color: "#e0d0b8" }}>
+                ⭐ {plan.subtitle || "Top Rated"}
+              </span>
+              {plan.preweddingOffer && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[8.5px] font-semibold"
+                  style={{ background: "rgba(209,168,82,0.12)", border: "1px solid rgba(209,168,82,0.28)", color: "#d4a84a" }}>
+                  🎁 Free Pre-wedding
+                </span>
+              )}
+              {chipFeatures.map((f, i) => (
+                <span key={i}
+                  className="inline-flex items-center px-2.5 py-1 rounded-full text-[8.5px] font-medium"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.11)", color: "#b8a890" }}>
+                  {f.split("(")[0].trim()}
+                </span>
               ))}
               {extraCount > 0 && (
-                <div className="flex items-center gap-1 col-span-2 mt-0.5">
-                  <span className="text-[#d1a852] text-[8px] font-bold">+ {extraCount} more inclusions →</span>
-                </div>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[8.5px] font-bold"
+                  style={{ background: "rgba(209,168,82,0.08)", border: "1px solid rgba(209,168,82,0.22)", color: "#d1a852" }}>
+                  +{extraCount} more
+                </span>
               )}
             </div>
           )}
 
-          {/* 3. Free bonus strip */}
-          {plan.preweddingOffer && (
-            <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "rgba(209,168,82,0.07)", border: "1px solid rgba(209,168,82,0.2)" }}>
-              <Sparkles size={10} className="text-[#d1a852] shrink-0 animate-pulse" />
-              <span className="text-[#e2c97a] text-[8px] font-bold tracking-wide uppercase leading-tight">{plan.preweddingOffer}</span>
-            </div>
-          )}
+          {/* Description paragraph */}
+          <p className="text-[#9a8a78] text-[10px] font-light leading-relaxed">
+            <span className="text-[#c8b898] font-semibold">Package Details: </span>
+            {allFeatures.slice(0, 3).map(f => f.split("(")[0].trim()).join(" · ")}
+            {allFeatures.length > 3 ? ` · +${allFeatures.length - 3} more.` : "."}
+          </p>
 
-          {/* Gold divider */}
-          <div className="h-px opacity-20" style={{ background: "linear-gradient(90deg, transparent, #d1a852, transparent)" }} />
-
-          {/* 4. Price block — HERO section */}
-          <div className="flex items-end justify-between">
-            <div>
-              {/* Strikethrough old price */}
-              <p className="text-[#7a6a52] text-[10px] line-through font-light leading-none mb-0.5">{regularStr}</p>
-              {/* Big bold offer price */}
-              <p className="text-[#f0e6d3] text-2xl font-extrabold leading-none tracking-tight">
-                {plan.price}<span className="text-[12px] font-normal text-[#8a7a62] ml-0.5">/-</span>
-              </p>
-              {/* Green savings badge */}
-              {savePercent && savedAmount > 0 && (
-                <span className="inline-flex items-center gap-1 mt-1.5 bg-emerald-900/30 border border-emerald-700/35 text-emerald-400 text-[8.5px] font-bold px-2 py-0.5 rounded-full">
-                  💚 Save ₹{savedAmount.toLocaleString("en-IN")} ({savePercent} OFF)
-                </span>
-              )}
-            </div>
-
-            {/* Countdown urgency */}
-            <div className="text-right shrink-0 ml-2">
-              <div className="flex items-center gap-1 justify-end">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
-                <span className="text-red-400 font-mono text-[10px] font-bold">
-                  {String(timeLeft.hours).padStart(2,"0")}:{String(timeLeft.minutes).padStart(2,"0")}:{String(timeLeft.seconds).padStart(2,"0")}
-                </span>
-              </div>
-              <p className="text-[8px] text-[#7a6a52] font-light mt-0.5">Offer ends tonight</p>
-              {plan.setup && <p className="text-[8px] text-[#7a6a52] font-light mt-0.5 leading-tight">{plan.setup}</p>}
+          {/* Savings + countdown row */}
+          <div className="flex items-center justify-between">
+            {savePercent && savedAmount > 0 ? (
+              <span className="inline-flex items-center gap-1 text-emerald-400 text-[8px] font-bold px-2 py-0.5 rounded-full"
+                style={{ background: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.2)" }}>
+                💚 Save ₹{savedAmount.toLocaleString("en-IN")} ({savePercent} OFF)
+              </span>
+            ) : <span />}
+            <div className="flex items-center gap-1 shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
+              <span className="text-red-400 font-mono text-[9px] font-bold">
+                {String(timeLeft.hours).padStart(2,"0")}:{String(timeLeft.minutes).padStart(2,"0")}:{String(timeLeft.seconds).padStart(2,"0")}
+              </span>
             </div>
           </div>
 
-          {/* 5. Primary CTA — full width gold */}
+          {/* WHITE Book Now button — exactly like mockup */}
           <Link
             to={`/booking?package=${encodeURIComponent(plan.title)}&price=${encodeURIComponent(plan.price?.replace(/[^\d]/g,"") || "")}`}
             onClick={(e) => e.stopPropagation()}
-            className="w-full py-3.5 rounded-2xl font-extrabold text-[11px] tracking-[0.15em] uppercase text-center transition-all duration-300 cursor-pointer active:scale-[0.97] hover:scale-[1.02] block shadow-lg"
-            style={{
-              background: "linear-gradient(135deg, #c9922a 0%, #e8c070 50%, #c9922a 100%)",
-              color: "#0d0d0d",
-              boxShadow: "0 6px 24px rgba(209,168,82,0.4)"
-            }}
+            className="w-full py-3.5 rounded-2xl font-bold text-[14px] tracking-wide text-center transition-all duration-300 active:scale-[0.97] hover:bg-[#f0ece4] block"
+            style={{ background: "#ffffff", color: "#111111" }}
           >
-            📅 Book Now — Lock This Price
+            Book Now
           </Link>
 
-          {/* 6. Share button */}
+          {/* Share — subtle text below */}
           <button
             onClick={(e) => { e.stopPropagation(); handleShare(e, plan); }}
-            className="w-full py-2.5 rounded-xl text-[9px] font-bold tracking-widest uppercase flex items-center justify-center gap-1.5 transition-all duration-300 cursor-pointer"
-            style={{ background: "rgba(209,168,82,0.05)", border: "1px solid rgba(209,168,82,0.15)", color: "#9a8a6a" }}
+            className="text-[#6a5a4a] text-[9px] font-medium text-center w-full py-0.5 transition-all hover:text-[#d1a852] cursor-pointer"
           >
-            <span className="text-emerald-400">📲</span> Share with Partner
+            📲 Share with Partner
           </button>
-
         </div>
       </motion.div>
     );
   };
+
+
 
   return (
     <section className="w-full bg-[#0a0a0c] text-white py-24 md:py-32 px-4 md:px-6 overflow-hidden relative">
