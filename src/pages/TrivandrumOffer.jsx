@@ -47,7 +47,9 @@ const TrivandrumOffer = () => {
     email: "",
     date: "",
     venue: "",
-    notes: ""
+    notes: "",
+    transaction_id: "",
+    screenshot_file_data: ""
   });
   const [bookingStatus, setBookingStatus] = useState("idle");
 
@@ -526,7 +528,9 @@ const TrivandrumOffer = () => {
       add_ons: selectedAddonsList,
       total_price: totalPrice,
       advance_paid: advancePaid,
-      status: "pending"
+      status: "pending",
+      transaction_id: bookingForm.transaction_id || "",
+      screenshot_file_data: bookingForm.screenshot_file_data || ""
     };
 
     // Google Sheets Backup Sync
@@ -561,7 +565,7 @@ const TrivandrumOffer = () => {
         setTimeout(() => {
           setIsConfirmBookingOpen(false);
           setBookingStatus("idle");
-          setBookingForm({ name: "", phone: "", email: "", date: "", venue: "", notes: "" });
+          setBookingForm({ name: "", phone: "", email: "", date: "", venue: "", notes: "", transaction_id: "", screenshot_file_data: "" });
         }, 5000);
       } else {
         throw new Error(`Server error: ${res.status}`);
@@ -578,7 +582,7 @@ const TrivandrumOffer = () => {
         setTimeout(() => {
           setIsConfirmBookingOpen(false);
           setBookingStatus("idle");
-          setBookingForm({ name: "", phone: "", email: "", date: "", venue: "", notes: "" });
+          setBookingForm({ name: "", phone: "", email: "", date: "", venue: "", notes: "", transaction_id: "", screenshot_file_data: "" });
         }, 5000);
       } catch (localErr) {
         setBookingStatus("error");
@@ -621,251 +625,143 @@ const TrivandrumOffer = () => {
 
   const renderPackageCard = (pack, idx) => {
     const isBestDeal = pack.isSpecial || pack.id === 3;
-    const badgeText = isBestDeal ? "BEST DEAL (RECOMMENDED)" : pack.bonus;
-    const badgeStyles = isBestDeal 
-      ? "bg-amber-500/20 text-amber-200 border border-amber-500/30" 
-      : "bg-zinc-500/25 text-zinc-200 border border-zinc-500/35";
-
-    // Inclusion tag
-    const inclusionLabel = 
-      pack.id === 1 ? "📷 1 Photographer Setup" 
-      : pack.id === 4 ? "🚁 Drone Aerial Coverage"
-      : "📷 4 Camera Setup";
+    const inclusionLabel =
+      pack.id === 1 ? "1 Photographer · Single Side"
+      : pack.id === 4 ? "🚁 Drone + 4 Camera Dual"
+      : "4 Camera · Multi-Angle";
+    const savePercent =
+      pack.shareId === "pkgWeddingBasicCard" ? "Save 44%" :
+      pack.shareId === "pkgWeddingPreCard"  ? "Save 27%" :
+      pack.shareId === "pkgCandidCard"      ? "Save 22%" : "Save 12%";
 
     return (
       <motion.div
         key={pack.shareId || pack.id}
-        initial={{ opacity: 0, scale: 0.96 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        onClick={() => { setActiveDetailPackage(pack); setCurrentSlide(0); }}
-        className={`relative rounded-[30px] md:rounded-[40px] overflow-hidden flex flex-col transition-all duration-700 ease-[0.22, 1, 0.36, 1] group cursor-pointer hover:scale-[1.02] shadow-xl hover:shadow-2xl aspect-[3/4.8] md:aspect-auto min-h-[540px] ${
-          isBestDeal ? "border-2 border-amber-500/80 shadow-amber-500/5" : "border border-zinc-800/20"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.55, delay: idx * 0.08, ease: [0.22, 1, 0.36, 1] }}
+        className={`group relative rounded-[28px] overflow-hidden flex flex-col cursor-pointer shadow-2xl hover:shadow-[0_32px_80px_rgba(0,0,0,0.28)] transition-all duration-700 ${
+          isBestDeal
+            ? "border-2 border-[#b4975a] ring-1 ring-[#b4975a]/20"
+            : "border border-zinc-200/60"
         }`}
+        style={{ background: "#0d0d0d" }}
       >
-        {/* Background Cover Image with Zoom Effect */}
-        <div className="absolute inset-0 z-0">
+        {/* ── COVER IMAGE (top 60%) ── */}
+        <div className="relative w-full" style={{ paddingBottom: "62%" }}>
           <img
             src={pack.images[0]}
             alt={pack.title}
-            className="w-full h-full object-cover transition-transform duration-1000 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-[0.16,1,0.3,1] group-hover:scale-105"
           />
-          {/* Rich dark gradient for high typography contrast and readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent z-10" />
-        </div>
+          {/* Gradient fade into dark card bottom */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-[#0d0d0d]" />
 
-        {/* Click hint inside card in top-left */}
-        <div className="absolute top-6 left-6 text-[8px] font-bold tracking-widest uppercase text-white/50 group-hover:text-white/95 transition-colors duration-300 z-20">
-          ✨ CLICK FOR PHOTOS & DETAILS
-        </div>
+          {/* Badge top-left */}
+          {isBestDeal ? (
+            <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-[#b4975a] text-black px-3 py-1 rounded-full text-[8px] font-extrabold uppercase tracking-widest shadow-lg">
+              <Star size={9} className="fill-black" /> BEST DEAL
+            </div>
+          ) : (
+            <div className="absolute top-4 left-4 z-10 bg-black/50 backdrop-blur-sm text-white/80 border border-white/10 px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest">
+              ✦ {pack.bonus}
+            </div>
+          )}
 
-        {/* Floating Heart Icon Button in Top Right */}
-        <button
-          onClick={(e) => toggleLikePack(e, pack.shareId || pack.id)}
-          className="absolute top-5 right-5 z-20 w-10 h-10 rounded-full bg-black/35 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95 cursor-pointer"
-          title="Add to wishlist"
-        >
-          <Heart
-            size={18}
-            className={`transition-colors duration-300 ${likedPacks[pack.shareId || pack.id] ? "fill-red-500 stroke-red-500" : "stroke-white"}`}
-          />
-        </button>
+          {/* Heart wishlist top-right */}
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleLikePack(e, pack.shareId || pack.id); }}
+            className="absolute top-3.5 right-3.5 z-10 w-9 h-9 rounded-full bg-black/40 backdrop-blur-md border border-white/15 flex items-center justify-center transition-all hover:scale-110 active:scale-90 cursor-pointer"
+          >
+            <Heart size={15} className={likedPacks[pack.shareId || pack.id] ? "fill-red-500 stroke-red-500" : "stroke-white"} />
+          </button>
 
-        {/* Card Content Overlaid on Bottom */}
-        <div className="relative z-10 flex flex-col h-full justify-between p-6 sm:p-8 flex-1">
-          {/* Top Tag */}
-          <div>
-            <span className={`inline-block px-3 py-1.5 rounded-full text-[8px] tracking-widest uppercase font-bold mt-4 ${badgeStyles}`}>
-              ✦ {badgeText}
+          {/* Click hint */}
+          <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10">
+            <span className="bg-black/50 backdrop-blur-sm text-white/70 text-[8px] font-bold tracking-widest uppercase px-3 py-1 rounded-full border border-white/10 group-hover:text-white group-hover:border-[#b4975a]/50 transition-all">
+              ✨ Tap to view photos &amp; all inclusions
             </span>
           </div>
+        </div>
 
-          {/* Bottom Info Details and CTA */}
-          <div className="mt-auto">
-            <h3 className="text-xl sm:text-2xl leading-[1.1] tracking-tight font-serif text-white font-normal mb-1">
+        {/* ── DETAILS PANEL (bottom 40%) ── */}
+        <div
+          className="flex flex-col flex-1 px-5 pt-4 pb-5 gap-3"
+          onClick={() => { setActiveDetailPackage(pack); setCurrentSlide(0); }}
+        >
+          {/* Title block */}
+          <div>
+            <p className="text-[#b4975a] text-[9px] font-black tracking-[0.22em] uppercase mb-0.5">{pack.subtitle}</p>
+            <h3 className="text-white text-lg font-light leading-[1.15] tracking-tight" style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}>
               {pack.title}
             </h3>
-            <p className="text-[#b4975a] text-[9px] font-bold tracking-wider uppercase mb-2">
-              {pack.subtitle}
-            </p>
-            
-            <p className="text-zinc-300 text-xs font-light mb-4 line-clamp-2 leading-relaxed">
-              {pack.description}
-            </p>
+          </div>
 
-            {/* Standalone Value Proposition Badge */}
-            {pack.shareId.startsWith("pkgWedding") && !pack.shareId.includes("Standalone") && (
-              <div className="mb-4 text-center select-none">
-                <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/5 px-3 py-1.5 rounded-full text-[10px] font-medium text-zinc-200">
-                  <span className="text-amber-400 font-bold">Total Value:</span>
-                  <span className="font-semibold text-white">
-                    {pack.shareId === "pkgWeddingBasicCard" ? "₹71,998" : 
-                     pack.shareId === "pkgWeddingPreCard" ? "₹74,998" : 
-                     pack.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,24,998"}
-                  </span>
-                  <span className="text-zinc-500">|</span>
-                  <span className="text-emerald-400 font-bold">
-                    {pack.shareId === "pkgWeddingBasicCard" ? "Save 44%" : 
-                     pack.shareId === "pkgWeddingPreCard" ? "Save 27%" : 
-                     pack.shareId === "pkgCandidCard" ? "Save 22%" : "Save 12%"}
-                  </span>
+          {/* Description */}
+          <p className="text-zinc-400 text-[10px] font-light leading-relaxed line-clamp-2">{pack.description}</p>
+
+          {/* Key inclusions row */}
+          <div className="flex flex-wrap gap-1.5">
+            {(pack.includes || []).slice(0, 3).map((item, i) => (
+              <span key={i} className="inline-flex items-center gap-1 bg-white/5 border border-white/8 text-white/70 px-2.5 py-1 rounded-full text-[8.5px] font-medium">
+                <Check size={8} className="text-[#b4975a] shrink-0" />
+                {typeof item === "string" ? item.split("(")[0].trim() : item}
+              </span>
+            ))}
+            {(pack.includes || []).length > 3 && (
+              <span className="inline-flex items-center bg-[#b4975a]/10 border border-[#b4975a]/20 text-[#b4975a] px-2.5 py-1 rounded-full text-[8.5px] font-bold">
+                +{(pack.includes || []).length - 3} more
+              </span>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="h-px bg-white/8" />
+
+          {/* Price + Save row */}
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-zinc-500 text-[9px] line-through font-light">₹{pack.regularPrice}</p>
+              <p className="text-white text-xl font-extrabold leading-tight">₹{pack.offerPrice}<span className="text-[10px] font-normal text-zinc-400">/-</span></p>
+              <span className="inline-block mt-0.5 bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{savePercent}</span>
+            </div>
+            <div className="text-right">
+              <p className="text-[9px] text-zinc-500 font-light mb-0.5">{inclusionLabel}</p>
+              {/* Countdown */}
+              <div className="flex items-center gap-1 justify-end">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+                <span className="text-red-400 font-mono text-[9px] font-bold">
+                  {String(timeLeft.hours).padStart(2,"0")}:{String(timeLeft.minutes).padStart(2,"0")}:{String(timeLeft.seconds).padStart(2,"0")}
                 </span>
               </div>
-            )}
-
-            {/* Info labels row matching the travel card style */}
-            <div className="flex flex-wrap items-center gap-2 mb-3 text-white/90 text-xs font-light">
-              <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm px-3.5 py-2 rounded-full border border-white/10">
-                <Tag size={12} className="text-red-500" />
-                <span>Offer: <strong className="font-extrabold text-red-500">₹{pack.offerPrice}</strong> <span className="text-zinc-550 line-through text-[10px] ml-1">₹{pack.regularPrice}</span></span>
-              </div>
-              <div className="flex items-center gap-1.2 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-white/5">
-                <span>{inclusionLabel}</span>
-              </div>
+              <p className="text-[8px] text-zinc-600 font-light">offer closing</p>
             </div>
-
-            {/* Urgency countdown timer bar inside card */}
-            {pack.offerPrice && (
-              <div className="mb-6 bg-red-950/45 border border-red-500/30 rounded-2xl py-2 px-3 text-center space-y-1 backdrop-blur-md">
-                <div className="flex items-center justify-center gap-1 text-red-400 text-[9px] font-black uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
-                  <span>🔥 Limited Promo Spot Closes Soon</span>
-                </div>
-                <div className="text-white font-mono text-[10px] font-bold tracking-wider flex items-center justify-center gap-1">
-                  <span className="text-[#d1a852] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded">
-                    {String(timeLeft.hours).padStart(2, '0')}h
-                  </span>
-                  <span>:</span>
-                  <span className="text-[#d1a852] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded">
-                    {String(timeLeft.minutes).padStart(2, '0')}m
-                  </span>
-                  <span>:</span>
-                  <span className="text-[#d1a852] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded animate-pulse">
-                    {String(timeLeft.seconds).padStart(2, '0')}s
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* CTA Button centered at bottom - stacked on two lines as requested */}
-            <Button
-              variant="secondary"
-              className="w-full py-4 rounded-[24px] bg-white text-black hover:bg-zinc-100 hover:shadow-lg transition-all duration-300 text-[11px] font-bold tracking-wider flex flex-col items-center justify-center leading-snug"
-              onClick={(e) => {
-                e.stopPropagation();
-                triggerBookingModal(pack.title, parseInt(pack.offerPrice.replace(/[^0-9]/g, "")));
-              }}
-            >
-              <span className="block">SECURE</span>
-              <span className="block">OFFER</span>
-            </Button>
           </div>
+
+          {/* CTA Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              triggerBookingModal(pack.title, parseInt(pack.offerPrice.replace(/[^0-9]/g, "")));
+            }}
+            className="w-full py-3 rounded-2xl font-bold text-[11px] tracking-widest uppercase transition-all duration-300 cursor-pointer active:scale-95"
+            style={{
+              background: isBestDeal
+                ? "linear-gradient(135deg, #b4975a 0%, #d4b06a 50%, #b4975a 100%)"
+                : "rgba(255,255,255,0.08)",
+              color: isBestDeal ? "#0d0d0d" : "#fff",
+              border: isBestDeal ? "none" : "1px solid rgba(255,255,255,0.12)",
+              boxShadow: isBestDeal ? "0 8px 24px rgba(180,151,90,0.35)" : "none"
+            }}
+          >
+            {isBestDeal ? "⭐ Secure Best Deal" : "Secure This Offer"}
+          </button>
         </div>
       </motion.div>
     );
   };
 
-  const dummyPlaceHolder = () => {
-    const badgeText = isBestDeal ? "BEST DEAL (RECOMMENDED)" : pack.bonus;
-    const badgeStyles = isBestDeal 
-      ? "bg-amber-500/20 text-amber-200 border border-amber-500/30" 
-      : "bg-zinc-500/25 text-zinc-200 border border-zinc-500/35";
-
-    // Inclusion tag
-    const inclusionLabel = 
-      pack.id === 1 ? "📷 1 Photographer Setup" 
-      : pack.id === 4 ? "🚁 Drone Aerial Coverage"
-      : "📷 4 Camera Setup";
-
-    return (
-      <motion.div
-        key={pack.id}
-        initial={{ opacity: 0, scale: 0.96 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        onClick={() => setActiveDetailPackage(idx)}
-        className={`relative rounded-[30px] md:rounded-[40px] overflow-hidden flex flex-col transition-all duration-700 ease-[0.22, 1, 0.36, 1] group cursor-pointer hover:scale-[1.02] shadow-xl hover:shadow-2xl aspect-[3/4.8] md:aspect-auto min-h-[540px] ${
-          isBestDeal ? "border-2 border-amber-500/80 shadow-amber-500/5" : "border border-zinc-800/20"
-        }`}
-      >
-        {/* Background Cover Image with Zoom Effect */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src={pack.images[0]}
-            alt={pack.title}
-            className="w-full h-full object-cover transition-transform duration-1000 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
-          />
-          {/* Rich dark gradient for high typography contrast and readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent z-10" />
-        </div>
-
-        {/* Click hint inside card in top-left */}
-        <div className="absolute top-6 left-6 text-[8px] font-bold tracking-widest uppercase text-white/50 group-hover:text-white/95 transition-colors duration-300 z-20">
-          ✨ CLICK FOR PHOTOS & DETAILS
-        </div>
-
-        {/* Floating Heart Icon Button in Top Right */}
-        <button
-          onClick={(e) => toggleLikePack(e, pack.id)}
-          className="absolute top-5 right-5 z-20 w-10 h-10 rounded-full bg-black/35 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95 cursor-pointer"
-          title="Add to wishlist"
-        >
-          <Heart
-            size={18}
-            className={`transition-colors duration-300 ${likedPacks[pack.id] ? "fill-red-500 stroke-red-500" : "stroke-white"}`}
-          />
-        </button>
-
-        {/* Card Content Overlaid on Bottom */}
-        <div className="relative z-10 flex flex-col h-full justify-between p-6 sm:p-8 flex-1">
-          {/* Top Tag */}
-          <div>
-            <span className={`inline-block px-3 py-1.5 rounded-full text-[8px] tracking-widest uppercase font-bold mt-4 ${badgeStyles}`}>
-              ✦ {badgeText}
-            </span>
-          </div>
-
-          {/* Bottom Info Details and CTA */}
-          <div className="mt-auto">
-            <h3 className="text-xl sm:text-2xl leading-[1.1] tracking-tight font-serif text-white font-normal mb-1">
-              {pack.title}
-            </h3>
-            <p className="text-[#b4975a] text-[9px] font-bold tracking-wider uppercase mb-2">
-              {pack.subtitle}
-            </p>
-            
-            <p className="text-zinc-300 text-xs font-light mb-4 line-clamp-2 leading-relaxed">
-              {pack.description}
-            </p>
-
-            {/* Info labels row matching the travel card style */}
-            <div className="flex flex-wrap items-center gap-2 mb-6 text-white/90 text-xs font-light">
-              <div className="flex items-center gap-1.2 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-white/5">
-                <Tag size={12} className="text-amber-400" />
-                <span>from <strong className="font-semibold text-white">₹{pack.offerPrice}</strong></span>
-              </div>
-              <div className="flex items-center gap-1.2 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-white/5">
-                <span>{inclusionLabel}</span>
-              </div>
-            </div>
-
-            {/* CTA Button centered at bottom - stacked on two lines as requested */}
-            <Button
-              variant="secondary"
-              className="w-full py-4 rounded-[24px] bg-white text-black hover:bg-zinc-100 hover:shadow-lg transition-all duration-300 text-[11px] font-bold tracking-wider flex flex-col items-center justify-center leading-snug"
-              onClick={(e) => {
-                e.stopPropagation();
-                triggerBookingModal(pack.title, parseInt(pack.offerPrice.replace(/[^0-9]/g, "")));
-              }}
-            >
-              <span className="block">SECURE</span>
-              <span className="block">OFFER</span>
-            </Button>
-          </div>
-        </div>
-      </motion.div>
-    );
-  };
 
   return (
     <div className="bg-[#fbfbfa] text-zinc-800 min-h-screen select-none overflow-hidden pb-20 font-sans">
@@ -1753,6 +1649,65 @@ const TrivandrumOffer = () => {
                       placeholder="Any customized album requirements, coverage times, etc..."
                       className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 px-4 text-zinc-800 text-xs focus:border-[#9b1c1c] focus:outline-none transition-colors resize-none"
                     />
+                  </div>
+
+                  {/* ── UPI Payment Section ── */}
+                  <div className="bg-gradient-to-br from-[#fffdf7] to-[#fdf8ed] border border-[#e2c97e]/60 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-[#b4975a]/15 flex items-center justify-center shrink-0">
+                        <span className="text-sm">💳</span>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#9b6f1e]">Send Advance ₹5,000 to Lock Your Date</p>
+                        <p className="text-[9px] text-zinc-400 font-light mt-0.5">Then upload the payment screenshot below</p>
+                      </div>
+                    </div>
+                    <div className="bg-white border border-[#e2c97e]/50 rounded-xl px-4 py-2.5 text-center shadow-sm">
+                      <p className="text-[9px] text-zinc-400 font-medium mb-0.5 uppercase tracking-widest">UPI ID</p>
+                      <p className="text-sm font-extrabold text-zinc-900 font-mono tracking-widest select-all">dreamwedstories@okaxis</p>
+                      <p className="text-[9px] text-zinc-400 mt-0.5">Google Pay · PhonePe · Paytm · Any UPI</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">UPI Transaction ID</label>
+                        <input
+                          type="text"
+                          value={bookingForm.transaction_id}
+                          onChange={(e) => setBookingForm({ ...bookingForm, transaction_id: e.target.value })}
+                          placeholder="e.g. 3209xxxxxxxx"
+                          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-2.5 px-3 text-zinc-800 text-xs focus:border-[#b4975a] focus:outline-none transition-colors font-mono placeholder:text-zinc-300"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">Payment Screenshot</label>
+                        <label className={`w-full border border-dashed rounded-xl py-2.5 px-3 text-[10px] flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
+                          bookingForm.screenshot_file_data
+                            ? "bg-green-50 border-green-300 text-green-700"
+                            : "bg-zinc-50 border-zinc-300 hover:border-[#b4975a] text-zinc-400"
+                        }`}>
+                          {bookingForm.screenshot_file_data
+                            ? <><span className="font-bold text-base leading-none">✓</span><span className="font-semibold">Attached</span></>
+                            : <><Camera size={12} /><span>Upload</span></>}
+                          <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = (ev) => setBookingForm(prev => ({ ...prev, screenshot_file_data: ev.target.result }));
+                            reader.readAsDataURL(file);
+                          }} />
+                        </label>
+                      </div>
+                    </div>
+                    {bookingForm.screenshot_file_data && (
+                      <div className="flex items-center gap-3 bg-green-50 border border-green-100 rounded-xl p-2.5">
+                        <img src={bookingForm.screenshot_file_data} alt="Payment proof" className="w-12 h-12 rounded-lg object-cover border border-green-200 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-bold text-green-700">Screenshot attached ✓</p>
+                          <p className="text-[9px] text-green-500 font-light">Admin will verify before approval</p>
+                        </div>
+                        <button type="button" onClick={() => setBookingForm(prev => ({ ...prev, screenshot_file_data: "" }))} className="text-red-400 hover:text-red-600 text-[10px] font-bold cursor-pointer shrink-0">✕</button>
+                      </div>
+                    )}
                   </div>
 
                   <button 
