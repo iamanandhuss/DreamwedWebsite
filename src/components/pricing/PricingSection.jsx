@@ -443,18 +443,11 @@ const PricingSection = () => {
 
   const renderCard = (plan, isGridOfFour = false) => {
     const isSpecial = plan.isSpecial || false;
-    
-    const getSplitTitle = (title) => {
-      if (title === "Wedding Photography") return ["Wedding", "Photography"];
-      if (title === "Wedding Photo & Pre-Wedding") return ["Wedding Photo &", "Pre-Wedding"];
-      if (title === "Candid Photo & Videography") return ["Candid Photo &", "Videography"];
-      if (title === "Premium Candid Package") return ["Premium Candid", "Package"];
-      if (title === "Bride & Groom Luxury Package") return ["Bride & Groom", "Luxury Package"];
-      if (title === "Bride or Groom Engagement Package") return ["Bride or Groom", "Engagement Package"];
-      return [title, ""];
-    };
-
-    const [titleLine1, titleLine2] = getSplitTitle(plan.title);
+    const saveText =
+      plan.shareId === "pkgWeddingBasicCard" ? "Save 44%" :
+      plan.shareId === "pkgWeddingPreCard"   ? "Save 27%" :
+      plan.shareId === "pkgCandidCard"       ? "Save 22%" :
+      plan.shareId === "pkgPremiumCandidCard"? "Save 33%" : null;
 
     return (
       <motion.div
@@ -463,157 +456,136 @@ const PricingSection = () => {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        onClick={() => {
-          setActivePlan(plan);
-          setCurrentSlide(0);
-        }}
-        className={`relative rounded-[32px] md:rounded-[40px] overflow-hidden flex flex-col transition-all duration-700 ease-[0.22, 1, 0.36, 1] group cursor-pointer hover:scale-[1.02] ${
-          isSpecial 
-            ? "border-[3px] border-[#d1a852] shadow-[0_0_35px_rgba(209,168,82,0.3),_0_20px_50px_rgba(0,0,0,0.4)]" 
-            : "border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
-        } aspect-[9/17.2] min-h-[580px] md:min-h-[640px] ${isGridOfFour ? "w-full" : ""}`}
+        className={`group relative rounded-[28px] overflow-hidden flex flex-col cursor-pointer
+          shadow-2xl hover:shadow-[0_32px_80px_rgba(0,0,0,0.45)]
+          transition-all duration-700
+          ${isSpecial
+            ? "border-2 border-[#d1a852] ring-1 ring-[#d1a852]/20"
+            : "border border-white/10"
+          }
+          ${isGridOfFour ? "w-full" : ""}`}
+        style={{ background: "#0d0d0d" }}
       >
-        <div className="absolute inset-0 z-0">
+        {/* ── COVER IMAGE (top ~58%) ── */}
+        <div className="relative w-full" style={{ paddingBottom: "68%" }}>
           <img
             src={plan.images[0]}
             alt={plan.title}
             style={{ objectPosition: "center 30%" }}
-            className="w-full h-full object-cover transition-transform duration-1000 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-black/20 z-10 pointer-events-none" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-transparent to-black/95 z-10 pointer-events-none" />
-        </div>
+          {/* Gradient fade into dark panel */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-[#0d0d0d]" />
 
-        <div className="absolute top-6 left-6 right-6 z-20 flex justify-between items-center">
-          <div className={`px-3.5 py-1.5 rounded-full text-[8.5px] font-extrabold tracking-widest uppercase flex items-center gap-1 backdrop-blur-md transition-all duration-300 ${
-            isSpecial 
-              ? "bg-gradient-to-r from-[#d1a852] to-[#b8903b] text-black border border-[#d1a852] shadow-[0_0_15px_rgba(209,168,82,0.45)]" 
-              : "bg-black/50 border border-[#d1a852]/35 text-[#d1a852] shadow-[0_0_10px_rgba(209,168,82,0.2)]"
-          }`}>
-            {plan.tag}
+          {/* Tag badge — top left */}
+          <div className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-[8px] font-extrabold tracking-widest uppercase flex items-center gap-1 backdrop-blur-sm
+            ${isSpecial
+              ? "bg-[#d1a852] text-black shadow-[0_0_16px_rgba(209,168,82,0.5)]"
+              : "bg-black/55 border border-[#d1a852]/40 text-[#d1a852]"
+            }`}
+          >
+            {isSpecial && <span>⭐</span>} {plan.tag}
           </div>
 
+          {/* Heart — top right */}
           <button
             onClick={(e) => toggleLike(e, plan.shareId)}
-            className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95 cursor-pointer"
-            title="Add to wishlist"
+            className="absolute top-3.5 right-3.5 z-10 w-9 h-9 rounded-full bg-black/45 backdrop-blur-md border border-white/15 flex items-center justify-center transition-all hover:scale-110 active:scale-90 cursor-pointer"
           >
-            <Heart
-              size={16}
-              className={`transition-colors duration-300 ${likedPlans[plan.shareId] ? "fill-red-500 stroke-red-500" : "stroke-white"}`}
-            />
+            <Heart size={15} className={likedPlans[plan.shareId] ? "fill-red-500 stroke-red-500" : "stroke-white"} />
           </button>
-        </div>
 
-        <div className="absolute top-[150px] left-0 right-0 z-20 text-center flex items-center justify-center gap-1.5 text-[8.5px] font-bold tracking-[0.2em] text-white/50 group-hover:text-white/90 transition-colors duration-300">
-          <span className="text-amber-400">✈</span> CLICK FOR PHOTOS & DETAILS
-        </div>
-
-        {plan.price && (
-          <div className="absolute top-[70px] left-6 right-6 z-20 bg-black/80 border border-[#d1a852]/50 backdrop-blur-md px-3.5 py-2.5 rounded-2xl text-center space-y-1.5 shadow-[0_0_25px_rgba(209,168,82,0.25)]">
-            <div className="flex items-center justify-center gap-1.5 text-[#d1a852] text-[8.5px] font-black tracking-[0.15em] uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
-              <span>🔥 Special limited offer</span>
-            </div>
-            <div className="text-white font-mono text-[9px] font-bold tracking-widest flex items-center justify-center gap-1">
-              <span className="opacity-75">⏳ Closes in:</span>
-              <span className="text-[#d1a852] bg-white/5 border border-white/10 px-1 py-0.5 rounded">
-                {String(timeLeft.hours).padStart(2, '0')}h
-              </span>
-              <span>:</span>
-              <span className="text-[#d1a852] bg-white/5 border border-white/10 px-1 py-0.5 rounded">
-                {String(timeLeft.minutes).padStart(2, '0')}m
-              </span>
-              <span>:</span>
-              <span className="text-[#d1a852] bg-white/5 border border-white/10 px-1 py-0.5 rounded animate-pulse">
-                {String(timeLeft.seconds).padStart(2, '0')}s
-              </span>
-            </div>
+          {/* Click hint */}
+          <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10">
+            <span className="bg-black/55 backdrop-blur-sm text-white/60 text-[8px] font-bold tracking-widest uppercase px-3 py-1 rounded-full border border-white/10 group-hover:text-white group-hover:border-[#d1a852]/40 transition-all">
+              ✨ Tap to view photos &amp; inclusions
+            </span>
           </div>
-        )}
+        </div>
 
-        <div className="relative z-10 flex flex-col h-full justify-end p-6 md:p-8 mt-auto select-none">
-          <h3 className="text-[26px] sm:text-[28px] md:text-[32px] leading-tight font-serif text-white font-light text-center mb-1">
-            {titleLine1}
-            {titleLine2 && <span className="block mt-0.5">{titleLine2}</span>}
-          </h3>
+        {/* ── DETAILS PANEL ── */}
+        <div
+          className="flex flex-col flex-1 px-5 pt-4 pb-5 gap-3"
+          onClick={() => { setActivePlan(plan); setCurrentSlide(0); }}
+        >
+          {/* Title */}
+          <div>
+            <p className="text-[#d1a852] text-[8.5px] font-black tracking-[0.22em] uppercase mb-0.5">{plan.subtitle}</p>
+            <h3 className="text-white text-lg font-light leading-[1.2] tracking-tight" style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}>
+              {plan.title}
+            </h3>
+          </div>
 
-          <p className="text-[#d1a852] text-[9.5px] md:text-[10px] tracking-[0.2em] font-semibold uppercase text-center mb-3">
-            {plan.subtitle}
-          </p>
+          {/* Description */}
+          <p className="text-zinc-400 text-[10px] font-light leading-relaxed line-clamp-2">{plan.desc}</p>
 
-          <p className="text-zinc-400 text-[11px] md:text-[12px] font-light text-center max-w-[255px] mx-auto mb-4 line-clamp-2 leading-relaxed">
-            {plan.desc}
-          </p>
+          {/* Inclusion chips */}
+          <div className="flex flex-wrap gap-1.5">
+            {(plan.features || []).slice(0, 3).map((f, i) => (
+              <span key={i} className="inline-flex items-center gap-1 bg-white/5 border border-white/8 text-white/65 px-2.5 py-1 rounded-full text-[8px] font-medium">
+                <Check size={7} className="text-[#d1a852] shrink-0" />
+                {f.split("(")[0].trim()}
+              </span>
+            ))}
+            {(plan.features || []).length > 3 && (
+              <span className="inline-flex items-center bg-[#d1a852]/10 border border-[#d1a852]/20 text-[#d1a852] px-2.5 py-1 rounded-full text-[8px] font-bold">
+                +{(plan.features || []).length - 3} more
+              </span>
+            )}
+          </div>
 
+          {/* Offer highlight */}
           {plan.preweddingOffer && (
-            <div className="mb-4 px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#d1a852]/12 via-[#d1a852]/3 to-transparent border border-[#d1a852]/30 backdrop-blur-md flex items-center justify-center gap-1.5 max-w-[260px] mx-auto shadow-[0_0_15px_rgba(209,168,82,0.08)]">
-              <Sparkles size={10} className="text-[#d1a852] animate-pulse flex-shrink-0" />
-              <span className="text-[#d1a852] text-[8.5px] font-bold tracking-[0.12em] uppercase text-center leading-tight">
-                {plan.preweddingOffer}
-              </span>
+            <div className="flex items-center gap-1.5 bg-[#d1a852]/8 border border-[#d1a852]/20 rounded-xl px-3 py-1.5">
+              <Sparkles size={9} className="text-[#d1a852] shrink-0 animate-pulse" />
+              <span className="text-[#d1a852] text-[8px] font-bold tracking-wide uppercase leading-tight">{plan.preweddingOffer}</span>
             </div>
           )}
 
-          {/* Standalone Value Proposition Badge */}
-          {plan.shareId.startsWith("pkgWedding") && !plan.shareId.includes("Standalone") && (
-            <div className="mb-4 text-center select-none">
-              <span className="inline-flex items-center gap-1 bg-white/5 border border-white/10 px-3 py-1 rounded-full text-[9px] font-medium text-zinc-350">
-                <span className="text-[#d1a852] font-bold">Total Value:</span>
-                <span>
-                  {plan.shareId === "pkgWeddingBasicCard" ? "₹71,998" : 
-                   plan.shareId === "pkgWeddingPreCard" ? "₹74,998" : 
-                   plan.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,24,998"}
+          {/* Divider */}
+          <div className="h-px bg-white/8" />
+
+          {/* Price + countdown row */}
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-zinc-500 text-[9px] line-through font-light">{plan.price ? `₹${getRegularPrice(plan.price)}` : ""}</p>
+              <p className="text-white text-xl font-extrabold leading-tight">{plan.price}<span className="text-[10px] font-normal text-zinc-400">/-</span></p>
+              {saveText && (
+                <span className="inline-block mt-0.5 bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{saveText}</span>
+              )}
+            </div>
+            <div className="text-right">
+              <div className="flex items-center gap-1 justify-end mb-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+                <span className="text-red-400 font-mono text-[9px] font-bold">
+                  {String(timeLeft.hours).padStart(2,"0")}:{String(timeLeft.minutes).padStart(2,"0")}:{String(timeLeft.seconds).padStart(2,"0")}
                 </span>
-                <span className="text-zinc-500">|</span>
-                <span className="text-emerald-400 font-bold">
-                  {plan.shareId === "pkgWeddingBasicCard" ? "Save 44%" : 
-                   plan.shareId === "pkgWeddingPreCard" ? "Save 27%" : 
-                   plan.shareId === "pkgCandidCard" ? "Save 22%" : "Save 12%"}
-                </span>
-              </span>
-            </div>
-          )}
-
-          {isSpecial && (
-            <div className="mb-4 max-w-[240px] mx-auto w-full space-y-1.5 bg-black/45 border border-white/10 p-3 rounded-2xl backdrop-blur-md shadow-lg">
-              <div className="flex justify-between text-[8px] font-black tracking-widest uppercase">
-                <span className="text-zinc-400">SLOTS RESERVED</span>
-                <span className="text-[#d1a852] animate-pulse">92% SECURED</span>
               </div>
-              <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden p-[1px] border border-white/5">
-                <div className="h-full bg-gradient-to-r from-[#d1a852] via-[#b8903b] to-red-500 rounded-full w-[92%] shadow-[0_0_8px_rgba(209,168,82,0.4)]" />
-              </div>
-              <span className="block text-center text-[7.5px] font-bold tracking-wider text-red-400 uppercase select-none">
-                ⚠️ 1 Slot Left - May Sell Out Shortly!
-              </span>
-            </div>
-          )}
-
-          <div className="flex flex-col items-center gap-2 mb-6">
-            <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-white text-xs font-light">
-              <Tag size={12} className="text-red-500" />
-              <span>Offer: <strong className="font-extrabold text-red-500">{plan.price}</strong> <span className="text-zinc-500 line-through text-[10px] ml-1">{getRegularPrice(plan.price)}</span></span>
-            </div>
-
-            <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/5 text-white/90 text-xs font-light">
-              <Camera size={12} className="text-zinc-300" />
-              <span>{plan.setup}</span>
+              <p className="text-[8px] text-zinc-600 font-light">offer closing</p>
+              {plan.setup && <p className="text-[8.5px] text-zinc-500 font-light mt-0.5">{plan.setup}</p>}
             </div>
           </div>
 
+          {/* CTA Buttons */}
           <Link
-            to={`/booking?package=${encodeURIComponent(plan.title)}&price=${encodeURIComponent(plan.price.replace(/[^\d]/g, ""))}`}
-            className="py-3.5 px-8 w-full max-w-[170px] mx-auto rounded-[20px] bg-white text-black hover:bg-[#b4975a] hover:text-white hover:shadow-lg transition-all duration-300 text-[11px] font-extrabold tracking-[0.2em] flex flex-col items-center justify-center leading-tight shadow-md select-none cursor-pointer uppercase"
+            to={`/booking?package=${encodeURIComponent(plan.title)}&price=${encodeURIComponent(plan.price?.replace(/[^\d]/g, "") || "")}`}
             onClick={(e) => e.stopPropagation()}
+            className="w-full py-3 rounded-2xl font-bold text-[11px] tracking-widest uppercase text-center transition-all duration-300 cursor-pointer active:scale-95 block"
+            style={{
+              background: isSpecial
+                ? "linear-gradient(135deg, #d1a852 0%, #e8c070 50%, #d1a852 100%)"
+                : "rgba(255,255,255,0.07)",
+              color: isSpecial ? "#0d0d0d" : "#fff",
+              border: isSpecial ? "none" : "1px solid rgba(255,255,255,0.12)",
+              boxShadow: isSpecial ? "0 8px 24px rgba(209,168,82,0.35)" : "none"
+            }}
           >
-            <span>BOOK</span>
-            <span>NOW</span>
+            {isSpecial ? "⭐ Book Best Deal" : "Book Now"}
           </Link>
 
           <button
             onClick={(e) => handleShare(e, plan)}
-            className="mt-3.5 py-2 px-6 w-full max-w-[170px] mx-auto rounded-[16px] bg-white/5 border border-white/10 hover:bg-white/10 text-white text-[9px] font-bold tracking-widest uppercase flex items-center justify-center gap-1.5 transition-all select-none cursor-pointer"
+            className="w-full py-2 rounded-xl bg-white/4 border border-white/8 hover:bg-white/10 text-white/60 hover:text-white text-[9px] font-bold tracking-widest uppercase flex items-center justify-center gap-1.5 transition-all cursor-pointer"
           >
             <span className="text-emerald-400">📲</span> Share Package
           </button>
@@ -621,6 +593,7 @@ const PricingSection = () => {
       </motion.div>
     );
   };
+
 
   return (
     <section className="w-full bg-[#0a0a0c] text-white py-24 md:py-32 px-4 md:px-6 overflow-hidden relative">
