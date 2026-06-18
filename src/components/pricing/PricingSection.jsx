@@ -459,6 +459,7 @@ const PricingSection = () => {
     // Pick top 4 inclusions for 2-col checklist
     const topFeatures = (plan.features || []).slice(0, 4);
     const extraCount  = (plan.features || []).length - 4;
+    const openModal = () => { setActivePlan(plan); setCurrentSlide(0); };
 
     return (
       <motion.div
@@ -467,15 +468,16 @@ const PricingSection = () => {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
+        onClick={openModal}
         className={`group relative rounded-[28px] overflow-hidden flex flex-col cursor-pointer
-          shadow-2xl hover:shadow-[0_32px_80px_rgba(0,0,0,0.5)]
+          shadow-2xl hover:shadow-[0_32px_80px_rgba(0,0,0,0.55)]
           transition-all duration-700 hover:scale-[1.015]
           ${isSpecial
             ? "border-2 border-[#d1a852] ring-2 ring-[#d1a852]/15"
-            : "border border-white/10"
+            : "border border-[#2a2218]"
           }
           ${isGridOfFour ? "w-full" : ""}`}
-        style={{ background: "#0d0d0d" }}
+        style={{ background: "#110f0c" }}
       >
         {/* ── COVER PHOTO ── */}
         <div className="relative w-full" style={{ paddingBottom: "62%" }}>
@@ -485,7 +487,7 @@ const PricingSection = () => {
             style={{ objectPosition: "center 30%" }}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-[#0d0d0d]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-[#110f0c]" />
 
           {/* Badge top-left */}
           <div className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-[8px] font-extrabold tracking-widest uppercase flex items-center gap-1 backdrop-blur-sm
@@ -502,11 +504,11 @@ const PricingSection = () => {
             onClick={(e) => toggleLike(e, plan.shareId)}
             className="absolute top-3.5 right-3.5 z-10 w-9 h-9 rounded-full bg-black/50 backdrop-blur-md border border-white/15 flex items-center justify-center transition-all hover:scale-110 active:scale-90 cursor-pointer"
           >
-            <Heart size={15} className={likedPlans[plan.shareId] ? "fill-red-500 stroke-red-500" : "stroke-white"} />
+            <Heart size={15} className={likedPlans[plan.shareId] ? "fill-red-500 stroke-red-500" : "stroke-[#f0e6d3]"} />
           </button>
 
           {/* Tap hint */}
-          <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10">
+          <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10 pointer-events-none">
             <span className="bg-black/60 backdrop-blur-sm text-white/55 text-[8px] font-bold tracking-widest uppercase px-3 py-1 rounded-full border border-white/10 group-hover:text-white/90 group-hover:border-[#d1a852]/40 transition-all">
               ✨ Tap to see all photos
             </span>
@@ -514,15 +516,12 @@ const PricingSection = () => {
         </div>
 
         {/* ── DETAILS PANEL ── */}
-        <div
-          className="flex flex-col flex-1 px-5 pt-4 pb-5 gap-3.5"
-          onClick={() => { setActivePlan(plan); setCurrentSlide(0); }}
-        >
+        <div className="flex flex-col flex-1 px-5 pt-4 pb-5 gap-3.5">
 
           {/* 1. Package identity */}
           <div>
-            <p className="text-[#d1a852] text-[8px] font-black tracking-[0.25em] uppercase mb-0.5">{plan.subtitle}</p>
-            <h3 className="text-white text-[1.15rem] font-light leading-[1.15] tracking-tight" style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}>
+            <p className="text-[#d1a852] text-[8px] font-black tracking-[0.28em] uppercase mb-1">{plan.subtitle}</p>
+            <h3 className="text-[#f0e6d3] text-[1.2rem] font-light leading-[1.15] tracking-tight" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic" }}>
               {plan.title}
             </h3>
           </div>
@@ -532,8 +531,8 @@ const PricingSection = () => {
             <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
               {topFeatures.map((f, i) => (
                 <div key={i} className="flex items-start gap-1.5">
-                  <Check size={9} className="text-[#d1a852] shrink-0 mt-[2px]" />
-                  <span className="text-white/75 text-[9px] font-medium leading-tight">{f.split("(")[0].trim()}</span>
+                  <Check size={9} className="text-[#d1a852] shrink-0 mt-[2.5px]" />
+                  <span className="text-[#c9b99a] text-[9px] font-medium leading-tight">{f.split("(")[0].trim()}</span>
                 </div>
               ))}
               {extraCount > 0 && (
@@ -546,27 +545,27 @@ const PricingSection = () => {
 
           {/* 3. Free bonus strip */}
           {plan.preweddingOffer && (
-            <div className="flex items-center gap-2 bg-[#d1a852]/10 border border-[#d1a852]/25 rounded-xl px-3 py-2">
+            <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "rgba(209,168,82,0.07)", border: "1px solid rgba(209,168,82,0.2)" }}>
               <Sparkles size={10} className="text-[#d1a852] shrink-0 animate-pulse" />
-              <span className="text-[#d1a852] text-[8px] font-bold tracking-wide uppercase leading-tight">{plan.preweddingOffer}</span>
+              <span className="text-[#e2c97a] text-[8px] font-bold tracking-wide uppercase leading-tight">{plan.preweddingOffer}</span>
             </div>
           )}
 
-          {/* Divider */}
-          <div className="h-px bg-white/8" />
+          {/* Gold divider */}
+          <div className="h-px opacity-20" style={{ background: "linear-gradient(90deg, transparent, #d1a852, transparent)" }} />
 
           {/* 4. Price block — HERO section */}
           <div className="flex items-end justify-between">
             <div>
               {/* Strikethrough old price */}
-              <p className="text-zinc-600 text-[10px] line-through font-light leading-none mb-0.5">{regularStr}</p>
+              <p className="text-[#4a4030] text-[10px] line-through font-light leading-none mb-0.5">{regularStr}</p>
               {/* Big bold offer price */}
-              <p className="text-white text-2xl font-extrabold leading-none tracking-tight">
-                {plan.price}<span className="text-[11px] font-normal text-zinc-500 ml-0.5">/-</span>
+              <p className="text-[#f0e6d3] text-2xl font-extrabold leading-none tracking-tight">
+                {plan.price}<span className="text-[11px] font-normal text-[#6a5a42] ml-0.5">/-</span>
               </p>
               {/* Green savings badge */}
               {savePercent && savedAmount > 0 && (
-                <span className="inline-flex items-center gap-1 mt-1.5 bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 text-[8.5px] font-bold px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 mt-1.5 bg-emerald-900/30 border border-emerald-700/35 text-emerald-400 text-[8.5px] font-bold px-2 py-0.5 rounded-full">
                   💚 Save ₹{savedAmount.toLocaleString("en-IN")} ({savePercent} OFF)
                 </span>
               )}
@@ -580,8 +579,8 @@ const PricingSection = () => {
                   {String(timeLeft.hours).padStart(2,"0")}:{String(timeLeft.minutes).padStart(2,"0")}:{String(timeLeft.seconds).padStart(2,"0")}
                 </span>
               </div>
-              <p className="text-[8px] text-zinc-600 font-light mt-0.5">Offer ends tonight</p>
-              {plan.setup && <p className="text-[8px] text-zinc-600 font-light mt-0.5 leading-tight">{plan.setup}</p>}
+              <p className="text-[8px] text-[#4a4030] font-light mt-0.5">Offer ends tonight</p>
+              {plan.setup && <p className="text-[8px] text-[#4a4030] font-light mt-0.5 leading-tight">{plan.setup}</p>}
             </div>
           </div>
 
@@ -601,8 +600,9 @@ const PricingSection = () => {
 
           {/* 6. Share button */}
           <button
-            onClick={(e) => handleShare(e, plan)}
-            className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white/65 hover:text-white text-[9px] font-bold tracking-widest uppercase flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            onClick={(e) => { e.stopPropagation(); handleShare(e, plan); }}
+            className="w-full py-2.5 rounded-xl text-[9px] font-bold tracking-widest uppercase flex items-center justify-center gap-1.5 transition-all duration-300 cursor-pointer"
+            style={{ background: "rgba(209,168,82,0.05)", border: "1px solid rgba(209,168,82,0.15)", color: "#9a8a6a" }}
           >
             <span className="text-emerald-400">📲</span> Share with Partner
           </button>
