@@ -469,15 +469,15 @@ const PricingSection = () => {
         whileInView="visible"
         viewport={{ once: true }}
         onClick={openModal}
-        className={`group relative rounded-[28px] overflow-hidden flex flex-col cursor-pointer
+        className={`group relative rounded-[28px] overflow-hidden flex flex-col cursor-pointer select-none
           shadow-2xl hover:shadow-[0_32px_80px_rgba(0,0,0,0.55)]
           transition-all duration-700 hover:scale-[1.015]
           ${isSpecial
-            ? "border-2 border-[#d1a852] ring-2 ring-[#d1a852]/15"
+            ? "border-2 border-[#d1a852]"
             : "border border-[#2a2218]"
           }
           ${isGridOfFour ? "w-full" : ""}`}
-        style={{ background: "#110f0c" }}
+        style={{ background: "#110f0c", outline: "none", WebkitTapHighlightColor: "transparent" }}
       >
         {/* ── COVER PHOTO ── */}
         <div className="relative w-full" style={{ paddingBottom: "62%" }}>
@@ -501,15 +501,16 @@ const PricingSection = () => {
 
           {/* Heart top-right */}
           <button
-            onClick={(e) => toggleLike(e, plan.shareId)}
-            className="absolute top-3.5 right-3.5 z-10 w-9 h-9 rounded-full bg-black/50 backdrop-blur-md border border-white/15 flex items-center justify-center transition-all hover:scale-110 active:scale-90 cursor-pointer"
+            onClick={(e) => { e.stopPropagation(); toggleLike(e, plan.shareId); }}
+            className="absolute top-3.5 right-3.5 z-10 w-9 h-9 rounded-full bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center transition-all hover:scale-110 active:scale-90 cursor-pointer"
+            style={{ outline: "none", WebkitTapHighlightColor: "transparent" }}
           >
             <Heart size={15} className={likedPlans[plan.shareId] ? "fill-red-500 stroke-red-500" : "stroke-[#f0e6d3]"} />
           </button>
 
           {/* Tap hint */}
           <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10 pointer-events-none">
-            <span className="bg-black/60 backdrop-blur-sm text-white/55 text-[8px] font-bold tracking-widest uppercase px-3 py-1 rounded-full border border-white/10 group-hover:text-white/90 group-hover:border-[#d1a852]/40 transition-all">
+            <span className="bg-black/70 backdrop-blur-sm text-[#d4c4a0] text-[8px] font-bold tracking-widest uppercase px-4 py-1.5 rounded-full border border-[#d1a852]/20 group-hover:text-[#d1a852] group-hover:border-[#d1a852]/50 transition-all">
               ✨ Tap to see all photos
             </span>
           </div>
@@ -532,7 +533,7 @@ const PricingSection = () => {
               {topFeatures.map((f, i) => (
                 <div key={i} className="flex items-start gap-1.5">
                   <Check size={9} className="text-[#d1a852] shrink-0 mt-[2.5px]" />
-                  <span className="text-[#c9b99a] text-[9px] font-medium leading-tight">{f.split("(")[0].trim()}</span>
+                  <span className="text-[#e8dcc8] text-[9.5px] font-medium leading-tight">{f.split("(")[0].trim()}</span>
                 </div>
               ))}
               {extraCount > 0 && (
