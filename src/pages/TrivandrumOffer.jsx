@@ -52,6 +52,7 @@ const TrivandrumOffer = () => {
     screenshot_file_data: ""
   });
   const [bookingStatus, setBookingStatus] = useState("idle");
+  const [formErrors, setFormErrors] = useState({});
 
   // Automatically reset pre-wedding video if selected package already includes it (Pack 03 includes both photo and video)
   useEffect(() => {
@@ -497,6 +498,22 @@ const TrivandrumOffer = () => {
 
   const handleConfirmBookingSubmit = async (e) => {
     e.preventDefault();
+
+    // --- Validate required fields ---
+    const errors = {};
+    if (!bookingForm.name.trim())  errors.name  = "Please enter your full name";
+    if (!bookingForm.phone.trim()) errors.phone = "Please enter your WhatsApp number";
+    if (!bookingForm.email.trim()) errors.email = "Please enter your email address";
+    if (!bookingForm.date.trim())  errors.date  = "Please select your wedding date";
+    if (!bookingForm.venue.trim()) errors.venue = "Please enter the event venue";
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      // Scroll to first error field
+      const firstKey = Object.keys(errors)[0];
+      document.getElementById(`bfield-${firstKey}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    setFormErrors({});
     setBookingStatus("loading");
     
     const isPack04 = selectedPackage === "Candid Photo & Videography" && selectedPackagePrice === 79999;
@@ -1578,71 +1595,86 @@ const TrivandrumOffer = () => {
                 </div>
 
                 {/* Form fields */}
-                <form onSubmit={handleConfirmBookingSubmit} className="space-y-4">
+                <form onSubmit={handleConfirmBookingSubmit} className="space-y-4" noValidate>
+
+                  {/* Row 1: Name + Phone */}
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">Full Names (Bride & Groom)</label>
-                      <input 
-                        type="text" 
-                        required
+                    <div className="space-y-1" id="bfield-name">
+                      <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">
+                        Full Names <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
                         value={bookingForm.name}
-                        onChange={(e) => setBookingForm({ ...bookingForm, name: e.target.value })}
+                        onChange={(e) => { setBookingForm({ ...bookingForm, name: e.target.value }); if (formErrors.name) setFormErrors(p => ({...p, name: ""})); }}
                         placeholder="Athul & Priya"
-                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 px-4 text-zinc-800 text-xs focus:border-[#9b1c1c] focus:outline-none transition-colors"
+                        className={`w-full bg-zinc-50 border rounded-xl py-3 px-4 text-zinc-800 text-xs focus:outline-none transition-colors ${formErrors.name ? "border-red-400 bg-red-50 focus:border-red-500" : "border-zinc-200 focus:border-[#9b1c1c]"}`}
                       />
+                      {formErrors.name && <p className="text-red-500 text-[9px] font-medium flex items-center gap-1"><AlertCircle size={9} /> {formErrors.name}</p>}
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">WhatsApp Number</label>
-                      <input 
-                        type="tel" 
-                        required
+                    <div className="space-y-1" id="bfield-phone">
+                      <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">
+                        WhatsApp Number <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
                         value={bookingForm.phone}
-                        onChange={(e) => setBookingForm({ ...bookingForm, phone: e.target.value })}
+                        onChange={(e) => { setBookingForm({ ...bookingForm, phone: e.target.value }); if (formErrors.phone) setFormErrors(p => ({...p, phone: ""})); }}
                         placeholder="+91 9995412955"
-                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 px-4 text-zinc-800 text-xs focus:border-[#9b1c1c] focus:outline-none transition-colors"
+                        className={`w-full bg-zinc-50 border rounded-xl py-3 px-4 text-zinc-800 text-xs focus:outline-none transition-colors ${formErrors.phone ? "border-red-400 bg-red-50 focus:border-red-500" : "border-zinc-200 focus:border-[#9b1c1c]"}`}
                       />
+                      {formErrors.phone && <p className="text-red-500 text-[9px] font-medium flex items-center gap-1"><AlertCircle size={9} /> {formErrors.phone}</p>}
                     </div>
                   </div>
 
+                  {/* Row 2: Email + Date */}
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">Email Address</label>
-                      <input 
-                        type="email" 
-                        required
+                    <div className="space-y-1" id="bfield-email">
+                      <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">
+                        Email Address <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="email"
                         value={bookingForm.email}
-                        onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
+                        onChange={(e) => { setBookingForm({ ...bookingForm, email: e.target.value }); if (formErrors.email) setFormErrors(p => ({...p, email: ""})); }}
                         placeholder="athul@example.com"
-                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 px-4 text-zinc-800 text-xs focus:border-[#9b1c1c] focus:outline-none transition-colors"
+                        className={`w-full bg-zinc-50 border rounded-xl py-3 px-4 text-zinc-800 text-xs focus:outline-none transition-colors ${formErrors.email ? "border-red-400 bg-red-50 focus:border-red-500" : "border-zinc-200 focus:border-[#9b1c1c]"}`}
                       />
+                      {formErrors.email && <p className="text-red-500 text-[9px] font-medium flex items-center gap-1"><AlertCircle size={9} /> {formErrors.email}</p>}
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">Wedding Date</label>
-                      <input 
-                        type="date" 
-                        required
+                    <div className="space-y-1" id="bfield-date">
+                      <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">
+                        Wedding Date <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="date"
                         value={bookingForm.date}
-                        onChange={(e) => setBookingForm({ ...bookingForm, date: e.target.value })}
-                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 px-4 text-zinc-800 text-xs focus:border-[#9b1c1c] focus:outline-none transition-colors"
+                        onChange={(e) => { setBookingForm({ ...bookingForm, date: e.target.value }); if (formErrors.date) setFormErrors(p => ({...p, date: ""})); }}
+                        className={`w-full bg-zinc-50 border rounded-xl py-3 px-4 text-zinc-800 text-xs focus:outline-none transition-colors ${formErrors.date ? "border-red-400 bg-red-50 focus:border-red-500" : "border-zinc-200 focus:border-[#9b1c1c]"}`}
                       />
+                      {formErrors.date && <p className="text-red-500 text-[9px] font-medium flex items-center gap-1"><AlertCircle size={9} /> {formErrors.date}</p>}
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">Event Venue & Location</label>
-                    <input 
-                      type="text" 
-                      required
+                  {/* Venue */}
+                  <div className="space-y-1" id="bfield-venue">
+                    <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">
+                      Event Venue & Location <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
                       value={bookingForm.venue}
-                      onChange={(e) => setBookingForm({ ...bookingForm, venue: e.target.value })}
+                      onChange={(e) => { setBookingForm({ ...bookingForm, venue: e.target.value }); if (formErrors.venue) setFormErrors(p => ({...p, venue: ""})); }}
                       placeholder="e.g. Al Saj Convention Centre, Trivandrum"
-                      className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 px-4 text-zinc-800 text-xs focus:border-[#9b1c1c] focus:outline-none transition-colors"
+                      className={`w-full bg-zinc-50 border rounded-xl py-3 px-4 text-zinc-800 text-xs focus:outline-none transition-colors ${formErrors.venue ? "border-red-400 bg-red-50 focus:border-red-500" : "border-zinc-200 focus:border-[#9b1c1c]"}`}
                     />
+                    {formErrors.venue && <p className="text-red-500 text-[9px] font-medium flex items-center gap-1"><AlertCircle size={9} /> {formErrors.venue}</p>}
                   </div>
 
+                  {/* Notes */}
                   <div className="space-y-1">
                     <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">Additional Notes / Special Requests</label>
-                    <textarea 
+                    <textarea
                       rows="2"
                       value={bookingForm.notes}
                       onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
@@ -1651,16 +1683,19 @@ const TrivandrumOffer = () => {
                     />
                   </div>
 
-                  {/* ── UPI Payment Section ── */}
+                  {/* ── UPI Payment Section (OPTIONAL) ── */}
                   <div className="bg-gradient-to-br from-[#fffdf7] to-[#fdf8ed] border border-[#e2c97e]/60 rounded-2xl p-4 space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[#b4975a]/15 flex items-center justify-center shrink-0">
-                        <span className="text-sm">💳</span>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-2">
+                        <div className="w-8 h-8 rounded-full bg-[#b4975a]/15 flex items-center justify-center shrink-0">
+                          <span className="text-sm">💳</span>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-[#9b6f1e]">Send Advance ₹5,000 to Lock Your Date</p>
+                          <p className="text-[9px] text-zinc-400 font-light mt-0.5">Upload proof after sending — speeds up approval</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#9b6f1e]">Send Advance ₹5,000 to Lock Your Date</p>
-                        <p className="text-[9px] text-zinc-400 font-light mt-0.5">Then upload the payment screenshot below</p>
-                      </div>
+                      <span className="shrink-0 inline-block bg-zinc-100 border border-zinc-200 text-zinc-400 text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">Optional</span>
                     </div>
                     <div className="bg-white border border-[#e2c97e]/50 rounded-xl px-4 py-2.5 text-center shadow-sm">
                       <p className="text-[9px] text-zinc-400 font-medium mb-0.5 uppercase tracking-widest">UPI ID</p>
@@ -1669,7 +1704,9 @@ const TrivandrumOffer = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-2.5">
                       <div className="space-y-1">
-                        <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">UPI Transaction ID</label>
+                        <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase flex items-center gap-1">
+                          UPI Transaction ID <span className="text-[8px] text-zinc-300 normal-case font-normal">(optional)</span>
+                        </label>
                         <input
                           type="text"
                           value={bookingForm.transaction_id}
@@ -1679,7 +1716,9 @@ const TrivandrumOffer = () => {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase">Payment Screenshot</label>
+                        <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase flex items-center gap-1">
+                          Payment Screenshot <span className="text-[8px] text-zinc-300 normal-case font-normal">(optional)</span>
+                        </label>
                         <label className={`w-full border border-dashed rounded-xl py-2.5 px-3 text-[10px] flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
                           bookingForm.screenshot_file_data
                             ? "bg-green-50 border-green-300 text-green-700"
