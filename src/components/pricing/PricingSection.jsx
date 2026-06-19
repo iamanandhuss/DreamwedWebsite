@@ -108,8 +108,14 @@ const weddingPlans = [
     preweddingOffer: "FREE DRONE AERIAL COVERAGE + 100 PAGES ALBUM",
     desc: "Our comprehensive single-side coverage package. Designed for couples seeking complete pre-wedding story, wedding day, and reception coverage with aerial drone views and a premium handcrafted 100-page album.",
     setup: "Candid & Traditional Team + Drone + Pre-Wedding",
-    images: ["/couple_traditional_red.jpg", "/deepak.jpg", "/anandha_lekshmi.jpg"],
-    imagePositions: ["center 10%", "center 25%", "center 25%"],
+    images: [
+      "/premium_candid_79k_1.jpg",
+      "/premium_candid_79k_2.jpg",
+      "/premium_candid_79k_3.jpg",
+      "/premium_candid_79k_4.jpg",
+      "/premium_candid_79k_5.jpg"
+    ],
+    imagePositions: ["center 25%", "center 22%", "center 22%", "center 22%", "center 25%"],
     isSpecial: true,
     features: [
       "Pre-Wedding Photography & Videography (Save the Date)",
