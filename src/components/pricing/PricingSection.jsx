@@ -15,7 +15,8 @@ const weddingPlans = [
     preweddingOffer: "FREE PRE-WEDDING PHOTO (WORTH ₹12,000)",
     desc: "Our highly sought-after single-side coverage package. Designed to capture every detail of your celebrations with elite creative precision and beautiful physical heirlooms.",
     setup: "1 Photographer + 1 Videographer",
-    images: ["/uploaded_bride_yellow.jpg", "/athulraj.jpg", "/anandha_lekshmi.jpg"],
+    images: ["/uploaded_bride_39k_1.jpg", "/uploaded_bride_39k_2.jpg", "/uploaded_bride_39k_3.jpg", "/uploaded_bride_39k_4.jpg"],
+    imagePositions: ["center 30%", "center 35%", "center 28%", "center 28%"],
     features: [
       "Wedding Reception Photography",
       "Wedding Reception Videography",
@@ -364,6 +365,23 @@ const PricingSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [likedPlans, setLikedPlans] = useState({});
   const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 14, seconds: 56 });
+  const [cardSlideIndexes, setCardSlideIndexes] = useState({});
+
+  useEffect(() => {
+    const allPlans = [...weddingPlans, ...weddingStandalonePlans, ...engagementPlans, ...haldiPlans];
+    const interval = setInterval(() => {
+      setCardSlideIndexes((prev) => {
+        const next = { ...prev };
+        allPlans.forEach((plan) => {
+          if (plan.images && plan.images.length > 1) {
+            next[plan.shareId] = ((prev[plan.shareId] || 0) + 1) % plan.images.length;
+          }
+        });
+        return next;
+      });
+    }, 3500);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -458,6 +476,7 @@ const PricingSection = () => {
     const chipFeatures = allFeatures.slice(0, 4);
     const extraCount  = allFeatures.length - 4;
     const openModal   = () => { setActivePlan(plan); setCurrentSlide(0); };
+    const currentImgIndex = cardSlideIndexes[plan.shareId] || 0;
 
     return (
       <motion.div
@@ -476,12 +495,19 @@ const PricingSection = () => {
       >
         {/* ── PHOTO — title + price overlaid at bottom like mockup ── */}
         <div className="relative w-full overflow-hidden" style={{ paddingBottom: "68%" }}>
-          <img
-            src={plan.images[0]}
-            alt={plan.title}
-            style={{ objectPosition: "center 20%" }}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
+          <AnimatePresence mode="popLayout">
+            <motion.img
+              key={`${plan.shareId}-${currentImgIndex}`}
+              src={plan.images[currentImgIndex]}
+              alt={plan.title}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8 }}
+              style={{ objectPosition: (plan.imagePositions && plan.imagePositions[currentImgIndex]) || plan.imagePosition || "center 30%" }}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+          </AnimatePresence>
 
           {/* Gradient only at bottom for text readability */}
           <div className="absolute inset-0"
