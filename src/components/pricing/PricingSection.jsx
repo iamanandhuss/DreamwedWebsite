@@ -578,7 +578,7 @@ const PricingSection = () => {
 
         {/* ── CONTENT PANEL ── */}
         <div
-          className="flex flex-col flex-1 px-4 pt-4 pb-4 gap-3"
+          className="flex flex-col flex-1 px-4 pt-4 pb-4 gap-3 text-[#191917]"
           style={{ background: "#F7F5F0" }}
         >
           {/* Feature pill chips — like mockup */}
@@ -895,7 +895,7 @@ const PricingSection = () => {
               </div>
 
               {/* Right Side Detail */}
-              <div className="p-6 sm:p-10 flex flex-col justify-between gap-5 md:h-[650px] md:overflow-hidden overflow-visible h-auto" style={{ background: "#F7F5F0" }}>
+              <div className="p-6 sm:p-10 flex flex-col justify-between gap-5 md:h-[650px] md:overflow-hidden overflow-visible h-auto text-[#191917]" style={{ background: "#F7F5F0" }}>
                 <div className="space-y-2 select-none">
                   <span className="inline-flex items-center gap-1 bg-[#191917]/5 text-[#854d0e] border border-[#854d0e]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">
                     {activePlan.modalTag || "Premium"} Collection
@@ -1080,7 +1080,7 @@ const PricingSection = () => {
                         const isFree = item.toLowerCase().includes("free") || item.toLowerCase().includes("pre-wedding");
                         return (
                           <div key={index} className={`flex items-start gap-3 text-xs leading-relaxed ${
-                            isFree ? "font-semibold text-[#854d0e]" : "text-zinc-650 font-light"
+                            isFree ? "font-semibold text-[#854d0e]" : "text-zinc-600 font-light"
                           }`}>
                             <span className={`w-4.5 h-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
                               isFree ? "bg-[#d1a852]/20 text-[#854d0e] animate-pulse" : "bg-zinc-100 text-zinc-500 border border-zinc-200/60"
