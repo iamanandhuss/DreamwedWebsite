@@ -365,9 +365,20 @@ const PricingSection = () => {
     if (!offerStr) return "";
     const upper = offerStr.toUpperCase();
     if (upper.includes("PRE-WEDDING")) return "🎁 Free Pre-wedding";
-    if (upper.includes("CALENDAR") || upper.includes("FRAME")) return "🎁 Free Calendar & Frames";
-    if (upper.includes("ALBUM")) return "🎁 Free Album Access";
-    return "🎁 " + offerStr.split("(")[0].trim();
+    if (upper.includes("TABLETOP CALENDAR") || upper.includes("PHOTO CALENDAR") || upper.includes("WALL FRAME")) {
+      return "🎁 Free Calendar & Frames";
+    }
+    if (upper.includes("DESKTOP CALENDAR")) return "🎁 Free Calendar";
+    if (upper.includes("COMPLIMENTARY WALL FRAME")) return "🎁 Free Wall Frame";
+    if (upper.includes("DRONE AERIAL")) return "🎁 Free Drone & 100pg Album";
+    if (upper.includes("FREE DRONE + PREMIUM")) return "🎁 Free Drone & Album Box";
+    if (upper.includes("DIGITAL ALBUM ACCESS")) return "🎁 Free Album Access";
+    if (upper.includes("DIGITAL ACCESS")) return "🎁 Free Digital Access";
+    if (upper.includes("HALDI TEASER")) return "🎁 Free Teaser Reel";
+    
+    // Fallback titlecase formatting
+    const raw = offerStr.split("(")[0].trim().replace(/^FREE\s+/i, "");
+    return "🎁 Free " + raw.toLowerCase().replace(/(^\w|\s\w)/g, m => m.toUpperCase());
   };
 
   const [activePlan, setActivePlan] = useState(null);
@@ -375,6 +386,7 @@ const PricingSection = () => {
   const [likedPlans, setLikedPlans] = useState({});
   const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 14, seconds: 56 });
   const [cardSlideIndexes, setCardSlideIndexes] = useState({});
+  const [copiedPlanId, setCopiedPlanId] = useState(null);
 
   useEffect(() => {
     const allPlans = [...weddingPlans, ...weddingStandalonePlans, ...engagementPlans, ...haldiPlans];
@@ -434,7 +446,7 @@ const PricingSection = () => {
 
   const handleShare = (e, plan) => {
     e.stopPropagation();
-    const shareUrl = `${window.location.origin}/${plan.shareId}.html`;
+    const shareUrl = `${window.location.origin}/packages?pkg=${plan.shareId}`;
     const featuresList = plan.features ? plan.features.slice(0, 5).map(f => `• ${f}`).join('\n') : "";
     const message = `📸 *DREAMWED STORIES — Premium Package* \n\n` +
                     `📦 *${plan.title}* (${plan.subtitle || ''})\n` +
@@ -448,6 +460,15 @@ const PricingSection = () => {
                     
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
+  };
+
+  const copyShareLink = (e, plan) => {
+    e.stopPropagation();
+    const shareUrl = `${window.location.origin}/packages?pkg=${plan.shareId}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopiedPlanId(plan.shareId);
+      setTimeout(() => setCopiedPlanId(null), 2000);
+    });
   };
 
   useEffect(() => {
@@ -623,13 +644,22 @@ const PricingSection = () => {
             Book Now
           </Link>
 
-          {/* Share — subtle text below */}
-          <button
-            onClick={(e) => { e.stopPropagation(); handleShare(e, plan); }}
-            className="text-[#655440] text-[9px] font-semibold text-center w-full py-0.5 transition-all hover:text-[#b45309] cursor-pointer"
-          >
-            📲 Share with Partner
-          </button>
+          {/* Share options row — WhatsApp and Copy Link */}
+          <div className="flex items-center justify-between text-[9.5px] font-bold mt-1 px-1.5 select-none">
+            <button
+              onClick={(e) => { e.stopPropagation(); handleShare(e, plan); }}
+              className="text-[#655440] hover:text-[#b45309] transition-all cursor-pointer flex items-center gap-1"
+            >
+              📲 WhatsApp
+            </button>
+            <span className="text-[#d5c5b5] text-[10px]">·</span>
+            <button
+              onClick={(e) => copyShareLink(e, plan)}
+              className="text-[#655440] hover:text-[#b45309] transition-all cursor-pointer flex items-center gap-1"
+            >
+              🔗 {copiedPlanId === plan.shareId ? "Copied!" : "Copy Link"}
+            </button>
+          </div>
         </div>
       </motion.div>
     );
