@@ -838,7 +838,7 @@ const PricingSection = () => {
             >
               <button
                 onClick={() => setActivePlan(null)}
-                className="absolute top-4 right-4 sm:top-6 sm:right-6 w-11 h-11 rounded-full bg-black/65 hover:bg-black/85 border border-white/10 flex items-center justify-center text-white shadow-2xl transition-all hover:rotate-90 hover:scale-105 duration-300 z-50 cursor-pointer"
+                className="absolute top-4 right-4 sm:top-6 sm:right-6 w-11 h-11 rounded-full bg-[#191917] hover:bg-black border border-black/10 flex items-center justify-center text-white shadow-xl transition-all hover:rotate-90 hover:scale-105 duration-300 z-50 cursor-pointer"
                 title="Close popup"
               >
                 <X size={22} strokeWidth={2.5} />
@@ -895,38 +895,38 @@ const PricingSection = () => {
               </div>
 
               {/* Right Side Detail */}
-              <div className="p-6 sm:p-10 flex flex-col justify-between gap-5 md:h-[650px] md:overflow-hidden overflow-visible h-auto">
+              <div className="p-6 sm:p-10 flex flex-col justify-between gap-5 md:h-[650px] md:overflow-hidden overflow-visible h-auto" style={{ background: "#F7F5F0" }}>
                 <div className="space-y-2 select-none">
-                  <span className="inline-flex items-center gap-1 bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">
+                  <span className="inline-flex items-center gap-1 bg-[#191917]/5 text-[#854d0e] border border-[#854d0e]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">
                     {activePlan.modalTag || "Premium"} Collection
                   </span>
-                  <h3 className="text-2xl sm:text-3xl text-white font-semibold tracking-tight font-serif">
+                  <h3 className="text-2xl sm:text-3xl text-[#191917] font-semibold tracking-tight font-serif">
                     {activePlan.title.toLowerCase().includes("package") ? activePlan.title : `${activePlan.title} Package`}
                   </h3>
                   {/* Dynamic Double Pricing & Countdown Timer Block */}
-                  <div className="flex flex-col gap-2 bg-[#9b1c1c]/5 border border-[#9b1c1c]/15 p-4.5 rounded-2xl select-none text-left">
+                  <div className="flex flex-col gap-2 bg-[#dc2626]/5 border border-[#dc2626]/15 p-4.5 rounded-2xl select-none text-left">
                     <div className="flex items-baseline gap-3 flex-wrap">
-                      <span className="text-red-500 text-3xl font-extrabold tracking-tight select-none">
+                      <span className="text-[#dc2626] text-3xl font-extrabold tracking-tight select-none">
                         Offer Price: {activePlan.price}/-
                       </span>
-                      <span className="text-zinc-500 text-sm line-through decoration-zinc-650 select-none">
+                      <span className="text-zinc-500 text-sm line-through decoration-zinc-550 select-none">
                         Regular: {getRegularPrice(activePlan.price)}/-
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-zinc-300 font-mono text-[11px] border-t border-white/5 pt-2.5 mt-0.5">
-                      <span className="text-red-500 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
+                    <div className="flex items-center gap-2 text-zinc-700 font-mono text-[11px] border-t border-black/5 pt-2.5 mt-0.5">
+                      <span className="text-[#dc2626] flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-650 animate-ping shrink-0" />
                         ⏳ OFFER CLOSING IN:
                       </span>
-                      <span className="text-[#d1a852] bg-white/5 border border-white/10 px-2 py-0.5 rounded font-bold">
+                      <span className="text-[#854d0e] bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded font-bold">
                         {String(timeLeft.hours).padStart(2, '0')}h
                       </span>
                       <span>:</span>
-                      <span className="text-[#d1a852] bg-white/5 border border-white/10 px-2 py-0.5 rounded font-bold">
+                      <span className="text-[#854d0e] bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded font-bold">
                         {String(timeLeft.minutes).padStart(2, '0')}m
                       </span>
                       <span>:</span>
-                      <span className="text-[#d1a852] bg-white/5 border border-white/10 px-2 py-0.5 rounded font-bold animate-pulse">
+                      <span className="text-[#854d0e] bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded font-bold animate-pulse">
                         {String(timeLeft.seconds).padStart(2, '0')}s
                       </span>
                     </div>
@@ -936,7 +936,7 @@ const PricingSection = () => {
                     <motion.div
                       animate={{ y: [0, 6, 0] }}
                       transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                      className="text-[#b4975a] flex flex-col items-center gap-1"
+                      className="text-[#854d0e] flex flex-col items-center gap-1"
                     >
                       <span className="text-[9px] font-semibold tracking-[0.25em] uppercase opacity-75">Scroll</span>
                       <svg className="w-5 h-5 stroke-[3.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -947,40 +947,40 @@ const PricingSection = () => {
                 </div>
 
                 <div className="flex-grow md:overflow-y-auto pr-2 space-y-5 md:scrollbar-thin relative min-h-0 overflow-visible h-auto">
-                  <p className="text-zinc-400 font-light text-xs leading-relaxed select-none">
+                  <p className="text-zinc-600 font-light text-xs leading-relaxed select-none">
                     {activePlan.desc}
                   </p>
 
                   {/* Why Book This Package Highlights */}
-                  <div className="border border-red-500/20 bg-red-500/5 p-4 rounded-2xl space-y-3 select-none text-left">
-                    <span className="block text-red-500 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles size={11} className="animate-pulse text-red-500" />
+                  <div className="border border-red-600/15 bg-red-600/5 p-4 rounded-2xl space-y-3 select-none text-left">
+                    <span className="block text-red-700 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles size={11} className="animate-pulse text-red-600" />
                       Why Book This Package?
                     </span>
                     <div className="space-y-2.5 text-xs">
                       <div className="flex gap-2.5 items-start">
-                        <span className="text-red-500 mt-0.5 shrink-0">📁</span>
+                        <span className="text-red-600 mt-0.5 shrink-0">📁</span>
                         <div>
-                          <strong className="text-zinc-100 block">Full Photos in Google Drive</strong>
-                          <span className="text-zinc-400 font-light text-[11px] block mt-0.5">
+                          <strong className="text-[#191917] block">Full Photos in Google Drive</strong>
+                          <span className="text-zinc-600 font-light text-[11px] block mt-0.5">
                             Get 100% original, uncompressed high-resolution digital files instantly shared via Google Drive for lifetime backup.
                           </span>
                         </div>
                       </div>
                       <div className="flex gap-2.5 items-start">
-                        <span className="text-red-500 mt-0.5 shrink-0">🌐</span>
+                        <span className="text-red-600 mt-0.5 shrink-0">🌐</span>
                         <div>
-                          <strong className="text-zinc-100 block">Personal Couples Website Support</strong>
-                          <span className="text-zinc-400 font-light text-[11px] block mt-0.5">
+                          <strong className="text-[#191917] block">Personal Couples Website Support</strong>
+                          <span className="text-zinc-600 font-light text-[11px] block mt-0.5">
                             Receive a stunning, private online interactive gallery website to view, select, and share your photos with family.
                           </span>
                         </div>
                       </div>
                       <div className="flex gap-2.5 items-start">
-                        <span className="text-red-500 mt-0.5 shrink-0">💬</span>
+                        <span className="text-red-600 mt-0.5 shrink-0">💬</span>
                         <div>
-                          <strong className="text-zinc-100 block">Direct WhatsApp Previews & Live Support</strong>
-                          <span className="text-zinc-400 font-light text-[11px] block mt-0.5">
+                          <strong className="text-[#191917] block">Direct WhatsApp Previews & Live Support</strong>
+                          <span className="text-zinc-600 font-light text-[11px] block mt-0.5">
                             Optimized mobile previews and direct WhatsApp integration for sharing reels and highlights on the go.
                           </span>
                         </div>
@@ -990,45 +990,45 @@ const PricingSection = () => {
 
                   {/* Standalone Value Breakdown */}
                   {activePlan.shareId.startsWith("pkgWedding") && !activePlan.shareId.includes("Standalone") && (
-                    <div className="bg-white/5 border border-white/10 p-4 rounded-2xl space-y-2.5 select-none">
-                      <span className="block text-[#d1a852] text-[9.5px] font-bold uppercase tracking-wider">
+                    <div className="bg-white border border-zinc-200/80 p-4 rounded-2xl space-y-2.5 select-none shadow-sm">
+                      <span className="block text-[#854d0e] text-[9.5px] font-bold uppercase tracking-wider">
                         💎 Combined Package Value Breakdown
                       </span>
-                      <div className="space-y-1.5 text-xs text-zinc-400 font-light">
+                      <div className="space-y-1.5 text-xs text-zinc-600 font-light">
                         <div className="flex justify-between">
                           <span>Standalone Wedding Day Coverage</span>
-                          <span className="font-semibold text-zinc-200">₹39,999</span>
+                          <span className="font-semibold text-zinc-800">₹39,999</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Standalone Reception Day Coverage</span>
-                          <span className="font-semibold text-zinc-200">₹19,999</span>
+                          <span className="font-semibold text-zinc-800">₹19,999</span>
                         </div>
-                        <div className="flex justify-between text-[#b8903b] font-medium">
+                        <div className="flex justify-between text-[#854d0e] font-medium">
                           <span>Complimentary Pre-Wedding Shoot</span>
                           <span className="font-semibold">
                             {activePlan.shareId === "pkgWeddingBasicCard" ? "Worth ₹12,000" : "Worth ₹15,000"}
                           </span>
                         </div>
                         {activePlan.shareId === "pkgCandidCard" && (
-                          <div className="flex justify-between text-zinc-400">
+                          <div className="flex justify-between text-zinc-600">
                             <span>Creative Candid Upgrade (3-Camera Setup)</span>
-                            <span className="font-semibold text-zinc-200">Worth ₹15,000</span>
+                            <span className="font-semibold text-zinc-800">Worth ₹15,000</span>
                           </div>
                         )}
                         {activePlan.shareId === "pkgLuxuryCard" && (
                           <>
-                            <div className="flex justify-between text-zinc-400">
+                            <div className="flex justify-between text-zinc-600">
                               <span>Dual-Side 4-Camera Upgrade & Drone</span>
-                              <span className="font-semibold text-zinc-200">Worth ₹35,000</span>
+                              <span className="font-semibold text-zinc-800">Worth ₹35,000</span>
                             </div>
-                            <div className="flex justify-between text-zinc-400">
+                            <div className="flex justify-between text-zinc-600">
                               <span>Custom Handcrafted Album Box & Extras</span>
-                              <span className="font-semibold text-zinc-200">Worth ₹15,000</span>
+                              <span className="font-semibold text-zinc-800">Worth ₹15,000</span>
                             </div>
                           </>
                         )}
-                        <div className="h-px bg-white/10 my-1" />
-                        <div className="flex justify-between text-zinc-200 font-medium">
+                        <div className="h-px bg-zinc-200 my-1" />
+                        <div className="flex justify-between text-zinc-800 font-medium">
                           <span>Total Standalone Value</span>
                           <span className="font-bold">
                             {activePlan.shareId === "pkgWeddingBasicCard" ? "₹71,998" :
@@ -1036,12 +1036,12 @@ const PricingSection = () => {
                              activePlan.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,24,998"}
                           </span>
                         </div>
-                        <div className="flex justify-between text-[#d1a852] font-semibold text-[11px] pt-1">
+                        <div className="flex justify-between text-[#854d0e] font-semibold text-[11px] pt-1">
                           <span>Special Combined Deal Price</span>
                           <span className="font-bold font-mono">{activePlan.price}/-</span>
                         </div>
                       </div>
-                      <div className="bg-[#d1a852]/10 border border-[#d1a852]/20 px-3 py-1.5 rounded-xl text-center text-[10px] text-[#d1a852] font-black uppercase tracking-wider">
+                      <div className="bg-[#d1a852]/15 border border-[#d1a852]/25 px-3 py-1.5 rounded-xl text-center text-[10px] text-[#854d0e] font-black uppercase tracking-wider">
                         🎉 INSTANT SAVINGS OF {
                           activePlan.shareId === "pkgWeddingBasicCard" ? "₹31,999 (44% OFF)" :
                           activePlan.shareId === "pkgWeddingPreCard" ? "₹19,999 (27% OFF)" :
@@ -1053,26 +1053,26 @@ const PricingSection = () => {
                   )}
 
                   {activePlan.preweddingOffer && (
-                    <div className="bg-red-500/10 border-2 border-red-500/40 p-4 rounded-2xl flex items-start gap-3 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.15)]">
-                      <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 shrink-0">
+                    <div className="bg-red-600/5 border-2 border-red-600/25 p-4 rounded-2xl flex items-start gap-3 animate-pulse shadow-sm">
+                      <div className="w-8 h-8 rounded-full bg-red-600/10 flex items-center justify-center text-red-600 shrink-0">
                         <Gift size={16} />
                       </div>
                       <div>
-                        <span className="block text-red-500 text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+                        <span className="block text-red-700 text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />
                           Special Promo Highlight
                         </span>
-                        <span className="text-zinc-200 text-xs font-bold leading-snug block mt-0.5">
+                        <span className="text-zinc-800 text-xs font-bold leading-snug block mt-0.5">
                           {activePlan.preweddingOffer}
                         </span>
                       </div>
                     </div>
                   )}
 
-                  <div className="w-full h-px bg-white/5" />
+                  <div className="w-full h-px bg-zinc-200/80" />
 
                   <div className="space-y-3.5 relative">
-                    <span className="text-[10px] text-zinc-100 tracking-wider uppercase font-bold block select-none">
+                    <span className="text-[10px] text-zinc-700 tracking-wider uppercase font-bold block select-none">
                       Complete Deliverables (Scroll for all {activePlan.features.length} items 👇):
                     </span>
                     <div className="space-y-3">
@@ -1080,10 +1080,10 @@ const PricingSection = () => {
                         const isFree = item.toLowerCase().includes("free") || item.toLowerCase().includes("pre-wedding");
                         return (
                           <div key={index} className={`flex items-start gap-3 text-xs leading-relaxed ${
-                            isFree ? "font-semibold text-[#b8903b]" : "text-zinc-400 font-light"
+                            isFree ? "font-semibold text-[#854d0e]" : "text-zinc-650 font-light"
                           }`}>
                             <span className={`w-4.5 h-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                              isFree ? "bg-[#d1a852]/25 text-[#b8903b] shadow-[0_0_8px_rgba(209,168,82,0.2)] animate-pulse" : "bg-white/5 text-zinc-400"
+                              isFree ? "bg-[#d1a852]/20 text-[#854d0e] animate-pulse" : "bg-zinc-100 text-zinc-500 border border-zinc-200/60"
                             }`}>
                               {isFree ? (
                                 <Sparkles size={10} strokeWidth={3} />
@@ -1101,22 +1101,22 @@ const PricingSection = () => {
                   <div className="h-4" />
                 </div>
 
-                <div className="w-full h-px bg-white/5 select-none" />
+                <div className="w-full h-px bg-zinc-200/80 select-none" />
 
                 <div className="space-y-3">
                   {/* Scroll Price Reminder */}
-                  <div className="bg-[#9b1c1c]/10 border border-[#9b1c1c]/20 px-4 py-3 rounded-xl flex items-center justify-between text-xs select-none">
+                  <div className="bg-[#dc2626]/5 border border-[#dc2626]/15 px-4 py-3 rounded-xl flex items-center justify-between text-xs select-none">
                     <div className="space-y-0.5 text-left">
-                      <span className="text-zinc-400 block text-[9px] uppercase font-bold tracking-wider">YOUR EXCLUSIVE PRICE</span>
-                      <span className="text-zinc-550 text-[10px] line-through font-mono block leading-none">
+                      <span className="text-zinc-500 block text-[9px] uppercase font-bold tracking-wider">YOUR EXCLUSIVE PRICE</span>
+                      <span className="text-zinc-500 text-[10px] line-through font-mono block leading-none">
                         Reg: {getRegularPrice(activePlan.price)}/-
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="text-red-500 font-black font-mono text-xl block leading-none">
+                      <span className="text-[#dc2626] font-black font-mono text-xl block leading-none">
                         {activePlan.price}/-
                       </span>
-                      <span className="text-emerald-400 text-[9.5px] font-bold block mt-0.5 uppercase tracking-wider">
+                      <span className="text-[#16a34a] text-[9.5px] font-bold block mt-0.5 uppercase tracking-wider">
                         Special Promo Rate
                       </span>
                     </div>
@@ -1127,12 +1127,13 @@ const PricingSection = () => {
                     variant="primary"
                     className="w-full py-4 rounded-2xl text-center text-xs uppercase tracking-widest font-bold select-none"
                     onClick={() => setActivePlan(null)}
+                    style={{ background: "#191917", color: "#ffffff" }}
                   >
                     Book Now 🌟
                   </Button>
                   <button
                     onClick={(e) => handleShare(e, activePlan)}
-                    className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_4px_12px_rgba(16,185,129,0.25)] select-none"
+                    className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md select-none"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-white">
                       <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.504-5.719-1.465zm9.882-2.51c1.56.929 3.085 1.454 4.553 1.456 4.887 0 8.862-3.973 8.865-8.87.001-2.373-.921-4.604-2.597-6.282s-3.91-2.597-6.285-2.599c-4.895 0-8.868 3.977-8.871 8.874-.001 1.666.449 3.29 1.306 4.7l-.993 3.626zm12.39-7.235c-.26-.13-1.53-.755-1.77-.84-.23-.085-.4-.13-.57.13-.17.26-.65.82-.8 1-.15.17-.3.19-.56.06-.26-.13-1.1-.4-2.1-1.3-.77-.69-1.3-1.54-1.45-1.8-.15-.26-.016-.4.115-.53.12-.12.26-.3.39-.45.13-.15.17-.26.26-.43.09-.17.04-.3-.02-.43-.06-.13-.57-1.37-.78-1.88-.2-.5-.41-.43-.57-.44-.15-.008-.32-.01-.5-.01-.17 0-.46.06-.7.33-.24.27-.92.9-1.09 1.1-.17.2-.32.41-.53.5-.21.09-1.12.37-1.92-1.07-.63-.56-1.05-1.25-1.17-1.46-.12-.21-.01-.33.12-.46.12-.11.26-.26.39-.39.13-.13.17-.22.26-.36.09-.15.04-.28-.02-.41-.06-.13-.57-1.37-.78-1.88-.21-.51-.43-.43-.58-.44-.15-.01-.32-.01-.5-.01s-.46.07-.7.33c-.24.26-.92.9-1.09 1.1-.17.2-.32.41-.53.5-.21.09-1.12.37-1.92-1.07zm-1.8 1.48c.18-.09.38-.19.59-.29-.2-.31-.4-.63-.59-.95-.19-.32-.37-.64-.54-.97a6.22 6.22 0 0 1-.41-.85c-.07-.18-.1-.36-.08-.54.02-.18.1-.36.22-.47c.5-.53 1.01-1.07 1.5-1.6c.49-.53.97-1.07 1.44-1.61.16-.18.31-.37.45-.56.12-.16.2-.33.22-.52c.02-.19-.04-.38-.17-.53c-.33-.37-.67-.74-1.01-1.11a24.32 24.32 0 0 0-2.31-2.42c-.15-.14-.33-.23-.53-.25c-.2-.02-.4.04-.55.17a32.96 32.96 0 0 0-3.32 3.19c-.19.2-.34.42-.45.66c-.11.24-.16.5-.16.76c.01.26.07.51.19.74c.24.47.53.92.85 1.36c.64.88 1.41 1.68 2.27 2.37c.86.69 1.83 1.25 2.87 1.66c.52.2 1.06.36 1.62.46c.28.05.57.06.85.04c.28-.02.55-.1.79-.24z"/>
