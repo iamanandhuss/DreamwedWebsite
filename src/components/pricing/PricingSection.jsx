@@ -361,6 +361,15 @@ const PricingSection = () => {
     return `₹${calculated.toLocaleString("en-IN")}`;
   };
 
+  const getOfferTag = (offerStr) => {
+    if (!offerStr) return "";
+    const upper = offerStr.toUpperCase();
+    if (upper.includes("PRE-WEDDING")) return "🎁 Free Pre-wedding";
+    if (upper.includes("CALENDAR") || upper.includes("FRAME")) return "🎁 Free Calendar & Frames";
+    if (upper.includes("ALBUM")) return "🎁 Free Album Access";
+    return "🎁 " + offerStr.split("(")[0].trim();
+  };
+
   const [activePlan, setActivePlan] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [likedPlans, setLikedPlans] = useState({});
@@ -549,32 +558,32 @@ const PricingSection = () => {
         {/* ── CONTENT PANEL ── */}
         <div
           className="flex flex-col flex-1 px-4 pt-4 pb-4 gap-3"
-          style={{ background: "#191917" }}
+          style={{ background: "#F7F5F0" }}
         >
           {/* Feature pill chips — like mockup */}
           {chipFeatures.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {/* First chip with star rating feel */}
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[8.5px] font-semibold"
-                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", color: "#e0d0b8" }}>
+                style={{ background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.08)", color: "#854d0e" }}>
                 ⭐ {plan.subtitle || "Top Rated"}
               </span>
               {plan.preweddingOffer && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[8.5px] font-semibold"
-                  style={{ background: "rgba(209,168,82,0.12)", border: "1px solid rgba(209,168,82,0.28)", color: "#d4a84a" }}>
-                  🎁 Free Pre-wedding
+                  style={{ background: "rgba(209,168,82,0.15)", border: "1px solid rgba(209,168,82,0.35)", color: "#b45309" }}>
+                  {getOfferTag(plan.preweddingOffer)}
                 </span>
               )}
               {chipFeatures.map((f, i) => (
                 <span key={i}
                   className="inline-flex items-center px-2.5 py-1 rounded-full text-[8.5px] font-medium"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.11)", color: "#b8a890" }}>
+                  style={{ background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.06)", color: "#4a4a4a" }}>
                   {f.split("(")[0].trim()}
                 </span>
               ))}
               {extraCount > 0 && (
                 <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[8.5px] font-bold"
-                  style={{ background: "rgba(209,168,82,0.08)", border: "1px solid rgba(209,168,82,0.22)", color: "#d1a852" }}>
+                  style={{ background: "rgba(209,168,82,0.1)", border: "1px solid rgba(209,168,82,0.25)", color: "#854d0e" }}>
                   +{extraCount} more
                 </span>
               )}
@@ -582,8 +591,8 @@ const PricingSection = () => {
           )}
 
           {/* Description paragraph */}
-          <p className="text-[#9a8a78] text-[10px] font-light leading-relaxed">
-            <span className="text-[#c8b898] font-semibold">Package Details: </span>
+          <p className="text-[#555555] text-[10px] font-light leading-relaxed">
+            <span className="text-[#1c1917] font-semibold">Package Details: </span>
             {allFeatures.slice(0, 3).map(f => f.split("(")[0].trim()).join(" · ")}
             {allFeatures.length > 3 ? ` · +${allFeatures.length - 3} more.` : "."}
           </p>
@@ -591,25 +600,25 @@ const PricingSection = () => {
           {/* Savings + countdown row */}
           <div className="flex items-center justify-between">
             {savePercent && savedAmount > 0 ? (
-              <span className="inline-flex items-center gap-1 text-emerald-400 text-[8px] font-bold px-2 py-0.5 rounded-full"
-                style={{ background: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.2)" }}>
+              <span className="inline-flex items-center gap-1 text-[#15803d] text-[8px] font-bold px-2 py-0.5 rounded-full"
+                style={{ background: "rgba(21,128,61,0.08)", border: "1px solid rgba(21,128,61,0.2)" }}>
                 💚 Save ₹{savedAmount.toLocaleString("en-IN")} ({savePercent} OFF)
               </span>
             ) : <span />}
             <div className="flex items-center gap-1 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
-              <span className="text-red-400 font-mono text-[9px] font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping shrink-0" />
+              <span className="text-red-600 font-mono text-[9px] font-bold">
                 {String(timeLeft.hours).padStart(2,"0")}:{String(timeLeft.minutes).padStart(2,"0")}:{String(timeLeft.seconds).padStart(2,"0")}
               </span>
             </div>
           </div>
 
-          {/* WHITE Book Now button — exactly like mockup */}
+          {/* DARK Book Now button — high contrast against white card */}
           <Link
             to={`/booking?package=${encodeURIComponent(plan.title)}&price=${encodeURIComponent(plan.price?.replace(/[^\d]/g,"") || "")}`}
             onClick={(e) => e.stopPropagation()}
-            className="w-full py-3.5 rounded-2xl font-bold text-[14px] tracking-wide text-center transition-all duration-300 active:scale-[0.97] hover:bg-[#f0ece4] block"
-            style={{ background: "#ffffff", color: "#111111" }}
+            className="w-full py-3.5 rounded-2xl font-bold text-[14px] tracking-wide text-center transition-all duration-300 active:scale-[0.97] hover:bg-[#2e2e2b] block shadow-lg hover:shadow-xl"
+            style={{ background: "#191917", color: "#ffffff" }}
           >
             Book Now
           </Link>
@@ -617,7 +626,7 @@ const PricingSection = () => {
           {/* Share — subtle text below */}
           <button
             onClick={(e) => { e.stopPropagation(); handleShare(e, plan); }}
-            className="text-[#6a5a4a] text-[9px] font-medium text-center w-full py-0.5 transition-all hover:text-[#d1a852] cursor-pointer"
+            className="text-[#655440] text-[9px] font-semibold text-center w-full py-0.5 transition-all hover:text-[#b45309] cursor-pointer"
           >
             📲 Share with Partner
           </button>
