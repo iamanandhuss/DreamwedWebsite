@@ -96,6 +96,35 @@ const weddingPlans = [
       "Edited Photos & High-speed Pendrive"
     ]
   },
+  
+  {
+    shareId: "pkgPremiumCandidCard",
+    title: "Premium Candid Package",
+    price: "₹79,999",
+    tag: "Single-Side Wedding + Pre-Wedding + Drone",
+    modalTag: "Premium Wedding",
+    subtitle: "COMPLETE SINGLE-SIDE & DRONE",
+    preweddingOffer: "FREE DRONE AERIAL COVERAGE + 100 PAGES ALBUM",
+    desc: "Our comprehensive single-side coverage package. Designed for couples seeking complete pre-wedding story, wedding day, and reception coverage with aerial drone views and a premium handcrafted 100-page album.",
+    setup: "Candid & Traditional Team + Drone + Pre-Wedding",
+    images: ["/couple_traditional_red.jpg", "/deepak.jpg", "/anandha_lekshmi.jpg"],
+    isSpecial: true,
+    features: [
+      "Pre-Wedding Photography & Videography (Save the Date)",
+      "Wedding Day Candid & Traditional Photography",
+      "Wedding Day Candid & Traditional Videography",
+      "Grand Reception Candid & Traditional Coverage",
+      "Helicam (Drone) Aerial Coverage",
+      "One 100-Pages Premium layflat Album",
+      "Highlights Video Film",
+      "Full HD Wedding Video Film",
+      "Engagement & Wedding Reels",
+      "1 Customized Photo Calendar",
+      "1 High-Speed USB Pen Drive",
+      "2 Premium Wall Frames",
+      "Edited Photos & High-speed Pendrive"
+    ]
+  },
   {
     shareId: "pkgLuxuryCard",
     title: "Bride & Groom Luxury Package",
@@ -206,36 +235,7 @@ const engagementPlans = [
       "2 Premium Photo Frames",
       "1 USB Pen Drive"
     ]
-  },
-  {
-    shareId: "pkgPremiumCandidCard",
-    title: "Premium Candid Package",
-    price: "₹79,999",
-    tag: "Single-Side Wedding + Pre-Wedding + Drone",
-    modalTag: "Premium Wedding",
-    subtitle: "COMPLETE SINGLE-SIDE & DRONE",
-    preweddingOffer: "FREE DRONE AERIAL COVERAGE + 100 PAGES ALBUM",
-    desc: "Our comprehensive single-side coverage package. Designed for couples seeking complete pre-wedding story, wedding day, and reception coverage with aerial drone views and a premium handcrafted 100-page album.",
-    setup: "Candid & Traditional Team + Drone + Pre-Wedding",
-    images: ["/couple_traditional_red.jpg", "/deepak.jpg", "/anandha_lekshmi.jpg"],
-    isSpecial: true,
-    features: [
-      "Pre-Wedding Photography & Videography (Save the Date)",
-      "Wedding Day Candid & Traditional Photography",
-      "Wedding Day Candid & Traditional Videography",
-      "Grand Reception Candid & Traditional Coverage",
-      "Helicam (Drone) Aerial Coverage",
-      "One 100-Pages Premium layflat Album",
-      "Highlights Video Film",
-      "Full HD Wedding Video Film",
-      "Engagement & Wedding Reels",
-      "1 Customized Photo Calendar",
-      "1 High-Speed USB Pen Drive",
-      "2 Premium Wall Frames",
-      "Edited Photos & High-speed Pendrive"
-    ]
-  }
-];
+  },];
 
 const haldiPlans = [
   {
@@ -728,7 +728,7 @@ const PricingSection = () => {
             </div>
             
             {/* Wedding Premium Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto items-stretch">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-7xl mx-auto items-stretch">
               {weddingPlans.map((plan) => renderCard(plan, true))}
             </div>
 
@@ -750,7 +750,7 @@ const PricingSection = () => {
               <h3 className="text-3xl sm:text-4xl text-white font-normal font-serif italic">Engagement Collections</h3>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto items-stretch">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch">
               {engagementPlans.map((plan) => renderCard(plan))}
             </div>
           </div>
