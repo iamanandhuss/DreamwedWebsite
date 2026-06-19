@@ -75,7 +75,8 @@ const weddingPlans = [
     preweddingOffer: "FREE PHOTO CALENDAR + 1 WALL FRAME",
     desc: "Our creative 3-camera setup featuring dedicated candid photography. Ideal for couples who want artistic, natural, and unstaged storytelling of their special day.",
     setup: "1 Photographer + 1 Candid Photographer + 1 Videographer",
-    images: ["/uploaded_bride_traditional.jpg", "/uploaded_bride_gold.jpg", "/chindu.jpg"],
+    images: ["/candid_69k_1.jpg", "/candid_69k_2.jpg", "/candid_69k_3.jpg", "/candid_69k_4.jpg", "/candid_69k_5.jpg"],
+    imagePositions: ["center 30%", "center 22%", "center 25%", "center 25%", "center 30%"],
     features: [
       "Pre-Wedding Photo + Video (Save The Date)",
       "Wedding Reception Photography",
