@@ -44,7 +44,8 @@ const weddingPlans = [
     preweddingOffer: "FREE PRE-WEDDING PHOTO & VIDEO (WORTH ₹15,000)",
     desc: "Perfect for capturing your beautiful pre-wedding love story and the complete wedding day celebrations. Includes comprehensive coverage and professional deliverables.",
     setup: "1 Photographer + 1 Videographer",
-    images: ["/couple_fun_glasses.jpg", "/uploaded_couple_blackwhite.jpg", "/kochi_couple_carry.jpg"],
+    images: ["/prewedding_54k_1.jpg", "/prewedding_54k_2.jpg", "/prewedding_54k_3.jpg", "/prewedding_54k_4.jpg"],
+    imagePositions: ["center 30%", "center 22%", "center 32%", "center 32%"],
     features: [
       "Pre-Wedding Photo + Video (Save The Date)",
       "Wedding Reception Photography",
@@ -867,7 +868,7 @@ const PricingSection = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="absolute inset-0 w-full h-full object-cover z-10" style={{ objectPosition: "center 30%" }}
+                    className="absolute inset-0 w-full h-full object-cover z-10" style={{ objectPosition: (activePlan.imagePositions && activePlan.imagePositions[currentSlide % activePlan.images.length]) || activePlan.imagePosition || "center 30%" }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none z-20" />
                 </div>
