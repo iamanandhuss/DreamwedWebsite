@@ -2266,7 +2266,7 @@ const TrivandrumOffer = () => {
                           <div>
                             <strong className="text-zinc-900 block">Full Photos in Google Drive</strong>
                             <span className="text-zinc-650 font-light text-[11px] block mt-0.5">
-                              Get 100% original, uncompressed high-resolution digital files instantly shared via Google Drive for lifetime backup.
+                              Get 100% original, uncompressed high-resolution digital files instantly shared via Google Drive with 1-year backup support.
                             </span>
                           </div>
                         </div>
