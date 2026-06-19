@@ -117,7 +117,8 @@ const TrivandrumOffer = () => {
       offerPrice: "39,999",
       bonus: "LIMITED TIME OFFER",
       bonusDesc: "Save ₹20,001! Essential single-side coverage at an unbeatable price.",
-      images: ["/uploaded_bride_yellow.jpg", "/athulraj.jpg", "/anandha_lekshmi.jpg"],
+      images: ["/uploaded_bride_39k_1.jpg", "/uploaded_bride_39k_2.jpg", "/uploaded_bride_39k_3.jpg", "/uploaded_bride_39k_4.jpg"],
+      imagePositions: ["center 30%", "center 35%", "center 28%", "center 28%"],
       details: [
         "Wedding Reception Photography",
         "Wedding Reception Videography",
@@ -145,7 +146,8 @@ const TrivandrumOffer = () => {
       offerPrice: "54,999",
       bonus: "LIMITED TIME OFFER",
       bonusDesc: "Save ₹20,001! Includes both Pre-wedding session and Wedding day coverage.",
-      images: ["/couple_fun_glasses.jpg", pic1, pic2],
+      images: ["/prewedding_54k_1.jpg", "/prewedding_54k_2.jpg", "/prewedding_54k_3.jpg", "/prewedding_54k_4.jpg"],
+      imagePositions: ["center 30%", "center 22%", "center 32%", "center 32%"],
       details: [
         "Pre-Wedding Photo + Video (Save The Date)",
         "Wedding Reception Photography",
@@ -175,7 +177,8 @@ const TrivandrumOffer = () => {
       offerPrice: "69,999",
       bonus: "LIMITED TIME OFFER",
       bonusDesc: "Save ₹5,001! Professional Candid coverage for artistic wedding stories.",
-      images: ["/uploaded_bride_traditional.jpg", "/uploaded_bride_gold.jpg", pic3],
+      images: ["/candid_69k_1.jpg", "/candid_69k_2.jpg", "/candid_69k_3.jpg", "/candid_69k_4.jpg", "/candid_69k_5.jpg"],
+      imagePositions: ["center 30%", "center 22%", "center 25%", "center 25%", "center 30%"],
       details: [
         "Pre-Wedding Photo + Video (Save The Date)",
         "Wedding Reception Photography",
@@ -207,7 +210,8 @@ const TrivandrumOffer = () => {
       offerPrice: "1,10,000",
       bonus: "LIMITED TIME OFFER",
       bonusDesc: "Save ₹20,000! Ultimate luxury package with helicam, custom album boxes, and complete dual-side coverage.",
-      images: ["/bride_christian_white.jpg", pic1, pic2],
+      images: ["/luxury_110k_1.jpg", "/luxury_110k_2.jpg", "/luxury_110k_3.jpg", "/luxury_110k_4.jpg"],
+      imagePositions: ["center 70%", "center 28%", "center 28%", "center 28%"],
       details: [
         "Pre-Wedding Photography & Videography (Save the Date)",
         "Wedding & Reception Photography (Dual-side)",
@@ -670,6 +674,7 @@ const TrivandrumOffer = () => {
           <img
             src={pack.images[0]}
             alt={pack.title}
+            style={{ objectPosition: (pack.imagePositions && pack.imagePositions[0]) || pack.imagePosition || "center 30%" }}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-[0.16,1,0.3,1] group-hover:scale-105"
           />
           {/* Gradient fade into dark card bottom */}
@@ -2161,7 +2166,7 @@ const TrivandrumOffer = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.8 }}
-                      className="absolute inset-0 w-full h-full object-cover z-10" style={{ objectPosition: "center 30%" }}
+                      className="absolute inset-0 w-full h-full object-cover z-10" style={{ objectPosition: (pack.imagePositions && pack.imagePositions[currentSlide % imagesLength]) || pack.imagePosition || "center 30%" }}
                     />
                     {/* Subtle vignette shade overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none z-20" />
