@@ -144,7 +144,8 @@ const weddingPlans = [
     preweddingOffer: "FREE DRONE + PREMIUM CUSTOM ALBUM BOX",
     desc: "Our ultimate dual-side wedding collection. Features comprehensive coverage, drone photography, and physical custom boxes for your handcrafted albums.",
     setup: "2 Photographers + 2 Videographers + Drone + Custom Album Box",
-    images: ["/bride_christian_white.jpg", "/uploaded_couple_blackwhite.jpg", "/kochi_couple_carry.jpg"],
+    images: ["/luxury_110k_1.jpg", "/luxury_110k_2.jpg", "/luxury_110k_3.jpg", "/luxury_110k_4.jpg"],
+    imagePositions: ["center 70%", "center 28%", "center 28%", "center 28%"],
     features: [
       "Pre-Wedding Photography & Videography (Save the Date)",
       "Wedding & Reception Photography (Dual-side)",
