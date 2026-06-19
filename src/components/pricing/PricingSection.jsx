@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, X, Gift, Sparkles, Heart, Tag, Camera, Plane, Lock, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -519,7 +519,7 @@ const PricingSection = () => {
         className={`group relative rounded-[24px] overflow-hidden flex flex-col cursor-pointer select-none
           shadow-2xl hover:shadow-[0_30px_70px_rgba(0,0,0,0.6)]
           transition-all duration-500 hover:scale-[1.02]
-          ${isSpecial ? "border border-[#d1a852]/60" : "border border-white/[0.07]"}
+          ${isSpecial ? "border border-[#C8B28B]/60" : "border border-white/[0.07]"}
           ${isGridOfFour ? "w-full" : ""}`}
         style={{ background: "#191917", outline: "none", WebkitTapHighlightColor: "transparent" }}
       >
@@ -546,7 +546,7 @@ const PricingSection = () => {
 
           {/* Tag pill — top left */}
           {isSpecial ? (
-            <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-full text-[8px] font-extrabold tracking-widest uppercase bg-[#d1a852] text-black shadow-lg">
+            <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-full text-[8px] font-extrabold tracking-widest uppercase bg-[#C8B28B] text-black shadow-lg">
               ⭐ Best Deal
             </div>
           ) : plan.tag ? (
@@ -586,12 +586,12 @@ const PricingSection = () => {
             <div className="flex flex-wrap gap-1.5">
               {/* First chip with star rating feel */}
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[8.5px] font-semibold"
-                style={{ background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.08)", color: "#854d0e" }}>
+                style={{ background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.08)", color: "#A99268" }}>
                 ⭐ {plan.subtitle || "Top Rated"}
               </span>
               {plan.preweddingOffer && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[8.5px] font-semibold"
-                  style={{ background: "rgba(209,168,82,0.15)", border: "1px solid rgba(209,168,82,0.35)", color: "#b45309" }}>
+                  style={{ background: "rgba(169,146,104,0.15)", border: "1px solid rgba(169,146,104,0.35)", color: "#A99268" }}>
                   {getOfferTag(plan.preweddingOffer)}
                 </span>
               )}
@@ -604,7 +604,7 @@ const PricingSection = () => {
               ))}
               {extraCount > 0 && (
                 <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[8.5px] font-bold"
-                  style={{ background: "rgba(209,168,82,0.1)", border: "1px solid rgba(209,168,82,0.25)", color: "#854d0e" }}>
+                  style={{ background: "rgba(169,146,104,0.1)", border: "1px solid rgba(169,146,104,0.25)", color: "#A99268" }}>
                   +{extraCount} more
                 </span>
               )}
@@ -621,14 +621,14 @@ const PricingSection = () => {
           {/* Savings + countdown row */}
           <div className="flex items-center justify-between">
             {savePercent && savedAmount > 0 ? (
-              <span className="inline-flex items-center gap-1 text-[#15803d] text-[8px] font-bold px-2 py-0.5 rounded-full"
-                style={{ background: "rgba(21,128,61,0.08)", border: "1px solid rgba(21,128,61,0.2)" }}>
+              <span className="inline-flex items-center gap-1 text-[#2A5C43] text-[8px] font-bold px-2 py-0.5 rounded-full"
+                style={{ background: "rgba(42,92,67,0.08)", border: "1px solid rgba(42,92,67,0.2)" }}>
                 💚 Save ₹{savedAmount.toLocaleString("en-IN")} ({savePercent} OFF)
               </span>
             ) : <span />}
             <div className="flex items-center gap-1 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping shrink-0" />
-              <span className="text-red-600 font-mono text-[9px] font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#8B222C] animate-ping shrink-0" />
+              <span className="text-[#8B222C] font-mono text-[9px] font-bold">
                 {String(timeLeft.hours).padStart(2,"0")}:{String(timeLeft.minutes).padStart(2,"0")}:{String(timeLeft.seconds).padStart(2,"0")}
               </span>
             </div>
@@ -648,14 +648,14 @@ const PricingSection = () => {
           <div className="flex items-center justify-between text-[9.5px] font-bold mt-1 px-1.5 select-none">
             <button
               onClick={(e) => { e.stopPropagation(); handleShare(e, plan); }}
-              className="text-[#655440] hover:text-[#b45309] transition-all cursor-pointer flex items-center gap-1"
+              className="text-[#7A6C58] hover:text-[#A99268] transition-all cursor-pointer flex items-center gap-1"
             >
               📲 WhatsApp
             </button>
             <span className="text-[#d5c5b5] text-[10px]">·</span>
             <button
               onClick={(e) => copyShareLink(e, plan)}
-              className="text-[#655440] hover:text-[#b45309] transition-all cursor-pointer flex items-center gap-1"
+              className="text-[#7A6C58] hover:text-[#A99268] transition-all cursor-pointer flex items-center gap-1"
             >
               🔗 {copiedPlanId === plan.shareId ? "Copied!" : "Copy Link"}
             </button>
@@ -669,8 +669,8 @@ const PricingSection = () => {
 
   return (
     <section className="w-full bg-[#0a0a0c] text-white py-24 md:py-32 px-4 md:px-6 overflow-hidden relative">
-      <div className="absolute top-[-100px] left-1/4 w-[600px] h-[600px] bg-[#d1a852]/5 rounded-full blur-[150px] pointer-events-none select-none" />
-      <div className="absolute bottom-[200px] right-1/4 w-[600px] h-[600px] bg-[#b8903b]/3 rounded-full blur-[180px] pointer-events-none select-none" />
+      <div className="absolute top-[-100px] left-1/4 w-[600px] h-[600px] bg-[#C8B28B]/5 rounded-full blur-[150px] pointer-events-none select-none" />
+      <div className="absolute bottom-[200px] right-1/4 w-[600px] h-[600px] bg-[#A99268]/3 rounded-full blur-[180px] pointer-events-none select-none" />
 
       <div className="container relative z-10">
         
@@ -682,11 +682,11 @@ const PricingSection = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <span className="text-[#d1a852] text-[10px] md:text-[11px] tracking-[0.4em] uppercase font-extrabold block mb-4">
+            <span className="text-[#A99268] text-[10px] md:text-[11px] tracking-[0.4em] uppercase font-extrabold block mb-4">
               Timeless Stories
             </span>
             <h2 className="text-[40px] sm:text-[52px] md:text-[68px] leading-[1.05] tracking-[-0.03em] font-serif text-white font-light mb-6 text-balance">
-              Exclusive <span className="italic text-[#d1a852]">Dreamwed Collections</span>
+              Exclusive <span className="italic text-[#A99268]">Dreamwed Collections</span>
             </h2>
             <p className="text-[15px] md:text-[18px] leading-relaxed text-zinc-400 max-w-xl mx-auto font-light">
               Tailored for couples seeking unmatched cinematic artistry. Every package delivers physical heirlooms and full-spectrum digital storytelling.
@@ -723,7 +723,7 @@ const PricingSection = () => {
           {/* SECTION 1: WEDDING PACKAGES */}
           <div id="sec-wedding" className="scroll-mt-36 space-y-12">
             <div className="text-center space-y-3">
-              <span className="text-[#d1a852] text-xs font-extrabold tracking-[0.3em] uppercase">Collections 01</span>
+              <span className="text-[#A99268] text-xs font-extrabold tracking-[0.3em] uppercase">Collections 01</span>
               <h3 className="text-3xl sm:text-4xl text-white font-normal font-serif italic">Wedding Collections</h3>
             </div>
             
@@ -746,7 +746,7 @@ const PricingSection = () => {
           {/* SECTION 2: ENGAGEMENT PACKAGES */}
           <div id="sec-engagement" className="scroll-mt-36 space-y-12">
             <div className="text-center space-y-3">
-              <span className="text-[#d1a852] text-xs font-extrabold tracking-[0.3em] uppercase">Collections 02</span>
+              <span className="text-[#A99268] text-xs font-extrabold tracking-[0.3em] uppercase">Collections 02</span>
               <h3 className="text-3xl sm:text-4xl text-white font-normal font-serif italic">Engagement Collections</h3>
             </div>
             
@@ -758,7 +758,7 @@ const PricingSection = () => {
           {/* SECTION 3: HALDI PACKAGES */}
           <div id="sec-haldi" className="scroll-mt-36 space-y-12">
             <div className="text-center space-y-3">
-              <span className="text-[#d1a852] text-xs font-extrabold tracking-[0.3em] uppercase">Collections 03</span>
+              <span className="text-[#A99268] text-xs font-extrabold tracking-[0.3em] uppercase">Collections 03</span>
               <h3 className="text-3xl sm:text-4xl text-white font-normal font-serif italic">Haldi Collections</h3>
             </div>
             
@@ -770,23 +770,23 @@ const PricingSection = () => {
           {/* SECTION 4: ADD-ONS */}
           <div id="sec-add-ons" className="scroll-mt-36 space-y-12">
             <div className="text-center space-y-3">
-              <span className="text-[#d1a852] text-xs font-extrabold tracking-[0.3em] uppercase">Customizations</span>
+              <span className="text-[#A99268] text-xs font-extrabold tracking-[0.3em] uppercase">Customizations</span>
               <h3 className="text-3xl sm:text-4xl text-white font-normal font-serif italic">Premium Add-ons</h3>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto items-stretch">
               {addOnPlans.map((addon) => (
-                <div key={addon.shareId} className="bg-[#121215] p-6 sm:p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(209,168,82,0.06)] transition-all duration-500 hover:border-[#d1a852]/40 group">
+                <div key={addon.shareId} className="bg-[#121215] p-6 sm:p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(169,146,104,0.06)] transition-all duration-500 hover:border-[#C8B28B]/40 group">
                   <div className="space-y-4">
-                    <span className="inline-flex bg-white/5 text-[#d1a852] border border-[#d1a852]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Add-on Option</span>
+                    <span className="inline-flex bg-white/5 text-[#A99268] border border-[#C8B28B]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">Add-on Option</span>
                     <h4 className="text-[20px] font-normal leading-tight text-white">{addon.title}</h4>
-                    <p className="text-[28px] font-normal text-[#d1a852] numbers-pro">{addon.price}</p>
+                    <p className="text-[28px] font-normal text-[#A99268] numbers-pro">{addon.price}</p>
                     <p className="text-zinc-400 text-xs font-light leading-relaxed">{addon.desc}</p>
                     <div className="text-[10px] text-zinc-500 font-medium border-t border-white/5 pt-3">
                       {addon.details}
                     </div>
                   </div>
-                  <Link to={`/booking?package=${encodeURIComponent(addon.title)}&price=${encodeURIComponent(addon.price.replace(/[^\d]/g, ""))}`} className="mt-8 py-3 w-full rounded-[16px] border border-white/10 text-white hover:bg-[#b4975a] hover:text-white hover:border-[#b4975a] transition-all text-center text-xs font-bold uppercase tracking-wider block">
+                  <Link to={`/booking?package=${encodeURIComponent(addon.title)}&price=${encodeURIComponent(addon.price.replace(/[^\d]/g, ""))}`} className="mt-8 py-3 w-full rounded-[16px] border border-white/10 text-white hover:bg-[#C8B28B] hover:text-white hover:border-[#C8B28B] transition-all text-center text-xs font-bold uppercase tracking-wider block">
                     Book This Pack
                   </Link>
                 </div>
@@ -797,19 +797,19 @@ const PricingSection = () => {
 
         {/* Lock Rates Callout */}
         <div className="mt-24 max-w-4xl mx-auto px-4 select-none">
-          <div className="bg-[#d1a852]/5 border border-dashed border-[#d1a852]/20 rounded-[32px] p-8 md:p-10 text-center shadow-2xl relative overflow-hidden">
-            <span className="inline-flex items-center gap-1.5 text-[#d1a852] text-[10px] md:text-[11px] tracking-[0.25em] uppercase font-bold mb-4">
-              <Lock size={12} className="text-[#d1a852]" /> Lock Current Promo Rates
+          <div className="bg-[#C8B28B]/5 border border-dashed border-[#C8B28B]/20 rounded-[32px] p-8 md:p-10 text-center shadow-2xl relative overflow-hidden">
+            <span className="inline-flex items-center gap-1.5 text-[#A99268] text-[10px] md:text-[11px] tracking-[0.25em] uppercase font-bold mb-4">
+              <Lock size={12} className="text-[#A99268]" /> Lock Current Promo Rates
             </span>
             <h3 className="text-2xl md:text-3xl font-serif font-light text-white mb-3 leading-tight">
-              Secure Your Date with Just <span className="text-[#d1a852] font-normal">₹5,000/-</span>
+              Secure Your Date with Just <span className="text-[#A99268] font-normal">₹5,000/-</span>
             </h3>
             <p className="text-[13px] text-zinc-400 font-light max-w-xl mx-auto leading-relaxed mb-6">
               Reserve your date now to protect against seasonal price increases. The booking fee is fully adjustable to any package. Balance payment is required only on the wedding day.
             </p>
             <Link
               to="/booking?package=Promo%20Rates%20Booking&price=5000"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-[16px] bg-[#d1a852] hover:bg-[#b8903b] text-black text-xs uppercase tracking-widest font-bold transition-all shadow-[0_10px_25px_rgba(209,168,82,0.2)] hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-[16px] bg-[#C8B28B] hover:bg-[#B79F78] text-black text-xs uppercase tracking-widest font-bold transition-all shadow-[0_10px_25px_rgba(169,146,104,0.2)] hover:scale-[1.02]"
             >
               Secure My Promo Rates Now <ArrowRight size={14} />
             </Link>
@@ -873,7 +873,7 @@ const PricingSection = () => {
                 </div>
 
                 <div className="absolute bottom-6 left-6 right-6 space-y-1 text-white z-10 pointer-events-none">
-                  <span className="text-[#b4975a] text-[9px] font-bold tracking-[0.25em] uppercase block">Dreamwed Stories</span>
+                  <span className="text-[#A99268] text-[9px] font-bold tracking-[0.25em] uppercase block">Dreamwed Stories</span>
                   <h4 className="text-lg font-light tracking-tight text-white font-serif italic">
                     {activePlan.title.toLowerCase().includes("engagement") ? "Actual Engagement Captures" : activePlan.title.toLowerCase().includes("haldi") ? "Actual Haldi Captures" : "Actual Wedding Work Captures"}
                   </h4>
@@ -887,7 +887,7 @@ const PricingSection = () => {
                     <div 
                       key={i} 
                       className={`w-1 h-1 rounded-full transition-all duration-300 ${
-                        (currentSlide % activePlan.images.length) === i ? "bg-[#b4975a] scale-125" : "bg-white/40"
+                        (currentSlide % activePlan.images.length) === i ? "bg-[#C8B28B] scale-125" : "bg-white/40"
                       }`}
                     />
                   ))}
@@ -897,16 +897,16 @@ const PricingSection = () => {
               {/* Right Side Detail */}
               <div className="p-6 sm:p-10 flex flex-col justify-between gap-5 md:h-[650px] md:overflow-hidden overflow-visible h-auto text-[#191917]" style={{ background: "#F7F5F0" }}>
                 <div className="space-y-2 select-none">
-                  <span className="inline-flex items-center gap-1 bg-[#191917]/5 text-[#854d0e] border border-[#854d0e]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">
+                  <span className="inline-flex items-center gap-1 bg-[#A99268]/8 text-[#A99268] border border-[#A99268]/20 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">
                     {activePlan.modalTag || "Premium"} Collection
                   </span>
                   <h3 className="text-2xl sm:text-3xl text-[#191917] font-semibold tracking-tight font-serif">
                     {activePlan.title.toLowerCase().includes("package") ? activePlan.title : `${activePlan.title} Package`}
                   </h3>
                   {/* Dynamic Double Pricing & Countdown Timer Block */}
-                  <div className="flex flex-col gap-2 bg-[#dc2626]/5 border border-[#dc2626]/15 p-4.5 rounded-2xl select-none text-left">
+                  <div className="flex flex-col gap-2 bg-[#8B222C]/4 border border-[#8B222C]/15 p-4.5 rounded-2xl select-none text-left">
                     <div className="flex items-baseline gap-3 flex-wrap">
-                      <span className="text-[#dc2626] text-3xl font-extrabold tracking-tight select-none">
+                      <span className="text-[#8B222C] text-3xl font-extrabold tracking-tight select-none">
                         Offer Price: {activePlan.price}/-
                       </span>
                       <span className="text-zinc-500 text-sm line-through decoration-zinc-550 select-none">
@@ -914,19 +914,19 @@ const PricingSection = () => {
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-zinc-700 font-mono text-[11px] border-t border-black/5 pt-2.5 mt-0.5">
-                      <span className="text-[#dc2626] flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-650 animate-ping shrink-0" />
+                      <span className="text-[#8B222C] flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#8B222C] animate-ping shrink-0" />
                         ⏳ OFFER CLOSING IN:
                       </span>
-                      <span className="text-[#854d0e] bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded font-bold">
+                      <span className="text-[#A99268] bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded font-bold">
                         {String(timeLeft.hours).padStart(2, '0')}h
                       </span>
                       <span>:</span>
-                      <span className="text-[#854d0e] bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded font-bold">
+                      <span className="text-[#A99268] bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded font-bold">
                         {String(timeLeft.minutes).padStart(2, '0')}m
                       </span>
                       <span>:</span>
-                      <span className="text-[#854d0e] bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded font-bold animate-pulse">
+                      <span className="text-[#A99268] bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded font-bold animate-pulse">
                         {String(timeLeft.seconds).padStart(2, '0')}s
                       </span>
                     </div>
@@ -936,7 +936,7 @@ const PricingSection = () => {
                     <motion.div
                       animate={{ y: [0, 6, 0] }}
                       transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                      className="text-[#854d0e] flex flex-col items-center gap-1"
+                      className="text-[#A99268] flex flex-col items-center gap-1"
                     >
                       <span className="text-[9px] font-semibold tracking-[0.25em] uppercase opacity-75">Scroll</span>
                       <svg className="w-5 h-5 stroke-[3.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -952,14 +952,14 @@ const PricingSection = () => {
                   </p>
 
                   {/* Why Book This Package Highlights */}
-                  <div className="border border-red-600/15 bg-red-600/5 p-4 rounded-2xl space-y-3 select-none text-left">
-                    <span className="block text-red-700 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles size={11} className="animate-pulse text-red-600" />
+                  <div className="border border-[#8B222C]/15 bg-[#8B222C]/4 p-4 rounded-2xl space-y-3 select-none text-left">
+                    <span className="block text-[#8B222C] text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles size={11} className="animate-pulse text-[#8B222C]" />
                       Why Book This Package?
                     </span>
                     <div className="space-y-2.5 text-xs">
                       <div className="flex gap-2.5 items-start">
-                        <span className="text-red-600 mt-0.5 shrink-0">📁</span>
+                        <span className="text-[#8B222C] mt-0.5 shrink-0">📁</span>
                         <div>
                           <strong className="text-[#191917] block">Full Photos in Google Drive</strong>
                           <span className="text-zinc-600 font-light text-[11px] block mt-0.5">
@@ -968,7 +968,7 @@ const PricingSection = () => {
                         </div>
                       </div>
                       <div className="flex gap-2.5 items-start">
-                        <span className="text-red-600 mt-0.5 shrink-0">🌐</span>
+                        <span className="text-[#8B222C] mt-0.5 shrink-0">🌐</span>
                         <div>
                           <strong className="text-[#191917] block">Personal Couples Website Support</strong>
                           <span className="text-zinc-600 font-light text-[11px] block mt-0.5">
@@ -977,7 +977,7 @@ const PricingSection = () => {
                         </div>
                       </div>
                       <div className="flex gap-2.5 items-start">
-                        <span className="text-red-600 mt-0.5 shrink-0">💬</span>
+                        <span className="text-[#8B222C] mt-0.5 shrink-0">💬</span>
                         <div>
                           <strong className="text-[#191917] block">Direct WhatsApp Previews & Live Support</strong>
                           <span className="text-zinc-600 font-light text-[11px] block mt-0.5">
@@ -990,8 +990,8 @@ const PricingSection = () => {
 
                   {/* Standalone Value Breakdown */}
                   {activePlan.shareId.startsWith("pkgWedding") && !activePlan.shareId.includes("Standalone") && (
-                    <div className="bg-white border border-zinc-200/80 p-4 rounded-2xl space-y-2.5 select-none shadow-sm">
-                      <span className="block text-[#854d0e] text-[9.5px] font-bold uppercase tracking-wider">
+                    <div className="bg-white border border-[#E6E1DA] p-4 rounded-2xl space-y-2.5 select-none shadow-sm">
+                      <span className="block text-[#A99268] text-[9.5px] font-bold uppercase tracking-wider">
                         💎 Combined Package Value Breakdown
                       </span>
                       <div className="space-y-1.5 text-xs text-zinc-600 font-light">
@@ -1003,7 +1003,7 @@ const PricingSection = () => {
                           <span>Standalone Reception Day Coverage</span>
                           <span className="font-semibold text-zinc-800">₹19,999</span>
                         </div>
-                        <div className="flex justify-between text-[#854d0e] font-medium">
+                        <div className="flex justify-between text-[#A99268] font-medium">
                           <span>Complimentary Pre-Wedding Shoot</span>
                           <span className="font-semibold">
                             {activePlan.shareId === "pkgWeddingBasicCard" ? "Worth ₹12,000" : "Worth ₹15,000"}
@@ -1036,12 +1036,12 @@ const PricingSection = () => {
                              activePlan.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,24,998"}
                           </span>
                         </div>
-                        <div className="flex justify-between text-[#854d0e] font-semibold text-[11px] pt-1">
+                        <div className="flex justify-between text-[#A99268] font-semibold text-[11px] pt-1">
                           <span>Special Combined Deal Price</span>
                           <span className="font-bold font-mono">{activePlan.price}/-</span>
                         </div>
                       </div>
-                      <div className="bg-[#d1a852]/15 border border-[#d1a852]/25 px-3 py-1.5 rounded-xl text-center text-[10px] text-[#854d0e] font-black uppercase tracking-wider">
+                      <div className="bg-[#C8B28B]/15 border border-[#C8B28B]/25 px-3 py-1.5 rounded-xl text-center text-[10px] text-[#A99268] font-black uppercase tracking-wider">
                         🎉 INSTANT SAVINGS OF {
                           activePlan.shareId === "pkgWeddingBasicCard" ? "₹31,999 (44% OFF)" :
                           activePlan.shareId === "pkgWeddingPreCard" ? "₹19,999 (27% OFF)" :
@@ -1053,13 +1053,13 @@ const PricingSection = () => {
                   )}
 
                   {activePlan.preweddingOffer && (
-                    <div className="bg-red-600/5 border-2 border-red-600/25 p-4 rounded-2xl flex items-start gap-3 animate-pulse shadow-sm">
-                      <div className="w-8 h-8 rounded-full bg-red-600/10 flex items-center justify-center text-red-600 shrink-0">
+                    <div className="bg-[#8B222C]/4 border-2 border-[#8B222C]/18 p-4 rounded-2xl flex items-start gap-3 animate-pulse shadow-sm">
+                      <div className="w-8 h-8 rounded-full bg-[#8B222C]/8 flex items-center justify-center text-[#8B222C] shrink-0">
                         <Gift size={16} />
                       </div>
                       <div>
-                        <span className="block text-red-700 text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />
+                        <span className="block text-[#8B222C] text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#8B222C] animate-ping" />
                           Special Promo Highlight
                         </span>
                         <span className="text-zinc-800 text-xs font-bold leading-snug block mt-0.5">
@@ -1080,10 +1080,10 @@ const PricingSection = () => {
                         const isFree = item.toLowerCase().includes("free") || item.toLowerCase().includes("pre-wedding");
                         return (
                           <div key={index} className={`flex items-start gap-3 text-xs leading-relaxed ${
-                            isFree ? "font-semibold text-[#854d0e]" : "text-zinc-600 font-light"
+                            isFree ? "font-semibold text-[#A99268]" : "text-zinc-600 font-light"
                           }`}>
                             <span className={`w-4.5 h-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                              isFree ? "bg-[#d1a852]/20 text-[#854d0e] animate-pulse" : "bg-zinc-100 text-zinc-500 border border-zinc-200/60"
+                              isFree ? "bg-[#C8B28B]/20 text-[#A99268] animate-pulse" : "bg-zinc-100 text-zinc-500 border border-[#E6E1DA]"
                             }`}>
                               {isFree ? (
                                 <Sparkles size={10} strokeWidth={3} />
@@ -1105,7 +1105,7 @@ const PricingSection = () => {
 
                 <div className="space-y-3">
                   {/* Scroll Price Reminder */}
-                  <div className="bg-[#dc2626]/5 border border-[#dc2626]/15 px-4 py-3 rounded-xl flex items-center justify-between text-xs select-none">
+                  <div className="bg-[#8B222C]/4 border border-[#8B222C]/15 px-4 py-3 rounded-xl flex items-center justify-between text-xs select-none">
                     <div className="space-y-0.5 text-left">
                       <span className="text-zinc-500 block text-[9px] uppercase font-bold tracking-wider">YOUR EXCLUSIVE PRICE</span>
                       <span className="text-zinc-500 text-[10px] line-through font-mono block leading-none">
@@ -1113,10 +1113,10 @@ const PricingSection = () => {
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="text-[#dc2626] font-black font-mono text-xl block leading-none">
+                      <span className="text-[#8B222C] font-black font-mono text-xl block leading-none">
                         {activePlan.price}/-
                       </span>
-                      <span className="text-[#16a34a] text-[9.5px] font-bold block mt-0.5 uppercase tracking-wider">
+                      <span className="text-[#2A5C43] text-[9.5px] font-bold block mt-0.5 uppercase tracking-wider">
                         Special Promo Rate
                       </span>
                     </div>
