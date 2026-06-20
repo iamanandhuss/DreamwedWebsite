@@ -701,8 +701,8 @@ const TrivandrumOffer = () => {
 
           {/* Click hint */}
           <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10">
-            <span className="bg-black/50 backdrop-blur-sm text-white/70 text-[8px] font-bold tracking-widest uppercase px-3 py-1 rounded-full border border-white/10 group-hover:text-white group-hover:border-[#b4975a]/50 transition-all">
-              ✨ Tap to view photos &amp; all inclusions
+            <span className="bg-[#b4975a] text-black text-[8px] font-extrabold tracking-widest uppercase px-3.5 py-1.5 rounded-full border border-[#b4975a]/20 animate-pulse group-hover:bg-[#b4975a] group-hover:text-black transition-all">
+              ✨ Tap Card to Open Photos & Details
             </span>
           </div>
         </div>
@@ -962,6 +962,9 @@ const TrivandrumOffer = () => {
             <p className="text-zinc-500 font-light text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
               Compare our wedding packages and lock in your special discount today! All packages include a professional setup and premium deliverables.
             </p>
+            <div className="mt-4 inline-flex items-center gap-2 bg-[#b4975a]/10 border border-[#b4975a]/20 px-5 py-2.5 rounded-full text-[#b4975a] text-[11px] font-bold uppercase tracking-wider animate-pulse">
+              💡 Tip: Click or tap any package card to view actual photos & full details!
+            </div>
             
             {/* Highly interactive Add-ons badge trigger */}
             <button 

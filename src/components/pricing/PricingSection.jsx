@@ -575,6 +575,13 @@ const PricingSection = () => {
             <Heart size={15} className={likedPlans[plan.shareId] ? "fill-red-500 stroke-red-500" : "stroke-[#1a1a1a]"} />
           </button>
 
+          {/* Click hint */}
+          <div className="absolute top-[40%] left-0 right-0 flex justify-center z-10 pointer-events-none">
+            <span className="bg-black/50 backdrop-blur-sm text-white/90 text-[8px] font-extrabold tracking-widest uppercase px-3.5 py-1.5 rounded-full border border-white/10 animate-pulse group-hover:text-[#C8B28B] group-hover:border-[#C8B28B]/40 transition-all">
+              ✨ Click / Tap to Open Card
+            </span>
+          </div>
+
           {/* Title + Price overlaid at bottom of photo */}
           <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 z-10 flex justify-between items-end">
             <div>
@@ -586,7 +593,7 @@ const PricingSection = () => {
               </p>
             </div>
             <span className="bg-black/60 backdrop-blur-sm text-[#C8B28B] text-[8px] font-extrabold tracking-widest uppercase px-2.5 py-1 rounded-full border border-[#C8B28B]/20 animate-pulse mb-1 shrink-0 select-none">
-              ✨ View Details
+              ✨ Open for Photos & Details
             </span>
           </div>
         </div>
@@ -706,6 +713,9 @@ const PricingSection = () => {
             <p className="text-[15px] md:text-[18px] leading-relaxed text-zinc-400 max-w-xl mx-auto font-light">
               Tailored for couples seeking unmatched cinematic artistry. Every package delivers physical heirlooms and full-spectrum digital storytelling.
             </p>
+            <div className="mt-8 inline-flex items-center gap-2 bg-[#A99268]/10 border border-[#A99268]/20 px-5 py-2.5 rounded-full text-[#A99268] text-xs font-bold uppercase tracking-wider animate-pulse">
+              💡 Pro-Tip: Click or tap any package card to view actual wedding photos & complete details!
+            </div>
           </motion.div>
         </div>
 
