@@ -340,13 +340,13 @@ const addOnPlans = [
 ];
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0.85, y: 15 },
   visible: (i) => ({
     opacity: 1,
     y: 0,
     transition: { 
       delay: i * 0.1, 
-      duration: 0.8, 
+      duration: 0.6, 
       ease: [0.22, 1, 0.36, 1] 
     },
   }),
@@ -576,13 +576,18 @@ const PricingSection = () => {
           </button>
 
           {/* Title + Price overlaid at bottom of photo */}
-          <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 z-10">
-            <h3 className="text-white text-[1.25rem] font-bold leading-[1.2] tracking-tight mb-1 drop-shadow-lg">
-              {plan.title}
-            </h3>
-            <p className="text-[#f0e6d3] text-[1.05rem] font-extrabold leading-none tracking-tight drop-shadow-lg">
-              {plan.price}
-            </p>
+          <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 z-10 flex justify-between items-end">
+            <div>
+              <h3 className="text-white text-[1.25rem] font-bold leading-[1.2] tracking-tight mb-1 drop-shadow-lg">
+                {plan.title}
+              </h3>
+              <p className="text-[#f0e6d3] text-[1.05rem] font-extrabold leading-none tracking-tight drop-shadow-lg">
+                {plan.price}
+              </p>
+            </div>
+            <span className="bg-black/60 backdrop-blur-sm text-[#C8B28B] text-[8px] font-extrabold tracking-widest uppercase px-2.5 py-1 rounded-full border border-[#C8B28B]/20 animate-pulse mb-1 shrink-0 select-none">
+              ✨ View Details
+            </span>
           </div>
         </div>
 
@@ -687,7 +692,7 @@ const PricingSection = () => {
         {/* Header Section */}
         <div className="text-center mb-16 md:mb-24 px-4">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0.85, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}

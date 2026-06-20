@@ -64,10 +64,10 @@ export default function CinemaSpotlight() {
           {SPOTLIGHT_VIDEOS.map((video, idx) => (
             <motion.div
               key={video.id}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0.85, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: idx * 0.15 }}
+              transition={{ duration: 0.5, delay: idx * 0.12 }}
               className="bg-[#121215] border border-white/5 rounded-[32px] overflow-hidden group hover:border-[#d1a852]/30 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.4)] hover:shadow-[0_25px_60px_rgba(209,168,82,0.05)] flex flex-col justify-between h-full"
             >
               <div className="space-y-4">

@@ -30,11 +30,11 @@ const testimonials = [
 ];
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0.85, y: 20 },
   visible: (i) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.15, duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.12, duration: 0.5, ease: [0.22, 1, 0.36, 1] },
   }),
 };
 
@@ -45,10 +45,10 @@ const TestimonialSection = ({ dark = false }) => {
 
         {/* TOP TAG */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0.85, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.4 }}
           className="flex justify-center"
         >
           <span
@@ -63,10 +63,10 @@ const TestimonialSection = ({ dark = false }) => {
 
         {/* HEADING */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0.85, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.1 }}
+          transition={{ duration: 0.5, delay: 0.08 }}
           className="text-center mt-8"
         >
           <h2
