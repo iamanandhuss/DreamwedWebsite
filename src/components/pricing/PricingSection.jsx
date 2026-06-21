@@ -214,13 +214,14 @@ const engagementPlans = [
     modalTag: "Essential Engagement",
     subtitle: "ESSENTIAL SINGLE-SIDE",
     preweddingOffer: "FREE HIGH-RES DIGITAL ALBUM ACCESS",
-    desc: "Dedicated candid & traditional photographer coverage for your engagement ceremony.",
-    setup: "1 Dedicated Photographer",
+    desc: "Dedicated traditional photographer coverage for your engagement ceremony.",
+    setup: "1 Traditional Photographer",
     images: ["/uploaded_bride_yellow.jpg"],
     features: [
-      "Dedicated Candid & Traditional Photographer",
+      "Traditional Photographer (No Candid)",
       "4 Hours Coverage",
-      "Edited High-Res Photos"
+      "Photos in Google Drive",
+      "Free Album Access"
     ]
   },
   {

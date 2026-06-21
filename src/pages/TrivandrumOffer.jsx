@@ -284,11 +284,12 @@ const TrivandrumOffer = () => {
       bonusDesc: "Single-side photography coverage for your engagement ceremony.",
       images: ["/uploaded_bride_yellow.jpg"],
       details: [
-        "Dedicated Candid & Traditional Photographer",
+        "Traditional Photographer (No Candid)",
         "4 Hours Coverage",
-        "Edited High-Res Photos"
+        "Photos in Google Drive",
+        "Free Album Access"
       ],
-      description: "Dedicated candid & traditional photographer coverage for your engagement ceremony."
+      description: "Dedicated traditional photographer coverage for your engagement ceremony."
     },
     {
       id: 21,
