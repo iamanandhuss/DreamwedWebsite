@@ -286,8 +286,7 @@ const TrivandrumOffer = () => {
       details: [
         "Traditional Photographer (No Candid)",
         "4 Hours Coverage",
-        "Photos in Google Drive",
-        "Free Album Access"
+        "Photos in Google Drive"
       ],
       description: "Dedicated traditional photographer coverage for your engagement ceremony."
     },
@@ -856,7 +855,7 @@ const TrivandrumOffer = () => {
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
-            <AnimatePresence initial={false} mode="wait">
+            <AnimatePresence initial={false} mode="popLayout">
               <motion.img
                 key={currentSlide}
                 src={carouselImages[currentSlide].src}
@@ -866,7 +865,7 @@ const TrivandrumOffer = () => {
                 exit={{ opacity: 0, x: -50 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 style={{ objectPosition: carouselImages[currentSlide].position || "center" }}
-                className={`w-full h-full ${carouselImages[currentSlide].fit || "object-cover"} select-none pointer-events-none bg-zinc-900`}
+                className={`absolute inset-0 w-full h-full ${carouselImages[currentSlide].fit || "object-cover"} select-none pointer-events-none`}
               />
             </AnimatePresence>
 
@@ -2147,28 +2146,37 @@ const TrivandrumOffer = () => {
                   
                   {/* Dynamic Auto-rotating slideshow wrapper */}
                   <div className="absolute inset-0 w-full h-full">
-                    {/* Zoomed Blurred Background Layer */}
+                    {/* Zoomed Blurred Background Layer Crossfade Base */}
+                    <img
+                      src={pack.images[(currentSlide - 1 + imagesLength) % imagesLength]}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover filter blur-3xl scale-110 opacity-[0.22] select-none pointer-events-none"
+                    />
                     <motion.img
                       key={`bg-${pack.images[currentSlide % imagesLength]}`}
                       src={pack.images[currentSlide % imagesLength]}
                       alt=""
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 0.25 }}
-                      exit={{ opacity: 0 }}
                       transition={{ duration: 0.8 }}
                       className="absolute inset-0 w-full h-full object-cover filter blur-3xl scale-110 opacity-25 select-none pointer-events-none"
                     />
                     {/* Semi-transparent dark overlay to ensure dynamic color contrast and block leaks */}
                     <div className="absolute inset-0 bg-black/45 z-0 pointer-events-none" />
 
-                    {/* Crisp Foreground Layer */}
+                    {/* Crisp Foreground Layer Crossfade Base */}
+                    <img
+                      src={pack.images[(currentSlide - 1 + imagesLength) % imagesLength]}
+                      alt=""
+                      style={{ objectPosition: (pack.imagePositions && pack.imagePositions[(currentSlide - 1 + imagesLength) % imagesLength]) || pack.imagePosition || "center 30%" }}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
                     <motion.img
                       key={`fg-${pack.images[currentSlide % imagesLength]}`}
                       src={pack.images[currentSlide % imagesLength]}
                       alt="Dreamwed Stories Actual Wedding Capture"
                       initial={{ opacity: 0, scale: 1.05 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0 }}
                       transition={{ duration: 0.8 }}
                       className="absolute inset-0 w-full h-full object-cover z-10" style={{ objectPosition: (pack.imagePositions && pack.imagePositions[currentSlide % imagesLength]) || pack.imagePosition || "center 30%" }}
                     />

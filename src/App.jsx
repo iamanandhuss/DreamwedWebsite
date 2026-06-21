@@ -21,6 +21,7 @@ import CustomCursor from './components/ui/CustomCursor';
 import TrivandrumOffer from './pages/TrivandrumOffer';
 import CustomPackage from './pages/CustomPackage';
 import Packages from './pages/Packages';
+import DigitalProposal from './pages/DigitalProposal';
 
 // Scroll to top on route change
 const ScrollToTop = () => {
@@ -65,6 +66,7 @@ const AnimatedRoutes = () => {
         <Route path="/trivandrum-offer" element={<PageWrapper><TrivandrumOffer /></PageWrapper>} />
         <Route path="/custom-package" element={<PageWrapper><CustomPackage /></PageWrapper>} />
         <Route path="/packages" element={<PageWrapper><Packages /></PageWrapper>} />
+        <Route path="/proposal" element={<PageWrapper><DigitalProposal /></PageWrapper>} />
         <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
       </Routes>
     </AnimatePresence>
@@ -73,7 +75,7 @@ const AnimatedRoutes = () => {
 
 const AppContent = () => {
   const location = useLocation();
-  const isPortalPath = ["/my-booking", "/admin", "/editor", "/designer", "/ai-search", "/groom/bride", "/grrom/bride", "/groom-bride"].some(path => 
+  const isPortalPath = ["/my-booking", "/admin", "/editor", "/designer", "/ai-search", "/groom/bride", "/grrom/bride", "/groom-bride", "/proposal"].some(path => 
     location.pathname.startsWith(path)
   );
 

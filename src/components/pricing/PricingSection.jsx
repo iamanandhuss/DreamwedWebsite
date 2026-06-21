@@ -213,15 +213,14 @@ const engagementPlans = [
     tag: "Photo Only",
     modalTag: "Essential Engagement",
     subtitle: "ESSENTIAL SINGLE-SIDE",
-    preweddingOffer: "FREE HIGH-RES DIGITAL ALBUM ACCESS",
+    preweddingOffer: "",
     desc: "Dedicated traditional photographer coverage for your engagement ceremony.",
     setup: "1 Traditional Photographer",
     images: ["/uploaded_bride_yellow.jpg"],
     features: [
       "Traditional Photographer (No Candid)",
       "4 Hours Coverage",
-      "Photos in Google Drive",
-      "Free Album Access"
+      "Photos in Google Drive"
     ]
   },
   {
@@ -536,19 +535,24 @@ const PricingSection = () => {
       >
         {/* ── PHOTO — title + price overlaid at bottom like mockup ── */}
         <div className="relative w-full overflow-hidden" style={{ paddingBottom: "68%" }}>
-          <AnimatePresence mode="popLayout">
-            <motion.img
-              key={`${plan.shareId}-${currentImgIndex}`}
-              src={plan.images[currentImgIndex]}
-              alt={plan.title}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8 }}
-              style={{ objectPosition: (plan.imagePositions && plan.imagePositions[currentImgIndex]) || plan.imagePosition || "center 30%" }}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          {plan.images.length > 1 && (
+            <img
+              src={plan.images[(currentImgIndex - 1 + plan.images.length) % plan.images.length]}
+              alt=""
+              style={{ objectPosition: (plan.imagePositions && plan.imagePositions[(currentImgIndex - 1 + plan.images.length) % plan.images.length]) || plan.imagePosition || "center 30%" }}
+              className="absolute inset-0 w-full h-full object-cover"
             />
-          </AnimatePresence>
+          )}
+          <motion.img
+            key={`${plan.shareId}-${currentImgIndex}`}
+            src={plan.images[currentImgIndex]}
+            alt={plan.title}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            style={{ objectPosition: (plan.imagePositions && plan.imagePositions[currentImgIndex]) || plan.imagePosition || "center 30%" }}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
 
           {/* Gradient only at bottom for text readability */}
           <div className="absolute inset-0"
@@ -873,25 +877,34 @@ const PricingSection = () => {
               {/* Left Side Gallery */}
               <div className="relative aspect-[4/5] md:aspect-auto w-full h-full bg-zinc-950 overflow-hidden min-h-[300px] md:min-h-[550px] flex items-center justify-center group select-none">
                 <div className="absolute inset-0 w-full h-full">
+                  <img
+                    src={activePlan.images[(currentSlide - 1 + activePlan.images.length) % activePlan.images.length]}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover filter blur-3xl scale-110 opacity-[0.22] select-none pointer-events-none"
+                  />
                   <motion.img
                     key={`bg-${activePlan.images[currentSlide % activePlan.images.length]}`}
                     src={activePlan.images[currentSlide % activePlan.images.length]}
                     alt=""
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 0.25 }}
-                    exit={{ opacity: 0 }}
                     transition={{ duration: 0.8 }}
                     className="absolute inset-0 w-full h-full object-cover filter blur-3xl scale-110 opacity-25 select-none pointer-events-none"
                   />
                   <div className="absolute inset-0 bg-black/45 z-0 pointer-events-none" />
 
+                  <img
+                    src={activePlan.images[(currentSlide - 1 + activePlan.images.length) % activePlan.images.length]}
+                    alt=""
+                    style={{ objectPosition: (activePlan.imagePositions && activePlan.imagePositions[(currentSlide - 1 + activePlan.images.length) % activePlan.images.length]) || activePlan.imagePosition || "center 30%" }}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
                   <motion.img
                     key={`fg-${activePlan.images[currentSlide % activePlan.images.length]}`}
                     src={activePlan.images[currentSlide % activePlan.images.length]}
                     alt="Dreamwed Stories Capture"
                     initial={{ opacity: 0, scale: 1.05 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
                     transition={{ duration: 0.8 }}
                     className="absolute inset-0 w-full h-full object-cover z-10" style={{ objectPosition: (activePlan.imagePositions && activePlan.imagePositions[currentSlide % activePlan.images.length]) || activePlan.imagePosition || "center 30%" }}
                   />

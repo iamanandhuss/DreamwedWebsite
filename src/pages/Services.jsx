@@ -175,15 +175,14 @@ const engagementPlans = [
     tag: "Photo Only",
     modalTag: "Essential Engagement",
     subtitle: "ESSENTIAL SINGLE-SIDE",
-    preweddingOffer: "FREE HIGH-RES DIGITAL ALBUM ACCESS",
+    preweddingOffer: "",
     desc: "Dedicated traditional photographer coverage for your engagement ceremony.",
     setup: "1 Traditional Photographer",
     images: ["/uploaded_bride_yellow.jpg"],
     features: [
       "Traditional Photographer (No Candid)",
       "4 Hours Coverage",
-      "Photos in Google Drive",
-      "Free Album Access"
+      "Photos in Google Drive"
     ]
   },
   {

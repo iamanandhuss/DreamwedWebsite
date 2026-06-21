@@ -97,3 +97,65 @@ h1, h2, h3, h4, h5, h6 {
 .text-balance {
   text-wrap: balance;
 }
+
+/* Print styles for Proposal PDF generation */
+@media print {
+  html, body {
+    background-color: #ffffff !important;
+    color: #1a1a1a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Hide interactive controls, header, footer */
+  .no-print,
+  .customizer-trigger,
+  .customizer-panel,
+  .action-buttons,
+  header,
+  footer {
+    display: none !important;
+  }
+
+  /* Reset container styles */
+  .proposal-print-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  /* Force each section/slide to be a single page */
+  .proposal-page {
+    page-break-after: always !important;
+    break-after: page !important;
+    height: 297mm !important; /* A4 height */
+    width: 210mm !important;  /* A4 width */
+    max-height: 297mm !important;
+    max-width: 210mm !important;
+    overflow: hidden !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+    padding: 20mm !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    background-color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Make sure background colors, text sizes, gradients render exactly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
