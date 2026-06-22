@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
@@ -91,12 +91,13 @@ const AppContent = () => {
 };
 
 function App() {
+  const RouterComponent = window.location.protocol === 'file:' ? HashRouter : BrowserRouter;
   return (
-    <Router>
+    <RouterComponent>
       <ScrollToTop />
       <CustomCursor />
       <AppContent />
-    </Router>
+    </RouterComponent>
   );
 }
 

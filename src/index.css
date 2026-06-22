@@ -100,13 +100,19 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Print styles for Proposal PDF generation */
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 0 !important;
+  }
+  
   html, body {
     background-color: #ffffff !important;
     color: #1a1a1a !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
-    height: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -124,7 +130,8 @@ h1, h2, h3, h4, h5, h6 {
   /* Reset container styles */
   .proposal-print-container {
     width: 100% !important;
-    max-width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #ffffff !important;
@@ -136,20 +143,72 @@ h1, h2, h3, h4, h5, h6 {
     page-break-after: always !important;
     break-after: page !important;
     height: 297mm !important; /* A4 height */
-    width: 210mm !important;  /* A4 width */
+    width: 100% !important;   /* Let it fit A4 width dynamically */
     max-height: 297mm !important;
-    max-width: 210mm !important;
     overflow: hidden !important;
     position: relative !important;
     box-sizing: border-box !important;
     margin: 0 auto !important;
-    padding: 20mm !important;
+    padding: 0 !important; /* Spacing handled by subclasses/inner padding */
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
     background-color: #ffffff !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  /* Text-heavy slides get standard print margins */
+  .proposal-page.proposal-text-page {
+    padding: 20mm 15mm !important;
+  }
+
+  /* Force grids to keep their desktop structures on A4 sheet instead of stacking */
+  .proposal-page .grid {
+    display: grid !important;
+  }
+  
+  .proposal-page .grid.md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .proposal-page .grid.md\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .proposal-page .grid.md\:grid-cols-12 {
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+  }
+
+  .proposal-page .md\:col-span-7 {
+    grid-column: span 7 / span 7 !important;
+  }
+
+  .proposal-page .md\:col-span-5 {
+    grid-column: span 5 / span 5 !important;
+  }
+
+  /* Reset root background & color to prevent dark theme printing */
+  .proposal-root-container {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #1a1a1a !important;
+    min-height: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Reset outer wrappers to prevent layout/overflow clipping in print mode */
+  .proposal-main-wrapper {
+    max-width: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
   }
 
   /* Make sure background colors, text sizes, gradients render exactly */
