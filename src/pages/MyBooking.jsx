@@ -109,12 +109,10 @@ const MyBooking = () => {
   const isSingleEvent = 
     selectedPackage.toLowerCase().includes("engagement") ||
     selectedPackage.toLowerCase().includes("haldi") ||
-    selectedPackage.toLowerCase().includes("standalone") ||
-    selectedPackage === "Premium Candid Package";
+    selectedPackage.toLowerCase().includes("standalone");
 
   const isEngagement = 
-    selectedPackage.toLowerCase().includes("engagement") ||
-    selectedPackage === "Premium Candid Package";
+    selectedPackage.toLowerCase().includes("engagement");
 
   const INITIAL_BOOKINGS = [
     {
@@ -235,8 +233,7 @@ const MyBooking = () => {
     const isSingle = 
       pName.toLowerCase().includes("engagement") ||
       pName.toLowerCase().includes("haldi") ||
-      pName.toLowerCase().includes("standalone") ||
-      pName === "Premium Candid Package";
+      pName.toLowerCase().includes("standalone");
     if (isSingle) {
       setWeddingReceptionMode("same");
     }
@@ -1229,29 +1226,85 @@ const MyBooking = () => {
 
               {/* Event details */}
               <div className="grid grid-cols-2 gap-4 text-xs font-light text-left">
-                <div className="space-y-1 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
-                  <span className="block text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Wedding Date</span>
-                  <div className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200 font-medium mt-1">
-                    <Calendar size={14} className="text-zinc-400" />
-                    <span>{formatDate(booking.event_date)}</span>
-                  </div>
-                </div>
+                {booking.wedding_reception_mode === "different" && booking.different_date_details ? (
+                  <>
+                    <div className="space-y-1 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
+                      <span className="block text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Wedding Date</span>
+                      <div className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200 font-medium mt-1">
+                        <Calendar size={14} className="text-zinc-400" />
+                        <span>{formatDate(booking.different_date_details.wedding?.date)}</span>
+                      </div>
+                    </div>
+                    <div className="space-y-1 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
+                      <span className="block text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Reception Date</span>
+                      <div className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200 font-medium mt-1">
+                        <Calendar size={14} className="text-zinc-400" />
+                        <span>{formatDate(booking.different_date_details.reception?.date)}</span>
+                      </div>
+                    </div>
+                    <div className="col-span-2 space-y-1 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
+                      <span className="block text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Selected Package</span>
+                      <div className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200 font-medium mt-1">
+                        <Gift size={14} className="text-zinc-400" />
+                        <span className="truncate">{booking.package_name}</span>
+                      </div>
+                    </div>
+                    <div className="col-span-2 space-y-1 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
+                      <span className="block text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Wedding Venue</span>
+                      <div className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200 font-medium mt-1">
+                        <MapPin size={14} className="text-zinc-400 shrink-0" />
+                        <span className="line-clamp-1">{booking.different_date_details.wedding?.venue || booking.event_venue}</span>
+                      </div>
+                    </div>
+                    <div className="col-span-2 space-y-1 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
+                      <span className="block text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Reception Venue</span>
+                      <div className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200 font-medium mt-1">
+                        <MapPin size={14} className="text-zinc-400 shrink-0" />
+                        <span className="line-clamp-1">{booking.different_date_details.reception?.venue || booking.reception_venue}</span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-1 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
+                      <span className="block text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                        {isSingleEvent ? (isEngagement ? "Engagement Date" : selectedPackage.toLowerCase().includes("haldi") ? "Haldi Date" : "Event Date") : "Wedding Date"}
+                      </span>
+                      <div className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200 font-medium mt-1">
+                        <Calendar size={14} className="text-zinc-400" />
+                        <span>{formatDate(booking.event_date)}</span>
+                      </div>
+                    </div>
 
-                <div className="space-y-1 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
-                  <span className="block text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Selected Package</span>
-                  <div className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200 font-medium mt-1">
-                    <Gift size={14} className="text-zinc-400" />
-                    <span className="truncate">{booking.package_name}</span>
-                  </div>
-                </div>
+                    <div className="space-y-1 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
+                      <span className="block text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Selected Package</span>
+                      <div className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200 font-medium mt-1">
+                        <Gift size={14} className="text-zinc-400" />
+                        <span className="truncate">{booking.package_name}</span>
+                      </div>
+                    </div>
 
-                <div className="col-span-2 space-y-1 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
-                  <span className="block text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Wedding Venue</span>
-                  <div className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200 font-medium mt-1">
-                    <MapPin size={14} className="text-zinc-400 shrink-0" />
-                    <span className="line-clamp-1">{booking.event_venue}</span>
-                  </div>
-                </div>
+                    <div className="col-span-2 space-y-1 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
+                      <span className="block text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                        {isSingleEvent ? (isEngagement ? "Engagement Venue" : selectedPackage.toLowerCase().includes("haldi") ? "Haldi Venue" : "Event Venue") : "Wedding Venue"}
+                      </span>
+                      <div className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200 font-medium mt-1">
+                        <MapPin size={14} className="text-zinc-400 shrink-0" />
+                        <span className="line-clamp-1">{booking.event_venue}</span>
+                      </div>
+                    </div>
+
+                    {booking.reception_venue && (
+                      <div className="col-span-2 space-y-1 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
+                        <span className="block text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Reception Venue</span>
+                        <div className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200 font-medium mt-1">
+                          <MapPin size={14} className="text-zinc-400 shrink-0" />
+                          <span className="line-clamp-1">{booking.reception_venue}</span>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
               {/* Custom Status message mapping user's exact approval condition */}
@@ -1664,7 +1717,14 @@ const MyBooking = () => {
                   <div className="invoice-to-name">{booking.customer_name}</div>
                   <div className="invoice-to-details">
                     <div>{booking.customer_phone}</div>
-                    <div>{formatDate(booking.event_date)}</div>
+                    {booking.wedding_reception_mode === "different" && booking.different_date_details ? (
+                      <>
+                        <div>Wedding: {formatDate(booking.different_date_details.wedding?.date)}</div>
+                        <div>Reception: {formatDate(booking.different_date_details.reception?.date)}</div>
+                      </>
+                    ) : (
+                      <div>Date: {formatDate(booking.event_date)}</div>
+                    )}
                   </div>
                 </div>
 
