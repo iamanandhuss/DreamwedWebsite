@@ -8,12 +8,15 @@ import {
 import { FaWhatsapp } from "react-icons/fa6";
 import SEO from "../components/SEO";
 
+const API_BASE = typeof window !== "undefined"
+  ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://localhost:3000" : "https://dreamwed-backend.onrender.com"))
+  : "http://localhost:3000";
+
 const GroomBrideSignup = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
     // Proactively wake up the Render backend container when page loads
-    const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
     fetch(`${API_BASE}/api/bookings`).catch(() => null);
   }, []);
 
@@ -48,8 +51,6 @@ const GroomBrideSignup = () => {
   const [signingUp, setSigningUp] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [createdBooking, setCreatedBooking] = useState(null);
-
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
   const PACKAGES = [
     {
@@ -192,6 +193,7 @@ const GroomBrideSignup = () => {
         invoice_number: invoiceNo,
         invoice_date: new Date().toISOString().split('T')[0],
         status: "pending",
+        isLocalOnly: true,
         payment_milestones: [
           { label: `Advance - Wedding Photography (${payload.package_name})`, amount: payload.advance_paid, date: new Date().toISOString().split('T')[0], status: 'Paid' },
           { label: 'Second Payment (Event Day)', amount: 0, date: payload.event_date, status: 'Pending' },
@@ -205,6 +207,7 @@ const GroomBrideSignup = () => {
       
       setCreatedBooking(newBooking);
       setSignupSuccess(true);
+      alert("✅ Booking saved offline on your device! Please make sure to sync it with our server under the 'Find My Invoice' tab once the server connection is back online.");
     } finally {
       setSigningUp(false);
     }

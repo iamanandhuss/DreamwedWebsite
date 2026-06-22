@@ -1189,7 +1189,7 @@ const ClientPortal = () => {
 
   const [showDevServer, setShowDevServer] = useState(false);
   const [serverInput, setServerInput] = useState(() => {
-    return localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+    return localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://localhost:3000" : "https://dreamwed-backend.onrender.com");
   });
 
   const API_BASE = serverInput;

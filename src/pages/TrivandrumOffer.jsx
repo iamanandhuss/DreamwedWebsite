@@ -16,6 +16,10 @@ import pic4 from "../assets/images/pic4.jpeg";
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzy15y5t2F5uM9NiYPimHvlS6xDw2N1Z5oTHF3SQnR6AI_fxo6y6mhIepsUj-kav31g/exec";
 
+const API_BASE = typeof window !== "undefined"
+  ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://localhost:3000" : "https://dreamwed-backend.onrender.com"))
+  : "http://localhost:3000";
+
 const TrivandrumOffer = () => {
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", date: "", receptionDate: "", sameDate: true, message: "" });
   const [likedPacks, setLikedPacks] = useState({});
@@ -57,7 +61,6 @@ const TrivandrumOffer = () => {
   // Automatically reset pre-wedding video if selected package already includes it (Pack 03 includes both photo and video)
   useEffect(() => {
     // Proactively wake up the Render backend container when page loads
-    const API_BASE = localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com";
     fetch(`${API_BASE}/api/bookings`).catch(() => null);
 
     if (addonsForPackage === 3) {
@@ -500,8 +503,7 @@ const TrivandrumOffer = () => {
     }));
     setIsConfirmBookingOpen(true);
     // Silently ping the backend to pre-warm Render server before user submits
-    const _apiBase = localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com";
-    fetch(`${_apiBase}/api/health`).catch(() => {});
+    fetch(`${API_BASE}/api/health`).catch(() => {});
   };
 
   const handleConfirmBookingSubmit = async (e) => {
@@ -576,8 +578,6 @@ const TrivandrumOffer = () => {
       console.log('AppsScript payload err', gErr);
     }
     
-    const API_BASE = localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com";
-    
     try {
       const res = await fetch(`${API_BASE}/api/bookings`, {
         method: "POST",
@@ -600,15 +600,15 @@ const TrivandrumOffer = () => {
       // Fallback: save to localStorage so booking isn't lost
       try {
         const existing = JSON.parse(localStorage.getItem("dreamwed_bookings") || "[]");
-        const fallbackBooking = { ...bookingPayload, id: `local_${Date.now()}`, created_at: new Date().toISOString() };
+        const fallbackBooking = { ...bookingPayload, id: `local_${Date.now()}`, isLocalOnly: true, created_at: new Date().toISOString() };
         existing.push(fallbackBooking);
         localStorage.setItem("dreamwed_bookings", JSON.stringify(existing));
-        setBookingStatus("success");
+        setBookingStatus("offline_success");
         setTimeout(() => {
           setIsConfirmBookingOpen(false);
           setBookingStatus("idle");
           setBookingForm({ name: "", phone: "", email: "", date: "", venue: "", notes: "", transaction_id: "", screenshot_file_data: "" });
-        }, 5000);
+        }, 8000);
       } catch (localErr) {
         setBookingStatus("error");
         setTimeout(() => setBookingStatus("idle"), 8000);
@@ -1780,6 +1780,20 @@ const TrivandrumOffer = () => {
                     >
                       <Check size={16} className="shrink-0 text-green-600" />
                       🎉 Booking submitted successfully! Our coordinator will contact you on WhatsApp to confirm details, and your printable pending invoice is registered!
+                    </motion.div>
+                  )}
+                  {bookingStatus === "offline_success" && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="bg-amber-50 border border-amber-200 text-amber-700 p-4 rounded-xl text-xs text-center flex flex-col items-center gap-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <AlertCircle size={16} className="shrink-0 text-amber-600" />
+                        <strong>Saved Offline (Unsynced):</strong>
+                      </div>
+                      <p>Your booking request was saved locally on your phone due to server connectivity issues. Please visit the <strong>"Find My Invoice"</strong> tab once online to sync it to our live server so the admin can approve it!</p>
                     </motion.div>
                   )}
                   {bookingStatus === "error" && (
