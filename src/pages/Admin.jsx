@@ -37,6 +37,7 @@ const Admin = () => {
   const [videoDrive3, setVideoDrive3] = useState("");
   const [videoDrive4, setVideoDrive4] = useState("");
   const [bookings, setBookings] = useState([]);
+  const [isOffline, setIsOffline] = useState(false);
 
   // Staff tab state
   const [staffUsers, setStaffUsers] = useState([]);
@@ -127,6 +128,7 @@ const Admin = () => {
       if (res.ok) {
         const data = await res.json();
         setProjects(data);
+        setIsOffline(false);
         if (data.length > 0 && !selectedProject) {
           setSelectedProject(data[0]);
         } else if (selectedProject) {
@@ -143,6 +145,7 @@ const Admin = () => {
       console.error("Error fetching projects, falling back locally:", e);
       const localProjects = JSON.parse(localStorage.getItem("dreamwed_projects") || "[]");
       setProjects(localProjects);
+      setIsOffline(true);
       if (localProjects.length > 0 && !selectedProject) {
         setSelectedProject(localProjects[0]);
       } else if (selectedProject) {
@@ -181,6 +184,7 @@ const Admin = () => {
       const res = await fetch(`${API_BASE}/api/bookings`);
       if (res.ok) {
         setBookings(await res.json());
+        setIsOffline(false);
       } else {
         throw new Error("Server error");
       }
@@ -188,6 +192,7 @@ const Admin = () => {
       console.error("Error fetching bookings, falling back locally:", e);
       const localBookings = JSON.parse(localStorage.getItem("dreamwed_bookings") || "[]");
       setBookings(localBookings);
+      setIsOffline(true);
     }
   };
 
@@ -788,6 +793,34 @@ const Admin = () => {
             </button>
           </div>
         </div>
+
+        {/* Offline Warning Banner */}
+        {isOffline && (
+          <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/25 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-amber-400 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
+              <div>
+                <strong className="font-bold uppercase tracking-wider block sm:inline">Offline Mode:</strong>{' '}
+                <span className="font-light text-zinc-300">
+                  Unable to connect to the backend server (<code className="font-mono text-amber-300">{API_BASE}</code>). Displaying local offline cache data.
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                if (window.confirm("Are you sure you want to clear the local bookings and projects cache? This will reset all offline test data.")) {
+                  localStorage.removeItem("dreamwed_bookings");
+                  localStorage.removeItem("dreamwed_projects");
+                  localStorage.removeItem("dreamwed_api_base");
+                  window.location.reload();
+                }
+              }}
+              className="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer shrink-0"
+            >
+              Clear Local Cache
+            </button>
+          </div>
+        )}
 
         {/* Tab Navigation */}
         {(() => {
