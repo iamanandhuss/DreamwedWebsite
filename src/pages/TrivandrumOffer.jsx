@@ -56,6 +56,10 @@ const TrivandrumOffer = () => {
 
   // Automatically reset pre-wedding video if selected package already includes it (Pack 03 includes both photo and video)
   useEffect(() => {
+    // Proactively wake up the Render backend container when page loads
+    const API_BASE = localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com";
+    fetch(`${API_BASE}/api/bookings`).catch(() => null);
+
     if (addonsForPackage === 3) {
       setSelectedAddons((prev) => ({ ...prev, prewedVideo: false }));
     }

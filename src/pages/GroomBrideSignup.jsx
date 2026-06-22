@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -10,6 +10,12 @@ import SEO from "../components/SEO";
 
 const GroomBrideSignup = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Proactively wake up the Render backend container when page loads
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+    fetch(`${API_BASE}/api/bookings`).catch(() => null);
+  }, []);
 
   // Onboarding States
   const [coverageType, setCoverageType] = useState("both"); // "both" or "single"

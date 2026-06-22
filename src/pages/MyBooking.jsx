@@ -166,6 +166,9 @@ const MyBooking = () => {
   ];
 
   useEffect(() => {
+    // Proactively wake up the Render backend container when page loads
+    fetch(`${API_BASE}/api/bookings`).catch(() => null);
+
     if (!localStorage.getItem("dreamwed_bookings")) {
       localStorage.setItem("dreamwed_bookings", JSON.stringify(INITIAL_BOOKINGS));
     }
@@ -427,7 +430,7 @@ const MyBooking = () => {
     setSignupSuccess(false);
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 seconds timeout
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds timeout to support Render cold starts
 
     try {
       const res = await fetch(`${API_BASE}/api/bookings`, {
