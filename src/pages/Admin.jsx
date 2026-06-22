@@ -1098,9 +1098,21 @@ const Admin = () => {
                              "Pending Approval"}
                           </span>
                         </div>
-                        <p className="text-xs text-zinc-400 font-light leading-relaxed">
-                          Event Venue: <strong className="text-white">{b.event_venue}</strong> • Date: <strong className="text-white">{formatDateString(b.event_date)}</strong>
-                        </p>
+                        {b.wedding_reception_mode === "different" && b.different_date_details ? (
+                          <div className="space-y-1 text-xs text-zinc-400 font-light leading-relaxed">
+                            <div>
+                              💒 Wedding Venue: <strong className="text-white">{b.different_date_details.wedding?.venue || b.event_venue}</strong> • Date: <strong className="text-white">{formatDateString(b.different_date_details.wedding?.date || b.event_date)}</strong>
+                            </div>
+                            <div>
+                              🥂 Reception Venue: <strong className="text-white">{b.different_date_details.reception?.venue || b.reception_venue || "TBA"}</strong> • Date: <strong className="text-white">{formatDateString(b.different_date_details.reception?.date)}</strong>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-zinc-400 font-light leading-relaxed">
+                            Event Venue: <strong className="text-white">{b.event_venue}</strong> • Date: <strong className="text-white">{formatDateString(b.event_date)}</strong>
+                            {b.reception_venue && <span> • Reception Venue: <strong className="text-white">{b.reception_venue}</strong></span>}
+                          </p>
+                        )}
                         <p className="text-[10px] text-zinc-500 leading-normal">
                           <span>
                             🤵 Groom Contact: <strong className="text-zinc-300">{b.customer_phone}</strong> {b.customer_email && `(${b.customer_email})`} • 
@@ -1250,7 +1262,12 @@ const Admin = () => {
                             </span>
                           </div>
                           <p className="text-[10px] text-zinc-500 truncate leading-normal">
-                            Date: {formatDateString(b.event_date)} • Phone: {b.customer_phone}
+                            {b.wedding_reception_mode === "different" && b.different_date_details ? (
+                              <span>Date: {formatDateString(b.different_date_details.wedding?.date || b.event_date)} & {formatDateString(b.different_date_details.reception?.date)}</span>
+                            ) : (
+                              <span>Date: {formatDateString(b.event_date)}</span>
+                            )}
+                            <span> • Phone: {b.customer_phone}</span>
                           </p>
                         </button>
                       );
@@ -1272,10 +1289,26 @@ const Admin = () => {
                           {selectedClient.invoice_number || `INV-${selectedClient.id}`}
                         </span>
                       </div>
-                      <p className="text-zinc-500 text-[10px] font-light mt-1 flex flex-wrap gap-2">
-                        <span>Date: {formatDateString(selectedClient.event_date)}</span>
-                        <span>•</span>
-                        <span>Venue: {selectedClient.event_venue || "TBA"}</span>
+                      <p className="text-zinc-500 text-[10px] font-light mt-1 flex flex-wrap gap-x-2 gap-y-1">
+                        {selectedClient.wedding_reception_mode === "different" && selectedClient.different_date_details ? (
+                          <>
+                            <span>💒 Wedding: {formatDateString(selectedClient.different_date_details.wedding?.date || selectedClient.event_date)} ({selectedClient.different_date_details.wedding?.venue || selectedClient.event_venue})</span>
+                            <span>•</span>
+                            <span>🥂 Reception: {formatDateString(selectedClient.different_date_details.reception?.date)} ({selectedClient.different_date_details.reception?.venue || selectedClient.reception_venue || "TBA"})</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Date: {formatDateString(selectedClient.event_date)}</span>
+                            <span>•</span>
+                            <span>Venue: {selectedClient.event_venue || "TBA"}</span>
+                            {selectedClient.reception_venue && (
+                              <>
+                                <span>•</span>
+                                <span>Reception Venue: {selectedClient.reception_venue}</span>
+                              </>
+                            )}
+                          </>
+                        )}
                         <span>•</span>
                         <span>Pkg: {selectedClient.package_name}</span>
                       </p>
@@ -2411,7 +2444,14 @@ const Admin = () => {
                   <div className="invoice-to-name">{activeInvoiceBooking.customer_name}</div>
                   <div className="invoice-to-details">
                     <div>{activeInvoiceBooking.customer_phone}</div>
-                    <div>{formatDateString(activeInvoiceBooking.event_date)}</div>
+                    {activeInvoiceBooking.wedding_reception_mode === "different" && activeInvoiceBooking.different_date_details ? (
+                      <>
+                        <div>Wedding: {formatDateString(activeInvoiceBooking.different_date_details.wedding?.date)}</div>
+                        <div>Reception: {formatDateString(activeInvoiceBooking.different_date_details.reception?.date)}</div>
+                      </>
+                    ) : (
+                      <div>Date: {formatDateString(activeInvoiceBooking.event_date)}</div>
+                    )}
                   </div>
                 </div>
 

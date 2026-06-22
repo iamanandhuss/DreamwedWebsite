@@ -4611,7 +4611,14 @@ const ClientPortal = () => {
                   <div className="invoice-to-name">{booking.customer_name}</div>
                   <div className="invoice-to-details">
                     <div>{booking.customer_phone}</div>
-                    <div>{formatDateString(booking.event_date)}</div>
+                    {booking.wedding_reception_mode === "different" && booking.different_date_details ? (
+                      <>
+                        <div>Wedding: {formatDateString(booking.different_date_details.wedding?.date)}</div>
+                        <div>Reception: {formatDateString(booking.different_date_details.reception?.date)}</div>
+                      </>
+                    ) : (
+                      <div>Date: {formatDateString(booking.event_date)}</div>
+                    )}
                   </div>
                 </div>
 
