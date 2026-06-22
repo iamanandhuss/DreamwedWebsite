@@ -59,28 +59,59 @@ function saveToDisk() {
   }
 }
 
-function initDB() {
+async function initDB() {
   if (fs.existsSync(DB_PATH)) {
     try {
       const fileContent = fs.readFileSync(DB_PATH, 'utf8');
       if (fileContent.trim()) {
         data = JSON.parse(fileContent);
       }
-      data.customers = data.customers || [];
-      data.messages = data.messages || [];
-      data.reminders = data.reminders || [];
-      data.bookings = data.bookings || [];
-      data.projects = data.projects || [];
-      data.project_chats = data.project_chats || [];
-      data.activity_logs = data.activity_logs || [];
-      data.staff_users = data.staff_users || [];
     } catch (e) {
-      console.error('⚠️ Error loading database JSON, starting fresh:', e.message);
-      saveToDisk();
+      console.error('⚠️ Error loading database JSON:', e.message);
     }
-  } else {
-    saveToDisk();
   }
+  
+  data.customers = data.customers || [];
+  data.messages = data.messages || [];
+  data.reminders = data.reminders || [];
+  data.bookings = data.bookings || [];
+  data.projects = data.projects || [];
+  data.project_chats = data.project_chats || [];
+  data.activity_logs = data.activity_logs || [];
+  data.staff_users = data.staff_users || [];
+
+  // Async load initial states from Supabase if online
+  try {
+    const headers = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`
+    };
+
+    console.log('[SUPABASE SYNC] Restoring database states from Supabase...');
+    const [bookingsRes, projectsRes, profilesRes] = await Promise.all([
+      axios.get(`${SUPABASE_URL}/rest/v1/bookings`, { headers, timeout: 5000 }).catch(() => null),
+      axios.get(`${SUPABASE_URL}/rest/v1/projects`, { headers, timeout: 5000 }).catch(() => null),
+      axios.get(`${SUPABASE_URL}/rest/v1/profiles`, { headers, timeout: 5000 }).catch(() => null)
+    ]);
+
+    if (bookingsRes && bookingsRes.data) {
+      data.bookings = bookingsRes.data;
+      console.log(`[SUPABASE SYNC] Restored ${data.bookings.length} bookings from Supabase.`);
+    }
+    if (projectsRes && projectsRes.data) {
+      data.projects = projectsRes.data;
+      console.log(`[SUPABASE SYNC] Restored ${data.projects.length} projects from Supabase.`);
+    }
+    if (profilesRes && profilesRes.data) {
+      data.customers = profilesRes.data;
+      console.log(`[SUPABASE SYNC] Restored ${data.customers.length} profiles from Supabase.`);
+    }
+
+    saveToDisk();
+  } catch (err) {
+    console.warn('[SUPABASE SYNC WARNING] Failed to load data from Supabase, using local JSON cache:', err.message);
+  }
+
   console.log('✅ Pure JavaScript database initialized successfully');
 }
 

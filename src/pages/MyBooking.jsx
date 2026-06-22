@@ -464,6 +464,7 @@ const MyBooking = () => {
         invoice_number: invoiceNo,
         invoice_date: new Date().toISOString().split('T')[0],
         status: "pending",
+        isLocalOnly: true,
         payment_milestones: [
           { label: `Advance - Wedding Photography (${payload.package_name})`, amount: payload.advance_paid, date: new Date().toISOString().split('T')[0], status: 'Paid' },
           { label: 'Second Payment (Event Day)', amount: 0, date: payload.event_date, status: 'Pending' },
@@ -475,7 +476,7 @@ const MyBooking = () => {
 
       localStorage.setItem("dreamwed_bookings", JSON.stringify([newBooking, ...localBookings]));
       setSignupSuccess(true);
-      alert("✅ Booking submitted locally (Offline Sync Active)! Awaiting Admin Review.");
+      alert("✅ Booking saved offline on your device! Please make sure to sync it with our server under the 'Find My Invoice' tab once the server connection is back online.");
     } finally {
       setSigningUp(false);
     }
@@ -510,7 +511,7 @@ const MyBooking = () => {
         });
 
         if (match) {
-          setBooking(match);
+          setBooking({ ...match, isLocalOnly: true });
           setStatus("success");
           return;
         }
@@ -546,13 +547,48 @@ const MyBooking = () => {
       });
 
       if (match) {
-        setBooking(match);
+        setBooking({ ...match, isLocalOnly: true });
         setStatus("success");
         return;
       }
 
       setStatus("error");
       setErrorMessage("Could not connect to the booking server. Please check if your number is correct or try again shortly.");
+    }
+  };
+
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSyncBooking = async (localBooking) => {
+    setSyncing(true);
+    try {
+      // Strip local flags
+      const { isLocalOnly, id: tempId, ...syncPayload } = localBooking;
+      
+      const res = await fetch(`${API_BASE}/api/bookings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(syncPayload)
+      });
+      
+      if (res.ok) {
+        const serverBooking = await res.json();
+        
+        // Update local storage
+        const localBookings = JSON.parse(localStorage.getItem("dreamwed_bookings") || "[]");
+        const updated = localBookings.map(b => b.id === localBooking.id ? serverBooking : b);
+        localStorage.setItem("dreamwed_bookings", JSON.stringify(updated));
+        
+        setBooking(serverBooking);
+        alert("✅ Booking synced successfully with the live server database!");
+      } else {
+        alert("❌ Failed to sync booking. The server returned an error.");
+      }
+    } catch (err) {
+      console.error("Sync error:", err);
+      alert("❌ Unable to connect to the backend server. Please make sure the server is awake and try again.");
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -1231,6 +1267,25 @@ const MyBooking = () => {
                   )}
                 </div>
               </div>
+
+              {booking.isLocalOnly && (
+                <div className="bg-amber-500/10 border border-amber-500/20 p-5 rounded-2xl text-xs space-y-3 text-left text-amber-500">
+                  <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-[10px]">
+                    <AlertCircle size={14} className="text-amber-500 shrink-0" />
+                    <span>Offline Booking (Local Only)</span>
+                  </div>
+                  <p className="font-light leading-relaxed text-zinc-700 dark:text-zinc-300">
+                    This booking request is currently saved only inside this browser's local memory. The admin cannot view or approve it because it has not been uploaded to our server database.
+                  </p>
+                  <button
+                    onClick={() => handleSyncBooking(booking)}
+                    disabled={syncing}
+                    className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold rounded-xl text-[10px] uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50"
+                  >
+                    {syncing ? "Uploading to Server..." : "Sync / Upload to Live Server"}
+                  </button>
+                </div>
+              )}
 
               {/* Event details */}
               <div className="grid grid-cols-2 gap-4 text-xs font-light text-left">

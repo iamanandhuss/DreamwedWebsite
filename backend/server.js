@@ -857,12 +857,18 @@ app.post('/api/public/package-enquiry', (req, res) => {
 });
 
 // Initialize DB and start server
-initDB();
-startReminderScheduler();
+(async () => {
+  try {
+    await initDB();
+  } catch (err) {
+    console.error("Failed to initialize database:", err);
+  }
+  startReminderScheduler();
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`\n🚀 Dreamwed Bot Server running on port ${PORT}`);
-  console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
-  console.log(`📱 Webhook URL: http://localhost:${PORT}/webhook\n`);
-});
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`\n🚀 Dreamwed Bot Server running on port ${PORT}`);
+    console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
+    console.log(`📱 Webhook URL: http://localhost:${PORT}/webhook\n`);
+  });
+})();
