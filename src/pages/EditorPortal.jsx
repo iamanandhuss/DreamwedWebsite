@@ -4,8 +4,8 @@ import { Video, LogIn, LogOut, Calendar, Clock, Send, ExternalLink, RefreshCw, C
 import SEO from "../components/SEO";
 
 const API_BASE = typeof window !== "undefined"
-  ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://localhost:3000" : "https://dreamwed-backend.onrender.com"))
-  : "http://localhost:3000";
+  ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com")
+  : "https://dreamwed-backend.onrender.com";
 
 const EditorPortal = () => {
   // Auth state — supports multiple editor accounts via backend API

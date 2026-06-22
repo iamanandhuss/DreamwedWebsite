@@ -56,8 +56,8 @@
       "stay_charges": "Excluded",
       "coverage_scope": "both",
       "pincode": "",
-      "created_at": "2026-06-22 21:01:38",
-      "updated_at": "2026-06-22 21:01:38"
+      "created_at": "2026-06-22 21:08:51",
+      "updated_at": "2026-06-22 21:08:51"
     },
     {
       "id": 2,
@@ -112,8 +112,8 @@
       "stay_charges": "Excluded",
       "coverage_scope": "both",
       "pincode": "",
-      "created_at": "2026-06-22 21:01:38",
-      "updated_at": "2026-06-22 21:01:38"
+      "created_at": "2026-06-22 21:08:51",
+      "updated_at": "2026-06-22 21:08:51"
     },
     {
       "id": 3,
@@ -168,8 +168,64 @@
       "stay_charges": "Excluded",
       "coverage_scope": "single",
       "pincode": "",
-      "created_at": "2026-06-22 21:01:38",
-      "updated_at": "2026-06-22 21:01:38"
+      "created_at": "2026-06-22 21:08:51",
+      "updated_at": "2026-06-22 21:08:51"
+    },
+    {
+      "id": 4,
+      "customer_name": "Akash",
+      "customer_phone": "+918075342995",
+      "customer_email": "akash@gmail.com",
+      "customer_address": "Ernakulam, Kerala",
+      "customer_name_2": "",
+      "customer_phone_2": "",
+      "customer_email_2": "",
+      "customer_address_2": "",
+      "coverage_type": "both",
+      "coverage_side": "both",
+      "event_date": "2026-11-25",
+      "event_venue": "Grand Hyatt Bolgatty, Kochi",
+      "package_name": "Premium Wedding & Pre-wedding",
+      "package_price": 54999,
+      "add_ons": [],
+      "total_price": 54999,
+      "advance_paid": 10000,
+      "balance_amount": 44999,
+      "invoice_number": "DW-2026-004",
+      "invoice_date": "2026-06-22",
+      "status": "pending",
+      "payment_milestones": [
+        {
+          "label": "Advance - Wedding Photography (Premium Wedding & Pre-wedding)",
+          "amount": 10000,
+          "date": "2026-06-22",
+          "status": "Paid"
+        },
+        {
+          "label": "Second Payment (Event Day)",
+          "amount": 0,
+          "date": "2026-11-25",
+          "status": "Pending"
+        },
+        {
+          "label": "Final Payment (Before Delivery)",
+          "amount": 44999,
+          "date": "",
+          "status": "Pending"
+        }
+      ],
+      "bride_password": "bride_akash",
+      "groom_password": "groom_akash",
+      "bride_selections": [],
+      "groom_selections": [],
+      "selection_locked": false,
+      "drive_link": "https://drive.google.com/drive/folders/1A2B3C4D5E6F7G8H9I0J",
+      "travel_charges": "Excluded",
+      "stay_charges": "Excluded",
+      "coverage_scope": "both",
+      "pincode": "",
+      "created_at": "2026-06-22 21:08:51",
+      "updated_at": "2026-06-22 21:08:51"
     }
   ],
   "projects": [
@@ -183,7 +239,7 @@
         {
           "name": "Photos Uploaded",
           "completed": true,
-          "updated_at": "2026-06-22 21:01:38"
+          "updated_at": "2026-06-22 21:08:51"
         },
         {
           "name": "Client Selected Photos",
@@ -278,8 +334,8 @@
         "album_status": "pending",
         "final_download_url": ""
       },
-      "created_at": "2026-06-22 21:01:38",
-      "updated_at": "2026-06-22 21:01:38"
+      "created_at": "2026-06-22 21:08:51",
+      "updated_at": "2026-06-22 21:08:51"
     },
     {
       "id": 2,
@@ -291,7 +347,7 @@
         {
           "name": "Photos Uploaded",
           "completed": true,
-          "updated_at": "2026-06-22 21:01:38"
+          "updated_at": "2026-06-22 21:08:51"
         },
         {
           "name": "Client Selected Photos",
@@ -386,8 +442,8 @@
         "album_status": "pending",
         "final_download_url": ""
       },
-      "created_at": "2026-06-22 21:01:38",
-      "updated_at": "2026-06-22 21:01:38"
+      "created_at": "2026-06-22 21:08:51",
+      "updated_at": "2026-06-22 21:08:51"
     }
   ],
   "project_chats": [],
@@ -403,7 +459,7 @@
         1,
         2
       ],
-      "created_at": "2026-06-22 21:01:38"
+      "created_at": "2026-06-22 21:08:51"
     },
     {
       "id": 2,
@@ -415,7 +471,7 @@
         1,
         2
       ],
-      "created_at": "2026-06-22 21:01:38"
+      "created_at": "2026-06-22 21:08:51"
     }
   ]
 }

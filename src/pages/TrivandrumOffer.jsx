@@ -17,8 +17,8 @@ import pic4 from "../assets/images/pic4.jpeg";
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzy15y5t2F5uM9NiYPimHvlS6xDw2N1Z5oTHF3SQnR6AI_fxo6y6mhIepsUj-kav31g/exec";
 
 const API_BASE = typeof window !== "undefined"
-  ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://localhost:3000" : "https://dreamwed-backend.onrender.com"))
-  : "http://localhost:3000";
+  ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com")
+  : "https://dreamwed-backend.onrender.com";
 
 const TrivandrumOffer = () => {
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", date: "", receptionDate: "", sameDate: true, message: "" });

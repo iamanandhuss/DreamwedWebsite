@@ -113,6 +113,23 @@ function seedMockData() {
       status: "pending",
       bride_password: null,
       groom_password: "groom103"
+    },
+    {
+      customer_name: "Akash",
+      customer_phone: "+918075342995",
+      customer_email: "akash@gmail.com",
+      customer_address: "Ernakulam, Kerala",
+      coverage_type: "both",
+      coverage_side: "both",
+      event_date: "2026-11-25",
+      event_venue: "Grand Hyatt Bolgatty, Kochi",
+      package_name: "Premium Wedding & Pre-wedding",
+      package_price: 54999,
+      total_price: 54999,
+      advance_paid: 10000,
+      status: "pending",
+      bride_password: "bride_akash",
+      groom_password: "groom_akash"
     }
   ];
 
