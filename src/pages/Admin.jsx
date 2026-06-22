@@ -843,7 +843,10 @@ const Admin = () => {
                 </button>
               )}
 
-              <div className="flex flex-wrap gap-1.5 bg-zinc-900 p-1 rounded-xl border border-zinc-800 mb-8 w-fit">
+              <div 
+                className="flex gap-1.5 bg-zinc-900 p-1 rounded-xl border border-zinc-800 mb-8 w-full md:w-fit overflow-x-auto whitespace-nowrap scrollbar-hide"
+                style={{ msOverflowStyle: 'none', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+              >
                 {[
                   { id: "projects", label: "🗂 Projects" },
                   { id: "bookings", label: "📖 Booking Approvals", badge: pendingCount },
@@ -854,7 +857,7 @@ const Admin = () => {
                   { id: "ai-orders", label: "🧾 AI Print Orders" }
                 ].map((tab) => (
                   <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                    className={`relative px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                    className={`relative px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shrink-0 ${
                       activeTab === tab.id ? "bg-[#b4975a] text-zinc-950 shadow-sm" : "text-zinc-400 hover:text-white"
                     }`}>
                     {tab.label}
@@ -876,14 +879,21 @@ const Admin = () => {
         {activeTab === "projects" && (
           <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
             {/* Left: Project list */}
-            <div className="md:col-span-2 space-y-4 text-left">
+            <div className="md:col-span-2 space-y-4 text-left max-h-[60vh] md:max-h-[75vh] overflow-y-auto pr-1">
               <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest block mb-2">Projects ({projects.length})</span>
               {projects.map((p) => {
                 const isSelected = selectedProject?.id === p.id;
                 const progress = getProgressPct(p);
                 const currentStepName = p.timeline_steps[p.current_step - 1]?.name || "Pending";
                 return (
-                  <button key={p.id} onClick={() => setSelectedProject(p)}
+                  <button key={p.id} onClick={() => {
+                    setSelectedProject(p);
+                    if (window.innerWidth < 768) {
+                      setTimeout(() => {
+                        document.getElementById("project-details-card")?.scrollIntoView({ behavior: "smooth" });
+                      }, 100);
+                    }
+                  }}
                     className={`w-full text-left p-5 rounded-2xl border transition-all cursor-pointer flex flex-col gap-3.5 relative overflow-hidden ${
                       isSelected ? "bg-zinc-900 border-[#b4975a]/45 shadow-[0_10px_30px_rgba(180,151,90,0.05)]" : "bg-zinc-950 border-zinc-800 hover:border-zinc-700"
                     }`}>
@@ -913,7 +923,7 @@ const Admin = () => {
             </div>
 
             {/* Right: project details editor */}
-            <div className="md:col-span-3">
+            <div id="project-details-card" className="md:col-span-3">
               <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest block mb-4 text-left">Project Details & Link Editor</span>
               {selectedProject ? (
                 <div className="bg-zinc-950 border border-zinc-800 rounded-[32px] p-6 sm:p-8 space-y-6 text-left relative overflow-hidden">
@@ -1281,6 +1291,11 @@ const Admin = () => {
                             setSelectedClient(b);
                             setEditBridePassword(b.bride_password || "");
                             setEditGroomPassword(b.groom_password || "");
+                            if (window.innerWidth < 768) {
+                              setTimeout(() => {
+                                document.getElementById("client-details-card")?.scrollIntoView({ behavior: "smooth" });
+                              }, 100);
+                            }
                           }}
                           className={`w-full text-left p-4.5 rounded-2xl border transition-all cursor-pointer flex flex-col gap-2 relative overflow-hidden ${
                             isSelected ? "bg-zinc-900 border-[#b4975a]/45 shadow-sm" : "bg-zinc-950 border-zinc-800 hover:border-zinc-700"
@@ -1309,7 +1324,7 @@ const Admin = () => {
               </div>
 
               {/* Right Panel: Client Workspace Details, Passwords, Selections, Invoices */}
-              <div className="md:col-span-3">
+              <div id="client-details-card" className="md:col-span-3">
                 {selectedClient ? (
                   <div className="bg-zinc-950 border border-zinc-800 rounded-[32px] p-6 sm:p-8 space-y-6 text-left relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl pointer-events-none" />

@@ -4609,6 +4609,16 @@ const ClientPortal = () => {
                 <div className="invoice-to">
                   <h3>INVOICE TO:</h3>
                   <div className="invoice-to-name">{booking.customer_name}</div>
+                  {booking.customer_address && (
+                    <div className="invoice-to-address text-[10px] text-zinc-550 dark:text-zinc-400 font-light mt-0.5 leading-normal max-w-[280px]">
+                      📍 Address: {booking.customer_address}
+                    </div>
+                  )}
+                  {booking.customer_address_2 && (
+                    <div className="invoice-to-address text-[10px] text-zinc-550 dark:text-zinc-400 font-light mt-0.5 leading-normal max-w-[280px]">
+                      📍 Address 2: {booking.customer_address_2}
+                    </div>
+                  )}
                   <div className="invoice-to-details">
                     <div>{booking.customer_phone}</div>
                     {booking.wedding_reception_mode === "different" && booking.different_date_details ? (
