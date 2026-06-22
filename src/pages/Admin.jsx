@@ -884,7 +884,7 @@ const Admin = () => {
               {projects.map((p) => {
                 const isSelected = selectedProject?.id === p.id;
                 const progress = getProgressPct(p);
-                const currentStepName = p.timeline_steps[p.current_step - 1]?.name || "Pending";
+                const currentStepName = p.timeline_steps?.[p.current_step - 1]?.name || "Pending";
                 return (
                   <button key={p.id} onClick={() => {
                     setSelectedProject(p);
@@ -936,7 +936,7 @@ const Admin = () => {
                     <p className="text-zinc-500 text-[10px] font-light mt-1 flex items-center gap-1.5">
                       <span>Wedding: {formatDateString(selectedProject.wedding_date)}</span>
                       <span>•</span>
-                      <span>Stage: {selectedProject.timeline_steps[selectedProject.current_step - 1]?.name}</span>
+                      <span>Stage: {selectedProject.timeline_steps?.[selectedProject.current_step - 1]?.name || "Pending"}</span>
                     </p>
                   </div>
 

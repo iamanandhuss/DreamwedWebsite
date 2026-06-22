@@ -2050,7 +2050,7 @@ const ClientPortal = () => {
   // PHOTO SELECTION CONTROLLERS
   const togglePhotoFavorite = async (photoId) => {
     if (!project) return;
-    if (project.timeline_steps[1].completed) {
+    if (project.timeline_steps?.[1]?.completed) {
       alert("🔒 Your selections are locked and sent to our designer. Please message our team in the Chat if you need any adjustments.");
       return;
     }
@@ -3057,13 +3057,13 @@ const ClientPortal = () => {
                 <div className="flex justify-between items-center border-b border-zinc-100 pb-4">
                   <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Wedding Project Timeline</span>
                   <span className="text-xs font-semibold text-[#b4975a]">
-                    Stage {project.current_step} of {project.timeline_steps.length} • {Math.round((project.current_step / project.timeline_steps.length) * 100)}% Complete
+                    Stage {project.current_step} of {project.timeline_steps?.length || 0} • {project.timeline_steps?.length ? Math.round((project.current_step / project.timeline_steps.length) * 100) : 0}% Complete
                   </span>
                 </div>
                 
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-4 relative pt-2">
                   <div className="absolute top-[21px] left-8 right-8 h-[1px] bg-zinc-150 hidden md:block z-0"></div>
-                  {project.timeline_steps.map((step, idx) => {
+                  {(project.timeline_steps || []).map((step, idx) => {
                     const stepNum = idx + 1;
                     const isCompleted = step.completed || stepNum <= project.current_step;
                     const isCurrent = stepNum === project.current_step;
