@@ -839,28 +839,18 @@ const MyBooking = () => {
                 </div>
                 
                 {!isSingleEvent && (
-                  <div className="space-y-3">
-                    <label className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase block">Schedule Configuration</label>
-                    <div className="grid grid-cols-2 gap-3 bg-zinc-200/50 dark:bg-zinc-850 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 w-full relative z-10">
-                      <button 
-                        type="button"
-                        onClick={() => setWeddingReceptionMode("same")}
-                        className={`py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                          weddingReceptionMode === "same" ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-xs" : "bg-white dark:bg-zinc-800 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
-                        }`}
-                      >
-                        Same Date
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={() => setWeddingReceptionMode("different")}
-                        className={`py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                          weddingReceptionMode === "different" ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-xs" : "bg-white dark:bg-zinc-800 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
-                        }`}
-                      >
-                        Different Dates
-                      </button>
-                    </div>
+                  <div className="pt-1 pb-2">
+                    <label className="flex items-center gap-3 cursor-pointer select-none group">
+                      <input 
+                        type="checkbox"
+                        checked={weddingReceptionMode === "same"}
+                        onChange={(e) => setWeddingReceptionMode(e.target.checked ? "same" : "different")}
+                        className="w-5 h-5 accent-[#b4975a] border-zinc-300 dark:border-zinc-700 rounded focus:ring-0 cursor-pointer"
+                      />
+                      <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                        Wedding & Reception are on the same date (Tick for same date)
+                      </span>
+                    </label>
                   </div>
                 )}
 
@@ -1015,10 +1005,10 @@ const MyBooking = () => {
               {!isEngagement && (
                 <div className="p-5 bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl border border-zinc-200/60 dark:border-zinc-800 space-y-4">
                   <div className="flex items-center gap-2 text-zinc-900 dark:text-white font-bold text-xs border-b border-zinc-200 dark:border-zinc-800 pb-2">
-                    <span>✉️</span> Wedding Invitation
+                    <span>✉️</span> Wedding / Reception Invitation (Optional)
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest block text-left">Upload Invitation (JPG, PNG, PDF)</label>
+                    <label className="text-[9px] text-zinc-450 dark:text-zinc-400 font-bold uppercase tracking-widest block text-left">Upload Invitation (Optional) (JPG, PNG, PDF)</label>
                     <div className="flex items-center gap-3">
                       <label className="px-4 py-2 bg-zinc-900 hover:bg-zinc-850 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-sm select-none">
                         Choose File
@@ -1029,7 +1019,7 @@ const MyBooking = () => {
                           className="hidden"
                         />
                       </label>
-                      <span className="text-zinc-500 text-xs font-light truncate">
+                      <span className="text-zinc-500 dark:text-zinc-400 text-xs font-light truncate">
                         {invitationFileName || "No file uploaded (PDF or Images)"}
                       </span>
                     </div>
