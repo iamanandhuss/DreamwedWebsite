@@ -59,11 +59,193 @@ function saveToDisk() {
   }
 }
 
+function seedMockData() {
+  console.log('[DB SEED] Seeding default bookings and projects...');
+  
+  const mockBookings = [
+    {
+      customer_name: "Rahul & Anjali",
+      customer_phone: "+919876543210",
+      customer_email: "rahul@gmail.com",
+      customer_address: "Kochi, Kerala",
+      coverage_type: "both",
+      coverage_side: "both",
+      event_date: "2026-11-20",
+      event_venue: "Le Meridian, Kochi",
+      package_name: "Premium Wedding & Pre-wedding",
+      package_price: 54999,
+      total_price: 54999,
+      advance_paid: 10000,
+      status: "confirmed",
+      bride_password: "bride101",
+      groom_password: "groom101"
+    },
+    {
+      customer_name: "Adarsh & Lakshmi",
+      customer_phone: "+919995412955",
+      customer_email: "adarsh@gmail.com",
+      customer_address: "Trivandrum, Kerala",
+      coverage_type: "both",
+      coverage_side: "both",
+      event_date: "2026-12-15",
+      event_venue: "Al Saj Convention Centre, Trivandrum",
+      package_name: "Candid Photography & Cinematic Video",
+      package_price: 79999,
+      total_price: 79999,
+      advance_paid: 20000,
+      status: "confirmed",
+      bride_password: "bride102",
+      groom_password: "groom102"
+    },
+    {
+      customer_name: "Gautham & Sneha",
+      customer_phone: "+919000100020",
+      customer_email: "gautham@gmail.com",
+      customer_address: "Kozhikode, Kerala",
+      coverage_type: "single",
+      coverage_side: "groom",
+      event_date: "2026-10-05",
+      event_venue: "Cochin Marriott Hotel, Kochi",
+      package_name: "Wedding Basic Package",
+      package_price: 39999,
+      total_price: 39999,
+      advance_paid: 5000,
+      status: "pending",
+      bride_password: null,
+      groom_password: "groom103"
+    }
+  ];
+
+  data.bookings = data.bookings || [];
+  data.projects = data.projects || [];
+  
+  mockBookings.forEach((b, index) => {
+    const id = index + 1;
+    const invoiceNo = `DW-2026-${String(id).padStart(3, '0')}`;
+    const newBooking = {
+      id,
+      customer_name: b.customer_name,
+      customer_phone: b.customer_phone,
+      customer_email: b.customer_email,
+      customer_address: b.customer_address,
+      customer_name_2: "",
+      customer_phone_2: "",
+      customer_email_2: "",
+      customer_address_2: "",
+      coverage_type: b.coverage_type,
+      coverage_side: b.coverage_side,
+      event_date: b.event_date,
+      event_venue: b.event_venue,
+      package_name: b.package_name,
+      package_price: b.package_price,
+      add_ons: [],
+      total_price: b.total_price,
+      advance_paid: b.advance_paid,
+      balance_amount: b.total_price - b.advance_paid,
+      invoice_number: invoiceNo,
+      invoice_date: getDbDate().split(' ')[0],
+      status: b.status,
+      payment_milestones: [
+        { label: `Advance - Wedding Photography (${b.package_name})`, amount: b.advance_paid, date: getDbDate().split(' ')[0], status: 'Paid' },
+        { label: 'Second Payment (Event Day)', amount: 0, date: b.event_date, status: 'Pending' },
+        { label: 'Final Payment (Before Delivery)', amount: b.total_price - b.advance_paid, date: '', status: 'Pending' }
+      ],
+      bride_password: b.bride_password,
+      groom_password: b.groom_password,
+      bride_selections: [],
+      groom_selections: [],
+      selection_locked: false,
+      drive_link: "https://drive.google.com/drive/folders/1A2B3C4D5E6F7G8H9I0J",
+      travel_charges: "Excluded",
+      stay_charges: "Excluded",
+      coverage_scope: b.coverage_type,
+      pincode: "",
+      created_at: getDbDate(),
+      updated_at: getDbDate()
+    };
+    data.bookings.push(newBooking);
+
+    if (newBooking.status === "confirmed") {
+      const projId = data.projects.length + 1;
+      const defaultPhotos = [
+        { id: 1, url: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600", favorited: false, categories: [], comment: "" },
+        { id: 2, url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=600", favorited: false, categories: [], comment: "" },
+        { id: 3, url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=600", favorited: false, categories: [], comment: "" },
+        { id: 4, url: "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=600", favorited: false, categories: [], comment: "" },
+        { id: 5, url: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&q=80&w=600", favorited: false, categories: [], comment: "" },
+        { id: 6, url: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=600", favorited: false, categories: [], comment: "" },
+        { id: 7, url: "https://images.unsplash.com/photo-1507504038482-76210f52b6d1?auto=format&fit=crop&q=80&w=600", favorited: false, categories: [], comment: "" },
+        { id: 8, url: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=600", favorited: false, categories: [], comment: "" }
+      ];
+
+      const newProject = {
+        id: projId,
+        booking_id: newBooking.id,
+        couple_name: newBooking.customer_name,
+        wedding_date: newBooking.event_date,
+        current_step: 1, 
+        timeline_steps: [
+          { name: "Photos Uploaded", completed: true, updated_at: getDbDate() },
+          { name: "Client Selected Photos", completed: false, updated_at: null },
+          { name: "Video Editing Completed", completed: false, updated_at: null },
+          { name: "Album Design Pending Approval", completed: false, updated_at: null },
+          { name: "Final Delivery Completed", completed: false, updated_at: null }
+        ],
+        package_details: {
+          photography: "Traditional + Candid (4-Camera coverage)",
+          video: "Cinematic Pre-Wedding Video + Teaser Reel + Highlight Film",
+          album: "One 80-Page Premium Couture Leather Layflat Album",
+          edited_photos: "120 color-corrected high-res photos included",
+          delivery_items: "Premium Signature bag, custom photo calendar & USB drive"
+        },
+        gallery_images: defaultPhotos,
+        deliveries: {
+          video_teaser_url: "https://www.youtube.com/embed/S9-SrdnKsMs",
+          video_status: "pending", 
+          album_pdf_url: "https://dreamwedstories.co.in/draft-album.pdf",
+          album_status: "pending",
+          final_download_url: ""
+        },
+        created_at: getDbDate(),
+        updated_at: getDbDate()
+      };
+      data.projects.push(newProject);
+    }
+  });
+
+  if (!data.staff_users || data.staff_users.length === 0) {
+    data.staff_users = [
+      {
+        id: 1,
+        username: "designer",
+        password: "designer",
+        role: "designer",
+        display_name: "Lead Album Designer",
+        assigned_projects: [1, 2],
+        created_at: getDbDate()
+      },
+      {
+        id: 2,
+        username: "editor",
+        password: "editor",
+        role: "editor",
+        display_name: "Lead Video Editor",
+        assigned_projects: [1, 2],
+        created_at: getDbDate()
+      }
+    ];
+  }
+}
+
 async function initDB() {
   if (fs.existsSync(DB_PATH)) {
     try {
-      const fileContent = fs.readFileSync(DB_PATH, 'utf8');
+      let fileContent = fs.readFileSync(DB_PATH, 'utf8');
       if (fileContent.trim()) {
+        // Strip BOM if present
+        if (fileContent.charCodeAt(0) === 0xFEFF) {
+          fileContent = fileContent.slice(1);
+        }
         data = JSON.parse(fileContent);
       }
     } catch (e) {
@@ -94,22 +276,38 @@ async function initDB() {
       axios.get(`${SUPABASE_URL}/rest/v1/profiles`, { headers, timeout: 5000 }).catch(() => null)
     ]);
 
-    if (bookingsRes && bookingsRes.data) {
+    if (bookingsRes && Array.isArray(bookingsRes.data) && bookingsRes.data.length > 0) {
       data.bookings = bookingsRes.data;
       console.log(`[SUPABASE SYNC] Restored ${data.bookings.length} bookings from Supabase.`);
+    } else {
+      console.log(`[SUPABASE SYNC] Keeping local bookings (count: ${data.bookings.length}).`);
     }
-    if (projectsRes && projectsRes.data) {
+
+    if (projectsRes && Array.isArray(projectsRes.data) && projectsRes.data.length > 0) {
       data.projects = projectsRes.data;
       console.log(`[SUPABASE SYNC] Restored ${data.projects.length} projects from Supabase.`);
+    } else {
+      console.log(`[SUPABASE SYNC] Keeping local projects (count: ${data.projects.length}).`);
     }
-    if (profilesRes && profilesRes.data) {
+
+    if (profilesRes && Array.isArray(profilesRes.data) && profilesRes.data.length > 0) {
       data.customers = profilesRes.data;
       console.log(`[SUPABASE SYNC] Restored ${data.customers.length} profiles from Supabase.`);
+    } else {
+      console.log(`[SUPABASE SYNC] Keeping local profiles (count: ${data.customers.length}).`);
+    }
+
+    if (data.bookings.length === 0 && data.projects.length === 0) {
+      seedMockData();
     }
 
     saveToDisk();
   } catch (err) {
     console.warn('[SUPABASE SYNC WARNING] Failed to load data from Supabase, using local JSON cache:', err.message);
+    if (data.bookings.length === 0 && data.projects.length === 0) {
+      seedMockData();
+      saveToDisk();
+    }
   }
 
   console.log('✅ Pure JavaScript database initialized successfully');
