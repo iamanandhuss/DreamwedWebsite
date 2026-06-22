@@ -777,12 +777,23 @@ const Admin = () => {
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-5 border-b border-zinc-800">
           <div>
-            <span className="text-[#b4975a] font-bold text-[10px] tracking-[0.3em] uppercase block mb-1">Client Portal Console</span>
+            <span className="text-[#b4975a] font-bold text-[10px] tracking-[0.3em] uppercase block mb-1">
+              Client Portal Console • <span className="text-zinc-500 font-mono tracking-normal lowercase">{API_BASE}</span>
+            </span>
             <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl sm:text-4xl text-white font-light tracking-tight">
               Admin <span className="italic font-serif text-[#b4975a]">Control Panel</span>
             </h1>
           </div>
-          <div className="flex gap-2.5">
+          <div className="flex flex-wrap gap-2.5">
+            <button onClick={() => {
+              if (window.confirm("Reset all local cache and api configurations? This will clear any saved overrides and force reload the page.")) {
+                localStorage.clear();
+                window.location.reload();
+              }
+            }}
+              className="px-4 py-2.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-red-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 border border-red-500/20 hover:border-red-500/40 transition-all cursor-pointer active:scale-95">
+              Reset Portal
+            </button>
             <a href="/"
               className="px-4 py-2.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-[#b4975a] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 border border-[#b4975a]/20 hover:border-[#b4975a]/40 transition-all cursor-pointer active:scale-95">
               <span>←</span> Back to Home
