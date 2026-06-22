@@ -4595,7 +4595,7 @@ const ClientPortal = () => {
                 </div>
                 <div style={{ fontSize: "11px", textAlign: "right", color: "#555", lineHeight: "1.5" }}>
                   dreamwedstories.co.in<br />
-                  +91 98954 12895
+                  +91 99954 12955
                 </div>
               </div>
 
@@ -4715,7 +4715,7 @@ const ClientPortal = () => {
                   <strong>Send Payments To:</strong>
                   Dreamwed Stories<br />
                   UPI: dreamwedstories@okaxis<br />
-                  GPay / PhonePe: +91 98954 12895
+                  GPay / PhonePe: +91 99954 12955
                 </div>
                 <div>
                   <div className="signature-thankyou">Thank You!</div>

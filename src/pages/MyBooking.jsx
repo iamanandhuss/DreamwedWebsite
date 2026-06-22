@@ -426,12 +426,17 @@ const MyBooking = () => {
     setSigningUp(true);
     setSignupSuccess(false);
     
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 seconds timeout
+
     try {
       const res = await fetch(`${API_BASE}/api/bookings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
       if (res.ok) {
         const newBooking = await res.json();
         
@@ -1037,7 +1042,7 @@ const MyBooking = () => {
                     </p>
                     <div className="text-[10px] font-mono bg-white/60 dark:bg-zinc-900/60 p-2.5 rounded-lg border border-[#b4975a]/10 dark:border-[#b4975a]/25 space-y-1">
                       <div>UPI ID: <strong className="text-zinc-900 dark:text-zinc-100">dreamwedstories@okaxis</strong></div>
-                      <div>GPay / PhonePe: <strong className="text-zinc-900 dark:text-zinc-100">+91 98954 12895</strong></div>
+                      <div>GPay / PhonePe: <strong className="text-zinc-900 dark:text-zinc-100">+91 99954 12955</strong></div>
                     </div>
                   </div>
 
@@ -1701,7 +1706,7 @@ const MyBooking = () => {
                 </div>
                 <div style={{ fontSize: "11px", textAlign: "right", color: "#555", lineHeight: "1.5" }}>
                   dreamwedstories.co.in<br />
-                  +91 98954 12895
+                  +91 99954 12955
                 </div>
               </div>
 
@@ -1821,7 +1826,7 @@ const MyBooking = () => {
                   <strong>Send Payments To:</strong>
                   Dreamwed Stories<br />
                   UPI: dreamwedstories@okaxis<br />
-                  GPay / PhonePe: +91 98954 12895
+                  GPay / PhonePe: +91 99954 12955
                 </div>
                 <div>
                   <div className="signature-thankyou">Thank You!</div>
