@@ -56,8 +56,8 @@
       "stay_charges": "Excluded",
       "coverage_scope": "both",
       "pincode": "",
-      "created_at": "2026-06-22 21:08:51",
-      "updated_at": "2026-06-22 21:08:51"
+      "created_at": "2026-06-22 21:16:38",
+      "updated_at": "2026-06-22 21:16:38"
     },
     {
       "id": 2,
@@ -112,8 +112,8 @@
       "stay_charges": "Excluded",
       "coverage_scope": "both",
       "pincode": "",
-      "created_at": "2026-06-22 21:08:51",
-      "updated_at": "2026-06-22 21:08:51"
+      "created_at": "2026-06-22 21:16:38",
+      "updated_at": "2026-06-22 21:16:38"
     },
     {
       "id": 3,
@@ -168,53 +168,53 @@
       "stay_charges": "Excluded",
       "coverage_scope": "single",
       "pincode": "",
-      "created_at": "2026-06-22 21:08:51",
-      "updated_at": "2026-06-22 21:08:51"
+      "created_at": "2026-06-22 21:16:38",
+      "updated_at": "2026-06-22 21:16:38"
     },
     {
       "id": 4,
-      "customer_name": "Akash",
-      "customer_phone": "+918075342995",
+      "customer_name": "Akash s",
+      "customer_phone": "8138060591",
       "customer_email": "akash@gmail.com",
-      "customer_address": "Ernakulam, Kerala",
+      "customer_address": "Kerala",
       "customer_name_2": "",
       "customer_phone_2": "",
       "customer_email_2": "",
       "customer_address_2": "",
-      "coverage_type": "both",
-      "coverage_side": "both",
-      "event_date": "2026-11-25",
-      "event_venue": "Grand Hyatt Bolgatty, Kochi",
-      "package_name": "Premium Wedding & Pre-wedding",
-      "package_price": 54999,
+      "coverage_type": "single",
+      "coverage_side": "groom",
+      "event_date": "2026-08-30",
+      "event_venue": "Kochi, Kerala",
+      "package_name": "Bride or Groom Engagement",
+      "package_price": 28999,
       "add_ons": [],
-      "total_price": 54999,
-      "advance_paid": 10000,
-      "balance_amount": 44999,
+      "total_price": 28999,
+      "advance_paid": 5000,
+      "balance_amount": 23999,
       "invoice_number": "DW-2026-004",
       "invoice_date": "2026-06-22",
-      "status": "pending",
+      "status": "confirmed",
       "payment_milestones": [
         {
-          "label": "Advance - Wedding Photography (Premium Wedding & Pre-wedding)",
-          "amount": 10000,
+          "label": "Advance - Wedding Photography (Bride or Groom Engagement)",
+          "amount": 5000,
           "date": "2026-06-22",
           "status": "Paid"
         },
         {
           "label": "Second Payment (Event Day)",
           "amount": 0,
-          "date": "2026-11-25",
+          "date": "2026-08-30",
           "status": "Pending"
         },
         {
           "label": "Final Payment (Before Delivery)",
-          "amount": 44999,
+          "amount": 23999,
           "date": "",
           "status": "Pending"
         }
       ],
-      "bride_password": "bride_akash",
+      "bride_password": null,
       "groom_password": "groom_akash",
       "bride_selections": [],
       "groom_selections": [],
@@ -222,10 +222,10 @@
       "drive_link": "https://drive.google.com/drive/folders/1A2B3C4D5E6F7G8H9I0J",
       "travel_charges": "Excluded",
       "stay_charges": "Excluded",
-      "coverage_scope": "both",
+      "coverage_scope": "single",
       "pincode": "",
-      "created_at": "2026-06-22 21:08:51",
-      "updated_at": "2026-06-22 21:08:51"
+      "created_at": "2026-06-22 21:16:38",
+      "updated_at": "2026-06-22 21:16:38"
     }
   ],
   "projects": [
@@ -239,7 +239,7 @@
         {
           "name": "Photos Uploaded",
           "completed": true,
-          "updated_at": "2026-06-22 21:08:51"
+          "updated_at": "2026-06-22 21:16:38"
         },
         {
           "name": "Client Selected Photos",
@@ -334,8 +334,8 @@
         "album_status": "pending",
         "final_download_url": ""
       },
-      "created_at": "2026-06-22 21:08:51",
-      "updated_at": "2026-06-22 21:08:51"
+      "created_at": "2026-06-22 21:16:38",
+      "updated_at": "2026-06-22 21:16:38"
     },
     {
       "id": 2,
@@ -347,7 +347,7 @@
         {
           "name": "Photos Uploaded",
           "completed": true,
-          "updated_at": "2026-06-22 21:08:51"
+          "updated_at": "2026-06-22 21:16:38"
         },
         {
           "name": "Client Selected Photos",
@@ -442,8 +442,116 @@
         "album_status": "pending",
         "final_download_url": ""
       },
-      "created_at": "2026-06-22 21:08:51",
-      "updated_at": "2026-06-22 21:08:51"
+      "created_at": "2026-06-22 21:16:38",
+      "updated_at": "2026-06-22 21:16:38"
+    },
+    {
+      "id": 3,
+      "booking_id": 4,
+      "couple_name": "Akash s",
+      "wedding_date": "2026-08-30",
+      "current_step": 1,
+      "timeline_steps": [
+        {
+          "name": "Photos Uploaded",
+          "completed": true,
+          "updated_at": "2026-06-22 21:16:38"
+        },
+        {
+          "name": "Client Selected Photos",
+          "completed": false,
+          "updated_at": null
+        },
+        {
+          "name": "Video Editing Completed",
+          "completed": false,
+          "updated_at": null
+        },
+        {
+          "name": "Album Design Pending Approval",
+          "completed": false,
+          "updated_at": null
+        },
+        {
+          "name": "Final Delivery Completed",
+          "completed": false,
+          "updated_at": null
+        }
+      ],
+      "package_details": {
+        "photography": "Traditional + Candid (4-Camera coverage)",
+        "video": "Cinematic Pre-Wedding Video + Teaser Reel + Highlight Film",
+        "album": "One 80-Page Premium Couture Leather Layflat Album",
+        "edited_photos": "120 color-corrected high-res photos included",
+        "delivery_items": "Premium Signature bag, custom photo calendar & USB drive"
+      },
+      "gallery_images": [
+        {
+          "id": 1,
+          "url": "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600",
+          "favorited": false,
+          "categories": [],
+          "comment": ""
+        },
+        {
+          "id": 2,
+          "url": "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=600",
+          "favorited": false,
+          "categories": [],
+          "comment": ""
+        },
+        {
+          "id": 3,
+          "url": "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=600",
+          "favorited": false,
+          "categories": [],
+          "comment": ""
+        },
+        {
+          "id": 4,
+          "url": "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=600",
+          "favorited": false,
+          "categories": [],
+          "comment": ""
+        },
+        {
+          "id": 5,
+          "url": "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&q=80&w=600",
+          "favorited": false,
+          "categories": [],
+          "comment": ""
+        },
+        {
+          "id": 6,
+          "url": "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=600",
+          "favorited": false,
+          "categories": [],
+          "comment": ""
+        },
+        {
+          "id": 7,
+          "url": "https://images.unsplash.com/photo-1507504038482-76210f52b6d1?auto=format&fit=crop&q=80&w=600",
+          "favorited": false,
+          "categories": [],
+          "comment": ""
+        },
+        {
+          "id": 8,
+          "url": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=600",
+          "favorited": false,
+          "categories": [],
+          "comment": ""
+        }
+      ],
+      "deliveries": {
+        "video_teaser_url": "https://www.youtube.com/embed/S9-SrdnKsMs",
+        "video_status": "pending",
+        "album_pdf_url": "https://dreamwedstories.co.in/draft-album.pdf",
+        "album_status": "pending",
+        "final_download_url": ""
+      },
+      "created_at": "2026-06-22 21:16:38",
+      "updated_at": "2026-06-22 21:16:38"
     }
   ],
   "project_chats": [],
@@ -459,7 +567,7 @@
         1,
         2
       ],
-      "created_at": "2026-06-22 21:08:51"
+      "created_at": "2026-06-22 21:16:38"
     },
     {
       "id": 2,
@@ -471,7 +579,7 @@
         1,
         2
       ],
-      "created_at": "2026-06-22 21:08:51"
+      "created_at": "2026-06-22 21:16:38"
     }
   ]
 }
