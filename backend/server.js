@@ -148,6 +148,34 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Debug endpoint to inspect database on live server
+app.get('/api/debug-db', (req, res) => {
+  try {
+    const dbPath = path.join(__dirname, 'dreamwed_bot_db.json');
+    const fileExists = fs.existsSync(dbPath);
+    let fileContent = "";
+    if (fileExists) {
+      fileContent = fs.readFileSync(dbPath, 'utf8');
+    }
+    
+    res.json({
+      success: true,
+      fileExists,
+      fileLength: fileContent.length,
+      filePreview: fileContent.substring(0, 500),
+      bookingsCount: getBookings().length,
+      projectsCount: getProjects().length,
+      staffCount: getStaffUsers().length,
+      env: {
+        PORT: process.env.PORT,
+        NODE_ENV: process.env.NODE_ENV
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // WhatsApp Webhook (Twilio sends messages here)
 app.post('/webhook', async (req, res) => {
   try {
