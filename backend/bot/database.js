@@ -262,18 +262,8 @@ async function initDB() {
     } else {
       console.log(`[SUPABASE SYNC] Keeping local profiles (count: ${data.customers.length}).`);
     }
-
-    if (data.bookings.length === 0 && data.projects.length === 0) {
-      seedMockData();
-    }
-
-    saveToDisk();
   } catch (err) {
     console.warn('[SUPABASE SYNC WARNING] Failed to load data from Supabase, using local JSON cache:', err.message);
-    if (data.bookings.length === 0 && data.projects.length === 0) {
-      seedMockData();
-      saveToDisk();
-    }
   }
 
   // Filter bookings and projects to ONLY keep Akash s
@@ -296,18 +286,35 @@ async function initDB() {
   for (const p of projectsToDelete) {
     syncToSupabase('projects', null, 'DELETE', 'id', p.id).catch(() => null);
   }
+
+  // If empty after filtering, seed and sync Akash s
+  if (data.bookings.length === 0 && data.projects.length === 0) {
+    console.log('[DB CLEANUP] Database empty after filtering. Seeding Akash s...');
+    seedMockData();
+    // Sync seeded data to Supabase
+    for (const b of data.bookings) {
+      syncToSupabase('bookings', b, 'POST').catch(() => null);
+    }
+    for (const p of data.projects) {
+      syncToSupabase('projects', p, 'POST').catch(() => null);
+    }
+  }
   
-  // Clean up staff user project assignments
+  // Clean up staff user project assignments dynamically
   if (data.staff_users) {
+    const validProjectIds = data.projects.map(p => p.id);
     data.staff_users.forEach(u => {
       if (u.assigned_projects) {
-        u.assigned_projects = u.assigned_projects.filter(pid => pid === 1);
+        u.assigned_projects = u.assigned_projects.filter(pid => validProjectIds.includes(pid));
+        if (u.assigned_projects.length === 0 && validProjectIds.length > 0) {
+          u.assigned_projects = [validProjectIds[0]];
+        }
       }
     });
   }
 
-  if (originalBookingsCount !== data.bookings.length) {
-    console.log(`[DB CLEANUP] Cleaned up ${bookingsToDelete.length} bookings and ${projectsToDelete.length} projects. Only Akash s kept.`);
+  if (originalBookingsCount !== data.bookings.length || data.bookings.length === 1) {
+    console.log(`[DB INITIALIZE] Database is setup. Only Akash s kept. Count: ${data.bookings.length}`);
     saveToDisk();
   }
 

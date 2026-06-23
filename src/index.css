@@ -100,11 +100,6 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Print styles for Proposal PDF generation */
 @media print {
-  @page {
-    size: A4 portrait;
-    margin: 0 !important;
-  }
-  
   html, body {
     background-color: #ffffff !important;
     color: #1a1a1a !important;
@@ -142,50 +137,97 @@ h1, h2, h3, h4, h5, h6 {
   .proposal-page {
     page-break-after: always !important;
     break-after: page !important;
-    height: 297mm !important; /* A4 height */
-    width: 100% !important;   /* Let it fit A4 width dynamically */
-    max-height: 297mm !important;
     overflow: hidden !important;
     position: relative !important;
     box-sizing: border-box !important;
     margin: 0 auto !important;
-    padding: 0 !important; /* Spacing handled by subclasses/inner padding */
+    padding: 0 !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
     background-color: #ffffff !important;
+    min-height: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Text-heavy slides get standard print margins */
-  .proposal-page.proposal-text-page {
-    padding: 20mm 15mm !important;
-  }
-
-  /* Force grids to keep their desktop structures on A4 sheet instead of stacking */
   .proposal-page .grid {
     display: grid !important;
   }
-  
-  .proposal-page .grid.md\:grid-cols-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+
+  /* Target specific print orientations using media queries */
+  @media (orientation: landscape) {
+    .proposal-page {
+      height: 208mm !important; /* A4 landscape height minus safety margin */
+      width: 297mm !important;  /* A4 landscape width */
+      max-height: 208mm !important;
+      max-width: 297mm !important;
+    }
+    .proposal-page.proposal-text-page {
+      padding: 20mm 15mm !important;
+    }
+    .proposal-page .grid.md\:grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    .proposal-page .grid.md\:grid-cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+    .proposal-page .grid.md\:grid-cols-12 {
+      grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+    }
+    .proposal-page .md\:col-span-7 {
+      grid-column: span 7 / span 7 !important;
+    }
+    .proposal-page .md\:col-span-5 {
+      grid-column: span 5 / span 5 !important;
+    }
   }
 
-  .proposal-page .grid.md\:grid-cols-3 {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  }
-
-  .proposal-page .grid.md\:grid-cols-12 {
-    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
-  }
-
-  .proposal-page .md\:col-span-7 {
-    grid-column: span 7 / span 7 !important;
-  }
-
-  .proposal-page .md\:col-span-5 {
-    grid-column: span 5 / span 5 !important;
+  @media (orientation: portrait) {
+    .proposal-page {
+      height: 282mm !important; /* A4 portrait height minus safety margin */
+      width: 210mm !important;  /* A4 portrait width */
+      max-height: 282mm !important;
+      max-width: 210mm !important;
+    }
+    .proposal-page.proposal-text-page {
+      padding: 15mm 10mm !important;
+    }
+    .proposal-page .grid.md\:grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 1.5rem !important;
+    }
+    .proposal-page .grid.md\:grid-cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 1.25rem !important;
+    }
+    .proposal-page .grid.md\:grid-cols-12 {
+      grid-template-columns: 1fr !important; /* Stack columns on letter page */
+      gap: 1.5rem !important;
+    }
+    .proposal-page .md\:col-span-7 {
+      grid-column: span 12 / span 12 !important;
+    }
+    .proposal-page .md\:col-span-5 {
+      display: none !important; /* Hide secondary photo in portrait print to avoid vertical text overflow */
+    }
+    
+    /* Font sizing and spacing adjustments for tight A4 portrait fit */
+    .proposal-page h2 {
+      font-size: 1.75rem !important;
+      line-height: 1.2 !important;
+    }
+    .proposal-page p, .proposal-page span, .proposal-page li {
+      font-size: 0.75rem !important;
+    }
+    .proposal-page .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+      --tw-space-y-reverse: 0 !important;
+      margin-top: 1.5rem !important;
+    }
+    .proposal-page .space-y-12 > :not([hidden]) ~ :not([hidden]) {
+      --tw-space-y-reverse: 0 !important;
+      margin-top: 1.5rem !important;
+    }
   }
 
   /* Reset root background & color to prevent dark theme printing */
@@ -215,6 +257,26 @@ h1, h2, h3, h4, h5, h6 {
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+}
+
+/* Named @page templates for orientation-safe printing */
+@page landscape-page {
+  size: A4 landscape;
+  margin: 0;
+}
+
+@page portrait-page {
+  size: A4 portrait;
+  margin: 10mm;
+}
+
+@media print {
+  .proposal-print-container {
+    page: landscape-page !important;
+  }
+  .invoice-overlay {
+    page: portrait-page !important;
   }
 }
 

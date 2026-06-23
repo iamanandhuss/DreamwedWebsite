@@ -1703,6 +1703,10 @@ const MyBooking = () => {
                 border: none;
               }
               @media print {
+                @page {
+                  size: A4 portrait !important;
+                  margin: 10mm !important;
+                }
                 body * {
                   visibility: hidden !important;
                 }
@@ -1748,7 +1752,16 @@ const MyBooking = () => {
                 ✕ Close Portal
               </button>
               <button 
-                onClick={() => window.print()}
+                onClick={() => {
+                  if (window.electronAPI && typeof window.electronAPI.exportToPDF === 'function') {
+                    window.electronAPI.exportToPDF({
+                      landscape: false,
+                      defaultName: `Dreamwed_Invoice_${booking ? booking.customer_name : 'Client'}.pdf`
+                    });
+                  } else {
+                    window.print();
+                  }
+                }}
                 className="action-btn"
                 style={{ background: "#b4975a", color: "#000" }}
               >

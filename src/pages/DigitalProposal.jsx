@@ -1006,7 +1006,14 @@ export default function DigitalProposal() {
 
   // Handle PDF Export
   const handlePrint = () => {
-    window.print();
+    if (window.electronAPI && typeof window.electronAPI.exportToPDF === 'function') {
+      window.electronAPI.exportToPDF({
+        landscape: true,
+        defaultName: `Wedding_Proposal_${groomName || 'Client'}.pdf`
+      });
+    } else {
+      window.print();
+    }
   };
 
   // Generate prefilled WhatsApp Link
@@ -1075,6 +1082,13 @@ export default function DigitalProposal() {
         /* SVG Icons Attribute Fallbacks */
         svg[fill="#b4975a"] { fill: ${themeColor} !important; }
         svg[stroke="#b4975a"] { stroke: ${themeColor} !important; }
+
+        @media print {
+          @page {
+            size: A4 landscape !important;
+            margin: 0 !important;
+          }
+        }
       ` }} />
       <SEO
         title={`Digital Proposal: ${groomName}${brideName ? ` & ${brideName}` : ""} | Dreamwed PDF Generator`}
@@ -1279,9 +1293,12 @@ export default function DigitalProposal() {
           {/* ======================================================== */}
           {/* PAGE 3: PACKAGE INCLUDES (AS IN SCREENSHOT 2/3) */}
           {/* ======================================================== */}
-          <section className="proposal-page relative w-full min-h-screen bg-[#ffffff] border-t border-zinc-100">
+          {/* ======================================================== */}
+          {/* PAGE 3: PACKAGE INCLUDES (AS IN SCREENSHOT 2/3) */}
+          {/* ======================================================== */}
+          <section className="proposal-page relative w-full min-h-screen bg-[#ffffff] border-t border-zinc-100 flex flex-col justify-between">
             {/* Header Image with stacked big bold title */}
-            <div className="relative h-[250px] md:h-[350px] overflow-hidden flex items-end">
+            <div className="relative h-[200px] md:h-[280px] overflow-hidden flex items-end shrink-0">
               <div className="absolute inset-0 z-0">
                 <img
                   src={resolveAssetPath(packageImage)}
@@ -1296,12 +1313,12 @@ export default function DigitalProposal() {
                 <div className="absolute inset-0 bg-black/10" />
               </div>
               
-              <div className="relative z-10 w-full px-6 md:px-12 pb-6 md:pb-10 max-w-6xl mx-auto">
+              <div className="relative z-10 w-full px-6 md:px-12 pb-4 md:pb-6 max-w-6xl mx-auto">
                 <motion.h2 
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="text-4xl sm:text-5xl md:text-7xl font-sans font-black tracking-tighter text-white leading-none uppercase"
+                  className="text-4xl sm:text-5xl md:text-6xl font-sans font-black tracking-tighter text-white leading-none uppercase"
                 >
                   PACKAGE <br />
                   <span className="text-[#d1a852]">INCLUDES</span>
@@ -1310,11 +1327,11 @@ export default function DigitalProposal() {
             </div>
 
             {/* Coverage details grid */}
-            <div className="max-w-6xl mx-auto px-4 md:px-12 py-8 md:py-16 space-y-8 md:space-y-12">
+            <div className="max-w-6xl mx-auto w-full px-4 md:px-12 py-6 md:py-8 space-y-6 md:space-y-8 flex-grow flex flex-col justify-center">
               
               {/* Event columns */}
               {visibleColsCount > 0 && (
-                <div className={`grid grid-cols-1 gap-8 md:gap-10 ${
+                <div className={`grid grid-cols-1 gap-6 md:gap-8 ${
                   visibleColsCount === 3 ? "md:grid-cols-3" :
                   visibleColsCount === 2 ? "md:grid-cols-2 max-w-4xl mx-auto" :
                   "max-w-md mx-auto"
@@ -1418,13 +1435,13 @@ export default function DigitalProposal() {
 
               {/* ADDITIONAL SERVICES & ADD-ONS */}
               {hasAddons && (
-                <div className="border-t border-zinc-200 pt-8">
-                  <h3 className="text-xs tracking-[0.25em] font-semibold text-zinc-500 uppercase border-b border-zinc-200 pb-2 mb-4">
+                <div className="border-t border-zinc-200 pt-6">
+                  <h3 className="text-xs tracking-[0.25em] font-semibold text-zinc-500 uppercase border-b border-zinc-200 pb-2 mb-3">
                     ADDITIONAL SERVICES & ADD-ONS
                   </h3>
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2.5">
                     {activeAddons.map((addon, index) => (
-                      <div key={index} className="flex items-center gap-2 bg-[#b4975a]/10 border border-[#b4975a]/20 text-[#b4975a] text-xs px-3.5 py-1.5 rounded-full font-medium">
+                      <div key={index} className="flex items-center gap-2 bg-[#b4975a]/10 border border-[#b4975a]/20 text-[#b4975a] text-xs px-3 py-1.5 rounded-full font-medium">
                         <CheckCircle className="h-3.5 w-3.5 shrink-0" size={13} />
                         <span>{addon}</span>
                       </div>
@@ -1432,46 +1449,65 @@ export default function DigitalProposal() {
                   </div>
                 </div>
               )}
+            </div>
 
+            {/* Bottom Page Indicator */}
+            <div className="text-center font-mono text-[10px] text-zinc-400 pb-6">
+              PAGE 3 OF 6 &bull; DREAMWED STORIES
+            </div>
+          </section>
+
+          {/* ======================================================== */}
+          {/* PAGE 4: DELIVERABLES & INVESTMENT (NEW PAGE) */}
+          {/* ======================================================== */}
+          <section className="proposal-page relative w-full min-h-screen bg-[#ffffff] border-t border-zinc-100 flex flex-col justify-between">
+            {/* Top Branding/Header */}
+            <div className="max-w-6xl mx-auto w-full px-6 md:px-12 pt-8 md:pt-12 shrink-0">
+              <span className="text-[10px] md:text-[11px] tracking-[0.4em] uppercase font-bold text-[#b4975a] block mb-2 font-mono">
+                Dreamwed Stories
+              </span>
+              <h2 className="font-serif tracking-tight text-3xl md:text-4xl text-zinc-900 leading-tight">
+                Deliverables & Investment
+              </h2>
+              <div className="w-12 h-0.5 bg-[#b4975a] mt-4" />
+            </div>
+
+            {/* Content Container */}
+            <div className="max-w-6xl mx-auto w-full px-6 md:px-12 py-6 md:py-8 flex-grow flex flex-col justify-center space-y-8">
+              
               {/* DELIVERABLES & COMPLIMENTARY ROWS */}
-              <div className="border-t border-zinc-200 pt-10">
-                <h3 className="text-xs tracking-[0.3em] font-bold text-center text-zinc-400 uppercase mb-8">
-                  DELIVERABLES & EXTRAS
-                </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
-                  
-                  {/* Deliverables Column */}
-                  <div className="space-y-4">
-                    <span className="text-[10px] tracking-widest font-mono text-zinc-400 block uppercase">
-                      Physical & Digital Assets
-                    </span>
-                    <ul className="space-y-3.5">
-                      {deliverables.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-zinc-600 font-light">
-                          <Check className="h-4.5 w-4.5 text-[#b4975a] mt-0.5 shrink-0" size={14} />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Complimentary Column */}
-                  <div className="space-y-4">
-                    <span className="text-[10px] tracking-widest font-mono text-[#b4975a] block uppercase font-bold">
-                      Complimentary Items
-                    </span>
-                    <ul className="space-y-3.5">
-                      {complimentary.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-zinc-600 font-light">
-                          <Sparkles className="h-4.5 w-4.5 text-[#b4975a] mt-0.5 shrink-0" size={14} />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
+                {/* Deliverables Column */}
+                <div className="space-y-4">
+                  <span className="text-[10px] tracking-widest font-mono text-zinc-400 block uppercase">
+                    Physical & Digital Assets
+                  </span>
+                  <ul className="space-y-3">
+                    {deliverables.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-zinc-600 font-light">
+                        <Check className="h-4.5 w-4.5 text-[#b4975a] mt-0.5 shrink-0" size={14} />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
+
+                {/* Complimentary Column */}
+                <div className="space-y-4">
+                  <span className="text-[10px] tracking-widest font-mono text-[#b4975a] block uppercase font-bold font-semibold">
+                    Complimentary Items
+                  </span>
+                  <ul className="space-y-3">
+                    {complimentary.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-zinc-600 font-light">
+                        <Sparkles className="h-4.5 w-4.5 text-[#b4975a] mt-0.5 shrink-0" size={14} />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
               </div>
 
               {/* Pricing banner */}
@@ -1497,7 +1533,7 @@ export default function DigitalProposal() {
 
             {/* Bottom Page Indicator */}
             <div className="text-center font-mono text-[10px] text-zinc-400 pb-6">
-              PAGE 3 OF 5 &bull; DREAMWED STORIES
+              PAGE 4 OF 6 &bull; DREAMWED STORIES
             </div>
           </section>
 
@@ -1561,7 +1597,7 @@ export default function DigitalProposal() {
 
             {/* Bottom Page Indicator */}
             <div className="text-center font-mono text-[10px] text-zinc-400 mt-8">
-              PAGE 4 OF 5 &bull; DREAMWED STORIES
+              PAGE 5 OF 6 &bull; DREAMWED STORIES
             </div>
           </section>
 
@@ -1678,7 +1714,7 @@ export default function DigitalProposal() {
 
             {/* Bottom Page Indicator */}
             <div className="text-center font-mono text-[10px] text-zinc-400 pb-4">
-              PAGE 5 OF 5 &bull; DREAMWED STORIES
+              PAGE 6 OF 6 &bull; DREAMWED STORIES
             </div>
           </section>
 
