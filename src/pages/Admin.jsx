@@ -2400,29 +2400,49 @@ const Admin = () => {
                 border: none;
               }
               @media print {
+                @page {
+                  size: A4 portrait !important;
+                  margin: 0 !important;
+                }
                 body * {
                   visibility: hidden !important;
                 }
                 .invoice-overlay, .invoice-overlay * {
                   visibility: visible !important;
                 }
+                html, body, #root, #root > div, .proposal-root-container {
+                  position: static !important;
+                  overflow: visible !important;
+                  height: auto !important;
+                  min-height: 0 !important;
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  border: none !important;
+                  box-shadow: none !important;
+                  transform: none !important;
+                  background: #fff !important;
+                }
                 .invoice-overlay {
                   position: absolute !important;
                   left: 0 !important;
                   top: 0 !important;
-                  width: 100% !important;
-                  height: auto !important;
-                  padding: 0 !important;
+                  width: 210mm !important;
+                  height: 297mm !important;
+                  box-sizing: border-box !important;
+                  padding: 20mm !important;
                   margin: 0 !important;
                   background: #fff !important;
                   color: #000 !important;
+                  page-break-after: always !important;
+                  break-after: page !important;
                 }
                 .invoice-container {
                   width: 100% !important;
                   margin: 0 !important;
-                  padding: 10px !important;
+                  padding: 0 !important;
                   box-shadow: none !important;
                   border: none !important;
+                  background: #fff !important;
                 }
                 .no-print {
                   display: none !important;
@@ -2469,7 +2489,16 @@ const Admin = () => {
                 <Share2 size={14} /> Share Details
               </button>
               <button 
-                onClick={() => window.print()}
+                onClick={() => {
+                  if (window.electronAPI && typeof window.electronAPI.exportToPDF === 'function') {
+                    window.electronAPI.exportToPDF({
+                      landscape: false,
+                      defaultName: `Dreamwed_Invoice_${activeInvoiceBooking ? activeInvoiceBooking.customer_name : 'Client'}.pdf`
+                    });
+                  } else {
+                    window.print();
+                  }
+                }}
                 className="action-btn"
                 style={{ background: "#b4975a", color: "#000" }}
               >

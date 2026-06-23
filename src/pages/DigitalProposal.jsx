@@ -590,6 +590,8 @@ export default function DigitalProposal() {
   const [isClientView, setIsClientView] = useState(false);
   const [copiedClient, setCopiedClient] = useState(false);
   const [copiedEdit, setCopiedEdit] = useState(false);
+  const [isUrlParsed, setIsUrlParsed] = useState(false);
+  const [isRestored, setIsRestored] = useState(false);
 
   useEffect(() => {
     let search = window.location.search;
@@ -901,7 +903,308 @@ export default function DigitalProposal() {
         console.error("Failed to parse data parameter", err);
       }
     }
+    setIsUrlParsed(true);
   }, []);
+
+  // Auto-load saved customizations from localStorage after URL parsing is complete
+  useEffect(() => {
+    if (!isUrlParsed || !proposalId) return;
+    let saved = localStorage.getItem(`proposal_customizer_${proposalId}`);
+    if (!saved) {
+      const lastSavedId = localStorage.getItem('proposal_customizer_last_saved');
+      if (lastSavedId) {
+        saved = localStorage.getItem(`proposal_customizer_${lastSavedId}`);
+        console.log("Restoring customizations from last saved ID:", lastSavedId);
+      }
+    }
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        if (data.brideName) setBrideName(data.brideName);
+        if (data.groomName) setGroomName(data.groomName);
+        if (data.proposalDate) setProposalDate(data.proposalDate);
+        if (data.weddingDate) setWeddingDate(data.weddingDate);
+        if (data.weddingLocation) setWeddingLocation(data.weddingLocation);
+        if (data.price) setPrice(data.price);
+        if (data.leadPhotographer) setLeadPhotographer(data.leadPhotographer);
+        if (data.themeColor) setThemeColor(data.themeColor);
+        if (data.coverImage) setCoverImage(data.coverImage);
+        if (data.packageImage) setPackageImage(data.packageImage);
+        if (data.philosophyImage) setPhilosophyImage(data.philosophyImage);
+        
+        if (data.coverPositionX !== undefined) setCoverPositionX(data.coverPositionX);
+        if (data.coverPositionY !== undefined) setCoverPositionY(data.coverPositionY);
+        if (data.coverScale !== undefined) setCoverScale(data.coverScale);
+        
+        if (data.packagePositionX !== undefined) setPackagePositionX(data.packagePositionX);
+        if (data.packagePositionY !== undefined) setPackagePositionY(data.packagePositionY);
+        if (data.packageScale !== undefined) setPackageScale(data.packageScale);
+        
+        if (data.philosophyPositionX !== undefined) setPhilosophyPositionX(data.philosophyPositionX);
+        if (data.philosophyPositionY !== undefined) setPhilosophyPositionY(data.philosophyPositionY);
+        if (data.philosophyScale !== undefined) setPhilosophyScale(data.philosophyScale);
+        
+        if (data.weddingCandidPhoto !== undefined) setWeddingCandidPhoto(data.weddingCandidPhoto);
+        if (data.weddingTradPhoto !== undefined) setWeddingTradPhoto(data.weddingTradPhoto);
+        if (data.weddingCandidVideo !== undefined) setWeddingCandidVideo(data.weddingCandidVideo);
+        if (data.weddingTradVideo !== undefined) setWeddingTradVideo(data.weddingTradVideo);
+        
+        if (data.evePhoto !== undefined) setEvePhoto(data.evePhoto);
+        if (data.eveVideo !== undefined) setEveVideo(data.eveVideo);
+        
+        if (data.prewedPhoto !== undefined) setPrewedPhoto(data.prewedPhoto);
+        if (data.prewedVideo !== undefined) setPrewedVideo(data.prewedVideo);
+        
+        if (data.hasDrone !== undefined) setHasDrone(data.hasDrone);
+        if (data.hasLedWall !== undefined) setHasLedWall(data.hasLedWall);
+        if (data.hasPreweddingVideo !== undefined) setHasPreweddingVideo(data.hasPreweddingVideo);
+        if (data.hasHaldi !== undefined) setHasHaldi(data.hasHaldi);
+        
+        if (data.customAddons !== undefined) setCustomAddons(data.customAddons);
+        if (data.deliverables !== undefined) setDeliverables(data.deliverables);
+        if (data.complimentary !== undefined) setComplimentary(data.complimentary);
+      } catch (e) {
+        console.error("Failed to parse saved customizations from localStorage", e);
+      }
+    }
+    setIsRestored(true);
+  }, [proposalId, isUrlParsed]);
+
+  // Auto-save customizations to localStorage when any state changes (only after restoring)
+  useEffect(() => {
+    if (!isRestored || !proposalId) return;
+    const dataToSave = {
+      brideName,
+      groomName,
+      proposalDate,
+      weddingDate,
+      weddingLocation,
+      price,
+      leadPhotographer,
+      themeColor,
+      coverImage,
+      packageImage,
+      philosophyImage,
+      coverPositionX,
+      coverPositionY,
+      coverScale,
+      packagePositionX,
+      packagePositionY,
+      packageScale,
+      philosophyPositionX,
+      philosophyPositionY,
+      philosophyScale,
+      weddingCandidPhoto,
+      weddingTradPhoto,
+      weddingCandidVideo,
+      weddingTradVideo,
+      evePhoto,
+      eveVideo,
+      prewedPhoto,
+      prewedVideo,
+      hasDrone,
+      hasLedWall,
+      hasPreweddingVideo,
+      hasHaldi,
+      customAddons,
+      deliverables,
+      complimentary
+    };
+    localStorage.setItem(`proposal_customizer_${proposalId}`, JSON.stringify(dataToSave));
+    localStorage.setItem('proposal_customizer_last_saved', proposalId);
+  }, [
+    isRestored,
+    proposalId,
+    brideName,
+    groomName,
+    proposalDate,
+    weddingDate,
+    weddingLocation,
+    price,
+    leadPhotographer,
+    themeColor,
+    coverImage,
+    packageImage,
+    philosophyImage,
+    coverPositionX,
+    coverPositionY,
+    coverScale,
+    packagePositionX,
+    packagePositionY,
+    packageScale,
+    philosophyPositionX,
+    philosophyPositionY,
+    philosophyScale,
+    weddingCandidPhoto,
+    weddingTradPhoto,
+    weddingCandidVideo,
+    weddingTradVideo,
+    evePhoto,
+    eveVideo,
+    prewedPhoto,
+    prewedVideo,
+    hasDrone,
+    hasLedWall,
+    hasPreweddingVideo,
+    hasHaldi,
+    customAddons,
+    deliverables,
+    complimentary
+  ]);
+
+  const [proposalLibrary, setProposalLibrary] = useState([]);
+  
+  const loadProposalLibrary = () => {
+    const listStr = localStorage.getItem('proposal_library_index') || '[]';
+    try {
+      const list = JSON.parse(listStr);
+      const currentVersion = localStorage.getItem('proposal_library_recovered_version') || '0';
+      const targetVersion = '4'; // Force update to load new Anju Bala details
+      
+      if ((list.length === 0 || currentVersion !== targetVersion) && window.electronAPI && typeof window.electronAPI.getRecoveredProposals === 'function') {
+        window.electronAPI.getRecoveredProposals().then(recovered => {
+          if (recovered && Array.isArray(recovered) && recovered.length > 0) {
+            console.log("Successfully fetched recovered proposals via IPC:", recovered);
+            // Remove any old recovered entries to prevent duplicates
+            let currentList = list.filter(item => !item.id.startsWith('draft_recovered_'));
+            
+            recovered.forEach(draft => {
+              // Save each draft to localStorage
+              localStorage.setItem(`proposal_library_${draft.id}`, JSON.stringify(draft));
+              // Push to index list
+              currentList.push({ id: draft.id, title: draft.title, savedAt: draft.savedAt });
+            });
+            
+            localStorage.setItem('proposal_library_index', JSON.stringify(currentList));
+            localStorage.setItem('proposal_library_recovered_version', targetVersion);
+            setProposalLibrary(currentList);
+            console.log("Successfully migrated/updated recovered proposals in Library!");
+          } else {
+            setProposalLibrary(list);
+          }
+        }).catch(err => {
+          console.error("Failed to fetch recovered proposals:", err);
+          setProposalLibrary(list);
+        });
+      } else {
+        setProposalLibrary(list);
+      }
+    } catch(e) {
+      setProposalLibrary([]);
+    }
+  };
+
+  useEffect(() => {
+    loadProposalLibrary();
+  }, []);
+
+  const saveProposalToLibrary = () => {
+    const title = prompt("Enter a name for this proposal draft:", `${groomName} & ${brideName} (${proposalDate})`);
+    if (!title) return;
+    
+    const draftId = `draft_${Date.now()}`;
+    const draftData = {
+      id: draftId,
+      title: title,
+      savedAt: new Date().toLocaleString(),
+      data: {
+        brideName, groomName, proposalId, proposalDate, weddingDate, weddingLocation,
+        price, leadPhotographer, themeColor, coverImage, packageImage, philosophyImage,
+        coverPositionX, coverPositionY, coverScale,
+        packagePositionX, packagePositionY, packageScale,
+        philosophyPositionX, philosophyPositionY, philosophyScale,
+        weddingCandidPhoto, weddingTradPhoto, weddingCandidVideo, weddingTradVideo,
+        evePhoto, eveVideo, prewedPhoto, prewedVideo,
+        hasDrone, hasLedWall, hasPreweddingVideo, hasHaldi,
+        customAddons, deliverables, complimentary
+      }
+    };
+    
+    localStorage.setItem(`proposal_library_${draftId}`, JSON.stringify(draftData));
+    
+    const currentListStr = localStorage.getItem('proposal_library_index') || '[]';
+    let currentList = [];
+    try {
+      currentList = JSON.parse(currentListStr);
+    } catch(e) {}
+    currentList.push({ id: draftId, title: title, savedAt: draftData.savedAt });
+    localStorage.setItem('proposal_library_index', JSON.stringify(currentList));
+    
+    loadProposalLibrary();
+    alert("Proposal saved to drafts library successfully!");
+  };
+
+  const loadProposalFromLibrary = (draftId) => {
+    const saved = localStorage.getItem(`proposal_library_${draftId}`);
+    if (!saved) return;
+    try {
+      const draft = JSON.parse(saved);
+      const data = draft.data || draft;
+      if (data.brideName) setBrideName(data.brideName);
+      if (data.groomName) setGroomName(data.groomName);
+      if (data.proposalId) setProposalId(data.proposalId);
+      if (data.proposalDate) setProposalDate(data.proposalDate);
+      if (data.weddingDate) setWeddingDate(data.weddingDate);
+      if (data.weddingLocation) setWeddingLocation(data.weddingLocation);
+      if (data.price) setPrice(data.price);
+      if (data.leadPhotographer) setLeadPhotographer(data.leadPhotographer);
+      if (data.themeColor) setThemeColor(data.themeColor);
+      if (data.coverImage) setCoverImage(data.coverImage);
+      if (data.packageImage) setPackageImage(data.packageImage);
+      if (data.philosophyImage) setPhilosophyImage(data.philosophyImage);
+      
+      if (data.coverPositionX !== undefined) setCoverPositionX(data.coverPositionX);
+      if (data.coverPositionY !== undefined) setCoverPositionY(data.coverPositionY);
+      if (data.coverScale !== undefined) setCoverScale(data.coverScale);
+      
+      if (data.packagePositionX !== undefined) setPackagePositionX(data.packagePositionX);
+      if (data.packagePositionY !== undefined) setPackagePositionY(data.packagePositionY);
+      if (data.packageScale !== undefined) setPackageScale(data.packageScale);
+      
+      if (data.philosophyPositionX !== undefined) setPhilosophyPositionX(data.philosophyPositionX);
+      if (data.philosophyPositionY !== undefined) setPhilosophyPositionY(data.philosophyPositionY);
+      if (data.philosophyScale !== undefined) setPhilosophyScale(data.philosophyScale);
+      
+      if (data.weddingCandidPhoto !== undefined) setWeddingCandidPhoto(data.weddingCandidPhoto);
+      if (data.weddingTradPhoto !== undefined) setWeddingTradPhoto(data.weddingTradPhoto);
+      if (data.weddingCandidVideo !== undefined) setWeddingCandidVideo(data.weddingCandidVideo);
+      if (data.weddingTradVideo !== undefined) setWeddingTradVideo(data.weddingTradVideo);
+      
+      if (data.evePhoto !== undefined) setEvePhoto(data.evePhoto);
+      if (data.eveVideo !== undefined) setEveVideo(data.eveVideo);
+      
+      if (data.prewedPhoto !== undefined) setPrewedPhoto(data.prewedPhoto);
+      if (data.prewedVideo !== undefined) setPrewedVideo(data.prewedVideo);
+      
+      if (data.hasDrone !== undefined) setHasDrone(data.hasDrone);
+      if (data.hasLedWall !== undefined) setHasLedWall(data.hasLedWall);
+      if (data.hasPreweddingVideo !== undefined) setHasPreweddingVideo(data.hasPreweddingVideo);
+      if (data.hasHaldi !== undefined) setHasHaldi(data.hasHaldi);
+      
+      if (data.customAddons !== undefined) setCustomAddons(data.customAddons);
+      if (data.deliverables !== undefined) setDeliverables(data.deliverables);
+      if (data.complimentary !== undefined) setComplimentary(data.complimentary);
+      
+      alert(`Loaded draft: ${draft.title}`);
+    } catch (e) {
+      console.error("Failed to load proposal draft", e);
+    }
+  };
+
+  const deleteProposalFromLibrary = (draftId) => {
+    if (!confirm("Are you sure you want to delete this proposal draft?")) return;
+    localStorage.removeItem(`proposal_library_${draftId}`);
+    
+    const currentListStr = localStorage.getItem('proposal_library_index') || '[]';
+    let currentList = [];
+    try {
+      currentList = JSON.parse(currentListStr);
+    } catch(e) {}
+    const updatedList = currentList.filter(item => item.id !== draftId);
+    localStorage.setItem('proposal_library_index', JSON.stringify(updatedList));
+    
+    loadProposalLibrary();
+  };
 
   const generateShareableLink = (isClient) => {
     const params = new URLSearchParams();
@@ -1008,7 +1311,7 @@ export default function DigitalProposal() {
   const handlePrint = () => {
     if (window.electronAPI && typeof window.electronAPI.exportToPDF === 'function') {
       window.electronAPI.exportToPDF({
-        landscape: true,
+        landscape: false,
         defaultName: `Wedding_Proposal_${groomName || 'Client'}.pdf`
       });
     } else {
@@ -1085,8 +1388,106 @@ export default function DigitalProposal() {
 
         @media print {
           @page {
-            size: A4 landscape !important;
+            size: A4 portrait !important;
             margin: 0 !important;
+          }
+          
+          /* Normalize/neutralize container layouts for printing */
+          html, body, #root, #root > div, .proposal-root-container, .proposal-main-wrapper {
+            position: static !important;
+            overflow: visible !important;
+            height: auto !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            transform: none !important;
+            background: #ffffff !important;
+          }
+
+          .proposal-print-container {
+            width: 210mm !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            background: #ffffff !important;
+          }
+
+          /* Force each slide to exactly A4 portrait dimensions */
+          .proposal-page {
+            width: 210mm !important;
+            height: 297mm !important;
+            page-break-after: always !important;
+            break-after: page !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+            padding: 20mm 15mm !important; /* Clean margins inside page bounds */
+            position: relative !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            background: #ffffff !important;
+            border: none !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          /* Cover page has full-bleed background images */
+          .proposal-page:first-of-type {
+            padding: 0 !important;
+          }
+
+          /* Stacking grids for portrait presentation */
+          .proposal-page .grid {
+            grid-template-columns: 1fr !important;
+            gap: 15px !important;
+          }
+
+          /* Keep testimonials simple and vertically stacked */
+          .proposal-page .grid-cols-1.md\:grid-cols-2 {
+            grid-template-columns: 1fr !important;
+            gap: 15px !important;
+          }
+
+          /* Keep deliverables column layout stacked */
+          .proposal-page .grid-cols-1.md\:grid-cols-2.gap-8 {
+            grid-template-columns: 1fr !important;
+            gap: 15px !important;
+          }
+
+          /* Stack welcome letter layout vertically in portrait print */
+          .proposal-page .grid-cols-1.md\:grid-cols-12 {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 15px !important;
+          }
+          .proposal-page .md\:col-span-7 {
+            width: 100% !important;
+          }
+          .proposal-page .md\:col-span-5 {
+            width: 100% !important;
+          }
+
+          /* Shrink header images on page 3 (Package details) so columns fit nicely */
+          .proposal-page .h-\\[200px\\] {
+            height: 220px !important;
+          }
+
+          /* Shrink secondary philosophy image on page 5 so letter fits nicely */
+          .proposal-page img[alt="Couple Portrait"] {
+            height: 220px !important;
+          }
+
+          /* General styling adjustments for print legibility */
+          .proposal-page h2 {
+            margin-top: 0 !important;
+          }
+          
+          /* Hide interactive/non-print buttons or customized panels */
+          .no-print {
+            display: none !important;
           }
         }
       ` }} />
@@ -1760,7 +2161,7 @@ export default function DigitalProposal() {
 
               {/* Tabs list */}
               <div className="flex border-b border-white/5 bg-zinc-900/60 p-1">
-                {["details", "package", "deliverables", "design"].map((tab) => (
+                {["details", "package", "deliverables", "design", "library"].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -2510,6 +2911,59 @@ export default function DigitalProposal() {
                       </div>
                     </div>
 
+                  </div>
+                )}
+
+                {/* TAB 5: LIBRARY / DRAFTS */}
+                {activeTab === "library" && (
+                  <div className="space-y-4">
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Saved Proposals Library</span>
+                    
+                    <button
+                      onClick={saveProposalToLibrary}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-xs tracking-wider uppercase transition-colors bg-[#d1a852] hover:bg-[#b08d41] text-black shadow-lg"
+                    >
+                      <Plus size={14} />
+                      <span>Save Current Draft</span>
+                    </button>
+
+                    <div className="border-t border-white/5 pt-4 space-y-3">
+                      <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider font-semibold">Your Drafts ({proposalLibrary.length})</span>
+                      {proposalLibrary.length === 0 ? (
+                        <div className="text-center py-6 text-xs text-zinc-500 italic">
+                          No saved drafts found. Save your current proposal above to list it here.
+                        </div>
+                      ) : (
+                        <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
+                          {proposalLibrary.map((item) => (
+                            <div key={item.id} className="bg-zinc-900/80 border border-white/5 p-3 rounded-lg flex items-center justify-between gap-3">
+                              <div className="min-w-0 flex-grow">
+                                <h4 className="text-xs font-semibold text-white truncate uppercase" title={item.title}>
+                                  {item.title}
+                                </h4>
+                                <span className="text-[9px] text-zinc-500 font-mono block mt-0.5">
+                                  Saved: {item.savedAt}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0 font-sans">
+                                <button
+                                  onClick={() => loadProposalFromLibrary(item.id)}
+                                  className="px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-[#d1a852] hover:text-white rounded text-[10px] font-mono font-semibold transition-colors"
+                                >
+                                  Load
+                                </button>
+                                <button
+                                  onClick={() => deleteProposalFromLibrary(item.id)}
+                                  className="p-1.5 hover:bg-red-500/10 text-zinc-500 hover:text-red-400 rounded transition-colors"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
