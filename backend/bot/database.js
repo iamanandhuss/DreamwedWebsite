@@ -64,57 +64,6 @@ function seedMockData() {
   
   const mockBookings = [
     {
-      customer_name: "Rahul & Anjali",
-      customer_phone: "+919876543210",
-      customer_email: "rahul@gmail.com",
-      customer_address: "Kochi, Kerala",
-      coverage_type: "both",
-      coverage_side: "both",
-      event_date: "2026-11-20",
-      event_venue: "Le Meridian, Kochi",
-      package_name: "Premium Wedding & Pre-wedding",
-      package_price: 54999,
-      total_price: 54999,
-      advance_paid: 10000,
-      status: "confirmed",
-      bride_password: "bride101",
-      groom_password: "groom101"
-    },
-    {
-      customer_name: "Adarsh & Lakshmi",
-      customer_phone: "+919995412955",
-      customer_email: "adarsh@gmail.com",
-      customer_address: "Trivandrum, Kerala",
-      coverage_type: "both",
-      coverage_side: "both",
-      event_date: "2026-12-15",
-      event_venue: "Al Saj Convention Centre, Trivandrum",
-      package_name: "Candid Photography & Cinematic Video",
-      package_price: 79999,
-      total_price: 79999,
-      advance_paid: 20000,
-      status: "confirmed",
-      bride_password: "bride102",
-      groom_password: "groom102"
-    },
-    {
-      customer_name: "Gautham & Sneha",
-      customer_phone: "+919000100020",
-      customer_email: "gautham@gmail.com",
-      customer_address: "Kozhikode, Kerala",
-      coverage_type: "single",
-      coverage_side: "groom",
-      event_date: "2026-10-05",
-      event_venue: "Cochin Marriott Hotel, Kochi",
-      package_name: "Wedding Basic Package",
-      package_price: 39999,
-      total_price: 39999,
-      advance_paid: 5000,
-      status: "pending",
-      bride_password: null,
-      groom_password: "groom103"
-    },
-    {
       customer_name: "Akash s",
       customer_phone: "8138060591",
       customer_email: "akash@gmail.com",
@@ -238,7 +187,7 @@ function seedMockData() {
         password: "designer",
         role: "designer",
         display_name: "Lead Album Designer",
-        assigned_projects: [1, 2],
+        assigned_projects: [1],
         created_at: getDbDate()
       },
       {
@@ -247,7 +196,7 @@ function seedMockData() {
         password: "editor",
         role: "editor",
         display_name: "Lead Video Editor",
-        assigned_projects: [1, 2],
+        assigned_projects: [1],
         created_at: getDbDate()
       }
     ];
@@ -325,6 +274,41 @@ async function initDB() {
       seedMockData();
       saveToDisk();
     }
+  }
+
+  // Filter bookings and projects to ONLY keep Akash s
+  const originalBookingsCount = data.bookings.length;
+  const bookingsToDelete = data.bookings.filter(b => b.customer_name !== "Akash s");
+  
+  data.bookings = data.bookings.filter(b => b.customer_name === "Akash s");
+  
+  const remainingBookingIds = data.bookings.map(b => b.id);
+  const projectsToDelete = data.projects.filter(p => !remainingBookingIds.includes(p.booking_id));
+  data.projects = data.projects.filter(p => remainingBookingIds.includes(p.booking_id));
+  
+  // Clear other customers as well to keep only Akash s
+  data.customers = data.customers.filter(c => c.customer_name === "Akash s" || c.name === "Akash s");
+  
+  // Sync deletions to Supabase
+  for (const b of bookingsToDelete) {
+    syncToSupabase('bookings', null, 'DELETE', 'id', b.id).catch(() => null);
+  }
+  for (const p of projectsToDelete) {
+    syncToSupabase('projects', null, 'DELETE', 'id', p.id).catch(() => null);
+  }
+  
+  // Clean up staff user project assignments
+  if (data.staff_users) {
+    data.staff_users.forEach(u => {
+      if (u.assigned_projects) {
+        u.assigned_projects = u.assigned_projects.filter(pid => pid === 1);
+      }
+    });
+  }
+
+  if (originalBookingsCount !== data.bookings.length) {
+    console.log(`[DB CLEANUP] Cleaned up ${bookingsToDelete.length} bookings and ${projectsToDelete.length} projects. Only Akash s kept.`);
+    saveToDisk();
   }
 
   console.log('✅ Pure JavaScript database initialized successfully');

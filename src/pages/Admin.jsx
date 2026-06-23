@@ -2501,6 +2501,16 @@ const Admin = () => {
                 <div className="invoice-to">
                   <h3>INVOICE TO:</h3>
                   <div className="invoice-to-name">{activeInvoiceBooking.customer_name}</div>
+                  {activeInvoiceBooking.customer_address && (
+                    <div className="invoice-to-address text-[10px] text-zinc-500 dark:text-zinc-400 font-light mt-0.5 leading-normal max-w-[280px]">
+                      {activeInvoiceBooking.customer_address}
+                    </div>
+                  )}
+                  {activeInvoiceBooking.customer_address_2 && (
+                    <div className="invoice-to-address text-[10px] text-zinc-500 dark:text-zinc-400 font-light mt-0.5 leading-normal max-w-[280px]">
+                      {activeInvoiceBooking.customer_address_2}
+                    </div>
+                  )}
                   <div className="invoice-to-details">
                     <div>{activeInvoiceBooking.customer_phone}</div>
                     {activeInvoiceBooking.wedding_reception_mode === "different" && activeInvoiceBooking.different_date_details ? (

@@ -3052,6 +3052,193 @@ const ClientPortal = () => {
                 )}
               </div>
 
+              {/* Registered Booking Details Card */}
+              {booking && (
+                <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/80 shadow-sm space-y-6 text-left">
+                  <div className="flex justify-between items-center border-b border-zinc-100 pb-4">
+                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Registered Booking Details</span>
+                    <span className="text-xs font-semibold text-[#b4975a] flex items-center gap-1.5">
+                      <FileText size={14} />
+                      <span>Client Registry Profile</span>
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Primary Contact (Groom / Primary Side) */}
+                    <div className="space-y-4">
+                      <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <User size={13} className="text-[#b4975a]" />
+                        <span>🤵 Groom / Primary Side</span>
+                      </h4>
+                      <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-100 space-y-2.5">
+                        <div className="grid grid-cols-3 text-xs">
+                          <span className="text-zinc-500 font-medium">Name:</span>
+                          <span className="col-span-2 text-zinc-800 font-semibold">{booking.customer_name?.split(" & ")[0] || booking.customer_name}</span>
+                        </div>
+                        <div className="grid grid-cols-3 text-xs">
+                          <span className="text-zinc-500 font-medium">Phone:</span>
+                          <span className="col-span-2 text-zinc-800 font-mono font-semibold flex items-center gap-1">
+                            <Phone size={11} className="text-zinc-400" />
+                            {booking.customer_phone}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 text-xs">
+                          <span className="text-zinc-500 font-medium">Email:</span>
+                          <span className="col-span-2 text-zinc-800 font-semibold break-all flex items-center gap-1">
+                            <Mail size={11} className="text-zinc-400" />
+                            {booking.customer_email || "N/A"}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 text-xs">
+                          <span className="text-zinc-500 font-medium">Address:</span>
+                          <span className="col-span-2 text-zinc-800 font-medium leading-normal flex items-start gap-1">
+                            <MapPin size={11} className="text-zinc-400 mt-0.5 shrink-0" />
+                            <span>{booking.customer_address || "N/A"}</span>
+                          </span>
+                        </div>
+                        {booking.pincode && (
+                          <div className="grid grid-cols-3 text-xs">
+                            <span className="text-zinc-500 font-medium">Pincode:</span>
+                            <span className="col-span-2 text-zinc-800 font-mono font-semibold">{booking.pincode}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Secondary Contact (Bride Side if applicable) */}
+                    <div className="space-y-4">
+                      <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <User size={13} className="text-[#b4975a]" />
+                        <span>👰 Bride / Secondary Side</span>
+                      </h4>
+                      <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-100 space-y-2.5">
+                        <div className="grid grid-cols-3 text-xs">
+                          <span className="text-zinc-500 font-medium">Name:</span>
+                          <span className="col-span-2 text-zinc-800 font-semibold">{booking.customer_name_2 || booking.customer_name?.split(" & ")[1] || "N/A"}</span>
+                        </div>
+                        <div className="grid grid-cols-3 text-xs">
+                          <span className="text-zinc-500 font-medium">Phone:</span>
+                          <span className="col-span-2 text-zinc-800 font-mono font-semibold flex items-center gap-1">
+                            <Phone size={11} className="text-zinc-400" />
+                            {booking.customer_phone_2 || "N/A"}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 text-xs">
+                          <span className="text-zinc-500 font-medium">Email:</span>
+                          <span className="col-span-2 text-zinc-800 font-semibold break-all flex items-center gap-1">
+                            <Mail size={11} className="text-zinc-400" />
+                            {booking.customer_email_2 || "N/A"}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 text-xs">
+                          <span className="text-zinc-500 font-medium">Address:</span>
+                          <span className="col-span-2 text-zinc-800 font-medium leading-normal flex items-start gap-1">
+                            <MapPin size={11} className="text-zinc-400 mt-0.5 shrink-0" />
+                            <span>{booking.customer_address_2 || "N/A"}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Event Schedule details */}
+                  <div className="border-t border-zinc-100 pt-6 space-y-4">
+                    <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Calendar size={13} className="text-[#b4975a]" />
+                      <span>Event Schedule & Locations</span>
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {booking.wedding_reception_mode === "different" && booking.different_date_details ? (
+                        <>
+                          <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-100 space-y-2.5 text-xs">
+                            <div className="font-bold text-[#b4975a] uppercase text-[10px] tracking-wider mb-1">💒 Wedding Ceremony</div>
+                            <div className="grid grid-cols-3"><span className="text-zinc-555">Date:</span><span className="col-span-2 text-zinc-800 font-semibold">{formatDateString(booking.different_date_details.wedding?.date)}</span></div>
+                            <div className="grid grid-cols-3"><span className="text-zinc-555">Time:</span><span className="col-span-2 text-zinc-800 font-semibold">{booking.different_date_details.wedding?.time || "N/A"}</span></div>
+                            <div className="grid grid-cols-3"><span className="text-zinc-555">Venue:</span><span className="col-span-2 text-zinc-800 font-medium">{booking.different_date_details.wedding?.venue || booking.event_venue || "N/A"}</span></div>
+                          </div>
+                          <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-100 space-y-2.5 text-xs">
+                            <div className="font-bold text-[#b4975a] uppercase text-[10px] tracking-wider mb-1">🥂 Reception Ceremony</div>
+                            <div className="grid grid-cols-3"><span className="text-zinc-555">Date:</span><span className="col-span-2 text-zinc-800 font-semibold">{formatDateString(booking.different_date_details.reception?.date)}</span></div>
+                            <div className="grid grid-cols-3"><span className="text-zinc-555">Time:</span><span className="col-span-2 text-zinc-800 font-semibold">{booking.different_date_details.reception?.time || "N/A"}</span></div>
+                            <div className="grid grid-cols-3"><span className="text-zinc-555">Venue:</span><span className="col-span-2 text-zinc-800 font-medium">{booking.different_date_details.reception?.venue || booking.reception_venue || "N/A"}</span></div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-100 space-y-2.5 text-xs col-span-2">
+                            <div className="font-bold text-[#b4975a] uppercase text-[10px] tracking-wider mb-1">✨ Ceremony Schedule</div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <div className="grid grid-cols-3"><span className="text-zinc-555">Event Date:</span><span className="col-span-2 text-zinc-800 font-semibold">{formatDateString(booking.event_date)}</span></div>
+                                <div className="grid grid-cols-3"><span className="text-zinc-555">Wedding Time:</span><span className="col-span-2 text-zinc-800 font-semibold">{booking.same_date_details?.wedding_time || "N/A"}</span></div>
+                                <div className="grid grid-cols-3"><span className="text-zinc-555">Wedding Venue:</span><span className="col-span-2 text-zinc-800 font-medium">{booking.event_venue || "N/A"}</span></div>
+                              </div>
+                              {(booking.reception_venue || booking.same_date_details?.reception_venue) && (
+                                <div className="space-y-2">
+                                  <div className="grid grid-cols-3"><span className="text-zinc-555">Reception Time:</span><span className="col-span-2 text-zinc-800 font-semibold">{booking.same_date_details?.reception_time || "N/A"}</span></div>
+                                  <div className="grid grid-cols-3"><span className="text-zinc-555">Reception Venue:</span><span className="col-span-2 text-zinc-800 font-medium">{booking.reception_venue || booking.same_date_details?.reception_venue}</span></div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Package & Specifications */}
+                  <div className="border-t border-zinc-100 pt-6 space-y-4">
+                    <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Gift size={13} className="text-[#b4975a]" />
+                      <span>Booking & Customization Specifications</span>
+                    </h4>
+                    <div className="bg-zinc-50 p-5 rounded-2xl border border-zinc-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-xs">
+                      <div className="space-y-1">
+                        <span className="text-zinc-500 font-medium">Coverage Type:</span>
+                        <span className="block text-zinc-800 font-semibold capitalize">{booking.coverage_type || "N/A"} ({booking.coverage_side === "both" ? "Both Sides" : `${booking.coverage_side} Side Only`})</span>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-zinc-500 font-medium">Drone Upgrade:</span>
+                        <span className="block text-zinc-800 font-semibold capitalize">{booking.need_drone || "no"}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[#b4975a] font-medium flex items-center gap-1">
+                          <Video size={11} />
+                          <span>Cinematic Video:</span>
+                        </span>
+                        <span className="block text-zinc-800 font-semibold capitalize">{booking.need_cinematic || "no"}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-zinc-500 font-medium">Album Size Choice:</span>
+                        <span className="block text-zinc-800 font-semibold">{booking.preferred_album_size || "12x18"}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-zinc-500 font-medium">Travel & Stay Charges:</span>
+                        <span className="block text-zinc-800 font-semibold">Travel: {booking.travel_charges || "Excluded"} • Stay: {booking.stay_charges || "Excluded"}</span>
+                      </div>
+                      {booking.add_ons && booking.add_ons.length > 0 && (
+                        <div className="col-span-1 sm:col-span-2 md:col-span-3 space-y-1.5">
+                          <span className="text-zinc-500 font-medium">Selected Add-ons / Upgrades:</span>
+                          <div className="flex flex-wrap gap-2">
+                            {booking.add_ons.map((addon, idx) => (
+                              <span key={idx} className="bg-[#b4975a]/10 border border-[#b4975a]/20 text-[#b4975a] px-2.5 py-1 rounded-lg font-semibold text-[10px]">
+                                ✨ {addon}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {booking.special_notes && (
+                        <div className="col-span-1 sm:col-span-2 md:col-span-3 space-y-1">
+                          <span className="text-zinc-500 font-medium">Special Instructions / Crew Notes:</span>
+                          <p className="bg-white p-3.5 rounded-xl border border-zinc-150 text-zinc-700 italic leading-relaxed">{booking.special_notes}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Progress Tracker Widget */}
               <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-zinc-200/80 shadow-sm space-y-6 text-left">
                 <div className="flex justify-between items-center border-b border-zinc-100 pb-4">
