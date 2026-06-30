@@ -99,10 +99,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Print styles for Proposal PDF generation */
+/* Print styles for Proposal PDF generation */
 @media print {
   html, body {
-    background-color: #ffffff !important;
-    color: #1a1a1a !important;
+    background-color: #FAF7F2 !important; /* Luxurious Ivory matching screen */
+    color: #2c2519 !important; /* Deep charcoal-warm brown */
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
@@ -129,11 +130,11 @@ h1, h2, h3, h4, h5, h6 {
     overflow: visible !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: #ffffff !important;
+    background: #FAF7F2 !important;
     box-shadow: none !important;
   }
 
-  /* Force each section/slide to be a single page */
+  /* Force each section/slide to be a single portrait page */
   .proposal-page {
     page-break-after: always !important;
     break-after: page !important;
@@ -141,99 +142,53 @@ h1, h2, h3, h4, h5, h6 {
     position: relative !important;
     box-sizing: border-box !important;
     margin: 0 auto !important;
-    padding: 0 !important;
+    padding: 16mm 14mm !important; /* Matches digital proposal component margins */
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
-    background-color: #ffffff !important;
+    background-color: #FAF7F2 !important;
     min-height: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+
+    /* Universally force portrait A4 dimensions regardless of screen aspect ratio */
+    height: 297mm !important; /* Standard A4 height */
+    width: 210mm !important;  /* Standard A4 width */
+    max-height: 297mm !important;
+    max-width: 210mm !important;
   }
+
+
 
   .proposal-page .grid {
     display: grid !important;
   }
 
-  /* Target specific print orientations using media queries */
-  @media (orientation: landscape) {
-    .proposal-page {
-      height: 208mm !important; /* A4 landscape height minus safety margin */
-      width: 297mm !important;  /* A4 landscape width */
-      max-height: 208mm !important;
-      max-width: 297mm !important;
-    }
-    .proposal-page.proposal-text-page {
-      padding: 20mm 15mm !important;
-    }
-    .proposal-page .grid.md\:grid-cols-2 {
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-    .proposal-page .grid.md\:grid-cols-3 {
-      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    }
-    .proposal-page .grid.md\:grid-cols-12 {
-      grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
-    }
-    .proposal-page .md\:col-span-7 {
-      grid-column: span 7 / span 7 !important;
-    }
-    .proposal-page .md\:col-span-5 {
-      grid-column: span 5 / span 5 !important;
-    }
+  /* Event Header font sizing to prevent truncation and match screen size */
+  .proposal-page h3 {
+    font-family: 'Cormorant Garamond', serif !important;
+    font-size: 0.75rem !important; /* Matches screen text-xs size */
+    font-weight: 600 !important;
+    color: #1a1a1a !important;
+    letter-spacing: 0.2em !important;
+    white-space: nowrap !important; /* Keep it on a single line */
+    overflow: visible !important;
+    text-transform: uppercase !important;
   }
 
-  @media (orientation: portrait) {
-    .proposal-page {
-      height: 282mm !important; /* A4 portrait height minus safety margin */
-      width: 210mm !important;  /* A4 portrait width */
-      max-height: 282mm !important;
-      max-width: 210mm !important;
-    }
-    .proposal-page.proposal-text-page {
-      padding: 15mm 10mm !important;
-    }
-    .proposal-page .grid.md\:grid-cols-2 {
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      gap: 1.5rem !important;
-    }
-    .proposal-page .grid.md\:grid-cols-3 {
-      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-      gap: 1.25rem !important;
-    }
-    .proposal-page .grid.md\:grid-cols-12 {
-      grid-template-columns: 1fr !important; /* Stack columns on letter page */
-      gap: 1.5rem !important;
-    }
-    .proposal-page .md\:col-span-7 {
-      grid-column: span 12 / span 12 !important;
-    }
-    .proposal-page .md\:col-span-5 {
-      display: none !important; /* Hide secondary photo in portrait print to avoid vertical text overflow */
-    }
-    
-    /* Font sizing and spacing adjustments for tight A4 portrait fit */
-    .proposal-page h2 {
-      font-size: 1.75rem !important;
-      line-height: 1.2 !important;
-    }
-    .proposal-page p, .proposal-page span, .proposal-page li {
-      font-size: 0.75rem !important;
-    }
-    .proposal-page .space-y-8 > :not([hidden]) ~ :not([hidden]) {
-      --tw-space-y-reverse: 0 !important;
-      margin-top: 1.5rem !important;
-    }
-    .proposal-page .space-y-12 > :not([hidden]) ~ :not([hidden]) {
-      --tw-space-y-reverse: 0 !important;
-      margin-top: 1.5rem !important;
-    }
+  /* Gold-Label Badges in print */
+  .proposal-page .bg-\[\#b4975a\]\/10,
+  .proposal-page .bg-zinc-100,
+  .proposal-page .bg-zinc-50 {
+    background-color: #f7f2e8 !important;
+    border: 1px solid #d1a852 !important;
+    color: #8c6a23 !important;
   }
 
   /* Reset root background & color to prevent dark theme printing */
   .proposal-root-container {
-    background-color: #ffffff !important;
-    background: #ffffff !important;
+    background-color: #FAF7F2 !important;
+    background: #FAF7F2 !important;
     color: #1a1a1a !important;
     min-height: auto !important;
     height: auto !important;
@@ -258,25 +213,202 @@ h1, h2, h3, h4, h5, h6 {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+
+  /* Force desktop column grid layouts in print regardless of viewport width */
+  .proposal-page.proposal-cover-page::before {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+    top: 8mm !important;
+    bottom: 8mm !important;
+    left: 8mm !important;
+    right: 8mm !important;
+    border: 1px solid rgba(180, 151, 90, 0.35) !important;
+    pointer-events: none !important;
+    z-index: 10 !important;
+  }
+
+  .proposal-print-container:not(.mobile-print-active) .proposal-page .md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .proposal-print-container:not(.mobile-print-active) .proposal-page .md\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .proposal-print-container:not(.mobile-print-active) .proposal-page .md\:grid-cols-12 {
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+  }
+
+  .proposal-print-container:not(.mobile-print-active) .proposal-page .md\:col-span-7 {
+    grid-column: span 7 / span 7 !important;
+  }
+
+  .proposal-print-container:not(.mobile-print-active) .proposal-page .md\:col-span-5 {
+    grid-column: span 5 / span 5 !important;
+  }
+
+  .proposal-print-container:not(.mobile-print-active) .proposal-page .sm\:flex-row {
+    flex-direction: row !important;
+  }
+
+  .proposal-page .md\:border-l {
+    border-left: 1px solid rgba(180, 151, 90, 0.2) !important;
+  }
+
+  .proposal-page .md\:pl-6 {
+    padding-left: 1.5rem !important;
+  }
+
+  .proposal-page .md\:gap-6 {
+    gap: 1.5rem !important;
+  }
+
+  .proposal-page .md\:gap-8 {
+    gap: 2rem !important;
+  }
+
+  .proposal-page .md\:gap-10 {
+    gap: 2.5rem !important;
+  }
+
+  /* Content pages are white background in print */
+  .proposal-page:not(.proposal-cover-page) {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+  }
+  /* Mobile Print Adjustments */
+  .mobile-print-active .proposal-page {
+    padding: 10mm 8mm !important;
+    min-height: 192mm !important;
+  }
+
+  .mobile-print-active .proposal-page h2 {
+    font-size: 18pt !important;
+    margin-bottom: 2mm !important;
+  }
+
+  .mobile-print-active .proposal-page h3 {
+    font-size: 14pt !important;
+  }
+
+  .mobile-print-active .proposal-page p,
+  .mobile-print-active .proposal-page span,
+  .mobile-print-active .proposal-page div:not(.proposal-page) {
+    font-size: 10pt !important;
+  }
+
+  .mobile-print-active .proposal-page .md\:border-l {
+    border-left: none !important;
+    border-top: 1px solid rgba(180, 151, 90, 0.2) !important;
+    padding-left: 0 !important;
+    padding-top: 1rem !important;
+    margin-top: 1rem !important;
+  }
+
+  .mobile-print-active .proposal-page .md\:grid-cols-2,
+  .mobile-print-active .proposal-page .md\:grid-cols-3,
+  .mobile-print-active .proposal-page .md\:grid-cols-12 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+
+  .mobile-print-active .proposal-page .md\:col-span-7,
+  .mobile-print-active .proposal-page .md\:col-span-5 {
+    grid-column: span 1 / span 1 !important;
+  }
+
+  .mobile-print-active .proposal-page .sm\:flex-row {
+    flex-direction: column !important;
+  }
 }
 
-/* Named @page templates for orientation-safe printing */
-@page landscape-page {
-  size: A4 landscape;
-  margin: 0;
-}
-
-@page portrait-page {
+/* Force default print sheet layout size to A4 Portrait */
+@page {
   size: A4 portrait;
-  margin: 10mm;
+  margin: 0;
 }
 
 @media print {
   .proposal-print-container {
-    page: landscape-page !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 210mm !important;
+    height: auto !important;
+    overflow: visible !important;
   }
   .invoice-overlay {
-    page: portrait-page !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 210mm !important;
+    height: auto !important;
   }
+}
+
+/* ========================================================================== */
+/* UNIVERSAL LUXURIOUS CLASSIC SCREEN ACCENTS (DESKTOP & MOBILE BROWSERS)     */
+/* ========================================================================== */
+
+/* Ivory and warm charcoal color mapping */
+.proposal-page.proposal-cover-page {
+  background-color: #FAF8F5 !important;
+  color: #2c2519 !important;
+}
+
+.proposal-page:not(.proposal-cover-page) {
+  background-color: #ffffff !important;
+  color: #2c2519 !important;
+}
+
+/* Serif font overrides for proposal headings */
+.proposal-page h2, 
+.proposal-page h3, 
+.proposal-page h4, 
+.proposal-page h5 {
+  font-family: 'Cormorant Garamond', serif !important;
+  color: #1a1a1a !important;
+}
+
+/* Responsive inner gold border frame for screens (ONLY ON COVER PAGE) */
+.proposal-page.proposal-cover-page::before {
+  content: "";
+  position: absolute;
+  top: 4vw;
+  bottom: 4vw;
+  left: 4vw;
+  right: 4vw;
+  border: 1px solid rgba(180, 151, 90, 0.35);
+  pointer-events: none;
+  z-index: 10;
+}
+
+@media (min-width: 768px) {
+  .proposal-page.proposal-cover-page::before {
+    top: 2rem;
+    bottom: 2rem;
+    left: 2rem;
+    right: 2rem;
+  }
+}
+
+/* Gold badges on screen (ONLY ON COVER PAGE) */
+.proposal-page.proposal-cover-page .bg-\[\#b4975a\]\/10,
+.proposal-page.proposal-cover-page .bg-zinc-100,
+.proposal-page.proposal-cover-page .bg-zinc-50 {
+  background-color: #f7f2e8 !important;
+  border: 1px solid rgba(209, 168, 82, 0.4) !important;
+  color: #8c6a23 !important;
+}
+
+/* Refined ivory/gold styling for cards and boxes (ONLY ON COVER PAGE) */
+.proposal-page.proposal-cover-page .bg-white,
+.proposal-page.proposal-cover-page .bg-white\/85 {
+  background-color: #FAF8F5 !important;
+  border-color: rgba(180, 151, 90, 0.25) !important;
+}
+
+/* Make dividers gold instead of grey (ONLY ON COVER PAGE) */
+.proposal-page.proposal-cover-page .border-zinc-100,
+.proposal-page.proposal-cover-page .border-zinc-200 {
+  border-color: rgba(180, 151, 90, 0.2) !important;
 }
 

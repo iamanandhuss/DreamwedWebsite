@@ -95,9 +95,10 @@ const Admin = () => {
       setAiGalleries(storedGals);
       setAiOrders(storedOrds);
 
-      // Auto-poll for new booking requests every 15 seconds
+      // Auto-poll for new booking requests and projects every 15 seconds
       const bookingPoller = setInterval(() => {
         fetchBookings();
+        fetchProjects();
       }, 15000);
       return () => clearInterval(bookingPoller);
     }
@@ -1409,6 +1410,106 @@ const Admin = () => {
                       >
                         Save Passwords
                       </button>
+                    </div>
+
+                    {/* Client Entered Details Section */}
+                    <div className="space-y-4 bg-zinc-900/40 p-5 border border-zinc-800 rounded-2xl">
+                      <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+                        <Users size={16} className="text-[#b4975a]" />
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300">Client Entered Details</h4>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 text-xs text-zinc-300">
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Primary Contact Name</span>
+                          <span className="text-zinc-200 font-medium">{selectedClient.customer_name || "N/A"}</span>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Primary Phone / Email</span>
+                          <span className="text-zinc-200 font-medium">{selectedClient.customer_phone || "N/A"} {selectedClient.customer_email ? `• ${selectedClient.customer_email}` : ""}</span>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Address & Pincode</span>
+                          <span className="text-zinc-200 font-medium">{selectedClient.customer_address || "N/A"} {selectedClient.pincode ? `(PIN: ${selectedClient.pincode})` : ""}</span>
+                        </div>
+
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Coverage Side / Scope</span>
+                          <span className="text-zinc-200 font-medium capitalize">{selectedClient.coverage_side || "N/A"} Side • {selectedClient.coverage_type || selectedClient.coverage_scope || "N/A"} Side</span>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Drone Upgrade</span>
+                          <span className="text-zinc-200 font-medium capitalize">{selectedClient.need_drone || "no"}</span>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Cinematic Video</span>
+                          <span className="text-zinc-200 font-medium capitalize">{selectedClient.need_cinematic || "no"}</span>
+                        </div>
+
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Preferred Album Size</span>
+                          <span className="text-zinc-200 font-medium">{selectedClient.preferred_album_size || "12x18"}</span>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Travel / Stay Charges</span>
+                          <span className="text-zinc-200 font-medium">Travel: {selectedClient.travel_charges || "Excluded"} • Stay: {selectedClient.stay_charges || "Excluded"}</span>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Advance Paid / Balance</span>
+                          <span className="text-zinc-200 font-medium">Paid: ₹{formatCurrency(selectedClient.advance_paid)} • Balance: ₹{formatCurrency((selectedClient.total_price || selectedClient.package_price) - (selectedClient.advance_paid || 5000))}</span>
+                        </div>
+
+                        {/* Secondary contact details if present */}
+                        {(selectedClient.customer_name_2 || selectedClient.customer_phone_2 || selectedClient.customer_email_2 || selectedClient.customer_address_2) && (
+                          <>
+                            <div className="space-y-1 border-t border-zinc-800/50 pt-2 col-span-1 sm:col-span-2 md:col-span-3">
+                              <span className="text-[9px] font-bold text-[#b4975a] uppercase tracking-wider block">Secondary/Alternate Contact Info</span>
+                            </div>
+                            {selectedClient.customer_name_2 && (
+                              <div className="space-y-1">
+                                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Secondary Name</span>
+                                <span className="text-zinc-200 font-medium">{selectedClient.customer_name_2}</span>
+                              </div>
+                            )}
+                            {(selectedClient.customer_phone_2 || selectedClient.customer_email_2) && (
+                              <div className="space-y-1">
+                                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Secondary Contact</span>
+                                <span className="text-zinc-200 font-medium">{selectedClient.customer_phone_2 || "N/A"} {selectedClient.customer_email_2 ? `• ${selectedClient.customer_email_2}` : ""}</span>
+                              </div>
+                            )}
+                            {selectedClient.customer_address_2 && (
+                              <div className="space-y-1">
+                                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Secondary Address</span>
+                                <span className="text-zinc-200 font-medium">{selectedClient.customer_address_2}</span>
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        {/* Special crew notes / instructions */}
+                        {selectedClient.special_notes && (
+                          <div className="space-y-1 col-span-1 sm:col-span-2 md:col-span-3">
+                            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Special Instructions / Notes</span>
+                            <p className="bg-zinc-900/80 p-3 rounded-xl border border-zinc-800 text-zinc-400 italic leading-relaxed text-[11px] font-light">
+                              "{selectedClient.special_notes}"
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Add-ons */}
+                        {selectedClient.add_ons && selectedClient.add_ons.length > 0 && (
+                          <div className="space-y-1.5 col-span-1 sm:col-span-2 md:col-span-3">
+                            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Selected Add-ons</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {selectedClient.add_ons.map((addon, idx) => (
+                                <span key={idx} className="bg-[#b4975a]/10 border border-[#b4975a]/20 text-[#b4975a] px-2.5 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider">
+                                  ✨ {addon}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Selected Photos Inspection Section */}

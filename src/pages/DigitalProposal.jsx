@@ -673,11 +673,15 @@ export default function DigitalProposal() {
       }
     }
 
-    // Load and override from JSON payload if 'data' is present
-    const dataParam = params.get("data");
+    // Load and override from JSON payload if 'data' is present or 'from_storage' flag is set
+    let dataParam = params.get("data");
+    if (params.get("from_storage") === "true") {
+      dataParam = localStorage.getItem('temp_proposal_data');
+    }
+    
     if (dataParam) {
       try {
-        const payload = JSON.parse(decodeURIComponent(dataParam));
+        const payload = JSON.parse(dataParam);
         
         // 1. clientName (split into groomName and brideName)
         const name = payload.clientName || 'Wedding Couple';
@@ -1053,6 +1057,8 @@ export default function DigitalProposal() {
   ]);
 
   const [proposalLibrary, setProposalLibrary] = useState([]);
+  const [currentDraftId, setCurrentDraftId] = useState(null);
+  const [currentDraftTitle, setCurrentDraftTitle] = useState("");
   
   const loadProposalLibrary = () => {
     const listStr = localStorage.getItem('proposal_library_index') || '[]';
@@ -1098,15 +1104,23 @@ export default function DigitalProposal() {
     loadProposalLibrary();
   }, []);
 
-  const saveProposalToLibrary = () => {
-    const title = prompt("Enter a name for this proposal draft:", `${groomName} & ${brideName} (${proposalDate})`);
-    if (!title) return;
+  const saveProposalToLibrary = (overwriteId = null) => {
+    let targetId = overwriteId || currentDraftId;
+    let title = currentDraftTitle;
     
-    const draftId = `draft_${Date.now()}`;
+    if (!targetId) {
+      const defaultTitle = `${groomName} & ${brideName} (${proposalDate})`;
+      title = prompt("Enter a name for this proposal draft:", defaultTitle);
+      if (!title) return;
+      targetId = `draft_${Date.now()}`;
+    } else {
+      if (!confirm(`Save changes to draft "${title}"?`)) return;
+    }
+    
     const draftData = {
-      id: draftId,
+      id: targetId,
       title: title,
-      savedAt: new Date().toLocaleString(),
+      savedAt: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
       data: {
         brideName, groomName, proposalId, proposalDate, weddingDate, weddingLocation,
         price, leadPhotographer, themeColor, coverImage, packageImage, philosophyImage,
@@ -1120,18 +1134,22 @@ export default function DigitalProposal() {
       }
     };
     
-    localStorage.setItem(`proposal_library_${draftId}`, JSON.stringify(draftData));
+    localStorage.setItem(`proposal_library_${targetId}`, JSON.stringify(draftData));
     
     const currentListStr = localStorage.getItem('proposal_library_index') || '[]';
     let currentList = [];
     try {
       currentList = JSON.parse(currentListStr);
     } catch(e) {}
-    currentList.push({ id: draftId, title: title, savedAt: draftData.savedAt });
+    
+    currentList = currentList.filter(item => item.id !== targetId);
+    currentList.push({ id: targetId, title: title, savedAt: draftData.savedAt });
     localStorage.setItem('proposal_library_index', JSON.stringify(currentList));
     
+    setCurrentDraftId(targetId);
+    setCurrentDraftTitle(title);
     loadProposalLibrary();
-    alert("Proposal saved to drafts library successfully!");
+    alert(overwriteId || currentDraftId ? "Draft changes saved successfully!" : "Proposal saved to drafts library successfully!");
   };
 
   const loadProposalFromLibrary = (draftId) => {
@@ -1140,18 +1158,19 @@ export default function DigitalProposal() {
     try {
       const draft = JSON.parse(saved);
       const data = draft.data || draft;
-      if (data.brideName) setBrideName(data.brideName);
-      if (data.groomName) setGroomName(data.groomName);
-      if (data.proposalId) setProposalId(data.proposalId);
-      if (data.proposalDate) setProposalDate(data.proposalDate);
-      if (data.weddingDate) setWeddingDate(data.weddingDate);
-      if (data.weddingLocation) setWeddingLocation(data.weddingLocation);
-      if (data.price) setPrice(data.price);
-      if (data.leadPhotographer) setLeadPhotographer(data.leadPhotographer);
-      if (data.themeColor) setThemeColor(data.themeColor);
-      if (data.coverImage) setCoverImage(data.coverImage);
-      if (data.packageImage) setPackageImage(data.packageImage);
-      if (data.philosophyImage) setPhilosophyImage(data.philosophyImage);
+      
+      if (data.brideName !== undefined) setBrideName(data.brideName);
+      if (data.groomName !== undefined) setGroomName(data.groomName);
+      if (data.proposalId !== undefined) setProposalId(data.proposalId);
+      if (data.proposalDate !== undefined) setProposalDate(data.proposalDate);
+      if (data.weddingDate !== undefined) setWeddingDate(data.weddingDate);
+      if (data.weddingLocation !== undefined) setWeddingLocation(data.weddingLocation);
+      if (data.price !== undefined) setPrice(data.price);
+      if (data.leadPhotographer !== undefined) setLeadPhotographer(data.leadPhotographer);
+      if (data.themeColor !== undefined) setThemeColor(data.themeColor);
+      if (data.coverImage !== undefined) setCoverImage(data.coverImage);
+      if (data.packageImage !== undefined) setPackageImage(data.packageImage);
+      if (data.philosophyImage !== undefined) setPhilosophyImage(data.philosophyImage);
       
       if (data.coverPositionX !== undefined) setCoverPositionX(data.coverPositionX);
       if (data.coverPositionY !== undefined) setCoverPositionY(data.coverPositionY);
@@ -1185,6 +1204,8 @@ export default function DigitalProposal() {
       if (data.deliverables !== undefined) setDeliverables(data.deliverables);
       if (data.complimentary !== undefined) setComplimentary(data.complimentary);
       
+      setCurrentDraftId(draftId);
+      setCurrentDraftTitle(draft.title || "");
       alert(`Loaded draft: ${draft.title}`);
     } catch (e) {
       console.error("Failed to load proposal draft", e);
@@ -1203,7 +1224,67 @@ export default function DigitalProposal() {
     const updatedList = currentList.filter(item => item.id !== draftId);
     localStorage.setItem('proposal_library_index', JSON.stringify(updatedList));
     
+    if (currentDraftId === draftId) {
+      setCurrentDraftId(null);
+      setCurrentDraftTitle("");
+    }
+    
     loadProposalLibrary();
+  };
+
+  const startNewProposal = () => {
+    if (!confirm("Are you sure you want to start a new proposal? This will reset all customize fields to default templates.")) return;
+    setBrideName("ANJANA");
+    setGroomName("ASWIN");
+    setProposalId(`DW-2026-${Math.floor(100 + Math.random() * 900)}`);
+    setProposalDate(new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
+    setWeddingDate("September 15, 2026");
+    setWeddingLocation("Trivandrum, Kerala");
+    setPrice("1,10,000");
+    setLeadPhotographer("Unni Krishnan");
+    setSelectedPackageIndex("");
+    setThemeColor("#b4975a");
+    setCoverImage("/couple_traditional_red.jpg");
+    setPackageImage("/uploaded_bride_yellow.jpg");
+    setPhilosophyImage("/uploaded_couple_blackwhite.jpg");
+    setCoverPositionX(50);
+    setCoverPositionY(50);
+    setCoverScale(100);
+    setPackagePositionX(50);
+    setPackagePositionY(50);
+    setPackageScale(100);
+    setPhilosophyPositionX(50);
+    setPhilosophyPositionY(50);
+    setPhilosophyScale(100);
+    setWeddingCandidPhoto(1);
+    setWeddingTradPhoto(1);
+    setWeddingCandidVideo(1);
+    setWeddingTradVideo(1);
+    setEvePhoto(1);
+    setEveVideo(1);
+    setPrewedPhoto(1);
+    setPrewedVideo(1);
+    setHasDrone(false);
+    setHasLedWall(false);
+    setHasPreweddingVideo(false);
+    setHasHaldi(false);
+    setCustomAddons([]);
+    setDeliverables([
+      "50 Page Premium Layflat Main Album (12x18 inches)",
+      "Miniature Copy of the Main Album for Parents",
+      "25 Leaf (50 Pages) Fine-Art Imported Matte Paper",
+      "All Raw & High-Resolution Edited Images",
+      "Pen Drive for Edited Full Videos + Digital Link"
+    ]);
+    setComplimentary([
+      "2 x Table Top Miniature Calendars",
+      "2 x Cinematic Reels (Instagram-Ready)",
+      "Pre-Wedding Consultation Session",
+      "Save The Date Photoshoot"
+    ]);
+    setCurrentDraftId(null);
+    setCurrentDraftTitle("");
+    alert("Reset customizer fields to default.");
   };
 
   const generateShareableLink = (isClient) => {
@@ -1574,6 +1655,7 @@ export default function DigitalProposal() {
           {/* ======================================================== */}
           {/* PAGE 1: COVER SLIDE */}
           {/* ======================================================== */}
+          {!isMobilePrintMode && (
           <section className="proposal-page relative w-full min-h-[90vh] flex flex-col justify-between overflow-hidden bg-[#ffffff]">
             {/* Background image */}
             <div className="absolute inset-0 z-0">
@@ -1636,6 +1718,7 @@ export default function DigitalProposal() {
               </motion.div>
             </div>
           </section>
+          )}
 
           {/* ======================================================== */}
           {/* PAGE 2: CLIENT LOVE (AS IN SCREENSHOT 1) */}
@@ -2919,13 +3002,47 @@ export default function DigitalProposal() {
                   <div className="space-y-4">
                     <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Saved Proposals Library</span>
                     
-                    <button
-                      onClick={saveProposalToLibrary}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-xs tracking-wider uppercase transition-colors bg-[#d1a852] hover:bg-[#b08d41] text-black shadow-lg"
-                    >
-                      <Plus size={14} />
-                      <span>Save Current Draft</span>
-                    </button>
+                    {currentDraftId && (
+                      <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between gap-3 text-xs text-amber-400">
+                        <div className="min-w-0">
+                          <span className="text-[9px] uppercase tracking-widest block text-zinc-500 font-mono font-bold">Active Draft</span>
+                          <strong className="block truncate text-white uppercase text-[11px] mt-0.5">{currentDraftTitle}</strong>
+                        </div>
+                        <button
+                          onClick={startNewProposal}
+                          className="px-2 py-1 rounded bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 text-[10px] font-bold uppercase transition-colors shrink-0 cursor-pointer"
+                        >
+                          New Proposal
+                        </button>
+                      </div>
+                    )}
+                    
+                    {currentDraftId ? (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => saveProposalToLibrary(currentDraftId)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg font-bold text-[10px] tracking-wider uppercase transition-colors bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg cursor-pointer"
+                        >
+                          <Save size={13} />
+                          <span>Save Changes</span>
+                        </button>
+                        <button
+                          onClick={() => saveProposalToLibrary(null)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg font-bold text-[10px] tracking-wider uppercase transition-colors bg-zinc-850 hover:bg-zinc-800 border border-white/5 text-zinc-300 shadow-lg cursor-pointer"
+                        >
+                          <Plus size={13} />
+                          <span>Save As New</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => saveProposalToLibrary(null)}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-xs tracking-wider uppercase transition-colors bg-[#d1a852] hover:bg-[#b08d41] text-black shadow-lg cursor-pointer"
+                      >
+                        <Plus size={14} />
+                        <span>Save Current Draft</span>
+                      </button>
+                    )}
 
                     <div className="border-t border-white/5 pt-4 space-y-3">
                       <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider font-semibold">Your Drafts ({proposalLibrary.length})</span>
