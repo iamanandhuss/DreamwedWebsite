@@ -55,6 +55,7 @@ const Admin = () => {
   const [editGroomPassword, setEditGroomPassword] = useState("");
   const [activeInvoiceBooking, setActiveInvoiceBooking] = useState(null);
   const [activeClientPhotoTab, setActiveClientPhotoTab] = useState("bride"); // bride | groom | matches
+  const [selectedClientTab, setSelectedClientTab] = useState("details"); // details | passwords | photos | billing
 
   // Chats tab state
   const [chatProject, setChatProject] = useState(null);
@@ -1303,6 +1304,7 @@ const Admin = () => {
                             setSelectedClient(b);
                             setEditBridePassword(b.bride_password || "");
                             setEditGroomPassword(b.groom_password || "");
+                            setSelectedClientTab("details");
                             if (window.innerWidth < 768) {
                               setTimeout(() => {
                                 document.getElementById("client-details-card")?.scrollIntoView({ behavior: "smooth" });
@@ -1374,12 +1376,36 @@ const Admin = () => {
                       </p>
                     </div>
 
+                    {/* Sub-tab Navigation */}
+                    <div className="flex border-b border-zinc-800 gap-1 pb-1.5 overflow-x-auto whitespace-nowrap scrollbar-hide">
+                      {[
+                        { id: "details", label: "📋 Entered Details" },
+                        { id: "passwords", label: "🔑 Access Passwords" },
+                        { id: "photos", label: "📸 Hearts & Selections" },
+                        { id: "billing", label: "🧾 Billing & Invoices" }
+                      ].map((subTab) => (
+                        <button
+                          key={subTab.id}
+                          type="button"
+                          onClick={() => setSelectedClientTab(subTab.id)}
+                          className={`px-4 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
+                            selectedClientTab === subTab.id
+                              ? "bg-[#b4975a] text-zinc-950 shadow-sm"
+                              : "text-zinc-400 hover:text-white hover:bg-zinc-900/50"
+                          }`}
+                        >
+                          {subTab.label}
+                        </button>
+                      ))}
+                    </div>
+
                     {/* Password management */}
-                    <div className="space-y-4 bg-zinc-900/40 p-5 border border-zinc-800 rounded-2xl">
-                      <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
-                        <ShieldCheck size={16} className="text-[#b4975a]" />
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300">Client Access Passwords</h4>
-                      </div>
+                    {selectedClientTab === "passwords" && (
+                      <div className="space-y-4 bg-zinc-900/40 p-5 border border-zinc-800 rounded-2xl">
+                        <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+                          <ShieldCheck size={16} className="text-[#b4975a]" />
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300">Client Access Passwords</h4>
+                        </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
@@ -1411,13 +1437,15 @@ const Admin = () => {
                         Save Passwords
                       </button>
                     </div>
+                    )}
 
                     {/* Client Entered Details Section */}
-                    <div className="space-y-4 bg-zinc-900/40 p-5 border border-zinc-800 rounded-2xl">
-                      <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
-                        <Users size={16} className="text-[#b4975a]" />
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300">Client Entered Details</h4>
-                      </div>
+                    {selectedClientTab === "details" && (
+                      <div className="space-y-4 bg-zinc-900/40 p-5 border border-zinc-800 rounded-2xl">
+                        <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+                          <Users size={16} className="text-[#b4975a]" />
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300">Client Entered Details</h4>
+                        </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 text-xs text-zinc-300">
                         <div className="space-y-1">
@@ -1511,14 +1539,16 @@ const Admin = () => {
                         )}
                       </div>
                     </div>
+                    )}
 
                     {/* Selected Photos Inspection Section */}
-                    <div className="space-y-4 bg-zinc-900/40 p-5 border border-zinc-800 rounded-2xl">
-                      <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-                        <div className="flex items-center gap-2">
-                          <Camera size={16} className="text-[#b4975a]" />
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300">Client Selected Photos</h4>
-                        </div>
+                    {selectedClientTab === "photos" && (
+                      <div className="space-y-4 bg-zinc-900/40 p-5 border border-zinc-800 rounded-2xl">
+                        <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+                          <div className="flex items-center gap-2">
+                            <Camera size={16} className="text-[#b4975a]" />
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300">Client Selected Photos</h4>
+                          </div>
                         
                         {/* Quick toggles */}
                         {(() => {
@@ -1644,13 +1674,15 @@ const Admin = () => {
                         );
                       })()}
                     </div>
+                    )}
 
                     {/* Invoice Actions */}
-                    <div className="space-y-4 bg-zinc-900/40 p-5 border border-zinc-800 rounded-2xl">
-                      <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
-                        <FileText size={16} className="text-[#b4975a]" />
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300">Invoice Billing & Actions</h4>
-                      </div>
+                    {selectedClientTab === "billing" && (
+                      <div className="space-y-4 bg-zinc-900/40 p-5 border border-zinc-800 rounded-2xl">
+                        <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+                          <FileText size={16} className="text-[#b4975a]" />
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300">Invoice Billing & Actions</h4>
+                        </div>
 
                       <div className="flex justify-between items-center text-xs">
                         <div className="space-y-0.5">
@@ -1691,6 +1723,7 @@ const Admin = () => {
                         </div>
                       </div>
                     </div>
+                    )}
                   </div>
                 ) : (
                   <div className="h-96 rounded-[32px] border border-dashed border-zinc-800 bg-zinc-950/20 flex items-center justify-center text-zinc-500 text-xs">
