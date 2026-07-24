@@ -265,31 +265,9 @@ async function initDB() {
   } catch (err) {
     console.warn('[SUPABASE SYNC WARNING] Failed to load data from Supabase, using local JSON cache:', err.message);
   }
-
-  // Filter bookings and projects to ONLY keep Akash s
-  const originalBookingsCount = data.bookings.length;
-  const bookingsToDelete = data.bookings.filter(b => b.customer_name !== "Akash s");
-  
-  data.bookings = data.bookings.filter(b => b.customer_name === "Akash s");
-  
-  const remainingBookingIds = data.bookings.map(b => b.id);
-  const projectsToDelete = data.projects.filter(p => !remainingBookingIds.includes(p.booking_id));
-  data.projects = data.projects.filter(p => remainingBookingIds.includes(p.booking_id));
-  
-  // Clear other customers as well to keep only Akash s
-  data.customers = data.customers.filter(c => c.customer_name === "Akash s" || c.name === "Akash s");
-  
-  // Sync deletions to Supabase
-  for (const b of bookingsToDelete) {
-    syncToSupabase('bookings', null, 'DELETE', 'id', b.id).catch(() => null);
-  }
-  for (const p of projectsToDelete) {
-    syncToSupabase('projects', null, 'DELETE', 'id', p.id).catch(() => null);
-  }
-
-  // If empty after filtering, seed and sync Akash s
+  // Seed mock data only if the database is completely empty on startup
   if (data.bookings.length === 0 && data.projects.length === 0) {
-    console.log('[DB CLEANUP] Database empty after filtering. Seeding Akash s...');
+    console.log('[DB INITIALIZE] Database empty on startup. Seeding default mock data...');
     seedMockData();
     // Sync seeded data to Supabase
     for (const b of data.bookings) {
@@ -299,25 +277,8 @@ async function initDB() {
       syncToSupabase('projects', p, 'POST').catch(() => null);
     }
   }
-  
-  // Clean up staff user project assignments dynamically
-  if (data.staff_users) {
-    const validProjectIds = data.projects.map(p => p.id);
-    data.staff_users.forEach(u => {
-      if (u.assigned_projects) {
-        u.assigned_projects = u.assigned_projects.filter(pid => validProjectIds.includes(pid));
-        if (u.assigned_projects.length === 0 && validProjectIds.length > 0) {
-          u.assigned_projects = [validProjectIds[0]];
-        }
-      }
-    });
-  }
 
-  if (originalBookingsCount !== data.bookings.length || data.bookings.length === 1) {
-    console.log(`[DB INITIALIZE] Database is setup. Only Akash s kept. Count: ${data.bookings.length}`);
-    saveToDisk();
-  }
-
+  saveToDisk();
   console.log('✅ Pure JavaScript database initialized successfully');
 }
 

@@ -674,14 +674,18 @@ export default function DigitalProposal() {
     }
 
     // Load and override from JSON payload if 'data' is present or 'from_storage' flag is set
-    let dataParam = params.get("data");
-    if (params.get("from_storage") === "true") {
-      dataParam = localStorage.getItem('temp_proposal_data');
-    }
-    
-    if (dataParam) {
-      try {
-        const payload = JSON.parse(dataParam);
+    const loadProposalData = async () => {
+      let dataParam = params.get("data");
+      
+      if (params.get("from_ipc") === "true" && window.electronAPI && typeof window.electronAPI.getTempProposal === 'function') {
+        dataParam = await window.electronAPI.getTempProposal();
+      } else if (params.get("from_storage") === "true") {
+        dataParam = localStorage.getItem('temp_proposal_data');
+      }
+      
+      if (dataParam) {
+        try {
+          const payload = JSON.parse(dataParam);
         
         // 1. clientName (split into groomName and brideName)
         const name = payload.clientName || 'Wedding Couple';
@@ -908,7 +912,10 @@ export default function DigitalProposal() {
       }
     }
     setIsUrlParsed(true);
-  }, []);
+  };
+  
+  loadProposalData();
+}, []);
 
   // Auto-load saved customizations from localStorage after URL parsing is complete
   useEffect(() => {
@@ -924,12 +931,20 @@ export default function DigitalProposal() {
     if (saved) {
       try {
         const data = JSON.parse(saved);
-        if (data.brideName) setBrideName(data.brideName);
-        if (data.groomName) setGroomName(data.groomName);
-        if (data.proposalDate) setProposalDate(data.proposalDate);
-        if (data.weddingDate) setWeddingDate(data.weddingDate);
-        if (data.weddingLocation) setWeddingLocation(data.weddingLocation);
-        if (data.price) setPrice(data.price);
+        
+        // If this is a fresh launch from the tracker, DO NOT overwrite core details with old saved drafts
+        const searchOrHash = window.location.search || window.location.hash;
+        const isFreshLaunch = searchOrHash.includes("from_ipc=true") || searchOrHash.includes("from_storage=true");
+        
+        if (!isFreshLaunch) {
+          if (data.brideName) setBrideName(data.brideName);
+          if (data.groomName) setGroomName(data.groomName);
+          if (data.proposalDate) setProposalDate(data.proposalDate);
+          if (data.weddingDate) setWeddingDate(data.weddingDate);
+          if (data.weddingLocation) setWeddingLocation(data.weddingLocation);
+          if (data.price) setPrice(data.price);
+        }
+        
         if (data.leadPhotographer) setLeadPhotographer(data.leadPhotographer);
         if (data.themeColor) setThemeColor(data.themeColor);
         if (data.coverImage) setCoverImage(data.coverImage);
@@ -948,25 +963,27 @@ export default function DigitalProposal() {
         if (data.philosophyPositionY !== undefined) setPhilosophyPositionY(data.philosophyPositionY);
         if (data.philosophyScale !== undefined) setPhilosophyScale(data.philosophyScale);
         
-        if (data.weddingCandidPhoto !== undefined) setWeddingCandidPhoto(data.weddingCandidPhoto);
-        if (data.weddingTradPhoto !== undefined) setWeddingTradPhoto(data.weddingTradPhoto);
-        if (data.weddingCandidVideo !== undefined) setWeddingCandidVideo(data.weddingCandidVideo);
-        if (data.weddingTradVideo !== undefined) setWeddingTradVideo(data.weddingTradVideo);
-        
-        if (data.evePhoto !== undefined) setEvePhoto(data.evePhoto);
-        if (data.eveVideo !== undefined) setEveVideo(data.eveVideo);
-        
-        if (data.prewedPhoto !== undefined) setPrewedPhoto(data.prewedPhoto);
-        if (data.prewedVideo !== undefined) setPrewedVideo(data.prewedVideo);
-        
-        if (data.hasDrone !== undefined) setHasDrone(data.hasDrone);
-        if (data.hasLedWall !== undefined) setHasLedWall(data.hasLedWall);
-        if (data.hasPreweddingVideo !== undefined) setHasPreweddingVideo(data.hasPreweddingVideo);
-        if (data.hasHaldi !== undefined) setHasHaldi(data.hasHaldi);
-        
-        if (data.customAddons !== undefined) setCustomAddons(data.customAddons);
-        if (data.deliverables !== undefined) setDeliverables(data.deliverables);
-        if (data.complimentary !== undefined) setComplimentary(data.complimentary);
+        if (!isFreshLaunch) {
+          if (data.weddingCandidPhoto !== undefined) setWeddingCandidPhoto(data.weddingCandidPhoto);
+          if (data.weddingTradPhoto !== undefined) setWeddingTradPhoto(data.weddingTradPhoto);
+          if (data.weddingCandidVideo !== undefined) setWeddingCandidVideo(data.weddingCandidVideo);
+          if (data.weddingTradVideo !== undefined) setWeddingTradVideo(data.weddingTradVideo);
+          
+          if (data.evePhoto !== undefined) setEvePhoto(data.evePhoto);
+          if (data.eveVideo !== undefined) setEveVideo(data.eveVideo);
+          
+          if (data.prewedPhoto !== undefined) setPrewedPhoto(data.prewedPhoto);
+          if (data.prewedVideo !== undefined) setPrewedVideo(data.prewedVideo);
+          
+          if (data.hasDrone !== undefined) setHasDrone(data.hasDrone);
+          if (data.hasLedWall !== undefined) setHasLedWall(data.hasLedWall);
+          if (data.hasPreweddingVideo !== undefined) setHasPreweddingVideo(data.hasPreweddingVideo);
+          if (data.hasHaldi !== undefined) setHasHaldi(data.hasHaldi);
+          
+          if (data.customAddons !== undefined) setCustomAddons(data.customAddons);
+          if (data.deliverables !== undefined) setDeliverables(data.deliverables);
+          if (data.complimentary !== undefined) setComplimentary(data.complimentary);
+        }
       } catch (e) {
         console.error("Failed to parse saved customizations from localStorage", e);
       }
@@ -1437,6 +1454,7 @@ export default function DigitalProposal() {
   const showReceptionCol = (evePhoto > 0 || eveVideo > 0);
   const showPrewedCol = (prewedPhoto > 0 || prewedVideo > 0);
   const visibleColsCount = (showWeddingCol ? 1 : 0) + (showReceptionCol ? 1 : 0) + (showPrewedCol ? 1 : 0);
+  const isMobilePrintMode = false;
 
   return (
     <div className="bg-[#0e0e11] text-white min-h-screen font-sans selection:bg-[#d1a852] selection:text-black proposal-root-container">
