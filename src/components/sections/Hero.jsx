@@ -56,11 +56,11 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h1 className="text-[42px] sm:text-[72px] md:text-[120px] leading-[1] tracking-[-0.05em] font-normal mb-4">
+          <h1 className="text-[42px] sm:text-[72px] md:text-[120px] leading-[1] tracking-[-0.05em] font-normal mb-2">
             Wedding
-          </h1>
-          <h1 className="text-[22px] sm:text-[42px] md:text-[64px] font-serif italic font-light -mt-2 sm:-mt-4 mb-8">
-            Photography in Trivandrum
+            <span className="block text-[22px] sm:text-[42px] md:text-[64px] font-serif italic font-light -mt-2 sm:-mt-4 mb-8">
+              Photography in Trivandrum
+            </span>
           </h1>
           <p className="text-[16px] sm:text-[18px] md:text-[22px] mb-6 text-white/90 max-w-2xl mx-auto font-light tracking-wide leading-relaxed">
             Capturing timeless love stories with elegance, emotion, and cinematic artistry. 

@@ -15,9 +15,9 @@ const Footer = () => {
 
             {/* LOGO */}
             <div className="mb-10">
-              <h1 className="text-[100px] leading-none tracking-[-0.06em] font-light font-serif">
+              <div className="text-[100px] leading-none tracking-[-0.06em] font-light font-serif">
                 DW
-              </h1>
+              </div>
 
               <p className=" -mt-4 ml-2 text-[12px] tracking-[0.6em] text-zinc-500 uppercase font-semibold">
                 Dreamwed Stories

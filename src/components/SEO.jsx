@@ -6,9 +6,9 @@ import { useEffect } from "react";
  */
 const SEO = ({ title, description, keywords, ogImage, ogUrl }) => {
   useEffect(() => {
-    // 1. Update Page Title
-    const baseTitle = "Dreamwed Stories | Premium Wedding Photography in Trivandrum";
-    document.title = title ? `${title} | ${baseTitle}` : baseTitle;
+    // 1. Update Page Title (optimized for Trivandrum Wedding Photography ranking)
+    const baseTitle = "Dreamwed Stories | Best Wedding Photography in Trivandrum, Kerala";
+    document.title = title && title !== "Home" ? `${title} | Dreamwed Stories` : baseTitle;
 
     // 2. Update Meta Description
     const metaDescription = document.querySelector('meta[name="description"]');

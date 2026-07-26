@@ -81,9 +81,9 @@ const Header = () => {
             className="w-12 h-12 object-contain"
           />
 
-          <h1 className="text-xl font-light tracking-tight text-white">
+          <span className="text-xl font-light tracking-tight text-white">
             Dreamwed Stories
-          </h1>
+          </span>
         </NavLink>
 
         {/* DESKTOP NAV */}
