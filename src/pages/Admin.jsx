@@ -4,7 +4,8 @@ import {
   LogIn, LogOut, ShieldCheck, AlertCircle, Link2, Calendar, CheckCircle2,
   ChevronRight, FileText, Package, Users, MessageSquare, Plus, Trash2, Edit3,
   Eye, EyeOff, Save, X, Camera, Video, BookOpen, RefreshCw, Search, Share2,
-  Download, Heart, Printer
+  Download, Heart, Printer, Coins, Percent, Sliders, ArrowLeft, Copy, Wallet,
+  Settings, Moon, Sun, Info, TrendingDown, ArrowUpRight
 } from "lucide-react";
 import SEO from "../components/SEO";
 
@@ -104,6 +105,586 @@ const Admin = () => {
   const [selectedGalForPhotos, setSelectedGalForPhotos] = useState(null);
   const [bulkPhotoUrls, setBulkPhotoUrls] = useState("");
 
+  // Dreamwed Office states
+  const [officeBudgets, setOfficeBudgets] = useState([]);
+  const [officeInvoices, setOfficeInvoices] = useState([]);
+  const [officeSettings, setOfficeSettings] = useState({
+    photoCharge: 15000,
+    videoCharge: 20000,
+    albumCoverCharge: 2000,
+    albumLeafCharge: 75,
+    albumDesigningCharge: 300,
+    videoEditingCharge: 8000,
+    pendriveCharge: 500
+  });
+  
+  // Budget Tracker workspace states
+  const [selectedBudget, setSelectedBudget] = useState(null);
+  const [budgetSearch, setBudgetSearch] = useState("");
+  const [budgetSort, setBudgetSort] = useState("newest");
+  const [budgetEditorTab, setBudgetEditorTab] = useState("basics");
+  
+  // Invoice Studio workspace states
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [invoiceSearch, setInvoiceSearch] = useState("");
+  const [invoiceTaxRate, setInvoiceTaxRate] = useState(0); // 0 or 18
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  const fetchOfficeData = async () => {
+    try {
+      const [budgetsRes, invoicesRes, settingsRes] = await Promise.all([
+        fetch(`${API_BASE}/api/office/budgets`),
+        fetch(`${API_BASE}/api/office/invoices`),
+        fetch(`${API_BASE}/api/office/settings`)
+      ]);
+      if (budgetsRes.ok) setOfficeBudgets(await budgetsRes.ok ? await budgetsRes.json() : []);
+      if (invoicesRes.ok) setOfficeInvoices(await invoicesRes.ok ? await invoicesRes.json() : []);
+      if (settingsRes.ok) setOfficeSettings(await settingsRes.ok ? await settingsRes.json() : {
+        photoCharge: 15000,
+        videoCharge: 20000,
+        albumCoverCharge: 2000,
+        albumLeafCharge: 75,
+        albumDesigningCharge: 300,
+        videoEditingCharge: 8000,
+        pendriveCharge: 500
+      });
+    } catch (e) {
+      console.error("Error fetching office data, loading from localStorage:", e);
+      setOfficeBudgets(JSON.parse(localStorage.getItem("vows_and_values_events") || "[]"));
+      setOfficeInvoices(JSON.parse(localStorage.getItem("dreamwed_saved_invoices") || "[]"));
+      setOfficeSettings(JSON.parse(localStorage.getItem("vows_and_values_default_rates") || JSON.stringify({
+        photoCharge: 15000,
+        videoCharge: 20000,
+        albumCoverCharge: 2000,
+        albumLeafCharge: 75,
+        albumDesigningCharge: 300,
+        videoEditingCharge: 8000,
+        pendriveCharge: 500
+      })));
+    }
+  };
+
+  const saveOfficeBudgetAPI = async (budget) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/office/budgets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(budget)
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        const updated = officeBudgets.some(b => b.id === saved.id)
+          ? officeBudgets.map(b => b.id === saved.id ? saved : b)
+          : [saved, ...officeBudgets];
+        setOfficeBudgets(updated);
+        localStorage.setItem("vows_and_values_events", JSON.stringify(updated));
+        return saved;
+      }
+    } catch (e) {
+      console.error("Error saving budget, saving locally:", e);
+      const updated = officeBudgets.some(b => b.id === budget.id)
+        ? officeBudgets.map(b => b.id === budget.id ? budget : b)
+        : [budget, ...officeBudgets];
+      setOfficeBudgets(updated);
+      localStorage.setItem("vows_and_values_events", JSON.stringify(updated));
+      return budget;
+    }
+  };
+
+  const deleteOfficeBudgetAPI = async (id) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/office/budgets/${id}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        const updated = officeBudgets.filter(b => b.id !== id);
+        setOfficeBudgets(updated);
+        localStorage.setItem("vows_and_values_events", JSON.stringify(updated));
+      }
+    } catch (e) {
+      console.error("Error deleting budget, deleting locally:", e);
+      const updated = officeBudgets.filter(b => b.id !== id);
+      setOfficeBudgets(updated);
+      localStorage.setItem("vows_and_values_events", JSON.stringify(updated));
+    }
+  };
+
+  const saveOfficeInvoiceAPI = async (invoice) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/office/invoices`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(invoice)
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        const updated = officeInvoices.some(i => i.invoiceNo === saved.invoiceNo || i.id === saved.id)
+          ? officeInvoices.map(i => (i.invoiceNo === saved.invoiceNo || i.id === saved.id) ? saved : i)
+          : [saved, ...officeInvoices];
+        setOfficeInvoices(updated);
+        localStorage.setItem("dreamwed_saved_invoices", JSON.stringify(updated));
+        return saved;
+      }
+    } catch (e) {
+      console.error("Error saving invoice, saving locally:", e);
+      const updated = officeInvoices.some(i => i.invoiceNo === invoice.invoiceNo || i.id === invoice.id)
+        ? officeInvoices.map(i => (i.invoiceNo === invoice.invoiceNo || i.id === invoice.id) ? invoice : i)
+        : [invoice, ...officeInvoices];
+      setOfficeInvoices(updated);
+      localStorage.setItem("dreamwed_saved_invoices", JSON.stringify(updated));
+      return invoice;
+    }
+  };
+
+  const deleteOfficeInvoiceAPI = async (id) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/office/invoices/${id}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        const updated = officeInvoices.filter(i => i.invoiceNo !== id && i.id !== id);
+        setOfficeInvoices(updated);
+        localStorage.setItem("dreamwed_saved_invoices", JSON.stringify(updated));
+      }
+    } catch (e) {
+      console.error("Error deleting invoice, deleting locally:", e);
+      const updated = officeInvoices.filter(i => i.invoiceNo !== id && i.id !== id);
+      setOfficeInvoices(updated);
+      localStorage.setItem("dreamwed_saved_invoices", JSON.stringify(updated));
+    }
+  };
+
+  const saveOfficeSettingsAPI = async (settings) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/office/settings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings)
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setOfficeSettings(saved);
+        localStorage.setItem("vows_and_values_default_rates", JSON.stringify(saved));
+        return saved;
+      }
+    } catch (e) {
+      console.error("Error saving settings, saving locally:", e);
+      setOfficeSettings(settings);
+      localStorage.setItem("vows_and_values_default_rates", JSON.stringify(settings));
+      return settings;
+    }
+  };
+
+  // ==========================================================
+  // DREAMWED OFFICE CORE FINANCIAL CALCULATIONS
+  // ==========================================================
+  const calculateBudgetFinancials = (b) => {
+    if (!b) return {};
+    const travelCharge = Number(b.travelCharge) || 0;
+    const stayExpense = Number(b.stayExpense) || 0;
+    const foodExpense = Number(b.foodExpense) || 0;
+    const droneCharge = Number(b.droneCharge) || 0;
+    const videoEditingCharge = Number(b.videoEditingCharge) || 0;
+    const pendriveCharge = Number(b.pendriveCharge) || 0;
+    
+    const logisticsExpense = (b.travelPaidByCustomer ? 0 : travelCharge) + stayExpense + foodExpense;
+    const crewPhotoExpense = (b.photographers || []).reduce((sum, p) => sum + (Number(p.charge) || 0), 0);
+    const crewVideoExpense = (b.videographers || []).reduce((sum, v) => sum + (Number(v.charge) || 0), 0);
+    const crewExpense = crewPhotoExpense + crewVideoExpense + droneCharge;
+    
+    const stdPhotoCharge = Number(b.stdPhotoCharge) || 0;
+    const stdVideoCharge = Number(b.stdVideoCharge) || 0;
+    const stdPerPhotoCharge = Number(b.stdPerPhotoCharge) || 0;
+    const stdPhotoQty = Number(b.stdPhotoQty) || 0;
+    const stdEditingCharge = Number(b.stdEditingCharge) || 0;
+    const stdExpense = stdPhotoCharge + stdVideoCharge + (stdPhotoQty * stdPerPhotoCharge) + stdEditingCharge;
+    
+    const albumQty = Number(b.albumQty) || 0;
+    const albumCoverCharge = Number(b.albumCoverCharge) || 0;
+    const albumLeafs = Number(b.albumLeafs) || 0;
+    const albumLeafCharge = Number(b.albumLeafCharge) || 0;
+    const albumDesigningCharge = Number(b.albumDesigningCharge) || 0;
+    
+    const albumPrintingExpense = albumQty * (albumCoverCharge + (albumLeafs * albumLeafCharge));
+    const albumDesigningExpense = albumQty * albumLeafs * albumDesigningCharge;
+    const albumExpense = albumPrintingExpense + albumDesigningExpense;
+    
+    const framesExpense = (b.frames || []).reduce((sum, f) => sum + ((Number(f.qty) || 0) * (Number(f.charge) || 0)), 0);
+    const mediaExpense = videoEditingCharge + pendriveCharge;
+    const customExpense = (b.customExpenses || []).reduce((sum, c) => sum + (Number(c.charge) || 0), 0);
+    
+    const totalExpense = logisticsExpense + crewExpense + stdExpense + albumExpense + framesExpense + mediaExpense + customExpense;
+    
+    let packagePrice = Number(b.packagePrice) || 0;
+    let netProfit = 0;
+    
+    if (b.budgetMode === 'inverse') {
+      netProfit = Number(b.targetProfit) || 0;
+      packagePrice = netProfit + totalExpense;
+    } else {
+      netProfit = packagePrice - totalExpense;
+    }
+    
+    const marginPercent = packagePrice > 0 ? Math.round((netProfit / packagePrice) * 100) : 0;
+    
+    const myPhotoFees = (b.photographers || []).reduce((sum, p) => sum + (p.isMe ? (Number(p.charge) || 0) : 0), 0);
+    const myVideoFees = (b.videographers || []).reduce((sum, v) => sum + (v.isMe ? (Number(v.charge) || 0) : 0), 0);
+    const myStdPhotoFees = b.stdPhotoIsMe ? stdPhotoCharge : 0;
+    const myStdVideoFees = b.stdVideoIsMe ? stdVideoCharge : 0;
+    const myTotalEarnings = netProfit + myPhotoFees + myVideoFees + myStdPhotoFees + myStdVideoFees;
+    
+    return {
+      packagePrice,
+      logisticsExpense,
+      crewExpense,
+      stdExpense,
+      albumExpense,
+      framesExpense,
+      mediaExpense,
+      customExpense,
+      totalExpense,
+      netProfit,
+      marginPercent,
+      myTotalEarnings
+    };
+  };
+
+  // Budget Tracker helper actions
+  const handleCreateNewBudget = () => {
+    const name = prompt("Enter Client / Couple Name:", "Couple Name");
+    if (!name) return;
+    const location = prompt("Enter Venue / Location City:", "Location");
+    if (!location) return;
+    
+    const newB = {
+      id: "_" + Math.random().toString(36).substr(2, 9),
+      clientName: name,
+      date: "",
+      location: location,
+      packagePrice: 125000,
+      travelCharge: 0,
+      travelPaidByCustomer: false,
+      stayExpense: 0,
+      foodExpense: 0,
+      budgetMode: "standard",
+      targetProfit: 0,
+      photographers: [
+        { id: "_" + Math.random().toString(36).substr(2, 9), name: "Photographer 1", charge: officeSettings.photoCharge, isMe: false }
+      ],
+      videographers: [
+        { id: "_" + Math.random().toString(36).substr(2, 9), name: "Cinematographer 1", charge: officeSettings.videoCharge, isMe: false }
+      ],
+      droneCharge: 0,
+      stdPhotoCharge: 0,
+      stdVideoCharge: 0,
+      stdPerPhotoCharge: 0,
+      stdPhotoQty: 0,
+      stdEditingCharge: 0,
+      stdPhotoIsMe: false,
+      stdVideoIsMe: false,
+      albumQty: 1,
+      albumCoverCharge: officeSettings.albumCoverCharge,
+      albumLeafs: 30,
+      albumLeafCharge: officeSettings.albumLeafCharge,
+      albumDesigningCharge: officeSettings.albumDesigningCharge,
+      frames: [],
+      customExpenses: [],
+      eventsList: [
+        { id: "_" + Math.random().toString(36).substr(2, 9), name: "Wedding Ceremony", date: "" }
+      ],
+      videoEditingCharge: officeSettings.videoEditingCharge,
+      pendriveCharge: officeSettings.pendriveCharge,
+      includeHdHighlight: true,
+      includeReel: true,
+      includeFullHd: true,
+      include2Frames: true,
+      createdAt: new Date().toISOString()
+    };
+    saveOfficeBudgetAPI(newB);
+    setSelectedBudget(newB);
+    setBudgetEditorTab("basics");
+  };
+
+  const handleSaveBudget = async (b) => {
+    await saveOfficeBudgetAPI(b);
+    alert("✨ Wedding Budget Planner saved successfully!");
+    setSelectedBudget(null);
+  };
+
+  const handleDeleteBudget = async (id) => {
+    if (!confirm("Are you sure you want to permanently delete this wedding budget?")) return;
+    await deleteOfficeBudgetAPI(id);
+  };
+
+  const handleDuplicateBudget = async (b) => {
+    const cloned = JSON.parse(JSON.stringify(b));
+    cloned.id = "_" + Math.random().toString(36).substr(2, 9);
+    cloned.clientName = b.clientName + " (Copy)";
+    cloned.createdAt = new Date().toISOString();
+    
+    // regenerate IDs for subitems
+    (cloned.photographers || []).forEach(p => p.id = "_" + Math.random().toString(36).substr(2, 9));
+    (cloned.videographers || []).forEach(v => v.id = "_" + Math.random().toString(36).substr(2, 9));
+    (cloned.frames || []).forEach(f => f.id = "_" + Math.random().toString(36).substr(2, 9));
+    (cloned.customExpenses || []).forEach(c => c.id = "_" + Math.random().toString(36).substr(2, 9));
+    (cloned.eventsList || []).forEach(ev => ev.id = "_" + Math.random().toString(36).substr(2, 9));
+    
+    await saveOfficeBudgetAPI(cloned);
+  };
+
+  const handleExportBudgets = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(officeBudgets, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `dreamwed_budgets_backup_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  const handleImportBudgets = (e) => {
+    const fileReader = new FileReader();
+    fileReader.onload = async (event) => {
+      try {
+        const parsed = JSON.parse(event.target.result);
+        if (Array.isArray(parsed)) {
+          for (let budget of parsed) {
+            await saveOfficeBudgetAPI(budget);
+          }
+          alert("✨ Imported budgets successfully!");
+        } else {
+          alert("Invalid JSON structure: file must contain a budget array.");
+        }
+      } catch (err) {
+        alert("Failed to parse JSON file: " + err.message);
+      }
+    };
+    if (e.target.files && e.target.files[0]) {
+      fileReader.readAsText(e.target.files[0]);
+    }
+  };
+
+  const updateBudgetField = (field, val) => {
+    setSelectedBudget({ ...selectedBudget, [field]: val });
+  };
+
+  const updateBudgetEventItem = (index, field, val) => {
+    const updated = [...(selectedBudget.eventsList || [])];
+    updated[index] = { ...updated[index], [field]: val };
+    setSelectedBudget({ ...selectedBudget, eventsList: updated });
+  };
+
+  const handleAddEventToBudget = () => {
+    const updated = [...(selectedBudget.eventsList || [])];
+    updated.push({ id: "_" + Math.random().toString(36).substr(2, 9), name: "", date: "" });
+    setSelectedBudget({ ...selectedBudget, eventsList: updated });
+  };
+
+  const handleRemoveEventFromBudget = (index) => {
+    const updated = (selectedBudget.eventsList || []).filter((_, idx) => idx !== index);
+    setSelectedBudget({ ...selectedBudget, eventsList: updated });
+  };
+
+  const updateCrewMember = (listType, index, field, val) => {
+    const updated = [...(selectedBudget[listType] || [])];
+    updated[index] = { ...updated[index], [field]: val };
+    setSelectedBudget({ ...selectedBudget, [listType]: updated });
+  };
+
+  const handleAddCrewMember = (listType) => {
+    const updated = [...(selectedBudget[listType] || [])];
+    if (listType === "photographers") {
+      updated.push({ id: "_" + Math.random().toString(36).substr(2, 9), name: "Photographer Name", charge: officeSettings.photoCharge, isMe: false });
+    } else if (listType === "videographers") {
+      updated.push({ id: "_" + Math.random().toString(36).substr(2, 9), name: "Cinematographer Name", charge: officeSettings.videoCharge, isMe: false });
+    } else if (listType === "frames") {
+      updated.push({ id: "_" + Math.random().toString(36).substr(2, 9), size: "12x18", qty: 1, charge: 2500 });
+    } else if (listType === "customExpenses") {
+      updated.push({ id: "_" + Math.random().toString(36).substr(2, 9), name: "Add-on Expense", charge: 1000 });
+    }
+    setSelectedBudget({ ...selectedBudget, [listType]: updated });
+  };
+
+  const handleRemoveCrewMember = (listType, index) => {
+    const updated = (selectedBudget[listType] || []).filter((_, idx) => idx !== index);
+    setSelectedBudget({ ...selectedBudget, [listType]: updated });
+  };
+
+  const handlePrintBudgetReport = (b) => {
+    window.print();
+  };
+
+  // Invoice Studio actions
+  const handleCreateBlankInvoice = () => {
+    const yr = new Date().getFullYear();
+    const rand = String(Math.floor(100 + Math.random() * 900));
+    
+    setSelectedInvoice({
+      id: `inv_${Date.now()}`,
+      clientName: "CLIENT COUPLE NAME",
+      venue: "Venue & Location City",
+      phone: "+91 99954 12955",
+      invoiceNo: `DW-${yr}-${rand}`,
+      discount: 0,
+      advance: 0,
+      savedAt: new Date().toISOString(),
+      items: [
+        { id: "1", label: "Wedding Candid Photography & Cinematic Film Coverage", price: 100000, date: "Event Date" },
+        { id: "2", label: "Luxury Leatherette Wedding Album (30 Sheets) & Designing", price: 25000, date: "On Delivery" }
+      ]
+    });
+  };
+
+  const handleConvertBudgetToInvoice = (b) => {
+    const yr = new Date().getFullYear();
+    const rand = String(Math.floor(100 + Math.random() * 900));
+    const financials = calculateBudgetFinancials(b);
+    
+    // milestone distributions logic
+    let items = [];
+    let numPhoto = (b.photographers || []).length;
+    let numVideo = (b.videographers || []).length;
+    
+    let photoLabel = "Wedding Photography & Cinematic Film Coverage";
+    if (numPhoto > 0 || numVideo > 0) {
+      photoLabel = `Comprehensive Wedding Coverage (${numPhoto} Photographers, ${numVideo} Cinematographers)`;
+    }
+
+    let allocatedTotal = 0;
+
+    // albums
+    let albumCost = (Number(b.albumCoverCharge) || 0) + (Number(b.albumLeafs) || 0) * (Number(b.albumLeafCharge) || 0) + (Number(b.albumDesigningCharge) || 0);
+    if (albumCost > 0 || Number(b.albumQty) > 0) {
+      if (albumCost === 0) albumCost = 20000;
+      items.push({
+        id: Math.random().toString(),
+        label: `Luxury Leatherette Wedding Album (${b.albumQty || 1} Album, ${b.albumLeafs || 30} Sheets) & Layout Design`,
+        price: Math.round(albumCost),
+        date: "On Album Delivery"
+      });
+      allocatedTotal += Math.round(albumCost);
+    }
+
+    // frames
+    if (b.frames && b.frames.length > 0) {
+      let frameCost = b.frames.reduce((sum, f) => sum + ((Number(f.qty) || 0) * (Number(f.charge) || 0)), 0);
+      const frameDesc = b.frames.map(f => `${f.qty}x [${f.size}]`).join(', ');
+      items.push({
+        id: Math.random().toString(),
+        label: `Wall Mount Framed Keepsakes & Prints (${frameDesc})`,
+        price: Math.round(frameCost),
+        date: "With Deliverables"
+      });
+      allocatedTotal += Math.round(frameCost);
+    }
+
+    // video editing
+    let videoEditCost = (Number(b.videoEditingCharge) || 0) + (Number(b.pendriveCharge) || 0);
+    if (videoEditCost > 0 || b.includeHdHighlight || b.includeReel || b.includeFullHd) {
+      if (videoEditCost === 0) videoEditCost = 15000;
+      items.push({
+        id: Math.random().toString(),
+        label: "HD Wedding Cinematic Highlights, Social Reels & USB Flash Drive Post-Production",
+        price: Math.round(videoEditCost),
+        date: "Post-Production"
+      });
+      allocatedTotal += Math.round(videoEditCost);
+    }
+
+    // save the date
+    if (Number(b.stdPhotoCharge) > 0 || Number(b.stdVideoCharge) > 0) {
+      let stdCost = (Number(b.stdPhotoCharge) || 0) + (Number(b.stdVideoCharge) || 0) + (Number(b.stdEditingCharge) || 0);
+      items.push({
+        id: Math.random().toString(),
+        label: "Pre-Wedding Outdoor Photography & Cinematic Film Suite",
+        price: Math.round(stdCost),
+        date: "Prior to Wedding"
+      });
+      allocatedTotal += Math.round(stdCost);
+    }
+
+    // primary coverage
+    let primaryPrice = financials.packagePrice - allocatedTotal;
+    if (primaryPrice <= 0) primaryPrice = Math.round(financials.packagePrice * 0.65);
+
+    items.unshift({
+      id: Math.random().toString(),
+      label: photoLabel,
+      price: Math.round(primaryPrice),
+      date: b.date || "Event Date"
+    });
+
+    setSelectedInvoice({
+      id: `inv_${Date.now()}`,
+      clientName: (b.clientName || "").toUpperCase(),
+      venue: b.location || "Venue TBD",
+      phone: "+91 99954 12955",
+      invoiceNo: `DW-${yr}-${rand}`,
+      discount: 0,
+      advance: 0,
+      savedAt: new Date().toISOString(),
+      items: items
+    });
+  };
+
+  const handleParseProposalText = () => {
+    const pastedText = document.getElementById("pasted-proposal-text")?.value || "";
+    if (!pastedText.trim()) {
+      alert("Please paste proposal description text first!");
+      return;
+    }
+
+    let clientName = "PROPOSAL CLIENT";
+    let venue = "Venue Location";
+    let price = 125000;
+
+    const priceMatches = pastedText.match(/(?:₹|Rs\.?|INR)\s*([0-9,]+)/i) || pastedText.match(/([1-9][0-9]{4,6})/);
+    if (priceMatches && priceMatches[1]) {
+      const p = parseInt(priceMatches[1].replace(/,/g, ''));
+      if (p > 10000) price = p;
+    }
+
+    const matchedBudget = officeBudgets.find(b => 
+      pastedText.toLowerCase().includes((b.clientName || "").toLowerCase())
+    );
+
+    if (matchedBudget) {
+      handleConvertBudgetToInvoice(matchedBudget);
+      alert(`✨ Matched proposal text and converted from budget planner for: ${matchedBudget.clientName}`);
+      return;
+    }
+
+    setSelectedInvoice({
+      id: `inv_${Date.now()}`,
+      clientName: clientName.toUpperCase(),
+      venue: venue,
+      phone: "+91 99954 12955",
+      invoiceNo: `DW-${new Date().getFullYear()}-${Math.floor(100+Math.random()*900)}`,
+      discount: 0,
+      advance: 0,
+      savedAt: new Date().toISOString(),
+      items: [
+        { id: "1", label: "Wedding Photography & Cinematic Film Suite Coverage", price: Math.round(price * 0.75), date: "Event Date" },
+        { id: "2", label: "Premium Leatherette Wedding Keepsake Albums", price: Math.round(price * 0.25), date: "On Delivery" }
+      ]
+    });
+  };
+
+  const handleSaveInvoice = async (inv) => {
+    await saveOfficeInvoiceAPI(inv);
+    alert("✨ Custom Tax Invoice saved successfully!");
+    setSelectedInvoice(null);
+  };
+
+  const handleDeleteInvoice = async (id) => {
+    if (!confirm("Are you sure you want to permanently delete this invoice draft?")) return;
+    await deleteOfficeInvoiceAPI(id);
+  };
+
+  const handlePrintInvoice = (inv) => {
+    window.print();
+  };
+
   // Check auth on mount
   useEffect(() => {
     if (localStorage.getItem("dreamwed_admin_auth") === "true") {
@@ -117,6 +698,7 @@ const Admin = () => {
       fetchProjects();
       fetchStaff();
       fetchBookings();
+      fetchOfficeData();
 
       // Load AI galleries & orders
       if (!localStorage.getItem("dreamwed_galleries")) {
@@ -131,6 +713,7 @@ const Admin = () => {
       const bookingPoller = setInterval(() => {
         fetchBookings();
         fetchProjects();
+        fetchOfficeData();
       }, 15000);
       return () => clearInterval(bookingPoller);
     }
@@ -963,7 +1546,9 @@ const Admin = () => {
                   { id: "staff", label: "👥 Staff Management" },
                   { id: "chats", label: "💬 Chat Viewer" },
                   { id: "ai-galleries", label: "💍 AI Galleries" },
-                  { id: "ai-orders", label: "🧾 AI Print Orders" }
+                  { id: "ai-orders", label: "🧾 AI Print Orders" },
+                  { id: "budget-tracker", label: "💰 Budget Tracker" },
+                  { id: "invoice-studio", label: "🧾 Invoice Studio" }
                 ].map((tab) => (
                   <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                     className={`relative px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shrink-0 ${
@@ -2732,6 +3317,1398 @@ const Admin = () => {
             )}
           </div>
         )}
+
+        {activeTab === "budget-tracker" && (
+          <div className="space-y-6 text-left">
+            {/* Header section */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl text-white font-light">
+                  Budget <span className="italic font-serif text-[#b4975a]">Tracker &amp; Planner</span>
+                </h2>
+                <p className="text-zinc-500 text-[11px] font-light mt-1">Manage studio expenses, calculate profit margins, and track crew allocations.</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <button
+                  onClick={() => setShowSettingsModal(true)}
+                  className="bg-zinc-900 hover:bg-zinc-850 text-white font-bold py-2.5 px-4 rounded-xl text-xs border border-zinc-800 transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Settings size={14} className="text-[#b4975a]" /> Configure Defaults
+                </button>
+                <button
+                  onClick={handleExportBudgets}
+                  className="bg-zinc-900 hover:bg-zinc-850 text-white font-bold py-2.5 px-4 rounded-xl text-xs border border-zinc-800 transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Download size={14} /> Export Budgets
+                </button>
+                <label className="bg-zinc-900 hover:bg-zinc-850 text-white font-bold py-2.5 px-4 rounded-xl text-xs border border-zinc-800 transition-all flex items-center gap-2 cursor-pointer select-none">
+                  <Upload size={14} /> Import JSON
+                  <input type="file" accept=".json" onChange={handleImportBudgets} className="hidden" />
+                </label>
+                {!selectedBudget ? (
+                  <button
+                    onClick={handleCreateNewBudget}
+                    className="bg-[#b4975a] hover:bg-[#c5ab73] text-zinc-950 font-bold py-2.5 px-4 rounded-xl text-xs transition-all flex items-center gap-2 cursor-pointer shadow-lg shadow-[#b4975a]/10"
+                  >
+                    <Plus size={14} /> Track Budget
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleSaveBudget(selectedBudget)}
+                    className="bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all flex items-center gap-2 cursor-pointer shadow-lg shadow-green-600/10"
+                  >
+                    <Save size={14} /> Save Budget Changes
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* View switching */}
+            {!selectedBudget ? (
+              <>
+                {/* KPI cards */}
+                {(() => {
+                  let totalRev = 0, totalExp = 0, totalProf = 0;
+                  officeBudgets.forEach(b => {
+                    const fin = calculateBudgetFinancials(b);
+                    totalRev += fin.packagePrice;
+                    totalExp += fin.totalExpense;
+                    totalProf += fin.netProfit;
+                  });
+                  const avgMargin = totalRev > 0 ? Math.round((totalProf / totalRev) * 100) : 0;
+                  return (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                      <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-12 h-12 bg-amber-500/3 rounded-full blur-lg pointer-events-none" />
+                        <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider">Total Revenue</span>
+                        <h4 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl text-[#b4975a] font-light mt-1">₹ {formatCurrency(totalRev)}</h4>
+                      </div>
+                      <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-12 h-12 bg-red-500/3 rounded-full blur-lg pointer-events-none" />
+                        <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider">Total Expenses</span>
+                        <h4 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl text-red-500/80 font-light mt-1">₹ {formatCurrency(totalExp)}</h4>
+                      </div>
+                      <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-12 h-12 bg-green-500/3 rounded-full blur-lg pointer-events-none" />
+                        <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider">Total Net Profit</span>
+                        <h4 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl text-green-500/80 font-light mt-1">₹ {formatCurrency(totalProf)}</h4>
+                      </div>
+                      <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-12 h-12 bg-[#b4975a]/3 rounded-full blur-lg pointer-events-none" />
+                        <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider">Avg Profit Margin</span>
+                        <h4 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl text-white font-light mt-1">{avgMargin}%</h4>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Search & filters */}
+                <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 bg-zinc-950 border border-zinc-800 p-4 rounded-2xl">
+                  <div className="relative flex-1">
+                    <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
+                    <input
+                      type="text"
+                      placeholder="Search events by client name, venue..."
+                      value={budgetSearch}
+                      onChange={(e) => setBudgetSearch(e.target.value)}
+                      className="bg-zinc-900 border border-zinc-850 rounded-xl pl-10 pr-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                    />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider whitespace-nowrap">Sort By</span>
+                    <select
+                      value={budgetSort}
+                      onChange={(e) => setBudgetSort(e.target.value)}
+                      className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none cursor-pointer"
+                    >
+                      <option value="newest">Newest First</option>
+                      <option value="oldest">Oldest First</option>
+                      <option value="revenue-high">Revenue: High to Low</option>
+                      <option value="profit-high">Profit: High to Low</option>
+                      <option value="margin-high">Margin %: High to Low</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Budget lists */}
+                {(() => {
+                  const filtered = officeBudgets
+                    .filter(b => 
+                      (b.clientName || "").toLowerCase().includes(budgetSearch.toLowerCase()) ||
+                      (b.location || "").toLowerCase().includes(budgetSearch.toLowerCase())
+                    )
+                    .sort((a, b) => {
+                      if (budgetSort === "newest") return new Date(b.createdAt) - new Date(a.createdAt);
+                      if (budgetSort === "oldest") return new Date(a.createdAt) - new Date(b.createdAt);
+                      const fa = calculateBudgetFinancials(a);
+                      const fb = calculateBudgetFinancials(b);
+                      if (budgetSort === "revenue-high") return fb.packagePrice - fa.packagePrice;
+                      if (budgetSort === "profit-high") return fb.netProfit - fa.netProfit;
+                      if (budgetSort === "margin-high") return fb.marginPercent - fa.marginPercent;
+                      return 0;
+                    });
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="text-center py-16 border border-zinc-800 rounded-[28px] text-zinc-500 text-xs font-light bg-zinc-950/20">
+                        No wedding budgets tracked yet. Click "Track Budget" to start!
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                      {filtered.map(b => {
+                        const fin = calculateBudgetFinancials(b);
+                        const marginText = fin.marginPercent >= 40 ? "High Margin" : fin.marginPercent >= 20 ? "Healthy" : fin.marginPercent > 0 ? "Low Margin" : fin.marginPercent === 0 ? "Break Even" : "Loss Alert";
+                        const marginColor = fin.marginPercent >= 40 ? "bg-green-500/10 text-green-500 border border-green-500/20" : fin.marginPercent >= 20 ? "bg-amber-500/10 text-amber-500 border border-amber-500/20" : "bg-red-500/10 text-red-500 border border-red-500/20";
+                        return (
+                          <div key={b.id} className="bg-zinc-950 border border-zinc-800 p-5 rounded-2xl space-y-4 text-left relative overflow-hidden flex flex-col justify-between">
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-[#b4975a]/2 rounded-full blur-xl pointer-events-none" />
+                            <div className="space-y-1">
+                              <div className="flex justify-between items-start gap-2">
+                                <h3 className="font-bold text-white text-base truncate pr-2">{b.clientName}</h3>
+                                <span className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${marginColor}`}>{marginText}</span>
+                              </div>
+                              <p className="text-zinc-500 text-xs flex items-center gap-1">
+                                <Calendar size={12} className="text-zinc-600" /> {b.date || "TBD Date"} &bull; {b.location || "Venue TBD"}
+                              </p>
+                            </div>
+                            
+                            <div className="grid grid-cols-3 gap-2 border-y border-zinc-900 py-3 text-xs select-none">
+                              <div>
+                                <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-bold">Revenue</span>
+                                <span className="text-white font-bold block mt-0.5">₹ {formatCurrency(fin.packagePrice)}</span>
+                              </div>
+                              <div>
+                                <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-bold">Expenses</span>
+                                <span className="text-red-400 font-bold block mt-0.5">₹ {formatCurrency(fin.totalExpense)}</span>
+                              </div>
+                              <div>
+                                <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-bold">Net Profit</span>
+                                <span className="text-green-400 font-bold block mt-0.5">₹ {formatCurrency(fin.netProfit)} ({fin.marginPercent}%)</span>
+                              </div>
+                            </div>
+
+                            <div className="flex justify-between items-center gap-2 pt-1">
+                              <button
+                                onClick={() => {
+                                  setSelectedBudget(JSON.parse(JSON.stringify(b))); // clone to edit
+                                  setBudgetEditorTab("basics");
+                                }}
+                                className="flex-1 bg-zinc-900 hover:bg-zinc-850 text-white font-bold py-2 rounded-xl text-xs border border-zinc-800 transition-all text-center cursor-pointer"
+                              >
+                                Edit Planner
+                              </button>
+                              <button
+                                onClick={() => handleDuplicateBudget(b)}
+                                className="bg-zinc-900 hover:bg-zinc-850 text-white border border-zinc-800 hover:border-zinc-700 p-2 rounded-xl transition-all cursor-pointer"
+                                title="Duplicate"
+                              >
+                                <Copy size={13} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteBudget(b.id)}
+                                className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/25 p-2 rounded-xl transition-all cursor-pointer"
+                                title="Delete"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </>
+            ) : (
+              /* Split Screen Workspace Editor */
+              <div className="space-y-6">
+                <div className="flex items-center justify-between bg-zinc-950 border border-zinc-800 p-4 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setSelectedBudget(null)}
+                      className="bg-zinc-900 hover:bg-zinc-850 text-white p-2 rounded-xl border border-zinc-800 transition-all cursor-pointer"
+                    >
+                      <ArrowLeft size={14} />
+                    </button>
+                    <div>
+                      <h3 className="font-bold text-white text-sm">Editing Budget: {selectedBudget.clientName}</h3>
+                      <p className="text-zinc-500 text-[10px] mt-0.5">{selectedBudget.location || "Venue TBD"} &bull; {selectedBudget.date || "Date TBD"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handlePrintBudgetReport(selectedBudget)}
+                      className="bg-zinc-900 hover:bg-zinc-850 text-white font-bold py-2 px-4 rounded-xl text-xs border border-zinc-800 transition-all flex items-center gap-2 cursor-pointer"
+                    >
+                      <Printer size={13} /> PDF Report
+                    </button>
+                    <button
+                      onClick={() => handleSaveBudget(selectedBudget)}
+                      className="bg-[#b4975a] hover:bg-[#c5ab73] text-zinc-950 font-bold py-2 px-4 rounded-xl text-xs transition-all flex items-center gap-2 cursor-pointer shadow-md shadow-[#b4975a]/10"
+                    >
+                      <Save size={13} /> Save Changes
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                  {/* Left input workspace panel */}
+                  <div className="lg:col-span-2 bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-6">
+                    {/* Navigation inside editor */}
+                    <div className="flex border-b border-zinc-850 pb-1 gap-1 overflow-x-auto whitespace-nowrap scrollbar-hide select-none">
+                      {[
+                        { id: "basics", label: "Basics & Travel" },
+                        { id: "crew", label: "Media Crew" },
+                        { id: "std", label: "Save the Date" },
+                        { id: "albums", label: "Albums & Frames" },
+                        { id: "outputs", label: "Outputs & Custom" }
+                      ].map(t => (
+                        <button
+                          key={t.id}
+                          onClick={() => setBudgetEditorTab(t.id)}
+                          className={`px-4 py-2 text-xs font-bold transition-all border-b-2 cursor-pointer ${
+                            budgetEditorTab === t.id
+                              ? "border-[#b4975a] text-[#b4975a]"
+                              : "border-transparent text-zinc-500 hover:text-zinc-300"
+                          }`}
+                        >
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Basics tab content */}
+                    {budgetEditorTab === "basics" && (
+                      <div className="space-y-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Budgeting Mode</label>
+                            <select
+                              value={selectedBudget.budgetMode || "standard"}
+                              onChange={(e) => updateBudgetField("budgetMode", e.target.value)}
+                              className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full cursor-pointer"
+                            >
+                              <option value="standard">Standard (Input Revenue)</option>
+                              <option value="inverse">Inverse (Input Target Profit)</option>
+                            </select>
+                          </div>
+                          {selectedBudget.budgetMode === "inverse" ? (
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Target Net Profit (₹)</label>
+                              <input
+                                type="number"
+                                value={selectedBudget.targetProfit || 0}
+                                onChange={(e) => updateBudgetField("targetProfit", parseFloat(e.target.value) || 0)}
+                                className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                              />
+                            </div>
+                          ) : (
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Package Price / Revenue (₹)</label>
+                              <input
+                                type="number"
+                                value={selectedBudget.packagePrice || 0}
+                                onChange={(e) => updateBudgetField("packagePrice", parseFloat(e.target.value) || 0)}
+                                className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Client / Couple Name</label>
+                          <input
+                            type="text"
+                            value={selectedBudget.clientName || ""}
+                            onChange={(e) => updateBudgetField("clientName", e.target.value)}
+                            className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Event Venue / Location</label>
+                            <input
+                              type="text"
+                              value={selectedBudget.location || ""}
+                              onChange={(e) => updateBudgetField("location", e.target.value)}
+                              className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Event Start Date</label>
+                            <input
+                              type="date"
+                              value={selectedBudget.date || ""}
+                              onChange={(e) => updateBudgetField("date", e.target.value)}
+                              className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="border-t border-zinc-850 pt-4 space-y-4">
+                          <h4 className="text-xs font-bold text-white uppercase tracking-wider">Logistics &amp; Travel Expenses</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Travel Cost (₹)</label>
+                              <input
+                                type="number"
+                                value={selectedBudget.travelCharge || 0}
+                                onChange={(e) => updateBudgetField("travelCharge", parseFloat(e.target.value) || 0)}
+                                className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                              />
+                              <label className="flex items-center gap-2 mt-1 cursor-pointer select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedBudget.travelPaidByCustomer || false}
+                                  onChange={(e) => updateBudgetField("travelPaidByCustomer", e.target.checked)}
+                                  className="rounded border-zinc-800 text-[#b4975a] bg-zinc-900 focus:ring-0"
+                                />
+                                <span className="text-[10px] text-zinc-400 font-medium">Paid by client</span>
+                              </label>
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Stay / Accommodation (₹)</label>
+                              <input
+                                type="number"
+                                value={selectedBudget.stayExpense || 0}
+                                onChange={(e) => updateBudgetField("stayExpense", parseFloat(e.target.value) || 0)}
+                                className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Food / Catering (₹)</label>
+                              <input
+                                type="number"
+                                value={selectedBudget.foodExpense || 0}
+                                onChange={(e) => updateBudgetField("foodExpense", parseFloat(e.target.value) || 0)}
+                                className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Events list coverage scheduler */}
+                        <div className="border-t border-zinc-850 pt-4 space-y-3">
+                          <div className="flex justify-between items-center">
+                            <h4 className="text-xs font-bold text-white uppercase tracking-wider">Events Schedule &amp; Coverage</h4>
+                            <button
+                              onClick={handleAddEventToBudget}
+                              className="bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 hover:border-zinc-700 text-white font-bold py-1 px-3 rounded-lg text-[10px] uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus size={11} /> Add Event
+                            </button>
+                          </div>
+                          <div className="space-y-2">
+                            {(selectedBudget.eventsList || []).map((ev, index) => (
+                              <div key={ev.id} className="flex gap-3 items-center">
+                                <input
+                                  type="text"
+                                  value={ev.name}
+                                  onChange={(e) => updateBudgetEventItem(index, "name", e.target.value)}
+                                  placeholder="e.g. Wedding Ceremony, Haldi"
+                                  className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none flex-1"
+                                />
+                                <input
+                                  type="date"
+                                  value={ev.date}
+                                  onChange={(e) => updateBudgetEventItem(index, "date", e.target.value)}
+                                  className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-36"
+                                />
+                                <button
+                                  onClick={() => handleRemoveEventFromBudget(index)}
+                                  className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/25 p-2 rounded-xl transition-all cursor-pointer shrink-0"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Crew tab content */}
+                    {budgetEditorTab === "crew" && (
+                      <div className="space-y-6">
+                        {/* Photographers list */}
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                              <Camera size={13} className="text-[#b4975a]" /> Photographers Coverage
+                            </h4>
+                            <button
+                              onClick={() => handleAddCrewMember("photographers")}
+                              className="bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 hover:border-zinc-700 text-white font-bold py-1 px-3 rounded-lg text-[10px] uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus size={11} /> Add Photographer
+                            </button>
+                          </div>
+                          <div className="space-y-2">
+                            {(selectedBudget.photographers || []).map((p, index) => (
+                              <div key={p.id} className="flex gap-3 items-center bg-zinc-900/20 p-3 rounded-xl border border-zinc-850/50">
+                                <input
+                                  type="text"
+                                  value={p.name}
+                                  onChange={(e) => updateCrewMember("photographers", index, "name", e.target.value)}
+                                  placeholder="Photographer Name"
+                                  className="bg-zinc-900 border border-zinc-850 rounded-xl px-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none flex-1"
+                                />
+                                <div className="relative w-32 shrink-0">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">₹</span>
+                                  <input
+                                    type="number"
+                                    value={p.charge}
+                                    onChange={(e) => updateCrewMember("photographers", index, "charge", parseFloat(e.target.value) || 0)}
+                                    className="bg-zinc-900 border border-zinc-850 rounded-xl pl-6 pr-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full text-right"
+                                  />
+                                </div>
+                                <label className="flex items-center gap-1.5 shrink-0 select-none cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={p.isMe || false}
+                                    onChange={(e) => updateCrewMember("photographers", index, "isMe", e.target.checked)}
+                                    className="rounded border-zinc-800 text-[#b4975a] bg-zinc-900 focus:ring-0 w-3.5 h-3.5"
+                                  />
+                                  <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">I did it</span>
+                                </label>
+                                <button
+                                  onClick={() => handleRemoveCrewMember("photographers", index)}
+                                  className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/25 p-2 rounded-xl transition-all cursor-pointer shrink-0"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Videographers list */}
+                        <div className="space-y-3 border-t border-zinc-850 pt-5">
+                          <div className="flex justify-between items-center">
+                            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                              <Video size={13} className="text-[#b4975a]" /> Cinematographers Coverage
+                            </h4>
+                            <button
+                              onClick={() => handleAddCrewMember("videographers")}
+                              className="bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 hover:border-zinc-700 text-white font-bold py-1 px-3 rounded-lg text-[10px] uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus size={11} /> Add Cinematographer
+                            </button>
+                          </div>
+                          <div className="space-y-2">
+                            {(selectedBudget.videographers || []).map((v, index) => (
+                              <div key={v.id} className="flex gap-3 items-center bg-zinc-900/20 p-3 rounded-xl border border-zinc-850/50">
+                                <input
+                                  type="text"
+                                  value={v.name}
+                                  onChange={(e) => updateCrewMember("videographers", index, "name", e.target.value)}
+                                  placeholder="Cinematographer Name"
+                                  className="bg-zinc-900 border border-zinc-850 rounded-xl px-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none flex-1"
+                                />
+                                <div className="relative w-32 shrink-0">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">₹</span>
+                                  <input
+                                    type="number"
+                                    value={v.charge}
+                                    onChange={(e) => updateCrewMember("videographers", index, "charge", parseFloat(e.target.value) || 0)}
+                                    className="bg-zinc-900 border border-zinc-850 rounded-xl pl-6 pr-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full text-right"
+                                  />
+                                </div>
+                                <label className="flex items-center gap-1.5 shrink-0 select-none cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={v.isMe || false}
+                                    onChange={(e) => updateCrewMember("videographers", index, "isMe", e.target.checked)}
+                                    className="rounded border-zinc-800 text-[#b4975a] bg-zinc-900 focus:ring-0 w-3.5 h-3.5"
+                                  />
+                                  <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">I did it</span>
+                                </label>
+                                <button
+                                  onClick={() => handleRemoveCrewMember("videographers", index)}
+                                  className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/25 p-2 rounded-xl transition-all cursor-pointer shrink-0"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Drone operators charge */}
+                        <div className="space-y-1.5 border-t border-zinc-850 pt-5">
+                          <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider flex items-center gap-1.5">Drone / Aerial Coverage Charge (₹)</label>
+                          <input
+                            type="number"
+                            value={selectedBudget.droneCharge || 0}
+                            onChange={(e) => updateBudgetField("droneCharge", parseFloat(e.target.value) || 0)}
+                            className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Save the Date tab */}
+                    {budgetEditorTab === "std" && (
+                      <div className="space-y-5">
+                        <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                          <Heart size={13} className="text-[#b4975a]" /> Save the Date / Pre-Shoot Expenses
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-zinc-900/10 border border-zinc-850 p-5 rounded-2xl">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Photographer Cost (₹)</label>
+                            <input
+                              type="number"
+                              value={selectedBudget.stdPhotoCharge || 0}
+                              onChange={(e) => updateBudgetField("stdPhotoCharge", parseFloat(e.target.value) || 0)}
+                              className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                            />
+                            <label className="flex items-center gap-1.5 mt-1 cursor-pointer select-none">
+                              <input
+                                type="checkbox"
+                                checked={selectedBudget.stdPhotoIsMe || false}
+                                onChange={(e) => updateBudgetField("stdPhotoIsMe", e.target.checked)}
+                                className="rounded border-zinc-800 text-[#b4975a] bg-zinc-900 focus:ring-0 w-3.5 h-3.5"
+                              />
+                              <span className="text-[9px] text-[#b4975a] font-bold uppercase tracking-wider">I am the photographer</span>
+                            </label>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Cinematographer Cost (₹)</label>
+                            <input
+                              type="number"
+                              value={selectedBudget.stdVideoCharge || 0}
+                              onChange={(e) => updateBudgetField("stdVideoCharge", parseFloat(e.target.value) || 0)}
+                              className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                            />
+                            <label className="flex items-center gap-1.5 mt-1 cursor-pointer select-none">
+                              <input
+                                type="checkbox"
+                                checked={selectedBudget.stdVideoIsMe || false}
+                                onChange={(e) => updateBudgetField("stdVideoIsMe", e.target.checked)}
+                                className="rounded border-zinc-800 text-[#b4975a] bg-zinc-900 focus:ring-0 w-3.5 h-3.5"
+                              />
+                              <span className="text-[9px] text-[#b4975a] font-bold uppercase tracking-wider">I am the videographer</span>
+                            </label>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Per Photo Print Fee (₹)</label>
+                            <input
+                              type="number"
+                              value={selectedBudget.stdPerPhotoCharge || 0}
+                              onChange={(e) => updateBudgetField("stdPerPhotoCharge", parseFloat(e.target.value) || 0)}
+                              className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Number of Photos</label>
+                            <input
+                              type="number"
+                              value={selectedBudget.stdPhotoQty || 0}
+                              onChange={(e) => updateBudgetField("stdPhotoQty", parseInt(e.target.value) || 0)}
+                              className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Video Editing Fee (₹)</label>
+                            <input
+                              type="number"
+                              value={selectedBudget.stdEditingCharge || 0}
+                              onChange={(e) => updateBudgetField("stdEditingCharge", parseFloat(e.target.value) || 0)}
+                              className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Albums & Frames tab */}
+                    {budgetEditorTab === "albums" && (
+                      <div className="space-y-6">
+                        <div className="space-y-3">
+                          <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <BookOpen size={13} className="text-[#b4975a]" /> Wedding Albums Specifications
+                          </h4>
+                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">Album Qty</label>
+                              <input
+                                type="number"
+                                value={selectedBudget.albumQty || 0}
+                                onChange={(e) => updateBudgetField("albumQty", parseInt(e.target.value) || 0)}
+                                className="bg-zinc-900 border border-zinc-850 rounded-xl px-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">Cover Cost (₹)</label>
+                              <input
+                                type="number"
+                                value={selectedBudget.albumCoverCharge || 0}
+                                onChange={(e) => updateBudgetField("albumCoverCharge", parseFloat(e.target.value) || 0)}
+                                className="bg-zinc-900 border border-zinc-850 rounded-xl px-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">Total Leafs/Sheets</label>
+                              <input
+                                type="number"
+                                value={selectedBudget.albumLeafs || 0}
+                                onChange={(e) => updateBudgetField("albumLeafs", parseInt(e.target.value) || 0)}
+                                className="bg-zinc-900 border border-zinc-850 rounded-xl px-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">Leaf Print Rate (₹)</label>
+                              <input
+                                type="number"
+                                value={selectedBudget.albumLeafCharge || 0}
+                                onChange={(e) => updateBudgetField("albumLeafCharge", parseFloat(e.target.value) || 0)}
+                                className="bg-zinc-900 border border-zinc-850 rounded-xl px-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">Design / Leaf (₹)</label>
+                              <input
+                                type="number"
+                                value={selectedBudget.albumDesigningCharge || 0}
+                                onChange={(e) => setOfficeSettings({ ...officeSettings, albumDesigningCharge: parseFloat(e.target.value) || 0 })}
+                                className="bg-zinc-900 border border-zinc-850 rounded-xl px-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Wall mount frames list */}
+                        <div className="space-y-3 border-t border-zinc-850 pt-5">
+                          <div className="flex justify-between items-center">
+                            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                              <FileText size={13} className="text-[#b4975a]" /> Wall Mount Framed Prints
+                            </h4>
+                            <button
+                              onClick={() => handleAddCrewMember("frames")}
+                              className="bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 hover:border-zinc-700 text-white font-bold py-1 px-3 rounded-lg text-[10px] uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus size={11} /> Add Frame
+                            </button>
+                          </div>
+                          <div className="space-y-2">
+                            {(selectedBudget.frames || []).map((f, index) => (
+                              <div key={f.id} className="flex gap-3 items-center">
+                                <input
+                                  type="text"
+                                  value={f.size}
+                                  onChange={(e) => updateCrewMember("frames", index, "size", e.target.value)}
+                                  placeholder="Frame Size, e.g. 12x18, 20x30"
+                                  className="bg-zinc-900 border border-zinc-850 rounded-xl px-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none flex-1"
+                                />
+                                <div className="w-20 shrink-0">
+                                  <input
+                                    type="number"
+                                    value={f.qty}
+                                    placeholder="Qty"
+                                    onChange={(e) => updateCrewMember("frames", index, "qty", parseInt(e.target.value) || 1)}
+                                    className="bg-zinc-900 border border-zinc-850 rounded-xl px-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full text-center"
+                                  />
+                                </div>
+                                <div className="relative w-28 shrink-0">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">₹</span>
+                                  <input
+                                    type="number"
+                                    value={f.charge}
+                                    placeholder="Rate"
+                                    onChange={(e) => updateCrewMember("frames", index, "charge", parseFloat(e.target.value) || 0)}
+                                    className="bg-zinc-900 border border-zinc-850 rounded-xl pl-6 pr-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full text-right"
+                                  />
+                                </div>
+                                <button
+                                  onClick={() => handleRemoveCrewMember("frames", index)}
+                                  className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/25 p-2 rounded-xl transition-all cursor-pointer shrink-0"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Outputs & Custom tab */}
+                    {budgetEditorTab === "outputs" && (
+                      <div className="space-y-6">
+                        <div className="space-y-3">
+                          <h4 className="text-xs font-bold text-white uppercase tracking-wider">Deliverables &amp; Post Production</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-3 bg-zinc-900/20 p-4 rounded-xl border border-zinc-850">
+                              <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Media deliverables inclusions</label>
+                              <div className="space-y-2 text-xs">
+                                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedBudget.includeHdHighlight || false}
+                                    onChange={(e) => updateBudgetField("includeHdHighlight", e.target.checked)}
+                                    className="rounded border-zinc-850 text-[#b4975a] bg-zinc-900 focus:ring-0 w-3.5 h-3.5"
+                                  />
+                                  <span className="text-zinc-300">HD Cinematic Film / Highlight</span>
+                                </label>
+                                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedBudget.includeReel || false}
+                                    onChange={(e) => updateBudgetField("includeReel", e.target.checked)}
+                                    className="rounded border-zinc-850 text-[#b4975a] bg-zinc-900 focus:ring-0 w-3.5 h-3.5"
+                                  />
+                                  <span className="text-zinc-300">Instagram Reel / Teaser</span>
+                                </label>
+                                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedBudget.includeFullHd || false}
+                                    onChange={(e) => updateBudgetField("includeFullHd", e.target.checked)}
+                                    className="rounded border-zinc-850 text-[#b4975a] bg-zinc-900 focus:ring-0 w-3.5 h-3.5"
+                                  />
+                                  <span className="text-zinc-300">Full Video Output / Documentation</span>
+                                </label>
+                                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedBudget.include2Frames || false}
+                                    onChange={(e) => updateBudgetField("include2Frames", e.target.checked)}
+                                    className="rounded border-zinc-850 text-[#b4975a] bg-zinc-900 focus:ring-0 w-3.5 h-3.5"
+                                  />
+                                  <span className="text-zinc-300">Complimentary 2x Keepsake Frames</span>
+                                </label>
+                              </div>
+                            </div>
+
+                            <div className="space-y-4">
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Video Editor Fee (₹)</label>
+                                <input
+                                  type="number"
+                                  value={selectedBudget.videoEditingCharge || 0}
+                                  onChange={(e) => updateBudgetField("videoEditingCharge", parseFloat(e.target.value) || 0)}
+                                  className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Deliverable USB/Pendrives Cost (₹)</label>
+                                <input
+                                  type="number"
+                                  value={selectedBudget.pendriveCharge || 0}
+                                  onChange={(e) => updateBudgetField("pendriveCharge", parseFloat(e.target.value) || 0)}
+                                  className="bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Custom Extra Expenses */}
+                        <div className="space-y-3 border-t border-zinc-850 pt-5">
+                          <div className="flex justify-between items-center">
+                            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                              <Sliders size={13} className="text-[#b4975a]" /> Custom Add-on Expenses
+                            </h4>
+                            <button
+                              onClick={() => handleAddCrewMember("customExpenses")}
+                              className="bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 hover:border-zinc-700 text-white font-bold py-1 px-3 rounded-lg text-[10px] uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus size={11} /> Add Expense
+                            </button>
+                          </div>
+                          <div className="space-y-2">
+                            {(selectedBudget.customExpenses || []).map((c, index) => (
+                              <div key={c.id} className="flex gap-3 items-center">
+                                <input
+                                  type="text"
+                                  value={c.name}
+                                  onChange={(e) => updateCrewMember("customExpenses", index, "name", e.target.value)}
+                                  placeholder="Expense description, e.g. Helicopter rental, specific drone upgrade"
+                                  className="bg-zinc-900 border border-zinc-850 rounded-xl px-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none flex-1"
+                                />
+                                <div className="relative w-36 shrink-0">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">₹</span>
+                                  <input
+                                    type="number"
+                                    value={c.charge}
+                                    placeholder="Expense rate"
+                                    onChange={(e) => updateCrewMember("customExpenses", index, "charge", parseFloat(e.target.value) || 0)}
+                                    className="bg-zinc-900 border border-zinc-850 rounded-xl pl-6 pr-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full text-right"
+                                  />
+                                </div>
+                                <button
+                                  onClick={() => handleRemoveCrewMember("customExpenses", index)}
+                                  className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/25 p-2 rounded-xl transition-all cursor-pointer shrink-0"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right live calculations dashboard panel */}
+                  {(() => {
+                    const fin = calculateBudgetFinancials(selectedBudget);
+                    const marginText = fin.marginPercent >= 40 ? "High Profitability" : fin.marginPercent >= 20 ? "Healthy Profit" : fin.marginPercent > 0 ? "Low Profit" : fin.marginPercent === 0 ? "Break Even" : "Net Loss Alert";
+                    const marginColor = fin.marginPercent >= 40 ? "text-green-400" : fin.marginPercent >= 20 ? "text-amber-400" : "text-red-400";
+                    return (
+                      <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-5 sticky top-24 select-none">
+                        <div className="space-y-1 border-b border-zinc-900 pb-3">
+                          <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">Financial Performance</span>
+                          <h4 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl text-white font-light flex justify-between items-center">
+                            Summary Output
+                            <span className={`text-xs px-2 py-0.5 rounded border border-zinc-800 font-bold uppercase tracking-wider bg-zinc-900 ${marginColor}`}>{marginText}</span>
+                          </h4>
+                        </div>
+
+                        <div className="space-y-3 text-xs leading-relaxed">
+                          <div className="flex justify-between items-center">
+                            <span className="text-zinc-500">Gross Revenue (Revenue)</span>
+                            <span className="text-white font-bold">₹ {formatCurrency(fin.packagePrice)}</span>
+                          </div>
+                          
+                          <div className="space-y-2 border-t border-zinc-900/60 pt-3">
+                            <div className="flex justify-between items-center text-[11px]">
+                              <span className="text-zinc-500">Logistics (Travel, Stay, Food)</span>
+                              <span className="text-zinc-400">₹ {formatCurrency(fin.logisticsExpense)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[11px]">
+                              <span className="text-zinc-500">Media Crew &amp; Drone Cost</span>
+                              <span className="text-zinc-400">₹ {formatCurrency(fin.crewExpense)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[11px]">
+                              <span className="text-zinc-500">Save the Date Expenses</span>
+                              <span className="text-zinc-400">₹ {formatCurrency(fin.stdExpense)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[11px]">
+                              <span className="text-zinc-500">Albums (Cover, printing, design)</span>
+                              <span className="text-zinc-400">₹ {formatCurrency(fin.albumExpense)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[11px]">
+                              <span className="text-zinc-500">Wall Keepsake Frames</span>
+                              <span className="text-zinc-400">₹ {formatCurrency(fin.framesExpense)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[11px]">
+                              <span className="text-zinc-500">Video Editing &amp; Media</span>
+                              <span className="text-zinc-400">₹ {formatCurrency(fin.mediaExpense)}</span>
+                            </div>
+                            {fin.customExpense > 0 && (
+                              <div className="flex justify-between items-center text-[11px]">
+                                <span className="text-zinc-500">Custom Add-on Expenses</span>
+                                <span className="text-zinc-400">₹ {formatCurrency(fin.customExpense)}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex justify-between items-center border-t border-zinc-900 pt-3 font-bold text-sm select-all">
+                            <span className="text-zinc-400">Total Project Expense</span>
+                            <span className="text-red-400 font-bold">₹ {formatCurrency(fin.totalExpense)}</span>
+                          </div>
+
+                          <div className="flex justify-between items-center border-t border-zinc-900 pt-3 font-bold text-sm select-all">
+                            <span className="text-zinc-400">Net Studio Profit</span>
+                            <span className="text-green-400 font-bold">₹ {formatCurrency(fin.netProfit)} ({fin.marginPercent}%)</span>
+                          </div>
+
+                          {/* My Personal Crew Earnings highlight */}
+                          <div className="bg-[#b4975a]/5 border border-[#b4975a]/15 p-4 rounded-2xl flex flex-col gap-1 mt-4">
+                            <span className="text-zinc-400 text-[10px] uppercase font-black tracking-wider flex items-center gap-1">
+                              <Coins size={12} className="text-[#b4975a]" /> My Personal Earnings
+                            </span>
+                            <h4 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-xl text-[#b4975a] font-bold">
+                              ₹ {formatCurrency(fin.myTotalEarnings)}
+                            </h4>
+                            <p className="text-zinc-500 text-[9px] font-medium leading-relaxed">
+                              Includes Net Profit + all allocated crew fees where you checked "I did it".
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 pt-2">
+                          <button
+                            onClick={() => handleSaveBudget(selectedBudget)}
+                            className="w-full py-3.5 bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-2"
+                          >
+                            <Save size={13} /> Save Planner Changes
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedBudget(null);
+                            }}
+                            className="w-full py-3.5 bg-zinc-900 hover:bg-zinc-850 text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-widest rounded-xl border border-zinc-800 transition-all cursor-pointer text-center"
+                          >
+                            Return to Dashboard
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "invoice-studio" && (
+          <div className="space-y-6 text-left">
+            {/* Header section */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl text-white font-light">
+                  Invoice <span className="italic font-serif text-[#b4975a]">Studio Dashboard</span>
+                </h2>
+                <p className="text-zinc-500 text-[11px] font-light mt-1">Convert proposals and budget plans to printable A4 GST/Tax invoices instantly.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                {!selectedInvoice ? (
+                  <button
+                    onClick={handleCreateBlankInvoice}
+                    className="bg-[#b4975a] hover:bg-[#c5ab73] text-zinc-950 font-bold py-2.5 px-5 rounded-xl text-xs transition-all flex items-center gap-2 cursor-pointer shadow-lg shadow-[#b4975a]/10"
+                  >
+                    <Plus size={14} /> Start Blank Invoice
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setInvoiceTaxRate(r => r === 0 ? 18 : 0)}
+                      className="bg-zinc-900 hover:bg-zinc-850 text-white font-bold py-2 px-4 rounded-xl text-xs border border-zinc-800 transition-all cursor-pointer"
+                    >
+                      🏷️ Tax Rate: {invoiceTaxRate}%
+                    </button>
+                    <button
+                      onClick={() => {
+                        const updatedItems = [...(selectedInvoice.items || [])];
+                        updatedItems.push({
+                          id: Math.random().toString(),
+                          label: "Additional Service / Custom milestone",
+                          price: 15000,
+                          date: "TBD Date"
+                        });
+                        setSelectedInvoice({ ...selectedInvoice, items: updatedItems });
+                      }}
+                      className="bg-zinc-900 hover:bg-zinc-850 text-white font-bold py-2 px-4 rounded-xl text-xs border border-zinc-800 transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Plus size={13} /> Add Row
+                    </button>
+                    <button
+                      onClick={() => handleSaveInvoice(selectedInvoice)}
+                      className="bg-[#b4975a] hover:bg-[#c5ab73] text-zinc-950 font-bold py-2 px-4 rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-[#b4975a]/10"
+                    >
+                      <Save size={13} /> Save Invoice
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* View switching */}
+            {!selectedInvoice ? (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                {/* Left col: Invoice dropzone & budget converter picker */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Text pasting zone */}
+                  <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-4">
+                    <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                      <FileText size={14} className="text-[#b4975a]" /> Convert Proposal or Booking Quote
+                    </h3>
+                    <p className="text-zinc-500 text-[10px] leading-relaxed">
+                      Paste details of a custom wedding booking proposal quote below to extract pricing and generate invoice milestones automatically.
+                    </p>
+                    <div className="space-y-3">
+                      <textarea
+                        rows="3"
+                        id="pasted-proposal-text"
+                        placeholder="Paste proposal details here... e.g. Wedding Photography & Video on Aug 15: Rs. 1,50000/- with leatherette wedding album..."
+                        className="w-full bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-3 text-white text-xs focus:border-[#b4975a] focus:outline-none leading-relaxed"
+                      />
+                      <button
+                        onClick={handleParseProposalText}
+                        className="bg-zinc-900 hover:bg-zinc-850 text-white border border-zinc-800 py-2.5 px-5 rounded-xl text-xs font-bold transition-all cursor-pointer w-full text-center"
+                      >
+                        Extract &amp; Build Invoice
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Budget Projects list picker */}
+                  <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-4">
+                    <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                      <Wallet size={14} className="text-[#b4975a]" /> Convert from Tracked Studio Budget
+                    </h3>
+                    <p className="text-zinc-500 text-[10px] leading-relaxed">
+                      Choose an active wedding budget planner from your database to convert it into a structured, milestone-based invoice.
+                    </p>
+                    
+                    {officeBudgets.length === 0 ? (
+                      <div className="text-center py-6 text-zinc-500 text-xs font-light border border-dashed border-zinc-800 rounded-2xl">
+                        No active wedding budgets found. Track a budget first!
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[40vh] overflow-y-auto pr-1">
+                        {officeBudgets.map(b => {
+                          const fin = calculateBudgetFinancials(b);
+                          return (
+                            <div
+                              key={b.id}
+                              onClick={() => handleConvertBudgetToInvoice(b)}
+                              className="bg-zinc-900/40 border border-zinc-850/60 p-4 rounded-xl hover:border-[#b4975a]/45 hover:bg-[#b4975a]/2 transition-all cursor-pointer text-left flex flex-col justify-between h-28"
+                            >
+                              <div>
+                                <h4 className="font-bold text-white text-xs truncate">{b.clientName}</h4>
+                                <span className="text-zinc-500 text-[9px] block mt-0.5">📍 {b.location || "Venue TBD"}</span>
+                              </div>
+                              <div className="flex justify-between items-center border-t border-zinc-900 pt-2 mt-2">
+                                <span className="text-[#b4975a] font-bold text-xs">₹ {formatCurrency(fin.packagePrice)}</span>
+                                <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-0.5">Convert &rarr;</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right col: Saved invoice drafts list */}
+                <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-4">
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 select-none">
+                    <Save size={14} className="text-[#b4975a]" /> Saved Invoice Drafts
+                  </h3>
+                  <div className="relative">
+                    <Search size={12} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+                    <input
+                      type="text"
+                      placeholder="Search invoices..."
+                      value={invoiceSearch}
+                      onChange={(e) => setInvoiceSearch(e.target.value)}
+                      className="bg-zinc-900 border border-zinc-850 rounded-xl pl-9 pr-3 py-1.5 text-white text-[11px] focus:border-[#b4975a] focus:outline-none w-full"
+                    />
+                  </div>
+                  <div className="space-y-2.5 max-h-[50vh] overflow-y-auto pr-1">
+                    {officeInvoices
+                      .filter(inv => (inv.clientName || "").toLowerCase().includes(invoiceSearch.toLowerCase()) || (inv.invoiceNo || "").toLowerCase().includes(invoiceSearch.toLowerCase()))
+                      .map(inv => {
+                        const subtotal = (inv.items || []).reduce((s, it) => s + (Number(it.price) || 0), 0);
+                        const discount = Number(inv.discount) || 0;
+                        const advance = Number(inv.advance) || 0;
+                        const subtotalAfterDiscount = subtotal - discount;
+                        const tax = Math.round(subtotalAfterDiscount * (invoiceTaxRate / 100));
+                        const total = subtotalAfterDiscount + tax;
+                        const due = total - advance;
+                        return (
+                          <div key={inv.invoiceNo || inv.id} className="bg-zinc-900/30 border border-zinc-850 p-4 rounded-xl flex flex-col justify-between gap-3 text-xs text-left relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-16 h-16 bg-[#b4975a]/2 rounded-full blur-xl pointer-events-none" />
+                            <div className="space-y-1">
+                              <div className="flex justify-between items-center">
+                                <span className="text-[10px] text-zinc-500 font-bold tracking-wider">{inv.invoiceNo}</span>
+                                <span className="text-[#b4975a] font-bold">₹ {formatCurrency(due)} due</span>
+                              </div>
+                              <h4 className="font-bold text-white text-xs truncate">{inv.clientName}</h4>
+                              <p className="text-[10px] text-zinc-500">{inv.venue || "Venue TBD"}</p>
+                            </div>
+                            <div className="flex gap-2 pt-1">
+                              <button
+                                onClick={() => {
+                                  setSelectedInvoice(JSON.parse(JSON.stringify(inv)));
+                                  setInvoiceTaxRate(0); // reset initially
+                                }}
+                                className="flex-1 bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 text-white font-bold py-1.5 rounded-lg text-[10px] text-center cursor-pointer transition-all"
+                              >
+                                Edit Invoice
+                              </button>
+                              <button
+                                onClick={() => handleDeleteInvoice(inv.invoiceNo || inv.id)}
+                                className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/25 p-1.5 rounded-lg transition-all cursor-pointer"
+                                title="Delete"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    {officeInvoices.length === 0 && (
+                      <div className="text-center py-8 text-zinc-500 text-[10px] font-light">
+                        No saved invoice history.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* A4 Digital Invoice Editor Workspace */
+              <div className="space-y-6">
+                <div className="flex items-center justify-between bg-zinc-950 border border-zinc-800 p-4 rounded-2xl no-print">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setSelectedInvoice(null)}
+                      className="bg-zinc-900 hover:bg-zinc-850 text-white p-2 rounded-xl border border-zinc-800 transition-all cursor-pointer"
+                    >
+                      <ArrowLeft size={14} />
+                    </button>
+                    <div>
+                      <h3 className="font-bold text-white text-sm">Editing A4 Invoice: {selectedInvoice.clientName}</h3>
+                      <p className="text-zinc-500 text-[10px] mt-0.5">Invoice No: {selectedInvoice.invoiceNo} &bull; Date: {selectedInvoice.savedAt ? selectedInvoice.savedAt.split('T')[0] : "TBD"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handlePrintInvoice(selectedInvoice)}
+                      className="bg-zinc-900 hover:bg-zinc-850 text-white font-bold py-2 px-4 rounded-xl text-xs border border-zinc-800 transition-all flex items-center gap-2 cursor-pointer"
+                    >
+                      <Printer size={13} /> Print / Export PDF
+                    </button>
+                    <button
+                      onClick={() => handleSaveInvoice(selectedInvoice)}
+                      className="bg-[#b4975a] hover:bg-[#c5ab73] text-zinc-950 font-bold py-2 px-4 rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-[#b4975a]/10"
+                    >
+                      <Save size={13} /> Save Changes
+                    </button>
+                  </div>
+                </div>
+
+                {/* Printable A4 Card Panel */}
+                <div className="flex justify-center py-6 bg-zinc-900/20 border border-zinc-800 rounded-3xl overflow-x-auto">
+                  <div className="print-invoice-sheet bg-white text-black w-[800px] min-h-[1130px] p-12 shadow-2xl flex flex-col justify-between font-sans shrink-0 border border-zinc-200">
+                    <div className="space-y-8">
+                      {/* Luxury Brand Header */}
+                      <div className="flex justify-between items-start border-b border-zinc-100 pb-5 select-none">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full border-2 border-[#b4975a] bg-zinc-50 flex items-center justify-center font-bold text-lg text-zinc-900 shadow-sm">DW</div>
+                          <div className="text-left">
+                            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl font-bold tracking-wide text-zinc-900">Dreamwed Stories</h2>
+                            <p className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Premium Wedding Photography</p>
+                          </div>
+                        </div>
+                        <div className="text-right text-[11px] text-zinc-500 leading-relaxed font-medium">
+                          <span className="block font-bold text-zinc-800">dreamwedstories.co.in</span>
+                          <span>+91 99954 12955</span>
+                        </div>
+                      </div>
+
+                      {/* Header Title */}
+                      <div className="text-center">
+                        <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl font-bold uppercase tracking-[0.15em] text-zinc-800 select-none">Invoice</h2>
+                      </div>
+
+                      {/* Billing Meta Data Grid */}
+                      <div className="grid grid-cols-2 gap-8 text-left text-xs text-zinc-600 leading-relaxed">
+                        <div className="space-y-4">
+                          <span className="text-[9px] uppercase tracking-wider font-bold text-zinc-400 select-none">Invoice To:</span>
+                          <div className="space-y-2">
+                            <input
+                              type="text"
+                              value={selectedInvoice.clientName || ""}
+                              onChange={(e) => setSelectedInvoice({ ...selectedInvoice, clientName: e.target.value })}
+                              placeholder="CLIENT NAME"
+                              className="font-bold text-zinc-900 text-sm border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] focus:border-[#b4975a] bg-transparent focus:outline-none w-full py-0.5 capitalize printable-input"
+                            />
+                            <input
+                              type="text"
+                              value={selectedInvoice.venue || ""}
+                              onChange={(e) => setSelectedInvoice({ ...selectedInvoice, venue: e.target.value })}
+                              placeholder="Venue & City Location"
+                              className="border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] focus:border-[#b4975a] bg-transparent focus:outline-none w-full py-0.5 printable-input"
+                            />
+                            <input
+                              type="text"
+                              value={selectedInvoice.phone || ""}
+                              onChange={(e) => setSelectedInvoice({ ...selectedInvoice, phone: e.target.value })}
+                              placeholder="Contact Phone"
+                              className="border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] focus:border-[#b4975a] bg-transparent focus:outline-none w-full py-0.5 printable-input"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-end">
+                          <div className="w-56 space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-zinc-500 font-bold text-[10px] uppercase select-none">Invoice No:</span>
+                              <input
+                                type="text"
+                                value={selectedInvoice.invoiceNo || ""}
+                                onChange={(e) => setSelectedInvoice({ ...selectedInvoice, invoiceNo: e.target.value })}
+                                className="font-bold text-zinc-900 border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] bg-transparent focus:outline-none w-32 text-right py-0.5 printable-input"
+                              />
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-zinc-500 font-bold text-[10px] uppercase select-none">Date Issued:</span>
+                              <input
+                                type="date"
+                                value={selectedInvoice.savedAt ? selectedInvoice.savedAt.split('T')[0] : new Date().toISOString().split('T')[0]}
+                                onChange={(e) => setSelectedInvoice({ ...selectedInvoice, savedAt: new Date(e.target.value).toISOString() })}
+                                className="border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] bg-transparent focus:outline-none w-32 text-right py-0.5 printable-input text-zinc-800"
+                              />
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-zinc-500 font-bold text-[10px] uppercase select-none">Discount (₹):</span>
+                              <input
+                                type="number"
+                                value={selectedInvoice.discount || 0}
+                                onChange={(e) => setSelectedInvoice({ ...selectedInvoice, discount: parseFloat(e.target.value) || 0 })}
+                                className="font-bold border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] bg-transparent focus:outline-none w-24 text-right py-0.5 text-zinc-900 printable-input"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Items Milestones Table */}
+                      <div className="overflow-x-auto pt-3">
+                        <table className="w-full border-collapse text-xs">
+                          <thead>
+                            <tr className="bg-zinc-50 border-y border-zinc-100 uppercase tracking-wider text-[10px] text-zinc-500 font-bold select-none">
+                              <th className="py-3 px-4 text-left font-bold">Service Milestone Description</th>
+                              <th className="py-3 px-4 text-right font-bold w-32">Milestone / Date</th>
+                              <th className="py-3 px-4 text-right font-bold w-36">Rate Cost (₹)</th>
+                              <th className="py-3 px-4 text-right font-bold w-12 no-print"></th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-zinc-100 text-zinc-800">
+                            {(selectedInvoice.items || []).map((it, idx) => (
+                              <tr key={it.id || idx}>
+                                <td className="py-3.5 px-4 text-left">
+                                  <input
+                                    type="text"
+                                    value={it.label}
+                                    onChange={(e) => {
+                                      const updatedItems = [...selectedInvoice.items];
+                                      updatedItems[idx].label = e.target.value;
+                                      setSelectedInvoice({ ...selectedInvoice, items: updatedItems });
+                                    }}
+                                    placeholder="Service Milestone description"
+                                    className="bg-transparent focus:outline-none w-full border-b border-transparent hover:border-zinc-200 focus:border-[#b4975a] py-0.5 text-zinc-950 printable-input"
+                                  />
+                                </td>
+                                <td className="py-3.5 px-4 text-right">
+                                  <input
+                                    type="text"
+                                    value={it.date}
+                                    onChange={(e) => {
+                                      const updatedItems = [...selectedInvoice.items];
+                                      updatedItems[idx].date = e.target.value;
+                                      setSelectedInvoice({ ...selectedInvoice, items: updatedItems });
+                                    }}
+                                    placeholder="e.g. Wedding Date"
+                                    className="bg-transparent focus:outline-none w-full border-b border-transparent hover:border-zinc-200 focus:border-[#b4975a] py-0.5 text-right text-zinc-700 printable-input"
+                                  />
+                                </td>
+                                <td className="py-3.5 px-4 text-right font-semibold text-zinc-950">
+                                  <div className="relative w-full">
+                                    <span className="absolute left-1 top-1/2 -translate-y-1/2 text-zinc-400">₹</span>
+                                    <input
+                                      type="number"
+                                      value={it.price}
+                                      onChange={(e) => {
+                                        const updatedItems = [...selectedInvoice.items];
+                                        updatedItems[idx].price = parseFloat(e.target.value) || 0;
+                                        setSelectedInvoice({ ...selectedInvoice, items: updatedItems });
+                                      }}
+                                      className="bg-transparent focus:outline-none w-full text-right border-b border-transparent hover:border-zinc-200 focus:border-[#b4975a] pl-4 py-0.5 printable-input"
+                                    />
+                                  </div>
+                                </td>
+                                <td className="py-3.5 px-4 text-center no-print">
+                                  <button
+                                    onClick={() => {
+                                      const updatedItems = selectedInvoice.items.filter((_, i) => i !== idx);
+                                      setSelectedInvoice({ ...selectedInvoice, items: updatedItems });
+                                    }}
+                                    className="text-red-500 hover:text-red-700 cursor-pointer p-1"
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Calculations breakdown summary */}
+                      {(() => {
+                        const subtotal = (selectedInvoice.items || []).reduce((s, it) => s + (Number(it.price) || 0), 0);
+                        const discount = Number(selectedInvoice.discount) || 0;
+                        const subtotalAfterDiscount = subtotal - discount;
+                        const tax = Math.round(subtotalAfterDiscount * (invoiceTaxRate / 100));
+                        const total = subtotalAfterDiscount + tax;
+                        const advance = Number(selectedInvoice.advance) || 0;
+                        const due = total - advance;
+                        return (
+                          <div className="flex justify-end pt-5 select-all">
+                            <table className="w-80 text-xs border-collapse divide-y divide-zinc-100/60 leading-relaxed">
+                              <tbody>
+                                <tr className="text-zinc-600">
+                                  <td className="py-2 text-left font-medium select-none">Subtotal:</td>
+                                  <td className="py-2 text-right font-bold text-zinc-900">₹ {formatCurrency(subtotal)}</td>
+                                </tr>
+                                {discount > 0 && (
+                                  <tr className="text-green-600">
+                                    <td className="py-2 text-left font-medium select-none">Discount:</td>
+                                    <td className="py-2 text-right font-bold">- ₹ {formatCurrency(discount)}</td>
+                                  </tr>
+                                )}
+                                <tr className="text-zinc-600">
+                                  <td className="py-2 text-left font-medium select-none">GST ({invoiceTaxRate}%):</td>
+                                  <td className="py-2 text-right font-bold text-zinc-900">₹ {formatCurrency(tax)}</td>
+                                </tr>
+                                <tr className="text-zinc-600">
+                                  <td className="py-2 text-left font-medium select-none">Advance Paid:</td>
+                                  <td className="py-2 text-right font-semibold text-zinc-900">
+                                    <div className="relative w-28 ml-auto no-print">
+                                      <span className="absolute left-1 top-1/2 -translate-y-1/2 text-zinc-400">₹</span>
+                                      <input
+                                        type="number"
+                                        value={selectedInvoice.advance || 0}
+                                        onChange={(e) => setSelectedInvoice({ ...selectedInvoice, advance: parseFloat(e.target.value) || 0 })}
+                                        className="bg-transparent focus:outline-none w-full text-right border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] pl-4 py-0.5 printable-input font-bold"
+                                      />
+                                    </div>
+                                    <span className="hidden print:inline">₹ {formatCurrency(advance)}</span>
+                                  </td>
+                                </tr>
+                                <tr className="text-sm font-black border-t-2 border-zinc-900/80 text-zinc-900">
+                                  <td className="py-3.5 text-left uppercase select-none">Net Balance Due:</td>
+                                  <td className="py-3.5 text-right text-lg text-[#b4975a] font-bold">₹ {formatCurrency(due)}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Luxury Footer instructions & signature block */}
+                    <div className="border-t border-zinc-100 pt-8 mt-8 flex justify-between items-end text-[10px] text-zinc-500 leading-relaxed font-medium text-left select-none font-sans">
+                      <div className="space-y-1.5">
+                        <strong className="text-zinc-800 block text-[11px] font-bold uppercase tracking-wider">Payment Terms</strong>
+                        <span className="block text-zinc-400 font-bold uppercase tracking-widest text-[8px]">BANK WIRE</span>
+                        <span>Account: Dreamwed Stories</span><br />
+                        <span>IFS Code: HDFC0001245 &bull; Branch: HDFC Cochin</span>
+                      </div>
+                      <div className="text-right">
+                        <div style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl italic text-zinc-700 select-none pb-1">Dreamwed Stories</div>
+                        <span className="text-[9px] uppercase tracking-wider font-bold text-zinc-400">Authorized Signature</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
 
       {/* 4. AI Gallery Photos Manager Modal */}
       <AnimatePresence>

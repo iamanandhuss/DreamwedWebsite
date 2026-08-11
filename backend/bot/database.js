@@ -227,6 +227,17 @@ async function initDB() {
   data.project_chats = data.project_chats || [];
   data.activity_logs = data.activity_logs || [];
   data.staff_users = data.staff_users || [];
+  data.office_budgets = data.office_budgets || [];
+  data.office_invoices = data.office_invoices || [];
+  data.office_settings = data.office_settings || {
+    photoCharge: 15000,
+    videoCharge: 20000,
+    albumCoverCharge: 2000,
+    albumLeafCharge: 75,
+    albumDesigningCharge: 300,
+    videoEditingCharge: 8000,
+    pendriveCharge: 500
+  };
 
   // Async load initial states from Supabase if online
   try {
@@ -791,6 +802,74 @@ function getProjectAllChats(projectId) {
     .map(c => ({ channel: c.channel, messages: c.messages }));
 }
 
+function getOfficeBudgets() {
+  data.office_budgets = data.office_budgets || [];
+  return data.office_budgets;
+}
+
+function saveOfficeBudget(budget) {
+  data.office_budgets = data.office_budgets || [];
+  const idx = data.office_budgets.findIndex(b => b.id === budget.id);
+  if (idx > -1) {
+    data.office_budgets[idx] = budget;
+  } else {
+    data.office_budgets.push(budget);
+  }
+  saveToDisk();
+  return budget;
+}
+
+function deleteOfficeBudget(id) {
+  data.office_budgets = data.office_budgets || [];
+  data.office_budgets = data.office_budgets.filter(b => b.id !== id);
+  saveToDisk();
+}
+
+function getOfficeInvoices() {
+  data.office_invoices = data.office_invoices || [];
+  return data.office_invoices;
+}
+
+function saveOfficeInvoice(invoice) {
+  data.office_invoices = data.office_invoices || [];
+  if (!invoice.id) {
+    invoice.id = invoice.invoiceNo || `inv_${Date.now()}`;
+  }
+  const idx = data.office_invoices.findIndex(i => i.invoiceNo === invoice.invoiceNo || i.id === invoice.id);
+  if (idx > -1) {
+    data.office_invoices[idx] = invoice;
+  } else {
+    data.office_invoices.push(invoice);
+  }
+  saveToDisk();
+  return invoice;
+}
+
+function deleteOfficeInvoice(id) {
+  data.office_invoices = data.office_invoices || [];
+  data.office_invoices = data.office_invoices.filter(i => i.invoiceNo !== id && i.id !== id);
+  saveToDisk();
+}
+
+function getOfficeSettings() {
+  data.office_settings = data.office_settings || {
+    photoCharge: 15000,
+    videoCharge: 20000,
+    albumCoverCharge: 2000,
+    albumLeafCharge: 75,
+    albumDesigningCharge: 300,
+    videoEditingCharge: 8000,
+    pendriveCharge: 500
+  };
+  return data.office_settings;
+}
+
+function saveOfficeSettings(settings) {
+  data.office_settings = settings;
+  saveToDisk();
+  return settings;
+}
+
 module.exports = {
   initDB, getDB, saveMessage, getOrCreateCustomer,
   updateCustomer, getChatHistory, scheduleReminder,
@@ -800,6 +879,9 @@ module.exports = {
   getProjects, getProject, updateProject, logActivity, getProjectLogs,
   saveProjectMessage, getProjectChats, getProjectAllChats, createProjectFromBooking, getProjectByPhone,
   getStaffUsers, getStaffUser, createStaffUser, updateStaffUser, deleteStaffUser, authenticateStaff,
-  deleteProject, deleteAllBookings, deleteAllProjects
+  deleteProject, deleteAllBookings, deleteAllProjects,
+  getOfficeBudgets, saveOfficeBudget, deleteOfficeBudget,
+  getOfficeInvoices, saveOfficeInvoice, deleteOfficeInvoice,
+  getOfficeSettings, saveOfficeSettings
 };
 

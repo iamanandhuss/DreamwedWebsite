@@ -32,7 +32,15 @@ const {
   authenticateStaff,
   deleteProject,
   deleteAllBookings,
-  deleteAllProjects
+  deleteAllProjects,
+  getOfficeBudgets,
+  saveOfficeBudget,
+  deleteOfficeBudget,
+  getOfficeInvoices,
+  saveOfficeInvoice,
+  deleteOfficeInvoice,
+  getOfficeSettings,
+  saveOfficeSettings
 } = require('./bot/database');
 const { startReminderScheduler } = require('./bot/reminders');
 
@@ -881,6 +889,91 @@ app.post('/api/public/package-enquiry', (req, res) => {
   } catch (err) {
     console.error('Error saving package enquiry:', err);
     res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ==========================================================
+// DREAMWED OFFICE APIs (BUDGETS, INVOICES & SETTINGS)
+// ==========================================================
+
+// 1. Budgets CRUD
+app.get('/api/office/budgets', (req, res) => {
+  try {
+    const budgets = getOfficeBudgets();
+    res.json(budgets);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/office/budgets', (req, res) => {
+  try {
+    const budget = req.body;
+    if (!budget.id) {
+      budget.id = '_' + Math.random().toString(36).substr(2, 9);
+    }
+    const saved = saveOfficeBudget(budget);
+    res.json(saved);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/office/budgets/:id', (req, res) => {
+  try {
+    deleteOfficeBudget(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 2. Invoices CRUD
+app.get('/api/office/invoices', (req, res) => {
+  try {
+    const invoices = getOfficeInvoices();
+    res.json(invoices);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/office/invoices', (req, res) => {
+  try {
+    const invoice = req.body;
+    const saved = saveOfficeInvoice(invoice);
+    res.json(saved);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/office/invoices/:id', (req, res) => {
+  try {
+    deleteOfficeInvoice(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3. Settings CRUD
+app.get('/api/office/settings', (req, res) => {
+  try {
+    const settings = getOfficeSettings();
+    res.json(settings);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/office/settings', (req, res) => {
+  try {
+    const settings = req.body;
+    const saved = saveOfficeSettings(settings);
+    res.json(saved);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
