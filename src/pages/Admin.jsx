@@ -56,6 +56,37 @@ const Admin = () => {
   const [activeInvoiceBooking, setActiveInvoiceBooking] = useState(null);
   const [activeClientPhotoTab, setActiveClientPhotoTab] = useState("bride"); // bride | groom | matches
   const [selectedClientTab, setSelectedClientTab] = useState("details"); // details | passwords | photos | billing
+  const [showCreateClientModal, setShowCreateClientModal] = useState(false);
+  const [clientFormSaving, setClientFormSaving] = useState(false);
+  const [newClientFormData, setNewClientFormData] = useState({
+    customer_name: "",
+    customer_phone: "",
+    customer_email: "",
+    customer_address: "",
+    pincode: "",
+    coverage_scope: "both",
+    package_name: "",
+    package_price: "",
+    advance_paid: "",
+    event_date: "",
+    event_venue: "",
+    wedding_reception_mode: "same",
+    different_date_details: {
+      wedding: { date: "", venue: "" },
+      reception: { date: "", venue: "" }
+    },
+    need_drone: "no",
+    need_cinematic: "no",
+    preferred_album_size: "12x18",
+    special_notes: "",
+    custom_bride_password: "",
+    custom_groom_password: "",
+    show_secondary: false,
+    customer_name_2: "",
+    customer_phone_2: "",
+    customer_email_2: "",
+    customer_address_2: ""
+  });
 
   // Chats tab state
   const [chatProject, setChatProject] = useState(null);
@@ -478,6 +509,80 @@ const Admin = () => {
       alert("Network error updating project.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCreateClient = async (e) => {
+    e.preventDefault();
+    if (clientFormSaving) return;
+    
+    setClientFormSaving(true);
+    try {
+      const payload = {
+        customer_name: newClientFormData.customer_name,
+        customer_phone: newClientFormData.customer_phone,
+        customer_email: newClientFormData.customer_email,
+        customer_address: newClientFormData.customer_address,
+        pincode: newClientFormData.pincode,
+        coverage_type: newClientFormData.coverage_scope === "both" ? "both" : "single",
+        coverage_scope: newClientFormData.coverage_scope,
+        package_name: newClientFormData.package_name,
+        package_price: Number(newClientFormData.package_price) || 0,
+        advance_paid: Number(newClientFormData.advance_paid) || 0,
+        total_price: Number(newClientFormData.package_price) || 0,
+        event_date: newClientFormData.event_date,
+        event_venue: newClientFormData.event_venue,
+        wedding_reception_mode: newClientFormData.wedding_reception_mode,
+        different_date_details: newClientFormData.different_date_details,
+        need_drone: newClientFormData.need_drone,
+        need_cinematic: newClientFormData.need_cinematic,
+        preferred_album_size: newClientFormData.preferred_album_size,
+        special_notes: newClientFormData.special_notes,
+        status: "confirmed",
+        customer_name_2: newClientFormData.customer_name_2,
+        customer_phone_2: newClientFormData.customer_phone_2,
+        customer_email_2: newClientFormData.customer_email_2,
+        customer_address_2: newClientFormData.customer_address_2
+      };
+
+      if (newClientFormData.custom_bride_password) {
+        payload.bride_password = newClientFormData.custom_bride_password;
+      }
+      if (newClientFormData.custom_groom_password) {
+        payload.groom_password = newClientFormData.custom_groom_password;
+      }
+
+      const res = await fetch(`${API_BASE}/api/bookings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server returned status code: ${res.status}`);
+      }
+
+      const createdBooking = await res.json();
+      
+      // Update local state bookings list
+      setBookings(prev => [createdBooking, ...prev]);
+      setSelectedClient(createdBooking);
+      setSelectedClientTab("details");
+      
+      // Show confirmation message
+      const hasBridePass = createdBooking.bride_password !== null;
+      const passInfo = hasBridePass 
+        ? `Bride: ${createdBooking.bride_password}\nGroom: ${createdBooking.groom_password}`
+        : `Login Password: ${createdBooking.groom_password}`;
+        
+      alert(`🎉 Custom Workspace Created Successfully!\n\n👤 Name: ${createdBooking.customer_name}\n📞 Phone: ${createdBooking.customer_phone}\n\nGenerated Passwords:\n${passInfo}`);
+      
+      setShowCreateClientModal(false);
+    } catch (err) {
+      console.error(err);
+      alert(`❌ Failed to create custom workspace: ${err.message}`);
+    } finally {
+      setClientFormSaving(false);
     }
   };
 
@@ -1255,11 +1360,50 @@ const Admin = () => {
         {/* =============================== CLIENT MANAGEMENT TAB ================================ */}
         {activeTab === "clients" && (
           <div className="space-y-6 text-left">
-            <div>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl text-white font-light">
-                Client <span className="italic font-serif text-[#b4975a]">Management</span>
-              </h2>
-              <p className="text-zinc-500 text-[11px] font-light mt-1">Manage client passwords, access details, invoice receipts, and review photo selections.</p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl text-white font-light">
+                  Client <span className="italic font-serif text-[#b4975a]">Management</span>
+                </h2>
+                <p className="text-zinc-500 text-[11px] font-light mt-1">Manage client passwords, access details, invoice receipts, and review photo selections.</p>
+              </div>
+              <button 
+                onClick={() => {
+                  setNewClientFormData({
+                    customer_name: "",
+                    customer_phone: "",
+                    customer_email: "",
+                    customer_address: "",
+                    pincode: "",
+                    coverage_scope: "both",
+                    package_name: "",
+                    package_price: "",
+                    advance_paid: "",
+                    event_date: "",
+                    event_venue: "",
+                    wedding_reception_mode: "same",
+                    different_date_details: {
+                      wedding: { date: "", venue: "" },
+                      reception: { date: "", venue: "" }
+                    },
+                    need_drone: "no",
+                    need_cinematic: "no",
+                    preferred_album_size: "12x18",
+                    special_notes: "",
+                    custom_bride_password: "",
+                    custom_groom_password: "",
+                    show_secondary: false,
+                    customer_name_2: "",
+                    customer_phone_2: "",
+                    customer_email_2: "",
+                    customer_address_2: ""
+                  });
+                  setShowCreateClientModal(true);
+                }}
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 rounded-xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-95 shrink-0"
+              >
+                <Plus size={14} /> New Custom Booking
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
@@ -1720,9 +1864,427 @@ const Admin = () => {
                   <div className="h-96 rounded-[32px] border border-dashed border-zinc-800 bg-zinc-950/20 flex items-center justify-center text-zinc-500 text-xs">
                     Select a client workspace from the left pane to manage access, receipts, and co-selections.
                   </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
+            {/* Create Client Modal */}
+            {showCreateClientModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+                <div className="bg-zinc-950 border border-zinc-800 w-full max-w-4xl rounded-[32px] p-6 md:p-8 max-h-[90vh] overflow-y-auto space-y-6 relative text-left shadow-2xl">
+                  <button 
+                    type="button"
+                    onClick={() => setShowCreateClientModal(false)}
+                    className="absolute top-6 right-6 text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-850 p-2.5 rounded-full transition-all border border-zinc-800 cursor-pointer"
+                  >
+                    <X size={16} />
+                  </button>
+
+                  <div>
+                    <h3 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl text-white font-light">
+                      Create <span className="italic font-serif text-[#b4975a]">Custom Booking</span>
+                    </h3>
+                    <p className="text-zinc-500 text-[11px] font-light mt-1">Fill out the package customization and contact details below to generate passwords and invoice.</p>
+                  </div>
+
+                  <form onSubmit={handleCreateClient} className="space-y-6">
+                    {/* 1. Core Contact Information */}
+                    <div className="bg-zinc-900/30 p-5 border border-zinc-800 rounded-2xl space-y-4">
+                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#b4975a] border-b border-zinc-800 pb-1.5">1. Primary Contact Information</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Client Name *</label>
+                          <input 
+                            type="text" 
+                            required
+                            placeholder="e.g. Amritha & Sandeep"
+                            value={newClientFormData.customer_name}
+                            onChange={(e) => setNewClientFormData({ ...newClientFormData, customer_name: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Phone Number *</label>
+                          <input 
+                            type="tel" 
+                            required
+                            placeholder="10-digit number"
+                            value={newClientFormData.customer_phone}
+                            onChange={(e) => setNewClientFormData({ ...newClientFormData, customer_phone: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Email Address</label>
+                          <input 
+                            type="email" 
+                            placeholder="client@gmail.com"
+                            value={newClientFormData.customer_email}
+                            onChange={(e) => setNewClientFormData({ ...newClientFormData, customer_email: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                          />
+                        </div>
+                        <div className="space-y-1.5 md:col-span-2">
+                          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Home/Billing Address</label>
+                          <input 
+                            type="text" 
+                            placeholder="Full street name, building number"
+                            value={newClientFormData.customer_address}
+                            onChange={(e) => setNewClientFormData({ ...newClientFormData, customer_address: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Pincode</label>
+                          <input 
+                            type="text" 
+                            placeholder="695001"
+                            value={newClientFormData.pincode}
+                            onChange={(e) => setNewClientFormData({ ...newClientFormData, pincode: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 2. Package Customization Details */}
+                    <div className="bg-zinc-900/30 p-5 border border-zinc-800 rounded-2xl space-y-4">
+                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#b4975a] border-b border-zinc-800 pb-1.5">2. Customized Package Details</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="space-y-1.5 md:col-span-2">
+                          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Package Plan Name *</label>
+                          <input 
+                            type="text" 
+                            required
+                            placeholder="e.g. Custom Premium Photo + Cinematic Package"
+                            value={newClientFormData.package_name}
+                            onChange={(e) => setNewClientFormData({ ...newClientFormData, package_name: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Total Price / Quote (₹) *</label>
+                          <input 
+                            type="number" 
+                            required
+                            placeholder="Total Quote"
+                            value={newClientFormData.package_price}
+                            onChange={(e) => setNewClientFormData({ ...newClientFormData, package_price: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Advance Paid (₹) *</label>
+                          <input 
+                            type="number" 
+                            required
+                            placeholder="Advance paid"
+                            value={newClientFormData.advance_paid}
+                            onChange={(e) => setNewClientFormData({ ...newClientFormData, advance_paid: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 3. Schedule & Locations */}
+                    <div className="bg-zinc-900/30 p-5 border border-zinc-800 rounded-2xl space-y-4">
+                      <div className="flex justify-between items-center border-b border-zinc-800 pb-1.5">
+                        <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#b4975a]">3. Event Schedule & Venues</h4>
+                        <div className="flex items-center gap-4 text-xs text-zinc-400">
+                          <label className="flex items-center gap-1.5 cursor-pointer">
+                            <input 
+                              type="radio" 
+                              name="wedding_reception_mode"
+                              checked={newClientFormData.wedding_reception_mode === "same"}
+                              onChange={() => setNewClientFormData({ ...newClientFormData, wedding_reception_mode: "same" })}
+                              className="accent-[#b4975a]"
+                            />
+                            Same Day Event
+                          </label>
+                          <label className="flex items-center gap-1.5 cursor-pointer">
+                            <input 
+                              type="radio" 
+                              name="wedding_reception_mode"
+                              checked={newClientFormData.wedding_reception_mode === "different"}
+                              onChange={() => setNewClientFormData({ ...newClientFormData, wedding_reception_mode: "different" })}
+                              className="accent-[#b4975a]"
+                            />
+                            Different Days
+                          </label>
+                        </div>
+                      </div>
+
+                      {newClientFormData.wedding_reception_mode === "same" ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Event Date *</label>
+                            <input 
+                              type="date" 
+                              required={newClientFormData.wedding_reception_mode === "same"}
+                              value={newClientFormData.event_date}
+                              onChange={(e) => setNewClientFormData({ ...newClientFormData, event_date: e.target.value })}
+                              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Event Venue *</label>
+                            <input 
+                              type="text" 
+                              required={newClientFormData.wedding_reception_mode === "same"}
+                              placeholder="Convention Center name / Location"
+                              value={newClientFormData.event_venue}
+                              onChange={(e) => setNewClientFormData({ ...newClientFormData, event_venue: e.target.value })}
+                              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-zinc-800/40 pb-4">
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] font-bold text-[#b4975a] uppercase tracking-wider">Wedding Date *</label>
+                              <input 
+                                type="date" 
+                                required={newClientFormData.wedding_reception_mode === "different"}
+                                value={newClientFormData.different_date_details.wedding.date}
+                                onChange={(e) => {
+                                  const updated = { ...newClientFormData.different_date_details };
+                                  updated.wedding.date = e.target.value;
+                                  setNewClientFormData({ ...newClientFormData, different_date_details: updated, event_date: e.target.value });
+                                }}
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] font-bold text-[#b4975a] uppercase tracking-wider">Wedding Venue *</label>
+                              <input 
+                                type="text" 
+                                required={newClientFormData.wedding_reception_mode === "different"}
+                                placeholder="Wedding location / Auditorium"
+                                value={newClientFormData.different_date_details.wedding.venue}
+                                onChange={(e) => {
+                                  const updated = { ...newClientFormData.different_date_details };
+                                  updated.wedding.venue = e.target.value;
+                                  setNewClientFormData({ ...newClientFormData, different_date_details: updated, event_venue: e.target.value });
+                                }}
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] font-bold text-[#b4975a] uppercase tracking-wider">Reception Date *</label>
+                              <input 
+                                type="date" 
+                                required={newClientFormData.wedding_reception_mode === "different"}
+                                value={newClientFormData.different_date_details.reception.date}
+                                onChange={(e) => {
+                                  const updated = { ...newClientFormData.different_date_details };
+                                  updated.reception.date = e.target.value;
+                                  setNewClientFormData({ ...newClientFormData, different_date_details: updated });
+                                }}
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] font-bold text-[#b4975a] uppercase tracking-wider">Reception Venue *</label>
+                              <input 
+                                type="text" 
+                                required={newClientFormData.wedding_reception_mode === "different"}
+                                placeholder="Reception location / Auditorium"
+                                value={newClientFormData.different_date_details.reception.venue}
+                                onChange={(e) => {
+                                  const updated = { ...newClientFormData.different_date_details };
+                                  updated.reception.venue = e.target.value;
+                                  setNewClientFormData({ ...newClientFormData, different_date_details: updated });
+                                }}
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 4. Creative Scope & Specs */}
+                    <div className="bg-zinc-900/30 p-5 border border-zinc-800 rounded-2xl space-y-4">
+                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#b4975a] border-b border-zinc-800 pb-1.5">4. Coverage Scope & specifications</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Coverage Scope</label>
+                          <select 
+                            value={newClientFormData.coverage_scope}
+                            onChange={(e) => setNewClientFormData({ ...newClientFormData, coverage_scope: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-white focus:border-[#b4975a] focus:outline-none"
+                          >
+                            <option value="both">Both (Bride & Groom sides)</option>
+                            <option value="bride">Bride Side Only</option>
+                            <option value="groom">Groom Side Only</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Drone Upgrade</label>
+                          <select 
+                            value={newClientFormData.need_drone}
+                            onChange={(e) => setNewClientFormData({ ...newClientFormData, need_drone: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-white focus:border-[#b4975a] focus:outline-none"
+                          >
+                            <option value="no">No Drone Included</option>
+                            <option value="yes">Yes (Standard Dual Drone)</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Cinematic Film</label>
+                          <select 
+                            value={newClientFormData.need_cinematic}
+                            onChange={(e) => setNewClientFormData({ ...newClientFormData, need_cinematic: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-white focus:border-[#b4975a] focus:outline-none"
+                          >
+                            <option value="no">Traditional Video Only</option>
+                            <option value="yes">Yes (Cinematic + Teaser)</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Album Size Spec</label>
+                          <select 
+                            value={newClientFormData.preferred_album_size}
+                            onChange={(e) => setNewClientFormData({ ...newClientFormData, preferred_album_size: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-white focus:border-[#b4975a] focus:outline-none"
+                          >
+                            <option value="12x18">12x18 Inches Standard</option>
+                            <option value="12x15">12x15 Inches Compact</option>
+                            <option value="10x14">10x14 Inches Portrait</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 5. Custom Client Logins */}
+                    <div className="bg-zinc-900/30 p-5 border border-zinc-800 rounded-2xl space-y-4">
+                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#b4975a] border-b border-zinc-800 pb-1.5">5. Access Passwords (Optional)</h4>
+                      <p className="text-[9px] text-zinc-500 -mt-2">Leave blank to let the system generate randomized passwords automatically.</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {newClientFormData.coverage_scope === "both" && (
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">👰 Bride Login Password</label>
+                            <input 
+                              type="text" 
+                              placeholder="e.g. bride778"
+                              value={newClientFormData.custom_bride_password}
+                              onChange={(e) => setNewClientFormData({ ...newClientFormData, custom_bride_password: e.target.value })}
+                              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                            />
+                          </div>
+                        )}
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
+                            {newClientFormData.coverage_scope === "both" ? "🤵 Groom Login Password" : "🔑 Portal Login Password"}
+                          </label>
+                          <input 
+                            type="text" 
+                            placeholder="e.g. groom442"
+                            value={newClientFormData.custom_groom_password}
+                            onChange={(e) => setNewClientFormData({ ...newClientFormData, custom_groom_password: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 6. Alternate / Secondary Contact Toggle */}
+                    <div className="bg-zinc-900/30 p-5 border border-zinc-800 rounded-2xl space-y-4">
+                      <div className="flex justify-between items-center border-b border-zinc-800 pb-1.5">
+                        <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#b4975a]">6. Secondary / Alternate Contact Info (Optional)</h4>
+                        <label className="flex items-center gap-1.5 text-xs text-zinc-400 cursor-pointer select-none">
+                          <input 
+                            type="checkbox" 
+                            checked={newClientFormData.show_secondary}
+                            onChange={() => setNewClientFormData({ ...newClientFormData, show_secondary: !newClientFormData.show_secondary })}
+                            className="rounded border-zinc-800 text-[#b4975a] focus:ring-0 accent-[#b4975a]"
+                          />
+                          Add Alternate Contact
+                        </label>
+                      </div>
+
+                      {newClientFormData.show_secondary && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Alternate Contact Name</label>
+                            <input 
+                              type="text" 
+                              placeholder="e.g. Brother / Parent Name"
+                              value={newClientFormData.customer_name_2}
+                              onChange={(e) => setNewClientFormData({ ...newClientFormData, customer_name_2: e.target.value })}
+                              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Alternate Phone</label>
+                            <input 
+                              type="tel" 
+                              placeholder="10-digit number"
+                              value={newClientFormData.customer_phone_2}
+                              onChange={(e) => setNewClientFormData({ ...newClientFormData, customer_phone_2: e.target.value })}
+                              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Alternate Email</label>
+                            <input 
+                              type="email" 
+                              placeholder="alternate@gmail.com"
+                              value={newClientFormData.customer_email_2}
+                              onChange={(e) => setNewClientFormData({ ...newClientFormData, customer_email_2: e.target.value })}
+                              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1.5 md:col-span-3">
+                            <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Alternate Address</label>
+                            <input 
+                              type="text" 
+                              placeholder="Secondary billing address"
+                              value={newClientFormData.customer_address_2}
+                              onChange={(e) => setNewClientFormData({ ...newClientFormData, customer_address_2: e.target.value })}
+                              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 7. Special Crew Notes */}
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Special Crew Instructions / Custom Details Notes</label>
+                      <textarea 
+                        placeholder="Enter any customization specifications, location requests, or delivery notes..."
+                        rows={4}
+                        value={newClientFormData.special_notes}
+                        onChange={(e) => setNewClientFormData({ ...newClientFormData, special_notes: e.target.value })}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-white text-xs focus:border-[#b4975a] focus:outline-none resize-none leading-relaxed"
+                      />
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex justify-end gap-3 border-t border-zinc-900 pt-5">
+                      <button 
+                        type="button"
+                        onClick={() => setShowCreateClientModal(false)}
+                        className="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer border border-zinc-800"
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        type="submit"
+                        disabled={clientFormSaving}
+                        className="px-7 py-2.5 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50 active:scale-95 flex items-center gap-2"
+                      >
+                        {clientFormSaving ? "Creating..." : "Create Workspace"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
