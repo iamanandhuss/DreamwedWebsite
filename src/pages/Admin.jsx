@@ -129,6 +129,8 @@ const Admin = () => {
   const [invoiceSearch, setInvoiceSearch] = useState("");
   const [invoiceTaxRate, setInvoiceTaxRate] = useState(0); // 0 or 18
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
 
   const fetchOfficeData = async () => {
     try {
@@ -668,6 +670,103 @@ const Admin = () => {
         { id: "2", label: "Premium Leatherette Wedding Keepsake Albums", price: Math.round(price * 0.25), date: "On Delivery" }
       ]
     });
+  };
+
+  const processUploadedPdf = async (file) => {
+    setIsPdfLoading(true);
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      
+      const pdfjsLib = await new Promise((resolve, reject) => {
+        if (window.pdfjsLib) return resolve(window.pdfjsLib);
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.onload = () => {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          resolve(window.pdfjsLib);
+        };
+        script.onerror = (e) => reject(e);
+        document.head.appendChild(script);
+      });
+
+      const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+      let extractedText = "";
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        extractedText += content.items.map(item => item.str).join("\n") + "\n";
+      }
+
+      let clientName = file.name.replace(/\.[^/.]+$/, "").replace(/dreamwed|proposal|invoice|budget|_|-/gi, " ").trim();
+      if (!clientName) clientName = "Estimated Client";
+      let venue = "Venue / Location";
+      let price = 125000;
+      let items = [];
+
+      // 1. Check if any budget project matches this filename or text
+      const match = officeBudgets.find(b => 
+        clientName.toLowerCase().includes((b.clientName || "").toLowerCase()) || 
+        (b.clientName || "").toLowerCase().includes(clientName.toLowerCase()) ||
+        (extractedText && extractedText.toLowerCase().includes((b.clientName || "").toLowerCase()))
+      );
+      if (match) {
+        handleConvertBudgetToInvoice(match);
+        alert(`✨ Automatically matched Proposal PDF with saved budget for ${match.clientName}!`);
+        setIsPdfLoading(false);
+        return;
+      }
+
+      // 2. Parse lines from PDF text
+      if (extractedText) {
+        // Try to find price numbers in text
+        const priceMatches = extractedText.match(/(?:₹|Rs\.?|INR)\s*([0-9,]+)/i) || extractedText.match(/([1-9][0-9]{4,6})/);
+        if (priceMatches && priceMatches[1]) {
+          const p = parseInt(priceMatches[1].replace(/,/g, ''));
+          if (p > 10000) price = p;
+        }
+
+        // Look for known locations or names
+        const lines = extractedText.split("\n").map(l => l.trim()).filter(Boolean);
+        lines.forEach(line => {
+          if (line.toLowerCase().includes('wedding') || line.toLowerCase().includes('candid') || line.toLowerCase().includes('film') || line.toLowerCase().includes('album') || line.toLowerCase().includes('drone')) {
+            if (line.length > 5 && line.length < 90) {
+              items.push({
+                id: Math.random().toString(),
+                label: line,
+                price: Math.round(price / (items.length + 1)),
+                date: 'Event Milestone'
+              });
+            }
+          }
+        });
+      }
+
+      // Fallback items if none found
+      if (items.length === 0) {
+        items = [
+          { id: '1', label: `Wedding Photography & Cinematic Film Suite (${clientName.toUpperCase()})`, price: Math.round(price * 0.75), date: 'Event Date' },
+          { id: '2', label: 'Luxury Leatherette Photo Album (30 Sheets) & Designing', price: Math.round(price * 0.25), date: 'Post-Wedding Delivery' }
+        ];
+      }
+
+      setSelectedInvoice({
+        id: `inv_${Date.now()}`,
+        clientName: clientName.toUpperCase(),
+        venue: venue,
+        phone: "+91 99954 12955",
+        invoiceNo: `DW-${new Date().getFullYear()}-${String(Math.floor(100 + Math.random() * 900))}`,
+        discount: 0,
+        advance: 0,
+        savedAt: new Date().toISOString(),
+        items: items
+      });
+      alert(`📄 PDF Converted! Review & edit your invoice below.`);
+    } catch (e) {
+      console.error("PDF Parsing failed:", e);
+      alert("Failed to parse PDF file. Please copy-paste text or start a blank invoice instead.");
+    } finally {
+      setIsPdfLoading(false);
+    }
   };
 
   const handleSaveInvoice = async (inv) => {
@@ -1456,7 +1555,7 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#080808] pt-20 pb-16">
+    <div className="min-h-screen bg-[#0b0f19] pt-20 pb-16 office-theme-container">
       <SEO title="Admin Control Center" description="Dreamwed Stories secure management portal." />
 
       <motion.div
@@ -3319,7 +3418,7 @@ const Admin = () => {
         )}
 
         {activeTab === "budget-tracker" && (
-          <div className="space-y-6 text-left">
+          <div className="space-y-6 text-left office-theme-container bg-[#0b0f19] p-6 sm:p-8 rounded-[32px] border border-zinc-800/40">
             {/* Header section */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
@@ -3977,7 +4076,7 @@ const Admin = () => {
                               <input
                                 type="number"
                                 value={selectedBudget.albumDesigningCharge || 0}
-                                onChange={(e) => setOfficeSettings({ ...officeSettings, albumDesigningCharge: parseFloat(e.target.value) || 0 })}
+                                onChange={(e) => updateBudgetField("albumDesigningCharge", parseFloat(e.target.value) || 0)}
                                 className="bg-zinc-900 border border-zinc-850 rounded-xl px-3 py-1.5 text-white text-xs focus:border-[#b4975a] focus:outline-none w-full"
                               />
                             </div>
@@ -4261,7 +4360,7 @@ const Admin = () => {
         )}
 
         {activeTab === "invoice-studio" && (
-          <div className="space-y-6 text-left">
+          <div className="space-y-6 text-left office-theme-container bg-[#0b0f19] p-6 sm:p-8 rounded-[32px] border border-zinc-800/40">
             {/* Header section */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
@@ -4317,10 +4416,54 @@ const Admin = () => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 {/* Left col: Invoice dropzone & budget converter picker */}
                 <div className="lg:col-span-2 space-y-6">
+                  {/* PDF Drag & Drop Upload Zone */}
+                  <div 
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOver(true);
+                    }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDragOver(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        processUploadedPdf(e.dataTransfer.files[0]);
+                      }
+                    }}
+                    onClick={() => document.getElementById('pdf-file-picker')?.click()}
+                    className={`office-theme-card border-2 border-dashed rounded-3xl p-8 text-center cursor-pointer transition-all ${
+                      dragOver 
+                        ? "border-[#d4af37] bg-[#d4af37]/10 shadow-lg shadow-[#d4af37]/10" 
+                        : "border-[#d4af37]/40 bg-zinc-900/20 hover:bg-[#d4af37]/5 hover:border-[#d4af37]"
+                    }`}
+                  >
+                    <input 
+                      type="file" 
+                      id="pdf-file-picker" 
+                      accept=".pdf" 
+                      className="hidden" 
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          processUploadedPdf(e.target.files[0]);
+                        }
+                      }}
+                    />
+                    <Upload size={32} className="mx-auto text-[#d4af37] mb-3 animate-pulse" />
+                    <h3 className="font-bold text-white text-sm select-none">
+                      {isPdfLoading ? "⏳ Scanning PDF & Extracting Package Specs..." : "Drag & Drop Any Proposal or Budget PDF Here"}
+                    </h3>
+                    <p className="text-zinc-500 text-[10px] leading-relaxed mt-2 select-none">
+                      Our automated engine will scan your proposal document, extract client names, venues, dates, and package rates, and convert them instantly into an interactive, editable invoice!
+                    </p>
+                    <button className="bg-[#d4af37]/20 hover:bg-[#d4af37]/35 text-[#d4af37] border border-[#d4af37]/30 text-xs font-bold py-1.5 px-4 rounded-xl mt-4 select-none cursor-pointer">
+                      Select PDF From Computer
+                    </button>
+                  </div>
+
                   {/* Text pasting zone */}
-                  <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-4">
+                  <div className="office-theme-card p-6 space-y-4">
                     <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                      <FileText size={14} className="text-[#b4975a]" /> Convert Proposal or Booking Quote
+                      <FileText size={14} className="text-[#d4af37]" /> Convert Proposal or Booking Quote Text
                     </h3>
                     <p className="text-zinc-500 text-[10px] leading-relaxed">
                       Paste details of a custom wedding booking proposal quote below to extract pricing and generate invoice milestones automatically.
@@ -4330,11 +4473,11 @@ const Admin = () => {
                         rows="3"
                         id="pasted-proposal-text"
                         placeholder="Paste proposal details here... e.g. Wedding Photography & Video on Aug 15: Rs. 1,50000/- with leatherette wedding album..."
-                        className="w-full bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-3 text-white text-xs focus:border-[#b4975a] focus:outline-none leading-relaxed"
+                        className="w-full office-theme-input rounded-xl px-4 py-3 text-white text-xs focus:border-[#d4af37] focus:outline-none leading-relaxed"
                       />
                       <button
                         onClick={handleParseProposalText}
-                        className="bg-zinc-900 hover:bg-zinc-850 text-white border border-zinc-800 py-2.5 px-5 rounded-xl text-xs font-bold transition-all cursor-pointer w-full text-center"
+                        className="bg-[#d4af37]/25 hover:bg-[#d4af37]/35 text-[#d4af37] border border-[#d4af37]/30 py-2.5 px-5 rounded-xl text-xs font-bold transition-all cursor-pointer w-full text-center"
                       >
                         Extract &amp; Build Invoice
                       </button>

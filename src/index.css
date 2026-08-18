@@ -476,4 +476,134 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* PC App Theme Matching Rules for Dreamwed Office Suites */
+.office-theme-container {
+  --bg-primary: #0b0f19;
+  --bg-secondary: #131a2b;
+  --bg-tertiary: #1d263b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --primary-color: #d4af37;
+  --primary-hover: #f3cd57;
+  --primary-light: rgba(212, 175, 55, 0.15);
+}
+
+.office-theme-card {
+  background: rgba(19, 26, 43, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(16px);
+}
+
+.office-theme-input {
+  background-color: #0b0f19 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+.office-theme-input:focus {
+  border-color: #d4af37 !important;
+}
+
+/* Scoped Gold Overrides for Office Suites */
+.office-theme-container .text-\[\#b4975a\] {
+  color: #d4af37 !important;
+}
+
+.office-theme-container .bg-\[\#b4975a\] {
+  background-color: #d4af37 !important;
+}
+
+.office-theme-container .border-\[\#b4975a\]\/20 {
+  border-color: rgba(212, 175, 55, 0.2) !important;
+}
+
+.office-theme-container .border-\[\#b4975a\]\/40 {
+  border-color: rgba(212, 175, 55, 0.4) !important;
+}
+
+.office-theme-container .shadow-\[\#b4975a\]\/10 {
+  --tw-shadow-color: rgba(212, 175, 55, 0.1) !important;
+}
+
+.office-theme-container .hover\:border-\[\#b4975a\]:hover {
+  border-color: #d4af37 !important;
+}
+
+.office-theme-container .focus\:border-\[\#b4975a\]:focus {
+  border-color: #d4af37 !important;
+}
+
+.office-theme-container .hover\:bg-\[\#b4975a\]\/2:hover {
+  background-color: rgba(212, 175, 55, 0.02) !important;
+}
+
+.office-theme-container .hover\:border-\[\#b4975a\]\/45:hover {
+  border-color: rgba(212, 175, 55, 0.45) !important;
+}
+
+/* Scoped Background and Border Theme Mappings for Office Tab Views */
+.office-theme-container {
+  background-color: #0b0f19 !important;
+  color: #f1f5f9 !important;
+}
+
+.office-theme-container .bg-zinc-950 {
+  background-color: #0b0f19 !important;
+}
+
+.office-theme-container .bg-zinc-900,
+.office-theme-container .bg-zinc-905,
+.office-theme-container .bg-zinc-900\/40,
+.office-theme-container .bg-zinc-900\/20,
+.office-theme-container .bg-zinc-900\/30 {
+  background-color: #131a2b !important;
+}
+
+.office-theme-container .bg-zinc-850,
+.office-theme-container .bg-zinc-800,
+.office-theme-container .bg-zinc-750,
+.office-theme-container .bg-zinc-700 {
+  background-color: #1d263b !important;
+}
+
+.office-theme-container .border-zinc-800,
+.office-theme-container .border-zinc-850,
+.office-theme-container .border-zinc-750,
+.office-theme-container .border-zinc-700,
+.office-theme-container .border-zinc-900,
+.office-theme-container .border-zinc-850\/50,
+.office-theme-container .border-zinc-850\/60 {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.office-theme-container .text-white {
+  color: #f1f5f9 !important;
+}
+
+.office-theme-container .text-zinc-400 {
+  color: #94a3b8 !important;
+}
+
+.office-theme-container .text-zinc-500 {
+  color: #64748b !important;
+}
+
+.office-theme-container input,
+.office-theme-container select,
+.office-theme-container textarea {
+  background-color: #0b0f19 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+.office-theme-container input:focus,
+.office-theme-container select:focus,
+.office-theme-container textarea:focus {
+  border-color: #d4af37 !important;
+}
+
+
+
+
+
 

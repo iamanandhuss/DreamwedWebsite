@@ -195,5 +195,523 @@
       ],
       "created_at": "2026-06-22 21:16:38"
     }
-  ]
+  ],
+  "office_budgets": [
+    {
+      "id": "_oo1k4kocs",
+      "clientName": "Sarathjeevkumar",
+      "date": "2026-09-13",
+      "location": "guruvayoor",
+      "packagePrice": 118846,
+      "travelCharge": 10000,
+      "travelPaidByCustomer": false,
+      "stayExpense": 2000,
+      "foodExpense": 2000,
+      "budgetMode": "standard",
+      "targetProfit": 0,
+      "photographers": [
+        {
+          "id": "_zgfo4wv66",
+          "name": "Photographer #1 (Wedding)",
+          "charge": 12000,
+          "isMe": true,
+          "eventId": "_kq33z1rrp"
+        },
+        {
+          "id": "_g3gs2d1wx",
+          "name": "Photographer #2 (Wedding)",
+          "charge": 10000,
+          "isMe": false,
+          "eventId": "_kq33z1rrp"
+        }
+      ],
+      "videographers": [
+        {
+          "id": "_f9rvsqii5",
+          "name": "Videographer #1 (Wedding)",
+          "charge": 12000,
+          "isMe": false,
+          "eventId": "_kq33z1rrp"
+        },
+        {
+          "id": "_0djfm398y",
+          "name": "Videographer #2 (Wedding)",
+          "charge": 10000,
+          "isMe": false,
+          "eventId": "_kq33z1rrp"
+        }
+      ],
+      "droneCharge": 0,
+      "stdPhotoCharge": 5000,
+      "stdVideoCharge": 5000,
+      "stdPerPhotoCharge": 100,
+      "stdPhotoQty": 15,
+      "stdEditingCharge": 3000,
+      "albumQty": 1,
+      "albumCoverCharge": 2000,
+      "albumLeafs": 50,
+      "albumLeafCharge": 75,
+      "albumDesigningCharge": 100,
+      "frames": [
+        {
+          "id": "_o6ug56v5o",
+          "size": "12*18",
+          "qty": 2,
+          "charge": 350
+        }
+      ],
+      "customExpenses": [],
+      "eventsList": [
+        {
+          "id": "_kq33z1rrp",
+          "name": "Wedding",
+          "date": "2026-09-13"
+        }
+      ],
+      "videoEditingCharge": 8000,
+      "pendriveCharge": 500,
+      "includeHdHighlight": true,
+      "includeReel": true,
+      "includeFullHd": true,
+      "include2Frames": true,
+      "createdAt": "2026-06-21T16:54:02.700Z",
+      "stdPhotoIsMe": false,
+      "stdVideoIsMe": false
+    },
+    {
+      "id": "_t2xlpl3lb",
+      "clientName": "Anju bala",
+      "date": "2026-08-27",
+      "location": "kottayam Grand Hotel",
+      "packagePrice": 130563,
+      "travelCharge": 10000,
+      "travelPaidByCustomer": false,
+      "stayExpense": 2000,
+      "foodExpense": 2000,
+      "budgetMode": "standard",
+      "targetProfit": 0,
+      "photographers": [
+        {
+          "id": "_8jad6qpqq",
+          "name": "Photographer #1 (Haldhi)",
+          "charge": 12000,
+          "isMe": true,
+          "eventId": "_2r0fdftcn"
+        },
+        {
+          "id": "_cudzqxiza",
+          "name": "Photographer #1 (Mylanchi)",
+          "charge": 12000,
+          "isMe": true,
+          "eventId": "_allhhqh7u"
+        },
+        {
+          "id": "_xs637f7sy",
+          "name": "Photographer #1 (wedding)",
+          "charge": 12000,
+          "isMe": true,
+          "eventId": "_dr4qlc0hw"
+        }
+      ],
+      "videographers": [
+        {
+          "id": "_5u2mqh3au",
+          "name": "Videographer #1 (Haldhi)",
+          "charge": 10000,
+          "isMe": false,
+          "eventId": "_2r0fdftcn"
+        },
+        {
+          "id": "_u90ul36jo",
+          "name": "Videographer #1 (Mylanchi)",
+          "charge": 10000,
+          "isMe": false,
+          "eventId": "_allhhqh7u"
+        },
+        {
+          "id": "_urww9mn9j",
+          "name": "Videographer #1 (wedding)",
+          "charge": 10000,
+          "isMe": false,
+          "eventId": "_dr4qlc0hw"
+        }
+      ],
+      "droneCharge": 0,
+      "stdPhotoCharge": 0,
+      "stdVideoCharge": 0,
+      "stdPerPhotoCharge": 0,
+      "stdPhotoQty": 0,
+      "stdEditingCharge": 0,
+      "albumQty": 1,
+      "albumCoverCharge": 2000,
+      "albumLeafs": 50,
+      "albumLeafCharge": 75,
+      "albumDesigningCharge": 100,
+      "frames": [
+        {
+          "id": "_ll77g423b",
+          "size": "12*18",
+          "qty": 2,
+          "charge": 350
+        }
+      ],
+      "customExpenses": [
+        {
+          "id": "_y3f6emceq",
+          "name": "Reels",
+          "charge": 2000
+        }
+      ],
+      "eventsList": [
+        {
+          "id": "_2r0fdftcn",
+          "name": "Haldhi",
+          "date": "2026-08-27"
+        },
+        {
+          "id": "_allhhqh7u",
+          "name": "Mylanchi",
+          "date": "2026-08-29"
+        },
+        {
+          "id": "_dr4qlc0hw",
+          "name": "wedding",
+          "date": "2026-08-30"
+        }
+      ],
+      "videoEditingCharge": 10000,
+      "pendriveCharge": 1000,
+      "includeHdHighlight": true,
+      "includeReel": true,
+      "includeFullHd": true,
+      "include2Frames": true,
+      "createdAt": "2026-06-23T07:44:08.864Z",
+      "stdPhotoIsMe": false,
+      "stdVideoIsMe": false
+    },
+    {
+      "id": "_br5r6mpq1",
+      "clientName": "aravind",
+      "date": "2026-03-29",
+      "location": "punalur",
+      "packagePrice": 38188,
+      "travelCharge": 2000,
+      "travelPaidByCustomer": false,
+      "stayExpense": 0,
+      "foodExpense": 1000,
+      "budgetMode": "standard",
+      "targetProfit": 0,
+      "photographers": [
+        {
+          "id": "_fcyy0j5wn",
+          "name": "Photographer #1 (Wedding)",
+          "charge": 10000,
+          "isMe": true,
+          "eventId": "_39ks2qekz"
+        }
+      ],
+      "videographers": [
+        {
+          "id": "_gp6cz3hsk",
+          "name": "Videographer #1 (Wedding)",
+          "charge": 7000,
+          "isMe": false,
+          "eventId": "_39ks2qekz"
+        }
+      ],
+      "droneCharge": 0,
+      "stdPhotoCharge": 0,
+      "stdVideoCharge": 0,
+      "stdPerPhotoCharge": 0,
+      "stdPhotoQty": 0,
+      "stdEditingCharge": 0,
+      "albumQty": 1,
+      "albumCoverCharge": 1300,
+      "albumLeafs": 30,
+      "albumLeafCharge": 75,
+      "albumDesigningCharge": 100,
+      "frames": [],
+      "customExpenses": [],
+      "eventsList": [
+        {
+          "id": "_39ks2qekz",
+          "name": "Wedding",
+          "date": "2026-03-29"
+        }
+      ],
+      "videoEditingCharge": 3500,
+      "pendriveCharge": 500,
+      "includeHdHighlight": true,
+      "includeReel": true,
+      "includeFullHd": true,
+      "include2Frames": true,
+      "createdAt": "2026-06-24T09:04:57.649Z",
+      "stdPhotoIsMe": false,
+      "stdVideoIsMe": false
+    },
+    {
+      "id": "_pb9zyq3ul",
+      "clientName": "Sulfa",
+      "date": "2026-08-16",
+      "location": "varkala",
+      "packagePrice": 44999,
+      "travelCharge": 2000,
+      "travelPaidByCustomer": false,
+      "stayExpense": 0,
+      "foodExpense": 0,
+      "budgetMode": "standard",
+      "targetProfit": 0,
+      "photographers": [
+        {
+          "id": "_0g79fdt51",
+          "name": "Photographer #1 (Wedding)",
+          "charge": 500,
+          "isMe": true,
+          "eventId": "_n3j0atxob"
+        }
+      ],
+      "videographers": [
+        {
+          "id": "_k1fl7kf32",
+          "name": "Videographer #1 (Wedding)",
+          "charge": 5000,
+          "isMe": false,
+          "eventId": "_n3j0atxob"
+        }
+      ],
+      "droneCharge": 0,
+      "stdPhotoCharge": 5000,
+      "stdVideoCharge": 5000,
+      "stdPerPhotoCharge": 100,
+      "stdPhotoQty": 15,
+      "stdEditingCharge": 3000,
+      "albumQty": 1,
+      "albumCoverCharge": 1500,
+      "albumLeafs": 30,
+      "albumLeafCharge": 75,
+      "albumDesigningCharge": 100,
+      "frames": [],
+      "customExpenses": [],
+      "eventsList": [
+        {
+          "id": "_n3j0atxob",
+          "name": "Wedding",
+          "date": "2026-08-16"
+        }
+      ],
+      "videoEditingCharge": 3500,
+      "pendriveCharge": 500,
+      "includeHdHighlight": true,
+      "includeReel": true,
+      "includeFullHd": true,
+      "include2Frames": true,
+      "createdAt": "2026-07-17T10:39:37.323Z",
+      "stdPhotoIsMe": true,
+      "stdVideoIsMe": false
+    },
+    {
+      "id": "_7h17didso",
+      "clientName": "Sulfa",
+      "date": "2026-08-14",
+      "location": "varkala",
+      "packagePrice": 69423,
+      "travelCharge": 2000,
+      "travelPaidByCustomer": false,
+      "stayExpense": 0,
+      "foodExpense": 0,
+      "budgetMode": "standard",
+      "targetProfit": 0,
+      "photographers": [
+        {
+          "id": "_1fsid4zfj",
+          "name": "Photographer #1 (NIkkah)",
+          "charge": 6000,
+          "isMe": true,
+          "eventId": "_74cmqknbh"
+        },
+        {
+          "id": "_mhvxqa9ln",
+          "name": "Photographer #1 (Wedding)",
+          "charge": 10000,
+          "isMe": true,
+          "eventId": "_m2cuyhqri"
+        },
+        {
+          "id": "_rqigj5hbw",
+          "name": "Photographer #1 (Save the date)",
+          "charge": 5000,
+          "isMe": true,
+          "eventId": "_x491fu54o"
+        }
+      ],
+      "videographers": [
+        {
+          "id": "_x6rxvqz9s",
+          "name": "Videographer #1 (NIkkah)",
+          "charge": 5000,
+          "isMe": false,
+          "eventId": "_74cmqknbh"
+        },
+        {
+          "id": "_otazx7xqx",
+          "name": "Videographer #1 (Wedding)",
+          "charge": 10000,
+          "isMe": false,
+          "eventId": "_m2cuyhqri"
+        },
+        {
+          "id": "_cgywri71i",
+          "name": "Videographer #1 (Save the date)",
+          "charge": 5000,
+          "isMe": false,
+          "eventId": "_x491fu54o"
+        }
+      ],
+      "droneCharge": 0,
+      "stdPhotoCharge": 0,
+      "stdVideoCharge": 0,
+      "stdPerPhotoCharge": 100,
+      "stdPhotoQty": 15,
+      "stdEditingCharge": 3500,
+      "albumQty": 1,
+      "albumCoverCharge": 2000,
+      "albumLeafs": 35,
+      "albumLeafCharge": 75,
+      "albumDesigningCharge": 100,
+      "frames": [],
+      "customExpenses": [
+        {
+          "id": "_bdubh0kjg",
+          "name": "nikah reel",
+          "charge": 1000
+        },
+        {
+          "id": "_sys976qrd",
+          "name": "wedding reel",
+          "charge": 1000
+        }
+      ],
+      "eventsList": [
+        {
+          "id": "_74cmqknbh",
+          "name": "NIkkah",
+          "date": "2026-08-14"
+        },
+        {
+          "id": "_m2cuyhqri",
+          "name": "Wedding",
+          "date": "2026-08-16"
+        },
+        {
+          "id": "_x491fu54o",
+          "name": "Save the date",
+          "date": ""
+        }
+      ],
+      "videoEditingCharge": 3500,
+      "pendriveCharge": 500,
+      "includeHdHighlight": true,
+      "includeReel": true,
+      "includeFullHd": true,
+      "include2Frames": true,
+      "createdAt": "2026-07-21T08:56:30.360Z",
+      "stdPhotoIsMe": false,
+      "stdVideoIsMe": false
+    },
+    {
+      "id": "_a5qlkyb4k",
+      "clientName": "sanju",
+      "date": "2026-09-04",
+      "location": "kazhakootam",
+      "packagePrice": 80769,
+      "travelCharge": 2000,
+      "travelPaidByCustomer": false,
+      "stayExpense": 0,
+      "foodExpense": 0,
+      "budgetMode": "standard",
+      "targetProfit": 0,
+      "photographers": [
+        {
+          "id": "_1lx5vped5",
+          "name": "Photographer #1 (wedding)",
+          "charge": 9000,
+          "isMe": false
+        },
+        {
+          "id": "_4486rjuha",
+          "name": "Photographer #2 (wedding)",
+          "charge": 8000,
+          "isMe": false
+        },
+        {
+          "id": "_ruke7no40",
+          "name": "Photographer #1 (reception)",
+          "charge": 0,
+          "isMe": false
+        }
+      ],
+      "videographers": [
+        {
+          "id": "_uzskjmp1s",
+          "name": "Videographer #1 (wedding)",
+          "charge": 8000,
+          "isMe": false
+        },
+        {
+          "id": "_p8smau3ag",
+          "name": "Videographer #2 (wedding)",
+          "charge": 8000,
+          "isMe": false
+        },
+        {
+          "id": "_2774glsai",
+          "name": "Videographer #1 (reception)",
+          "charge": 0,
+          "isMe": false
+        }
+      ],
+      "droneCharge": 0,
+      "stdPhotoCharge": 0,
+      "stdVideoCharge": 0,
+      "stdPerPhotoCharge": 0,
+      "stdPhotoQty": 0,
+      "stdEditingCharge": 0,
+      "albumQty": 1,
+      "albumCoverCharge": 2000,
+      "albumLeafs": 40,
+      "albumLeafCharge": 75,
+      "albumDesigningCharge": 100,
+      "frames": [],
+      "customExpenses": [],
+      "eventsList": [
+        {
+          "id": "_werixhpcb",
+          "name": "wedding",
+          "date": "2026-09-04"
+        },
+        {
+          "id": "_ghupz35rv",
+          "name": "reception",
+          "date": "0002-09-05"
+        }
+      ],
+      "videoEditingCharge": 8000,
+      "pendriveCharge": 500,
+      "includeHdHighlight": true,
+      "includeReel": true,
+      "includeFullHd": true,
+      "include2Frames": true,
+      "createdAt": "2026-08-06T18:19:00.253Z"
+    }
+  ],
+  "office_settings": {
+    "photoCharge": 10000,
+    "videoCharge": 12000,
+    "albumCoverCharge": 2000,
+    "albumLeafCharge": 75,
+    "albumDesigningCharge": 100,
+    "videoEditingCharge": 8000,
+    "pendriveCharge": 500
+  },
+  "office_invoices": []
 }
