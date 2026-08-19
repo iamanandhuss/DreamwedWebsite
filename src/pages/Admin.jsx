@@ -4880,13 +4880,9 @@ const Admin = () => {
                   <div className="print-invoice-sheet bg-white text-black w-[800px] min-h-[1130px] p-12 shadow-2xl flex flex-col justify-between font-sans shrink-0 border border-zinc-200">
                     <div className="space-y-8">
                       {/* Luxury Brand Header */}
-                      <div className="flex justify-between items-start border-b border-zinc-100 pb-5 select-none">
+                      <div className="flex justify-between items-center pb-5 select-none">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full border-2 border-[#b4975a] bg-zinc-50 flex items-center justify-center font-bold text-lg text-zinc-900 shadow-sm">DW</div>
-                          <div className="text-left">
-                            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl font-bold tracking-wide text-zinc-900">Dreamwed Stories</h2>
-                            <p className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Premium Wedding Photography</p>
-                          </div>
+                          <img src="/appIcon.png" alt="Logo" className="w-16 h-16 object-contain" />
                         </div>
                         <div className="text-right text-[11px] text-zinc-500 leading-relaxed font-medium">
                           <span className="block font-bold text-zinc-800">dreamwedstories.co.in</span>
@@ -4895,14 +4891,14 @@ const Admin = () => {
                       </div>
 
                       {/* Header Title */}
-                      <div className="text-center">
-                        <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl font-bold uppercase tracking-[0.15em] text-zinc-800 select-none">Invoice</h2>
+                      <div className="text-center my-4">
+                        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "46px" }} className="font-light tracking-wide text-zinc-900 select-none">Invoice</h2>
                       </div>
 
                       {/* Billing Meta Data Grid */}
                       <div className="grid grid-cols-2 gap-8 text-left text-xs text-zinc-600 leading-relaxed">
                         <div className="space-y-4">
-                          <span className="text-[9px] uppercase tracking-wider font-bold text-zinc-400 select-none">Invoice To:</span>
+                          <span className="text-[10px] uppercase tracking-wider font-bold text-zinc-800 select-none">Invoice To:</span>
                           <div className="space-y-2">
                             <input
                               type="text"
@@ -4916,22 +4912,31 @@ const Admin = () => {
                               value={selectedInvoice.venue || ""}
                               onChange={(e) => setSelectedInvoice({ ...selectedInvoice, venue: e.target.value })}
                               placeholder="Venue & City Location"
-                              className="border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] focus:border-[#b4975a] bg-transparent focus:outline-none w-full py-0.5 printable-input"
+                              className="border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] focus:border-[#b4975a] bg-transparent focus:outline-none w-full py-0.5 printable-input font-medium"
                             />
                             <input
                               type="text"
                               value={selectedInvoice.phone || ""}
                               onChange={(e) => setSelectedInvoice({ ...selectedInvoice, phone: e.target.value })}
                               placeholder="Contact Phone"
-                              className="border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] focus:border-[#b4975a] bg-transparent focus:outline-none w-full py-0.5 printable-input"
+                              className="border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] focus:border-[#b4975a] bg-transparent focus:outline-none w-full py-0.5 printable-input font-medium"
                             />
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-end">
-                          <div className="w-56 space-y-2">
-                            <div className="flex justify-between items-center">
-                              <span className="text-zinc-500 font-bold text-[10px] uppercase select-none">Invoice No:</span>
+                        <div className="flex flex-col items-end justify-end">
+                          <div className="w-64 space-y-2 text-right">
+                            <div className="flex justify-between items-center gap-4">
+                              <span className="text-zinc-500 font-bold text-[10px] uppercase select-none">Issued:</span>
+                              <input
+                                type="date"
+                                value={selectedInvoice.savedAt ? selectedInvoice.savedAt.split('T')[0] : new Date().toISOString().split('T')[0]}
+                                onChange={(e) => setSelectedInvoice({ ...selectedInvoice, savedAt: new Date(e.target.value).toISOString() })}
+                                className="border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] bg-transparent focus:outline-none w-32 text-right py-0.5 printable-input text-zinc-900 font-medium"
+                              />
+                            </div>
+                            <div className="flex justify-between items-center gap-4">
+                              <span className="text-zinc-500 font-bold text-[10px] uppercase select-none">Invoice:</span>
                               <input
                                 type="text"
                                 value={selectedInvoice.invoiceNo || ""}
@@ -4939,37 +4944,49 @@ const Admin = () => {
                                 className="font-bold text-zinc-900 border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] bg-transparent focus:outline-none w-32 text-right py-0.5 printable-input"
                               />
                             </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-zinc-500 font-bold text-[10px] uppercase select-none">Date Issued:</span>
+                            <div className="flex justify-between items-center gap-4">
+                              <span className="text-zinc-500 font-bold text-[10px] uppercase select-none">Due:</span>
                               <input
-                                type="date"
-                                value={selectedInvoice.savedAt ? selectedInvoice.savedAt.split('T')[0] : new Date().toISOString().split('T')[0]}
-                                onChange={(e) => setSelectedInvoice({ ...selectedInvoice, savedAt: new Date(e.target.value).toISOString() })}
-                                className="border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] bg-transparent focus:outline-none w-32 text-right py-0.5 printable-input text-zinc-800"
+                                type="text"
+                                value={selectedInvoice.dueText || "On Receipt"}
+                                onChange={(e) => setSelectedInvoice({ ...selectedInvoice, dueText: e.target.value })}
+                                className="font-medium text-zinc-900 border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] bg-transparent focus:outline-none w-32 text-right py-0.5 printable-input"
                               />
                             </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-zinc-500 font-bold text-[10px] uppercase select-none">Discount (₹):</span>
-                              <input
-                                type="number"
-                                value={selectedInvoice.discount || 0}
-                                onChange={(e) => setSelectedInvoice({ ...selectedInvoice, discount: parseFloat(e.target.value) || 0 })}
-                                className="font-bold border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] bg-transparent focus:outline-none w-24 text-right py-0.5 text-zinc-900 printable-input"
-                              />
+                            <div className="flex justify-between items-center gap-4">
+                              <span className="text-zinc-500 font-bold text-[10px] uppercase select-none">Package Price:</span>
+                              <div className="relative w-32 no-print">
+                                <span className="absolute left-1 top-1/2 -translate-y-1/2 text-zinc-400">₹</span>
+                                <input
+                                  type="number"
+                                  value={selectedInvoice.packagePrice || 60000}
+                                  onChange={(e) => setSelectedInvoice({ ...selectedInvoice, packagePrice: parseFloat(e.target.value) || 0 })}
+                                  className="font-bold border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] bg-transparent focus:outline-none w-full text-right py-0.5 text-zinc-900 printable-input pl-4"
+                                />
+                              </div>
+                              <span className="hidden print:inline font-bold">₹ {formatCurrency(selectedInvoice.packagePrice || 60000)}/-</span>
                             </div>
                           </div>
                         </div>
+                      </div>
+
+                      {/* Title: Invoice for Photography Service */}
+                      <div className="text-center my-6 select-none">
+                        <h3 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-xl text-zinc-900 font-medium">
+                          Invoice For Photography Service {new Date(selectedInvoice.savedAt || new Date()).getFullYear()}
+                        </h3>
                       </div>
 
                       {/* Items Milestones Table */}
                       <div className="overflow-x-auto pt-3">
                         <table className="w-full border-collapse text-xs">
                           <thead>
-                            <tr className="bg-zinc-50 border-y border-zinc-100 uppercase tracking-wider text-[10px] text-zinc-500 font-bold select-none">
-                              <th className="py-3 px-4 text-left font-bold">Service Milestone Description</th>
-                              <th className="py-3 px-4 text-right font-bold w-32">Milestone / Date</th>
-                              <th className="py-3 px-4 text-right font-bold w-36">Rate Cost (₹)</th>
-                              <th className="py-3 px-4 text-right font-bold w-12 no-print"></th>
+                            <tr className="bg-[#b69675] text-white uppercase tracking-wider text-[10px] font-bold select-none">
+                              <th className="py-3 px-4 text-left font-bold rounded-l-lg">Product/Service</th>
+                              <th className="py-3 px-4 text-center font-bold w-32">Price</th>
+                              <th className="py-3 px-4 text-center font-bold w-36">Date</th>
+                              <th className="py-3 px-4 text-center font-bold w-36">Total</th>
+                              <th className="py-3 px-4 text-center font-bold w-12 no-print rounded-r-lg"></th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-zinc-100 text-zinc-800">
@@ -4988,7 +5005,7 @@ const Admin = () => {
                                     className="bg-transparent focus:outline-none w-full border-b border-transparent hover:border-zinc-200 focus:border-[#b4975a] py-0.5 text-zinc-950 printable-input"
                                   />
                                 </td>
-                                <td className="py-3.5 px-4 text-right">
+                                <td className="py-3.5 px-4 text-center">
                                   <input
                                     type="text"
                                     value={it.date}
@@ -4997,24 +5014,12 @@ const Admin = () => {
                                       updatedItems[idx].date = e.target.value;
                                       setSelectedInvoice({ ...selectedInvoice, items: updatedItems });
                                     }}
-                                    placeholder="e.g. Wedding Date"
-                                    className="bg-transparent focus:outline-none w-full border-b border-transparent hover:border-zinc-200 focus:border-[#b4975a] py-0.5 text-right text-zinc-700 printable-input"
+                                    placeholder="e.g. 09-03-2025"
+                                    className="bg-transparent focus:outline-none w-full text-center border-b border-transparent hover:border-zinc-200 focus:border-[#b4975a] py-0.5 printable-input font-medium text-zinc-700"
                                   />
                                 </td>
-                                <td className="py-3.5 px-4 text-right font-semibold text-zinc-950">
-                                  <div className="relative w-full">
-                                    <span className="absolute left-1 top-1/2 -translate-y-1/2 text-zinc-400">₹</span>
-                                    <input
-                                      type="number"
-                                      value={it.price}
-                                      onChange={(e) => {
-                                        const updatedItems = [...selectedInvoice.items];
-                                        updatedItems[idx].price = parseFloat(e.target.value) || 0;
-                                        setSelectedInvoice({ ...selectedInvoice, items: updatedItems });
-                                      }}
-                                      className="bg-transparent focus:outline-none w-full text-right border-b border-transparent hover:border-zinc-200 focus:border-[#b4975a] pl-4 py-0.5 printable-input"
-                                    />
-                                  </div>
+                                <td className="py-3.5 px-4 text-center font-bold text-zinc-900">
+                                  ₹ {formatCurrency(it.price || 0)}
                                 </td>
                                 <td className="py-3.5 px-4 text-center no-print">
                                   <button
@@ -5036,48 +5041,23 @@ const Admin = () => {
                       {/* Calculations breakdown summary */}
                       {(() => {
                         const subtotal = (selectedInvoice.items || []).reduce((s, it) => s + (Number(it.price) || 0), 0);
-                        const discount = Number(selectedInvoice.discount) || 0;
-                        const subtotalAfterDiscount = subtotal - discount;
-                        const tax = Math.round(subtotalAfterDiscount * (invoiceTaxRate / 100));
-                        const total = subtotalAfterDiscount + tax;
-                        const advance = Number(selectedInvoice.advance) || 0;
-                        const due = total - advance;
+                        const packagePrice = Number(selectedInvoice.packagePrice) || 60000;
+                        const remainingPayable = packagePrice - subtotal;
                         return (
                           <div className="flex justify-end pt-5 select-all">
-                            <table className="w-80 text-xs border-collapse divide-y divide-zinc-100/60 leading-relaxed">
+                            <table className="w-80 text-xs border-collapse divide-y divide-zinc-100/60 leading-relaxed text-right">
                               <tbody>
                                 <tr className="text-zinc-600">
-                                  <td className="py-2 text-left font-medium select-none">Subtotal:</td>
+                                  <td className="py-2 text-left font-medium select-none uppercase text-[10px] text-zinc-400">Subtotal:</td>
                                   <td className="py-2 text-right font-bold text-zinc-900">₹ {formatCurrency(subtotal)}</td>
                                 </tr>
-                                {discount > 0 && (
-                                  <tr className="text-green-600">
-                                    <td className="py-2 text-left font-medium select-none">Discount:</td>
-                                    <td className="py-2 text-right font-bold">- ₹ {formatCurrency(discount)}</td>
-                                  </tr>
-                                )}
                                 <tr className="text-zinc-600">
-                                  <td className="py-2 text-left font-medium select-none">GST ({invoiceTaxRate}%):</td>
-                                  <td className="py-2 text-right font-bold text-zinc-900">₹ {formatCurrency(tax)}</td>
-                                </tr>
-                                <tr className="text-zinc-600">
-                                  <td className="py-2 text-left font-medium select-none">Advance Paid:</td>
-                                  <td className="py-2 text-right font-semibold text-zinc-900">
-                                    <div className="relative w-28 ml-auto no-print">
-                                      <span className="absolute left-1 top-1/2 -translate-y-1/2 text-zinc-400">₹</span>
-                                      <input
-                                        type="number"
-                                        value={selectedInvoice.advance || 0}
-                                        onChange={(e) => setSelectedInvoice({ ...selectedInvoice, advance: parseFloat(e.target.value) || 0 })}
-                                        className="bg-transparent focus:outline-none w-full text-right border-b border-dashed border-[#b4975a]/40 hover:border-[#b4975a] pl-4 py-0.5 printable-input font-bold"
-                                      />
-                                    </div>
-                                    <span className="hidden print:inline">₹ {formatCurrency(advance)}</span>
-                                  </td>
+                                  <td className="py-2 text-left font-medium select-none uppercase text-[10px] text-zinc-400">Tax (0%):</td>
+                                  <td className="py-2 text-right font-bold text-zinc-900">₹ 0.00</td>
                                 </tr>
                                 <tr className="text-sm font-black border-t-2 border-zinc-900/80 text-zinc-900">
-                                  <td className="py-3.5 text-left uppercase select-none">Net Balance Due:</td>
-                                  <td className="py-3.5 text-right text-lg text-[#b4975a] font-bold">₹ {formatCurrency(due)}</td>
+                                  <td className="py-3.5 text-left uppercase select-none text-[11px]">Total Payable Amount:</td>
+                                  <td className="py-3.5 text-right text-lg text-zinc-950 font-black">₹ {formatCurrency(remainingPayable)}/-</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -5088,15 +5068,25 @@ const Admin = () => {
 
                     {/* Luxury Footer instructions & signature block */}
                     <div className="border-t border-zinc-100 pt-8 mt-8 flex justify-between items-end text-[10px] text-zinc-500 leading-relaxed font-medium text-left select-none font-sans">
-                      <div className="space-y-1.5">
-                        <strong className="text-zinc-800 block text-[11px] font-bold uppercase tracking-wider">Payment Terms</strong>
-                        <span className="block text-zinc-400 font-bold uppercase tracking-widest text-[8px]">BANK WIRE</span>
-                        <span>Account: Dreamwed Stories</span><br />
-                        <span>IFS Code: HDFC0001245 &bull; Branch: HDFC Cochin</span>
+                      <div className="space-y-1">
+                        <strong className="text-zinc-800 block text-[11px] font-bold uppercase tracking-wider">Send Payments To:</strong>
+                        <span className="text-zinc-900 font-bold text-xs">Dreamwed Stories</span><br />
+                        <span className="text-zinc-500 font-light">+91 99954 12955</span>
                       </div>
                       <div className="text-right">
-                        <div style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl italic text-zinc-700 select-none pb-1">Dreamwed Stories</div>
-                        <span className="text-[9px] uppercase tracking-wider font-bold text-zinc-400">Authorized Signature</span>
+                        {/* Inject Google handwriting font */}
+                        <style dangerouslySetInnerHTML={{ __html: `
+                          @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+                          .signature-handwritten {
+                            font-family: 'Great Vibes', cursive;
+                            font-size: 44px;
+                            color: #000;
+                            line-height: 1;
+                            margin-bottom: 2px;
+                            transform: rotate(-3deg);
+                          }
+                        `}} />
+                        <div className="signature-handwritten">Thank You!</div>
                       </div>
                     </div>
                   </div>
@@ -5570,10 +5560,9 @@ const Admin = () => {
             {/* A4 Container */}
             <div className="invoice-container">
               {/* Branding header exactly styled like invoice images */}
-              <div className="invoice-brand">
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <div className="brand-logo-circle">DW</div>
-                  <div className="brand-text-name">Dreamwed Stories</div>
+              <div className="invoice-brand" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "none", paddingBottom: "0", marginBottom: "20px" }}>
+                <div>
+                  <img src="/appIcon.png" alt="Logo" style={{ width: "80px", height: "80px", objectFit: "contain" }} />
                 </div>
                 <div style={{ fontSize: "11px", textAlign: "right", color: "#555", lineHeight: "1.5" }}>
                   dreamwedstories.co.in<br />
@@ -5582,8 +5571,8 @@ const Admin = () => {
               </div>
 
               {/* Bold Minimalist Title */}
-              <div className="invoice-header-title">
-                <h2>Invoice</h2>
+              <div className="invoice-header-title" style={{ textAlign: "center", margin: "20px 0 35px 0" }}>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "48px", fontWeight: "400", letterSpacing: "0.02em", color: "#000" }}>Invoice</h2>
               </div>
 
               {/* Meta details split */}
