@@ -1634,10 +1634,7 @@ const Admin = () => {
                 </button>
               )}
 
-              <div 
-                className="flex gap-1.5 bg-zinc-900 p-1 rounded-xl border border-zinc-800 mb-8 w-full md:w-fit overflow-x-auto whitespace-nowrap scrollbar-hide"
-                style={{ msOverflowStyle: 'none', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
-              >
+              <div className="flex flex-wrap gap-1.5 bg-zinc-900 p-1.5 rounded-xl border border-zinc-800 mb-8 w-full">
                 {[
                   { id: "projects", label: "🗂 Projects" },
                   { id: "bookings", label: "📖 Booking Approvals", badge: pendingCount },
