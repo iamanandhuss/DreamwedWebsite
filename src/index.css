@@ -602,6 +602,13 @@ h1, h2, h3, h4, h5, h6 {
   border-color: #d4af37 !important;
 }
 
+/* Exempt printable inputs from dark office suite theme overrides */
+.office-theme-container .printable-input {
+  background-color: transparent !important;
+  color: inherit !important;
+  border-color: inherit !important;
+}
+
 
 
 
