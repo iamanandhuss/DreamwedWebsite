@@ -23,7 +23,8 @@ const Admin = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const [activeTab, setActiveTab] = useState("projects"); // projects | staff | chats
+  const [activeTab, setActiveTab] = useState("overview"); // overview | projects | staff | chats
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   // Projects tab state
   const [projects, setProjects] = useState([]);
@@ -1555,115 +1556,371 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] pt-20 pb-16 office-theme-container">
+    <div className="min-h-screen bg-[#0b0f19] flex text-white font-sans office-theme-container selection:bg-[#d4af37]/30 selection:text-white">
       <SEO title="Admin Control Center" description="Dreamwed Stories secure management portal." />
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-7xl mx-auto px-4 sm:px-6 text-white"
-      >
-        {/* Top Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-5 border-b border-zinc-800">
-          <div>
-            <span className="text-[#b4975a] font-bold text-[10px] tracking-[0.3em] uppercase block mb-1">
-              Client Portal Console • <span className="text-zinc-500 font-mono tracking-normal lowercase">{API_BASE}</span>
-            </span>
-            <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl sm:text-4xl text-white font-light tracking-tight">
-              Admin <span className="italic font-serif text-[#b4975a]">Control Panel</span>
+      {/* Desktop Sidebar */}
+      <aside className="w-72 hidden lg:flex flex-col bg-[#131a2b]/95 backdrop-blur-md border-r border-zinc-800/40 h-screen sticky top-0 z-40 p-6 shrink-0 justify-between">
+        <div className="space-y-8">
+          {/* Logo */}
+          <div className="pb-4 border-b border-zinc-800/40 select-none">
+            <span className="text-[#d4af37] font-bold text-[9px] tracking-[0.3em] uppercase block mb-1">Dreamwed Stories</span>
+            <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl text-white font-light tracking-tight">
+              Admin <span className="italic font-serif text-[#d4af37]">Console</span>
             </h1>
           </div>
-          <div className="flex flex-wrap gap-2.5">
-            <a href="/"
-              className="px-4 py-2.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-[#b4975a] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 border border-[#b4975a]/20 hover:border-[#b4975a]/40 transition-all cursor-pointer active:scale-95">
-              <span>←</span> Back to Home
-            </a>
-            <button onClick={handleLogout}
-              className="px-4 py-2.5 rounded-full bg-white text-zinc-950 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 hover:bg-zinc-100 transition-all cursor-pointer active:scale-95">
-              <LogOut size={13} /> Log Out
-            </button>
-          </div>
+
+          {/* Navigation links */}
+          <nav className="space-y-1.5">
+            {[
+              { id: "overview", label: "📊 Dashboard", icon: <Users size={16} /> },
+              { id: "projects", label: "🗂 Projects", icon: <Package size={16} /> },
+              { id: "bookings", label: "📖 Bookings", icon: <Calendar size={16} />, badge: bookings.filter(b => b.status !== "confirmed" && b.status !== "rejected").length },
+              { id: "clients", label: "👑 Client Portal", icon: <ShieldCheck size={16} /> },
+              { id: "staff", label: "👥 Staff Accounts", icon: <Users size={16} /> },
+              { id: "chats", label: "💬 Chat Room", icon: <MessageSquare size={16} /> },
+              { id: "ai-galleries", label: "💍 AI Galleries", icon: <Camera size={16} /> },
+              { id: "ai-orders", label: "🧾 Print Orders", icon: <FileText size={16} /> },
+              { id: "budget-tracker", label: "💰 Budget Tracker", icon: <Package size={16} /> },
+              { id: "invoice-studio", label: "🧾 Invoice Studio", icon: <FileText size={16} /> }
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  setShowMobileSidebar(false);
+                }}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  activeTab === item.id 
+                    ? "bg-[#d4af37] text-zinc-950 shadow-md shadow-[#d4af37]/10" 
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-850/50"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  {item.icon}
+                  <span>{item.label}</span>
+                </div>
+                {item.badge > 0 && (
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${
+                    activeTab === item.id ? "bg-zinc-950 text-[#d4af37]" : "bg-red-500 text-white animate-pulse"
+                  }`}>
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
         </div>
 
-        {/* Offline Warning Banner */}
-        {isOffline && (
-          <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/25 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-amber-400 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
-              <div>
-                <strong className="font-bold uppercase tracking-wider block sm:inline">Offline Mode:</strong>{' '}
-                <span className="font-light text-zinc-300">
-                  Unable to connect to the backend server (<code className="font-mono text-amber-300">{API_BASE}</code>). Displaying local offline cache data.
-                </span>
+        {/* Footer profile */}
+        <div className="pt-4 border-t border-zinc-800/40 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#d4af37]/10 border border-[#d4af37]/20 flex items-center justify-center">
+              <ShieldCheck size={18} className="text-[#d4af37]" />
+            </div>
+            <div className="text-left">
+              <span className="text-white text-xs font-bold block">Administrator</span>
+              <span className="text-zinc-500 text-[10px] block">Live Connected</span>
+            </div>
+          </div>
+          <button 
+            onClick={handleLogout}
+            className="p-2 bg-zinc-850 hover:bg-red-500/10 hover:text-red-400 text-zinc-400 rounded-xl transition-all cursor-pointer"
+            title="Log Out"
+          >
+            <LogOut size={16} />
+          </button>
+        </div>
+      </aside>
+
+      {/* Mobile Sidebar Overlay Drawer */}
+      <AnimatePresence>
+        {showMobileSidebar && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowMobileSidebar(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 lg:hidden"
+            />
+            <motion.aside 
+              initial={{ x: -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: -280 }}
+              transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+              className="fixed top-0 bottom-0 left-0 w-80 bg-[#131a2b] border-r border-zinc-800/40 z-50 p-6 flex flex-col justify-between lg:hidden"
+            >
+              <div className="space-y-8">
+                <div className="flex items-center justify-between pb-4 border-b border-zinc-800/40">
+                  <div>
+                    <span className="text-[#d4af37] font-bold text-[9px] tracking-[0.25em] uppercase block mb-1">Dreamwed Stories</span>
+                    <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-xl text-white font-light tracking-tight">
+                      Admin <span className="italic font-serif text-[#d4af37]">Console</span>
+                    </h1>
+                  </div>
+                  <button onClick={() => setShowMobileSidebar(false)} className="p-2 text-zinc-400 hover:text-white rounded-full bg-zinc-850">
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <nav className="space-y-1.5">
+                  {[
+                    { id: "overview", label: "📊 Dashboard", icon: <Users size={16} /> },
+                    { id: "projects", label: "🗂 Projects", icon: <Package size={16} /> },
+                    { id: "bookings", label: "📖 Bookings", icon: <Calendar size={16} />, badge: bookings.filter(b => b.status !== "confirmed" && b.status !== "rejected").length },
+                    { id: "clients", label: "👑 Client Portal", icon: <ShieldCheck size={16} /> },
+                    { id: "staff", label: "👥 Staff Accounts", icon: <Users size={16} /> },
+                    { id: "chats", label: "💬 Chat Room", icon: <MessageSquare size={16} /> },
+                    { id: "ai-galleries", label: "💍 AI Galleries", icon: <Camera size={16} /> },
+                    { id: "ai-orders", label: "🧾 Print Orders", icon: <FileText size={16} /> },
+                    { id: "budget-tracker", label: "💰 Budget Tracker", icon: <Package size={16} /> },
+                    { id: "invoice-studio", label: "🧾 Invoice Studio", icon: <FileText size={16} /> }
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setActiveTab(item.id);
+                        setShowMobileSidebar(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                        activeTab === item.id 
+                          ? "bg-[#d4af37] text-zinc-950 shadow-md" 
+                          : "text-zinc-400 hover:text-white hover:bg-zinc-850/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {item.icon}
+                        <span>{item.label}</span>
+                      </div>
+                      {item.badge > 0 && (
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${
+                          activeTab === item.id ? "bg-zinc-950 text-[#d4af37]" : "bg-red-500 text-white"
+                        }`}>
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </nav>
+              </div>
+
+              <div className="pt-4 border-t border-zinc-800/40 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#d4af37]/10 border border-[#d4af37]/20 flex items-center justify-center">
+                    <ShieldCheck size={18} className="text-[#d4af37]" />
+                  </div>
+                  <div className="text-left">
+                    <span className="text-white text-xs font-bold block">Administrator</span>
+                    <span className="text-zinc-500 text-[10px] block">Connected</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={handleLogout}
+                  className="p-2 bg-zinc-850 hover:bg-red-500/10 hover:text-red-400 text-zinc-400 rounded-xl transition-all cursor-pointer"
+                >
+                  <LogOut size={16} />
+                </button>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Main Workspace Pane */}
+      <div className="flex-1 min-h-screen flex flex-col overflow-x-hidden">
+        {/* Workspace Top Header Bar */}
+        <header className="h-16 px-6 lg:px-8 border-b border-zinc-800/40 flex items-center justify-between sticky top-0 bg-[#0b0f19]/80 backdrop-blur-md z-30 select-none">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setShowMobileSidebar(true)}
+              className="lg:hidden p-2 bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white rounded-xl cursor-pointer"
+            >
+              <Users size={16} />
+            </button>
+            <h2 className="text-sm font-bold text-white uppercase tracking-widest hidden sm:block">
+              {activeTab === "overview" && "Dashboard Overview"}
+              {activeTab === "projects" && "Client Deliverables & Projects"}
+              {activeTab === "bookings" && "Booking Registrations"}
+              {activeTab === "clients" && "Client Workspace Portal"}
+              {activeTab === "staff" && "Crew & Staff Management"}
+              {activeTab === "chats" && "Client Communication"}
+              {activeTab === "ai-galleries" && "AI face Gallery Database"}
+              {activeTab === "ai-orders" && "Print Frame Orders"}
+              {activeTab === "budget-tracker" && "Budget Planner & Settings"}
+              {activeTab === "invoice-studio" && "Tax Invoice Studio"}
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-zinc-900 border border-zinc-800/60 rounded-lg text-[10px] font-bold text-zinc-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Server: Connected</span>
+            </div>
+            <a href="/" className="px-3.5 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-[#d4af37] text-[10px] font-bold uppercase tracking-wider border border-[#d4af37]/20 hover:border-[#d4af37]/45 transition-all cursor-pointer select-none">
+              ← Main Website
+            </a>
+          </div>
+        </header>
+
+        {/* Content Viewport */}
+        <main className="p-6 lg:p-10 flex-1 space-y-6">
+          {/* Offline alert banner */}
+          {isOffline && (
+            <div className="p-4 bg-amber-500/10 border border-amber-500/25 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-amber-400 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
+                <div>
+                  <strong className="font-bold uppercase tracking-wider block sm:inline">Offline Mode:</strong>{' '}
+                  <span className="font-light text-zinc-300">Displaying local cached data. Server at {API_BASE} is offline.</span>
+                </div>
               </div>
             </div>
-            <button
-              onClick={() => {
-                if (window.confirm("Are you sure you want to clear the local bookings and projects cache? This will reset all offline test data.")) {
-                  localStorage.removeItem("dreamwed_bookings");
-                  localStorage.removeItem("dreamwed_projects");
-                  localStorage.removeItem("dreamwed_api_base");
-                  window.location.reload();
-                }
-              }}
-              className="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer shrink-0"
-            >
-              Clear Local Cache
-            </button>
-          </div>
-        )}
+          )}
 
-        {/* Tab Navigation */}
-        {(() => {
-          const pendingCount = bookings.filter(b => b.status !== "confirmed" && b.status !== "rejected").length;
-          return (
-            <>
-              {/* New Request Alert Banner */}
-              {pendingCount > 0 && activeTab !== "bookings" && (
-                <button
-                  onClick={() => setActiveTab("bookings")}
-                  className="flex items-center gap-3 w-full mb-4 px-5 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/15 transition-all cursor-pointer text-left group"
-                >
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping shrink-0" />
-                  <span className="text-amber-400 text-xs font-bold uppercase tracking-wider flex-1">
-                    🔔 New Request ({pendingCount}) — {pendingCount === 1 ? "1 booking" : `${pendingCount} bookings`} pending approval! Click to review.
-                  </span>
-                  <span className="text-amber-400/60 text-[10px] font-bold uppercase tracking-widest group-hover:text-amber-400 transition-colors">
-                    Review →
-                  </span>
-                </button>
-              )}
+          {/* =============================== DASHBOARD OVERVIEW TAB ================================ */}
+          {activeTab === "overview" && (
+            <div className="space-y-8 text-left">
+              <div>
+                <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-4xl text-white font-light">
+                  Dashboard <span className="italic font-serif text-[#d4af37]">Overview</span>
+                </h1>
+                <p className="text-zinc-500 text-[11px] font-light mt-1">Quick insights, stat summaries, and studio operational metrics.</p>
+              </div>
 
-              <div className="flex flex-wrap gap-1.5 bg-zinc-900 p-1.5 rounded-xl border border-zinc-800 mb-8 w-full">
+              {/* Stats Widgets Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {[
-                  { id: "projects", label: "🗂 Projects" },
-                  { id: "bookings", label: "📖 Booking Approvals", badge: pendingCount },
-                  { id: "clients", label: "👑 Client Management" },
-                  { id: "staff", label: "👥 Staff Management" },
-                  { id: "chats", label: "💬 Chat Viewer" },
-                  { id: "ai-galleries", label: "💍 AI Galleries" },
-                  { id: "ai-orders", label: "🧾 AI Print Orders" },
-                  { id: "budget-tracker", label: "💰 Budget Tracker" },
-                  { id: "invoice-studio", label: "🧾 Invoice Studio" }
-                ].map((tab) => (
-                  <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                    className={`relative px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shrink-0 ${
-                      activeTab === tab.id ? "bg-[#b4975a] text-zinc-950 shadow-sm" : "text-zinc-400 hover:text-white"
-                    }`}>
-                    {tab.label}
-                    {tab.badge > 0 && (
-                      <span className={`absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-black flex items-center justify-center shadow-lg ${
-                        activeTab === tab.id ? "bg-red-600 text-white" : "bg-red-500 text-white animate-bounce"
-                      }`}>
-                        {tab.badge}
+                  { label: "Total Active Projects", value: projects.length, icon: <Package size={22} className="text-[#d4af37]" />, desc: "Client deliverables on timeline" },
+                  { label: "Pending Approvals", value: bookings.filter(b => b.status !== "confirmed" && b.status !== "rejected").length, icon: <Calendar size={22} className="text-[#d4af37]" />, desc: "Awaiting invoice approvals", alert: bookings.filter(b => b.status !== "confirmed" && b.status !== "rejected").length > 0 },
+                  { label: "Active Face Galleries", value: aiGalleries.length, icon: <Camera size={22} className="text-[#d4af37]" />, desc: "AI Face Recognition databases" },
+                  { label: "Dispatch Queue", value: aiOrders.filter(o => o.status !== "Delivered").length, icon: <FileText size={22} className="text-[#d4af37]" />, desc: "Print frame orders pending delivery" }
+                ].map((stat, i) => (
+                  <div key={i} className="office-theme-card p-6 rounded-3xl border border-zinc-800/40 relative overflow-hidden flex flex-col justify-between h-36">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#d4af37]/2 rounded-full blur-2xl pointer-events-none" />
+                    <div className="flex justify-between items-start">
+                      <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">{stat.label}</span>
+                      <div className="w-10 h-10 rounded-xl bg-[#d4af37]/5 border border-[#d4af37]/10 flex items-center justify-center">
+                        {stat.icon}
+                      </div>
+                    </div>
+                    <div>
+                      <span className={`text-4xl font-light font-mono block ${stat.alert ? "text-red-400 font-bold animate-pulse" : "text-white"}`}>
+                        {stat.value}
                       </span>
-                    )}
-                  </button>
+                      <span className="text-zinc-500 text-[9px] font-light mt-0.5 block">{stat.desc}</span>
+                    </div>
+                  </div>
                 ))}
               </div>
-            </>
-          );
-        })()}
+
+              {/* Grid: Actions & Recent projects */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                {/* Upcoming Weddings / Project tracker */}
+                <div className="lg:col-span-2 office-theme-card p-6 rounded-3xl space-y-4">
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 pb-3 border-b border-zinc-800/40">
+                    <Package size={14} className="text-[#d4af37]" /> Active Project Deadlines
+                  </h3>
+                  {projects.length === 0 ? (
+                    <div className="text-center py-10 text-zinc-500 text-xs font-light">
+                      No active projects. Register or approve a booking to create one.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead>
+                          <tr className="text-zinc-500 uppercase tracking-wider text-[9px] border-b border-zinc-800/40">
+                            <th className="pb-3 font-bold">Couple Name</th>
+                            <th className="pb-3 font-bold">Wedding Date</th>
+                            <th className="pb-3 font-bold">Current Stage</th>
+                            <th className="pb-3 font-bold text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-800/20">
+                          {projects.slice(0, 4).map((p) => {
+                            const currentStepName = p.timeline_steps?.[p.current_step - 1]?.name || "Pending";
+                            return (
+                              <tr key={p.id} className="hover:bg-zinc-850/10">
+                                <td className="py-3 font-bold text-white">{p.couple_name}</td>
+                                <td className="py-3 text-zinc-400">{p.wedding_date}</td>
+                                <td className="py-3">
+                                  <span className="px-2 py-0.5 rounded-md bg-[#d4af37]/10 text-[#d4af37] text-[10px] font-bold">
+                                    {currentStepName}
+                                  </span>
+                                </td>
+                                <td className="py-3 text-right">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedProject(p);
+                                      setActiveTab("projects");
+                                    }}
+                                    className="px-3 py-1 bg-zinc-900 border border-zinc-850 hover:border-[#d4af37] text-zinc-300 hover:text-white rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer"
+                                  >
+                                    Manage
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right: Studio Quick Actions */}
+                <div className="office-theme-card p-6 rounded-3xl space-y-4">
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 pb-3 border-b border-zinc-800/40">
+                    <ShieldCheck size={14} className="text-[#d4af37]" /> Quick Operations
+                  </h3>
+                  <div className="space-y-2.5">
+                    <button
+                      onClick={() => {
+                        setActiveTab("clients");
+                        setTimeout(() => {
+                          setShowCreateClientModal(true);
+                        }, 50);
+                      }}
+                      className="w-full flex items-center justify-between p-3.5 bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 hover:border-[#d4af37]/45 rounded-2xl text-xs text-left cursor-pointer transition-all"
+                    >
+                      <div>
+                        <strong className="font-bold text-white block">➕ New Custom Booking</strong>
+                        <span className="text-[9px] text-zinc-500 font-light block mt-0.5">Register client details & passwords manually</span>
+                      </div>
+                      <ChevronRight size={14} className="text-[#d4af37]" />
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setActiveTab("invoice-studio");
+                        handleCreateBlankInvoice();
+                      }}
+                      className="w-full flex items-center justify-between p-3.5 bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 hover:border-[#d4af37]/45 rounded-2xl text-xs text-left cursor-pointer transition-all"
+                    >
+                      <div>
+                        <strong className="font-bold text-white block">📄 Tax Invoice Builder</strong>
+                        <span className="text-[9px] text-zinc-500 font-light block mt-0.5">Generate customized tax receipts</span>
+                      </div>
+                      <ChevronRight size={14} className="text-[#d4af37]" />
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setActiveTab("ai-galleries");
+                      }}
+                      className="w-full flex items-center justify-between p-3.5 bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 hover:border-[#d4af37]/45 rounded-2xl text-xs text-left cursor-pointer transition-all"
+                    >
+                      <div>
+                        <strong className="font-bold text-white block">💍 Create AI Gallery</strong>
+                        <span className="text-[9px] text-zinc-500 font-light block mt-0.5">Set up guest face recognition album</span>
+                      </div>
+                      <ChevronRight size={14} className="text-[#d4af37]" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
         {/* =============================== PROJECTS TAB ================================ */}
         {activeTab === "projects" && (
@@ -5631,7 +5888,8 @@ const Admin = () => {
         )}
       </AnimatePresence>
 
-      </motion.div>
+        </main>
+      </div>
     </div>
   );
 };
