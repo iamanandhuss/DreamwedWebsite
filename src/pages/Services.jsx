@@ -10,7 +10,7 @@ const weddingPlans = [
   {
     shareId: "pkgWeddingBasicCard",
     title: "Wedding Photography",
-    price: "₹39,999",
+    price: "₹44,999",
     tag: "+ LIMITED TIME OFFER",
     modalTag: "Essential",
     subtitle: "ESSENTIAL SINGLE-SIDE",
@@ -130,7 +130,7 @@ const weddingStandalonePlans = [
   {
     shareId: "pkgWeddingStandaloneDay",
     title: "Standalone Wedding Day",
-    price: "₹39,999",
+    price: "₹44,999",
     tag: "Wedding Day Only",
     modalTag: "Standalone",
     subtitle: "8-HOUR WEDDING DAY ONLY",
@@ -348,7 +348,7 @@ const Services = () => {
     if (!priceStr) return "";
     const num = parseInt(priceStr.replace(/[^0-9]/g, ""));
     if (isNaN(num)) return "₹0";
-    if (num === 39999) return "₹59,999";
+    if (num === 44999) return "₹59,999";
     if (num === 54999) return "₹79,999";
     if (num === 69999) return "₹99,999";
     if (num === 110000) return "₹1,65,000";
@@ -898,7 +898,7 @@ const Services = () => {
                         <div className="space-y-1.5 text-xs text-zinc-600 font-light">
                           <div className="flex justify-between">
                             <span>Standalone Wedding Day Coverage</span>
-                            <span className="font-semibold text-zinc-800">₹39,999</span>
+                            <span className="font-semibold text-zinc-800">₹44,999</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Standalone Reception Day Coverage</span>

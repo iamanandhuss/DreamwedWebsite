@@ -38,8 +38,8 @@ const resolveAssetPath = (path) => {
 // Website Packages
 const WEBSITE_PACKAGES = [
   {
-    name: "Wedding Photography (₹39,999)",
-    price: "39,999",
+    name: "Wedding Photography (₹44,999)",
+    price: "44,999",
     weddingCandidPhoto: 0,
     weddingTradPhoto: 1,
     weddingCandidVideo: 0,
@@ -184,8 +184,8 @@ const WEBSITE_PACKAGES = [
     ]
   },
   {
-    name: "Standalone Wedding Day (₹39,999)",
-    price: "39,999",
+    name: "Standalone Wedding Day (₹44,999)",
+    price: "44,999",
     weddingCandidPhoto: 0,
     weddingTradPhoto: 1,
     weddingCandidVideo: 0,
@@ -2412,14 +2412,14 @@ export default function DigitalProposal() {
                       >
                         <option value="" disabled>-- Select website package --</option>
                         <optgroup label="Wedding Packages" className="bg-[#121216]">
-                          <option value="0">Wedding Photography (₹39,999)</option>
+                          <option value="0">Wedding Photography (₹44,999)</option>
                           <option value="1">Wedding Photo & Pre-Wedding (₹54,999)</option>
                           <option value="2">Candid Photo & Videography (₹69,999)</option>
                           <option value="3">Premium Candid Package (₹79,999)</option>
                           <option value="4">Bride & Groom Luxury Package (₹1,10,000)</option>
                         </optgroup>
                         <optgroup label="Standalone Wedding Coverages" className="bg-[#121216]">
-                          <option value="5">Standalone Wedding Day (₹39,999)</option>
+                          <option value="5">Standalone Wedding Day (₹44,999)</option>
                           <option value="6">Standalone Reception (₹19,999)</option>
                         </optgroup>
                         <optgroup label="Engagement Collections" className="bg-[#121216]">

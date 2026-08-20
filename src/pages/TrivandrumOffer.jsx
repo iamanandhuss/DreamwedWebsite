@@ -44,7 +44,7 @@ const TrivandrumOffer = () => {
 
   const [isConfirmBookingOpen, setIsConfirmBookingOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState("Wedding Photography");
-  const [selectedPackagePrice, setSelectedPackagePrice] = useState(39999);
+  const [selectedPackagePrice, setSelectedPackagePrice] = useState(44999);
   const [bookingForm, setBookingForm] = useState({
     name: "",
     phone: "",
@@ -121,7 +121,7 @@ const TrivandrumOffer = () => {
       title: "Wedding Photography",
       subtitle: "Essential Single-Side",
       regularPrice: "60,000",
-      offerPrice: "39,999",
+      offerPrice: "44,999",
       bonus: "LIMITED TIME OFFER",
       bonusDesc: "Save ₹20,001! Essential single-side coverage at an unbeatable price.",
       images: ["/uploaded_bride_39k_1.jpg", "/uploaded_bride_39k_2.jpg", "/uploaded_bride_39k_3.jpg", "/uploaded_bride_39k_4.jpg"],
@@ -245,7 +245,7 @@ const TrivandrumOffer = () => {
       title: "Standalone Wedding Day",
       subtitle: "8-Hour Wedding Day Only",
       regularPrice: "50,000",
-      offerPrice: "39,999",
+      offerPrice: "44,999",
       bonus: "STANDALONE DAY ONLY",
       bonusDesc: "Professional photography & videography team for your wedding ceremony day coverage.",
       images: ["/uploaded_couple_blackwhite.jpg"],
@@ -1307,7 +1307,7 @@ const TrivandrumOffer = () => {
               Lock In <span className="italic font-serif text-[#b4975a]">Your Wedding Date</span>
             </h2>
             <p className="text-zinc-500 text-xs sm:text-sm font-light leading-relaxed">
-              Verify our availability for your wedding day. Secure your special ₹39,999/-, ₹54,999/-, ₹69,999/- or ₹79,999/- ad package and claim your **FREE Pre-Wedding Shoot** bonus.
+              Verify our availability for your wedding day. Secure your special ₹44,999/-, ₹54,999/-, ₹69,999/- or ₹79,999/- ad package and claim your **FREE Pre-Wedding Shoot** bonus.
             </p>
           </div>
 
@@ -2335,7 +2335,7 @@ const TrivandrumOffer = () => {
                         <div className="space-y-1.5 text-xs text-zinc-600 font-light">
                           <div className="flex justify-between">
                             <span>Standalone Wedding Day Coverage</span>
-                            <span className="font-semibold text-zinc-800">₹39,999</span>
+                            <span className="font-semibold text-zinc-800">₹44,999</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Standalone Reception Day Coverage</span>

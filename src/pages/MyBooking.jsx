@@ -129,14 +129,14 @@ const MyBooking = () => {
       add_ons: ["Pre-wedding Cinematic Video (Offer Price - 9999/-)", "Drone Coverage Upgrade"],
       total_price: 189999,
       advance_paid: 50000,
-      balance_amount: 139999,
+      balance_amount: 144999,
       invoice_number: "DW-2026-003",
       invoice_date: "2026-05-28",
       status: "confirmed",
       payment_milestones: [
         { label: "Advance - Wedding Photography (Elite Signature Package)", amount: 50000, date: "2026-05-28", status: "Paid" },
         { label: "Second Payment (Event Day)", amount: 0, date: "2026-12-18", status: "Pending" },
-        { label: "Final Payment (Before Delivery)", amount: 139999, date: "", status: "Pending" }
+        { label: "Final Payment (Before Delivery)", amount: 144999, date: "", status: "Pending" }
       ],
       created_at: "2026-05-28 18:26:08",
       updated_at: "2026-05-28 18:26:08"
@@ -153,14 +153,14 @@ const MyBooking = () => {
       add_ons: ["Pre-wedding Cinematic Video (Offer Price - 9999/-)", "Drone Coverage Upgrade"],
       total_price: 189999,
       advance_paid: 50000,
-      balance_amount: 139999,
+      balance_amount: 144999,
       invoice_number: "DW-2026-004",
       invoice_date: "2026-05-28",
       status: "confirmed",
       payment_milestones: [
         { label: "Advance - Wedding Photography (Elite Signature Package)", amount: 50000, date: "2026-05-28", status: "Paid" },
         { label: "Second Payment (Event Day)", amount: 0, date: "2026-11-20", status: "Pending" },
-        { label: "Final Payment (Before Delivery)", amount: 139999, date: "", status: "Pending" }
+        { label: "Final Payment (Before Delivery)", amount: 144999, date: "", status: "Pending" }
       ],
       created_at: "2026-05-28 18:26:08",
       updated_at: "2026-05-28 18:26:08"
@@ -202,13 +202,13 @@ const MyBooking = () => {
         if (pName === "Elite Signature Package") setPackagePrice(180000);
         else if (pName === "Premium Couture Package") setPackagePrice(135000);
         else if (pName === "Classic Heritage Package") setPackagePrice(95000);
-        else if (pName === "Wedding Photography") setPackagePrice(39999);
+        else if (pName === "Wedding Photography") setPackagePrice(44999);
         else if (pName === "Wedding Photo & Pre-Wedding") setPackagePrice(54999);
         else if (pName === "Candid Photo & Videography") setPackagePrice(69999);
         else if (pName === "Bride & Groom Luxury Package") setPackagePrice(110000);
         else if (pName === "Premium Candid Package") setPackagePrice(79999);
         else if (pName === "Bride or Groom Engagement Package") setPackagePrice(28999);
-        else if (pName === "Standalone Wedding Day") setPackagePrice(39999);
+        else if (pName === "Standalone Wedding Day") setPackagePrice(44999);
         else if (pName === "Standalone Reception") setPackagePrice(19999);
         else if (pName === "Haldi Photography (Only)") setPackagePrice(10000);
         else if (pName === "Haldi Photography with Album") setPackagePrice(15000);
@@ -246,13 +246,13 @@ const MyBooking = () => {
     if (pName === "Elite Signature Package") setPackagePrice(180000);
     else if (pName === "Premium Couture Package") setPackagePrice(135000);
     else if (pName === "Classic Heritage Package") setPackagePrice(95000);
-    else if (pName === "Wedding Photography") setPackagePrice(39999);
+    else if (pName === "Wedding Photography") setPackagePrice(44999);
     else if (pName === "Wedding Photo & Pre-Wedding") setPackagePrice(54999);
     else if (pName === "Candid Photo & Videography") setPackagePrice(69999);
     else if (pName === "Bride & Groom Luxury Package") setPackagePrice(110000);
     else if (pName === "Premium Candid Package") setPackagePrice(79999);
     else if (pName === "Bride or Groom Engagement Package") setPackagePrice(28999);
-    else if (pName === "Standalone Wedding Day") setPackagePrice(39999);
+    else if (pName === "Standalone Wedding Day") setPackagePrice(44999);
     else if (pName === "Standalone Reception") setPackagePrice(19999);
     else if (pName === "Haldi Photography (Only)") setPackagePrice(10000);
     else if (pName === "Haldi Photography with Album") setPackagePrice(15000);
@@ -701,13 +701,13 @@ const MyBooking = () => {
                       <option value="Elite Signature Package">Elite Signature Package (₹1,80,000)</option>
                       <option value="Premium Couture Package">Premium Couture Package (₹1,35,000)</option>
                       <option value="Classic Heritage Package">Classic Heritage Package (₹95,000)</option>
-                      <option value="Wedding Photography">Wedding Photography (₹39,999)</option>
+                      <option value="Wedding Photography">Wedding Photography (₹44,999)</option>
                       <option value="Wedding Photo & Pre-Wedding">Wedding Photo & Pre-Wedding (₹54,999)</option>
                       <option value="Candid Photo & Videography">Candid Photo & Videography (₹69,999)</option>
                       <option value="Bride & Groom Luxury Package">Bride & Groom Luxury Package (₹1,10,000)</option>
                       <option value="Premium Candid Package">Premium Candid Package (₹79,999)</option>
                       <option value="Bride or Groom Engagement Package">Bride or Groom Engagement Package (₹28,999)</option>
-                      <option value="Standalone Wedding Day">Standalone Wedding Day (₹39,999)</option>
+                      <option value="Standalone Wedding Day">Standalone Wedding Day (₹44,999)</option>
                       <option value="Standalone Reception">Standalone Reception (₹19,999)</option>
                       <option value="Haldi Photography (Only)">Haldi Photography (Only) (₹10,000)</option>
                       <option value="Haldi Photography with Album">Haldi Photography with Album (₹15,000)</option>
