@@ -2435,7 +2435,9 @@ export default function DigitalProposal() {
                     </div>
 
                     <div className="space-y-4">
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Wedding Staff</span>
+                      <span className="text-[10.5px] font-mono text-[#d1a852] font-semibold uppercase block tracking-wider">
+                        {eventsList[0] ? `${eventsList[0].name} Staff` : "Wedding Staff"}
+                      </span>
                       
                       <div className="space-y-3">
                         <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
@@ -2477,7 +2479,9 @@ export default function DigitalProposal() {
                     </div>
 
                     <div className="space-y-4">
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Reception Staff</span>
+                      <span className="text-[10.5px] font-mono text-[#d1a852] font-semibold uppercase block tracking-wider">
+                        {eventsList[1] ? `${eventsList[1].name} Staff` : "Reception Staff"}
+                      </span>
                       
                       <div className="space-y-3">
                         <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
@@ -2501,7 +2505,9 @@ export default function DigitalProposal() {
                     </div>
 
                     <div className="space-y-4">
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Pre-Wedding Staff</span>
+                      <span className="text-[10.5px] font-mono text-[#d1a852] font-semibold uppercase block tracking-wider">
+                        {eventsList[2] ? `${eventsList[2].name} Staff` : "Pre-Wedding Staff"}
+                      </span>
                       
                       <div className="space-y-3">
                         <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
