@@ -44,7 +44,8 @@ let data = {
   projects: [],
   project_chats: [],
   activity_logs: [],
-  staff_users: []
+  staff_users: [],
+  galleries: []
 };
 
 function getDbDate(dateObj = new Date()) {
@@ -229,6 +230,7 @@ async function initDB() {
   data.staff_users = data.staff_users || [];
   data.office_budgets = data.office_budgets || [];
   data.office_invoices = data.office_invoices || [];
+  data.galleries = data.galleries || [];
   data.office_settings = data.office_settings || {
     photoCharge: 15000,
     videoCharge: 20000,
@@ -870,6 +872,123 @@ function saveOfficeSettings(settings) {
   return settings;
 }
 
+function getGalleries() {
+  return data.galleries || [];
+}
+
+function getGallery(id) {
+  return (data.galleries || []).find(g => g.id === id);
+}
+
+function saveGallery(gallery) {
+  data.galleries = data.galleries || [];
+  
+  let existingIndex = -1;
+  if (gallery.id) {
+    existingIndex = data.galleries.findIndex(g => g.id === gallery.id);
+  } else if (gallery.name) {
+    existingIndex = data.galleries.findIndex(g => g.name.toLowerCase().trim() === gallery.name.toLowerCase().trim());
+  }
+  
+  if (existingIndex > -1) {
+    const existing = data.galleries[existingIndex];
+    const updated = {
+      ...existing,
+      gdriveLink: gallery.gdriveLink || existing.gdriveLink,
+      type: gallery.type || existing.type,
+      coverUrl: gallery.coverUrl || existing.coverUrl,
+      updated_at: getDbDate()
+    };
+    data.galleries[existingIndex] = updated;
+    saveToDisk();
+    return updated;
+  } else {
+    const id = gallery.id || `gallery-${gallery.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Math.floor(100 + Math.random() * 900)}`;
+    const accessCode = gallery.accessCode || String(Math.floor(1000 + Math.random() * 9000));
+    const newGallery = {
+      id,
+      name: gallery.name,
+      gdriveLink: gallery.gdriveLink,
+      type: gallery.type || "After Event Gallery",
+      coverUrl: gallery.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800",
+      accessCode,
+      photos: gallery.photos || [],
+      created_at: getDbDate(),
+      updated_at: getDbDate()
+    };
+    data.galleries.push(newGallery);
+    saveToDisk();
+    return newGallery;
+  }
+}
+
+function deleteGallery(id) {
+  data.galleries = data.galleries || [];
+  const initialLength = data.galleries.length;
+  data.galleries = data.galleries.filter(g => g.id !== id);
+  if (data.galleries.length < initialLength) {
+    saveToDisk();
+    return true;
+  }
+  return false;
+}
+
+const https = require('https');
+
+function fetchDrivePage(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    }, (res) => {
+      let responseData = '';
+      res.on('data', chunk => responseData += chunk);
+      res.on('end', () => resolve(responseData));
+    }).on('error', reject);
+  });
+}
+
+async function syncGalleryDrivePhotos(id) {
+  const gallery = getGallery(id);
+  if (!gallery || !gallery.gdriveLink) return null;
+  
+  try {
+    const html = await fetchDrivePage(gallery.gdriveLink);
+    const idSet = new Set();
+    const regex = /"([a-zA-Z0-9_-]{33})"/g;
+    let match;
+    while ((match = regex.exec(html)) !== null) {
+      const fileId = match[1];
+      if (fileId.startsWith('1') && !fileId.includes("closure") && !fileId.includes("google") && !fileId.includes("Roboto")) {
+        idSet.add(fileId);
+      }
+    }
+    
+    const folderMatch = gallery.gdriveLink.match(/folders\/([a-zA-Z0-9_-]{33})/);
+    if (folderMatch && folderMatch[1]) {
+      idSet.delete(folderMatch[1]);
+    }
+    
+    const fileIds = Array.from(idSet);
+    if (fileIds.length > 0) {
+      gallery.photos = fileIds.map((fileId, index) => ({
+        id: `photo-${Date.now()}-${index}`,
+        url: `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`
+      }));
+      if (gallery.photos.length > 0 && (!gallery.coverUrl || gallery.coverUrl.includes("unsplash"))) {
+        gallery.coverUrl = gallery.photos[0].url;
+      }
+      gallery.updated_at = getDbDate();
+      saveToDisk();
+      return gallery;
+    }
+  } catch (err) {
+    console.error(`[GDrive Sync Error] Failed to sync photos for gallery ${id}:`, err.message);
+  }
+  return null;
+}
+
 module.exports = {
   initDB, getDB, saveMessage, getOrCreateCustomer,
   updateCustomer, getChatHistory, scheduleReminder,
@@ -882,6 +1001,7 @@ module.exports = {
   deleteProject, deleteAllBookings, deleteAllProjects,
   getOfficeBudgets, saveOfficeBudget, deleteOfficeBudget,
   getOfficeInvoices, saveOfficeInvoice, deleteOfficeInvoice,
-  getOfficeSettings, saveOfficeSettings
+  getOfficeSettings, saveOfficeSettings,
+  getGalleries, getGallery, saveGallery, deleteGallery, syncGalleryDrivePhotos
 };
 

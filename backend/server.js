@@ -40,7 +40,12 @@ const {
   saveOfficeInvoice,
   deleteOfficeInvoice,
   getOfficeSettings,
-  saveOfficeSettings
+  saveOfficeSettings,
+  getGalleries,
+  getGallery,
+  saveGallery,
+  deleteGallery,
+  syncGalleryDrivePhotos
 } = require('./bot/database');
 const { startReminderScheduler } = require('./bot/reminders');
 
@@ -972,6 +977,101 @@ app.post('/api/office/settings', (req, res) => {
     const settings = req.body;
     const saved = saveOfficeSettings(settings);
     res.json(saved);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ==========================================================
+// CLIENT GALLERIES APIs
+// ==========================================================
+
+// Get all galleries (Admin only)
+app.get('/api/galleries', (req, res) => {
+  try {
+    const galleries = getGalleries().map(g => ({
+      ...g,
+      photosCount: g.photos ? g.photos.length : 0,
+      photos: undefined // Save payload size
+    }));
+    res.json(galleries);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create/Update a gallery (Admin only)
+app.post('/api/galleries', async (req, res) => {
+  try {
+    const galleryData = req.body;
+    const saved = saveGallery(galleryData);
+    
+    // Automatically trigger Drive photo sync in the background
+    if (saved.gdriveLink) {
+      syncGalleryDrivePhotos(saved.id).catch(err => {
+        console.error(`Background Drive sync failed for ${saved.id}:`, err);
+      });
+    }
+    
+    res.json(saved);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Sync Drive photos for a gallery (Admin only)
+app.post('/api/galleries/:id/sync', async (req, res) => {
+  try {
+    const updated = await syncGalleryDrivePhotos(req.params.id);
+    if (!updated) {
+      return res.status(404).json({ error: 'Gallery not found or sync failed (no photos found)' });
+    }
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete a gallery (Admin only)
+app.delete('/api/galleries/:id', (req, res) => {
+  try {
+    const deleted = deleteGallery(req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Gallery not found' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET Public gallery info (Access code lock screen)
+app.get('/api/public/galleries/:id', (req, res) => {
+  try {
+    const gallery = getGallery(req.params.id);
+    if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
+    
+    res.json({
+      id: gallery.id,
+      name: gallery.name,
+      coverUrl: gallery.coverUrl,
+      created_at: gallery.created_at
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST Unlock public gallery using Access Code
+app.post('/api/public/galleries/:id/unlock', (req, res) => {
+  try {
+    const { accessCode } = req.body;
+    const gallery = getGallery(req.params.id);
+    if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
+    
+    if (gallery.accessCode !== String(accessCode).trim()) {
+      return res.status(401).json({ error: 'Invalid access code' });
+    }
+    
+    res.json(gallery);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

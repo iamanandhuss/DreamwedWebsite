@@ -105,6 +105,7 @@ const Admin = () => {
   const [newGalCover, setNewGalCover] = useState("https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800");
   const [selectedGalForPhotos, setSelectedGalForPhotos] = useState(null);
   const [bulkPhotoUrls, setBulkPhotoUrls] = useState("");
+  const [syncingGalId, setSyncingGalId] = useState(null);
 
   // Dreamwed Office states
   const [officeBudgets, setOfficeBudgets] = useState([]);
@@ -799,21 +800,18 @@ const Admin = () => {
       fetchStaff();
       fetchBookings();
       fetchOfficeData();
+      fetchGalleries();
 
-      // Load AI galleries & orders
-      if (!localStorage.getItem("dreamwed_galleries")) {
-        localStorage.setItem("dreamwed_galleries", JSON.stringify(INITIAL_GALLERIES));
-      }
-      const storedGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
+      // Load AI orders (local storage) and galleries
       const storedOrds = JSON.parse(localStorage.getItem("dreamwed_orders") || "[]");
-      setAiGalleries(storedGals);
       setAiOrders(storedOrds);
 
-      // Auto-poll for new booking requests and projects every 15 seconds
+      // Auto-poll for new booking requests, projects, and galleries every 15 seconds
       const bookingPoller = setInterval(() => {
         fetchBookings();
         fetchProjects();
         fetchOfficeData();
+        fetchGalleries();
       }, 15000);
       return () => clearInterval(bookingPoller);
     }
@@ -837,6 +835,41 @@ const Admin = () => {
       loadChats();
     }
   }, [chatProject, chatChannel]);
+
+  const fetchGalleries = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/galleries`);
+      if (res.ok) {
+        const data = await res.json();
+        setAiGalleries(data);
+      }
+    } catch (e) {
+      console.error("Error fetching galleries:", e);
+      const storedGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
+      setAiGalleries(storedGals);
+    }
+  };
+
+  const handleSyncDrivePhotos = async (id) => {
+    setSyncingGalId(id);
+    try {
+      const res = await fetch(`${API_BASE}/api/galleries/${id}/sync`, {
+        method: "POST"
+      });
+      if (res.ok) {
+        alert("🔄 Photos synchronized successfully from Google Drive!");
+        await fetchGalleries();
+      } else {
+        const errData = await res.json();
+        alert(`⚠️ Sync failed: ${errData.error || "no photos found"}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("❌ Server connection error during sync");
+    } finally {
+      setSyncingGalId(null);
+    }
+  };
 
   const fetchProjects = async () => {
     try {
@@ -1384,36 +1417,67 @@ const Admin = () => {
     catch { return ts; }
   };
 
-  const handleCreateAiGallery = (e) => {
+  const handleCreateAiGallery = async (e) => {
     e.preventDefault();
     if (!newGalName || !newGalDrive) return;
-    const newId = `wedding-${newGalName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+    
+    const randomCode = String(Math.floor(1000 + Math.random() * 9000));
     const newGal = {
-      id: newId,
       name: newGalName,
       gdriveLink: newGalDrive,
       type: newGalType,
       coverUrl: newGalCover,
+      accessCode: randomCode,
       photos: []
     };
-    const updated = [newGal, ...aiGalleries];
-    setAiGalleries(updated);
-    localStorage.setItem("dreamwed_galleries", JSON.stringify(updated));
-    setNewGalName("");
-    setNewGalDrive("");
-    alert("💍 AI Photo Gallery created successfully!");
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/galleries`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newGal)
+      });
+      if (res.ok) {
+        await fetchGalleries();
+        setNewGalName("");
+        setNewGalDrive("");
+        alert("💍 Branded Client Gallery created successfully!");
+      } else {
+        throw new Error("Failed to save gallery on server");
+      }
+    } catch (err) {
+      console.error(err);
+      const newId = `wedding-${newGalName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+      const fallbackGal = { ...newGal, id: newId };
+      const updated = [fallbackGal, ...aiGalleries];
+      setAiGalleries(updated);
+      localStorage.setItem("dreamwed_galleries", JSON.stringify(updated));
+      setNewGalName("");
+      setNewGalDrive("");
+      alert("💍 Created local gallery fallback!");
+    }
   };
 
 
-  const handleDeleteAiGallery = (id) => {
-    if (aiGalleries.length <= 1) {
-      alert("Cannot delete the last remaining AI gallery!");
-      return;
-    }
+  const handleDeleteAiGallery = async (id) => {
     if (!confirm("Are you sure you want to delete this gallery?")) return;
-    const updated = aiGalleries.filter(g => g.id !== id);
-    setAiGalleries(updated);
-    localStorage.setItem("dreamwed_galleries", JSON.stringify(updated));
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/galleries/${id}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        await fetchGalleries();
+        alert("🗑️ Gallery deleted successfully!");
+      } else {
+        throw new Error("Failed to delete gallery on server");
+      }
+    } catch (err) {
+      console.error(err);
+      const updated = aiGalleries.filter(g => g.id !== id);
+      setAiGalleries(updated);
+      localStorage.setItem("dreamwed_galleries", JSON.stringify(updated));
+    }
   };
 
   const convertGoogleDriveUrl = (url) => {
@@ -1578,9 +1642,9 @@ const Admin = () => {
               { id: "bookings", label: "📖 Bookings", icon: <Calendar size={16} />, badge: bookings.filter(b => b.status !== "confirmed" && b.status !== "rejected").length },
               { id: "clients", label: "👑 Client Portal", icon: <ShieldCheck size={16} /> },
               { id: "staff", label: "👥 Staff Accounts", icon: <Users size={16} /> },
-              { id: "chats", label: "💬 Chat Room", icon: <MessageSquare size={16} /> },
-              { id: "ai-galleries", label: "💍 AI Galleries", icon: <Camera size={16} /> },
-              { id: "ai-orders", label: "🧾 Print Orders", icon: <FileText size={16} /> },
+              {id: "chats", label: "💬 Chat Room", icon: <MessageSquare size={16} />},
+              {id: "ai-galleries", label: "💍 Dreamwed Galleries", icon: <Camera size={16} />},
+              {id: "ai-orders", label: "🧾 Print Orders", icon: <FileText size={16} />},
               { id: "budget-tracker", label: "💰 Budget Tracker", icon: <Package size={16} /> },
               { id: "invoice-studio", label: "🧾 Invoice Studio", icon: <FileText size={16} /> }
             ].map((item) => (
@@ -1671,9 +1735,9 @@ const Admin = () => {
                     { id: "bookings", label: "📖 Bookings", icon: <Calendar size={16} />, badge: bookings.filter(b => b.status !== "confirmed" && b.status !== "rejected").length },
                     { id: "clients", label: "👑 Client Portal", icon: <ShieldCheck size={16} /> },
                     { id: "staff", label: "👥 Staff Accounts", icon: <Users size={16} /> },
-                    { id: "chats", label: "💬 Chat Room", icon: <MessageSquare size={16} /> },
-                    { id: "ai-galleries", label: "💍 AI Galleries", icon: <Camera size={16} /> },
-                    { id: "ai-orders", label: "🧾 Print Orders", icon: <FileText size={16} /> },
+                    {id: "chats", label: "💬 Chat Room", icon: <MessageSquare size={16} />},
+                    {id: "ai-galleries", label: "💍 Dreamwed Galleries", icon: <Camera size={16} />},
+                    {id: "ai-orders", label: "🧾 Print Orders", icon: <FileText size={16} />},
                     { id: "budget-tracker", label: "💰 Budget Tracker", icon: <Package size={16} /> },
                     { id: "invoice-studio", label: "🧾 Invoice Studio", icon: <FileText size={16} /> }
                   ].map((item) => (
@@ -1911,8 +1975,8 @@ const Admin = () => {
                       className="w-full flex items-center justify-between p-3.5 bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 hover:border-[#d4af37]/45 rounded-2xl text-xs text-left cursor-pointer transition-all"
                     >
                       <div>
-                        <strong className="font-bold text-white block">💍 Create AI Gallery</strong>
-                        <span className="text-[9px] text-zinc-500 font-light block mt-0.5">Set up guest face recognition album</span>
+                        <strong className="font-bold text-white block">💍 Create Dreamwed Gallery</strong>
+                        <span className="text-[9px] text-zinc-500 font-light block mt-0.5">Set up custom password-protected photo gallery</span>
                       </div>
                       <ChevronRight size={14} className="text-[#d4af37]" />
                     </button>
@@ -3512,7 +3576,7 @@ const Admin = () => {
             {/* Gallery Creation Sidebar */}
             <div className="md:col-span-2 bg-zinc-950 border border-zinc-800 rounded-[28px] p-6 space-y-5">
               <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-zinc-800">
-                <Camera size={16} className="text-[#b4975a]" /> Create AI Photo Gallery
+                <Camera size={16} className="text-[#b4975a]" /> Create Dreamwed Gallery
               </h3>
               
               <form onSubmit={handleCreateAiGallery} className="space-y-4">
@@ -3561,7 +3625,7 @@ const Admin = () => {
 
                 <button type="submit"
                   className="w-full py-3 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2">
-                  <Plus size={14} /> Create AI Gallery
+                  <Plus size={14} /> Create Dreamwed Gallery
                 </button>
               </form>
             </div>
@@ -3569,43 +3633,80 @@ const Admin = () => {
             {/* Galleries list */}
             <div className="md:col-span-3 bg-zinc-950 border border-zinc-800 rounded-[28px] p-6 space-y-4">
               <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-zinc-800">
-                💍 Active AI Galleries ({aiGalleries.length})
+                💍 Active Dreamwed Galleries ({aiGalleries.length})
               </h3>
               
               {aiGalleries.length === 0 ? (
-                <div className="text-center py-16 text-zinc-600 text-xs font-light">No active AI galleries found.</div>
+                <div className="text-center py-16 text-zinc-600 text-xs font-light">No active Dreamwed galleries found.</div>
               ) : (
                 <div className="space-y-3.5">
                   {aiGalleries.map((g) => (
-                    <div key={g.id} className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 flex justify-between items-center gap-4">
-                      <div className="flex items-center gap-3">
-                        <img src={g.coverUrl} className="w-12 h-12 rounded-lg object-cover border border-zinc-750" alt="Wedding Cover" />
-                        <div>
+                    <div key={g.id} className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                      <div className="flex items-center gap-3 w-full md:w-auto">
+                        <img src={g.coverUrl} className="w-14 h-14 rounded-lg object-cover border border-zinc-750 shrink-0" alt="Wedding Cover" />
+                        <div className="space-y-1">
                           <span className="font-bold text-white text-sm block">{g.name}</span>
-                          <div className="flex items-center gap-2 mt-1">
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className={`text-[8px] font-bold uppercase tracking-wide px-2.5 py-0.5 rounded-full ${
                               g.type === "Live Gallery" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-sky-500/10 text-sky-400 border border-sky-500/20"
                             }`}>
                               {g.type}
                             </span>
                             <span className="text-[9px] text-zinc-500">ID: {g.id}</span>
+                            <span className="text-[9px] text-zinc-400 font-bold bg-zinc-950 px-2 py-0.5 border border-zinc-850 rounded flex items-center gap-1">
+                              🔑 Code: <strong className="text-[#b4975a] font-mono">{g.accessCode}</strong>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(g.accessCode);
+                                  alert(`🔑 Passcode ${g.accessCode} copied to clipboard!`);
+                                }}
+                                className="text-[8px] text-zinc-500 hover:text-white ml-1 transition-colors cursor-pointer"
+                                title="Copy Passcode"
+                              >
+                                <Copy size={10} />
+                              </button>
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-zinc-500 flex items-center gap-1.5 mt-0.5">
+                            <span className="font-light truncate max-w-[200px] sm:max-w-xs">{window.location.origin}/gallery/{g.id}</span>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigator.clipboard.writeText(window.location.origin + "/gallery/" + g.id);
+                                alert("🔗 Branded Gallery Link copied to clipboard!");
+                              }}
+                              className="text-zinc-500 hover:text-[#b4975a] transition-colors cursor-pointer"
+                              title="Copy Gallery Link"
+                            >
+                              <Copy size={11} />
+                            </button>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-3.5 shrink-0">
+                      <div className="flex items-center gap-3 shrink-0 w-full md:w-auto justify-end border-t border-zinc-800/40 md:border-t-0 pt-3 md:pt-0">
                         <button 
-                          onClick={() => setSelectedGalForPhotos(g)}
-                          className="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-[#b4975a] hover:text-zinc-950 text-white text-[10px] font-bold uppercase tracking-wider border border-zinc-750 transition-all flex items-center gap-1 cursor-pointer"
+                          onClick={() => handleSyncDrivePhotos(g.id)}
+                          disabled={syncingGalId === g.id}
+                          className="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-[#b4975a] hover:text-zinc-950 text-white text-[10px] font-bold uppercase tracking-wider border border-zinc-750 transition-all flex items-center gap-1 cursor-pointer disabled:bg-zinc-900 disabled:text-zinc-650 disabled:cursor-not-allowed"
                         >
-                          <Camera size={12} /> Manage Photos ({g.photos ? g.photos.length : 0})
+                          {syncingGalId === g.id ? (
+                            <>
+                              <RefreshCw size={12} className="animate-spin" /> Syncing...
+                            </>
+                          ) : (
+                            <>
+                              <RefreshCw size={12} /> Sync Photos ({g.photosCount || (g.photos ? g.photos.length : 0)})
+                            </>
+                          )}
                         </button>
                         <a href={g.gdriveLink} target="_blank" rel="noopener noreferrer"
-                          className="text-[10px] text-[#b4975a] font-bold uppercase tracking-wider hover:underline">
+                          className="text-[10px] text-[#b4975a] font-bold uppercase tracking-wider hover:underline shrink-0">
                           Drive Folder ↗
                         </a>
                         <button onClick={() => handleDeleteAiGallery(g.id)}
-                          className="p-1.5 text-zinc-650 hover:text-red-500 transition-colors cursor-pointer">
+                          className="p-1.5 text-zinc-650 hover:text-red-500 transition-colors cursor-pointer shrink-0 ml-1">
                           <Trash2 size={14} />
                         </button>
                       </div>
