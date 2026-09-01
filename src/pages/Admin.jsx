@@ -37,6 +37,15 @@ const GALLERY_COLORS = [
 
 const formatCurrency = (num) => Number(num || 0).toLocaleString("en-IN");
 
+const getObjectPositionStyle = (val) => {
+  if (val === "top" || val === 0 || val === "0") return "center 0%";
+  if (val === "bottom" || val === 100 || val === "100") return "center 100%";
+  if (val === "center" || val === 50 || val === "50" || !val) return "center 50%";
+  const num = Number(String(val).replace("%", ""));
+  if (!isNaN(num)) return `center ${num}%`;
+  return "center 50%";
+};
+
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
@@ -3885,44 +3894,55 @@ const Admin = () => {
 
                   {/* ================= STYLING CONTROLS ================= */}
                   <div className="pt-2 border-t border-zinc-800/80 space-y-3">
-                    {/* 1. Image Focal Position & Text Alignment */}
-                    <div className="grid grid-cols-2 gap-2">
-                      {/* Image Position */}
-                      <div className="space-y-1">
-                        <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Photo Focus</label>
-                        <div className="grid grid-cols-3 gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-850">
-                          {["top", "center", "bottom"].map((pos) => (
-                            <button
-                              key={pos}
-                              type="button"
-                              onClick={() => setNewGalCoverAlign(pos)}
-                              className={`py-1 text-[8px] font-bold uppercase rounded capitalize transition-all cursor-pointer ${
-                                newGalCoverAlign === pos ? "bg-[#b4975a] text-zinc-950 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
-                              }`}
-                            >
-                              {pos}
-                            </button>
-                          ))}
+                    {/* 1. Photo Focus Precision Slider Bar */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">
+                          Photo Focus Alignment
+                        </label>
+                        <span className="text-[8px] font-mono text-[#b4975a] font-bold">
+                          {typeof newGalCoverAlign === 'number' || !isNaN(Number(newGalCoverAlign)) 
+                            ? `${newGalCoverAlign}%` 
+                            : (newGalCoverAlign === 'top' ? '0% (Top)' : (newGalCoverAlign === 'bottom' ? '100% (Bottom)' : '50% (Center)'))}
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-1 bg-zinc-950 p-2.5 rounded-xl border border-zinc-850">
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          step="1"
+                          value={typeof newGalCoverAlign === 'number' || !isNaN(Number(newGalCoverAlign)) ? Number(newGalCoverAlign) : (newGalCoverAlign === 'top' ? 0 : (newGalCoverAlign === 'bottom' ? 100 : 50))}
+                          onChange={(e) => setNewGalCoverAlign(Number(e.target.value))}
+                          className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#b4975a]"
+                        />
+                        <div className="flex justify-between text-[7px] text-zinc-500 font-mono px-0.5 pt-0.5">
+                          <button type="button" onClick={() => setNewGalCoverAlign(0)} className="hover:text-white cursor-pointer">0% Top</button>
+                          <button type="button" onClick={() => setNewGalCoverAlign(25)} className="hover:text-white cursor-pointer">25% Upper</button>
+                          <button type="button" onClick={() => setNewGalCoverAlign(50)} className="hover:text-[#b4975a] font-bold cursor-pointer">50% Center</button>
+                          <button type="button" onClick={() => setNewGalCoverAlign(75)} className="hover:text-white cursor-pointer">75% Lower</button>
+                          <button type="button" onClick={() => setNewGalCoverAlign(100)} className="hover:text-white cursor-pointer">100% Bottom</button>
                         </div>
                       </div>
+                    </div>
 
-                      {/* Text Alignment */}
-                      <div className="space-y-1">
-                        <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Text Align</label>
-                        <div className="grid grid-cols-3 gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-850">
-                          {["left", "center", "right"].map((align) => (
-                            <button
-                              key={align}
-                              type="button"
-                              onClick={() => setNewGalCoverTextAlign(align)}
-                              className={`py-1 text-[8px] font-bold uppercase rounded capitalize transition-all cursor-pointer ${
-                                newGalCoverTextAlign === align ? "bg-[#b4975a] text-zinc-950 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
-                              }`}
-                            >
-                              {align}
-                            </button>
-                          ))}
-                        </div>
+                    {/* Text Alignment */}
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Text Align</label>
+                      <div className="grid grid-cols-3 gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-850">
+                        {["left", "center", "right"].map((align) => (
+                          <button
+                            key={align}
+                            type="button"
+                            onClick={() => setNewGalCoverTextAlign(align)}
+                            className={`py-1 text-[8px] font-bold uppercase rounded capitalize transition-all cursor-pointer ${
+                              newGalCoverTextAlign === align ? "bg-[#b4975a] text-zinc-950 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                            }`}
+                          >
+                            {align}
+                          </button>
+                        ))}
                       </div>
                     </div>
 
@@ -3985,7 +4005,8 @@ const Admin = () => {
                         <img 
                           src={newGalCover} 
                           alt="Cover Preview" 
-                          className={`w-full h-full object-cover object-${newGalCoverAlign || "center"} brightness-75 group-hover:scale-105 transition-transform duration-700`} 
+                          style={{ objectPosition: getObjectPositionStyle(newGalCoverAlign) }}
+                          className="w-full h-full object-cover brightness-75 group-hover:scale-105 transition-transform duration-700" 
                         />
                         <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-3.5 text-${newGalCoverTextAlign || "center"} items-${newGalCoverTextAlign === "left" ? "start" : (newGalCoverTextAlign === "right" ? "end" : "center")}`}>
                           <span style={{ color: newGalCoverColor || "#b4975a" }} className="text-[7px] uppercase font-bold tracking-widest">
@@ -5942,56 +5963,57 @@ const Admin = () => {
                       type="button"
                       onClick={() => setEditCoverValue(preset.url)}
                       className={`relative rounded-xl overflow-hidden border text-left p-1.5 transition-all cursor-pointer group ${
-                        editCoverValue === preset.url ? "border-[#b4975a] ring-1 ring-[#b4975a]" : "border-zinc-800 hover:border-zinc-700"
-                      }`}
-                    >
-                      <img src={preset.url} alt={preset.name} className="w-full h-14 object-cover rounded-lg" />
-                      <span className="text-[9px] font-bold text-zinc-300 truncate block mt-1 px-0.5">{preset.name}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* ================= EDIT STYLING CONTROLS ================= */}
+                   {/* ================= EDIT STYLING CONTROLS ================= */}
               <div className="pt-2 border-t border-zinc-800/80 space-y-3">
-                {/* 1. Image Focal Position & Text Alignment */}
-                <div className="grid grid-cols-2 gap-2">
-                  {/* Image Position */}
-                  <div className="space-y-1">
-                    <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Photo Focus</label>
-                    <div className="grid grid-cols-3 gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800">
-                      {["top", "center", "bottom"].map((pos) => (
-                        <button
-                          key={pos}
-                          type="button"
-                          onClick={() => setEditCoverAlign(pos)}
-                          className={`py-1 text-[8px] font-bold uppercase rounded capitalize transition-all cursor-pointer ${
-                            editCoverAlign === pos ? "bg-[#b4975a] text-zinc-950 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
-                          }`}
-                        >
-                          {pos}
-                        </button>
-                      ))}
+                {/* 1. Photo Focus Precision Slider Bar */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">
+                      Photo Focus Alignment
+                    </label>
+                    <span className="text-[8px] font-mono text-[#b4975a] font-bold">
+                      {typeof editCoverAlign === 'number' || !isNaN(Number(editCoverAlign)) 
+                        ? `${editCoverAlign}%` 
+                        : (editCoverAlign === 'top' ? '0% (Top)' : (editCoverAlign === 'bottom' ? '100% (Bottom)' : '50% (Center)'))}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-1 bg-zinc-900 p-2.5 rounded-xl border border-zinc-800">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="1"
+                      value={typeof editCoverAlign === 'number' || !isNaN(Number(editCoverAlign)) ? Number(editCoverAlign) : (editCoverAlign === 'top' ? 0 : (editCoverAlign === 'bottom' ? 100 : 50))}
+                      onChange={(e) => setEditCoverAlign(Number(e.target.value))}
+                      className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#b4975a]"
+                    />
+                    <div className="flex justify-between text-[7px] text-zinc-500 font-mono px-0.5 pt-0.5">
+                      <button type="button" onClick={() => setEditCoverAlign(0)} className="hover:text-white cursor-pointer">0% Top</button>
+                      <button type="button" onClick={() => setEditCoverAlign(25)} className="hover:text-white cursor-pointer">25% Upper</button>
+                      <button type="button" onClick={() => setEditCoverAlign(50)} className="hover:text-[#b4975a] font-bold cursor-pointer">50% Center</button>
+                      <button type="button" onClick={() => setEditCoverAlign(75)} className="hover:text-white cursor-pointer">75% Lower</button>
+                      <button type="button" onClick={() => setEditCoverAlign(100)} className="hover:text-white cursor-pointer">100% Bottom</button>
                     </div>
                   </div>
+                </div>
 
-                  {/* Text Alignment */}
-                  <div className="space-y-1">
-                    <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Text Align</label>
-                    <div className="grid grid-cols-3 gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800">
-                      {["left", "center", "right"].map((align) => (
-                        <button
-                          key={align}
-                          type="button"
-                          onClick={() => setEditCoverTextAlign(align)}
-                          className={`py-1 text-[8px] font-bold uppercase rounded capitalize transition-all cursor-pointer ${
-                            editCoverTextAlign === align ? "bg-[#b4975a] text-zinc-950 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
-                          }`}
-                        >
-                          {align}
-                        </button>
-                      ))}
-                    </div>
+                {/* Text Alignment */}
+                <div className="space-y-1">
+                  <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Text Align</label>
+                  <div className="grid grid-cols-3 gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800">
+                    {["left", "center", "right"].map((align) => (
+                      <button
+                        key={align}
+                        type="button"
+                        onClick={() => setEditCoverTextAlign(align)}
+                        className={`py-1 text-[8px] font-bold uppercase rounded capitalize transition-all cursor-pointer ${
+                          editCoverTextAlign === align ? "bg-[#b4975a] text-zinc-950 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                        }`}
+                      >
+                        {align}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -6053,7 +6075,8 @@ const Admin = () => {
                   <img 
                     src={editCoverValue} 
                     alt="Cover Preview" 
-                    className={`w-full h-full object-cover object-${editCoverAlign || "center"}`} 
+                    style={{ objectPosition: getObjectPositionStyle(editCoverAlign) }}
+                    className="w-full h-full object-cover" 
                   />
                   <div className={`absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-4 text-${editCoverTextAlign || "center"} items-${editCoverTextAlign === "left" ? "start" : (editCoverTextAlign === "right" ? "end" : "center")}`}>
                     <span style={{ color: editCoverColor || "#b4975a" }} className="text-[7px] uppercase font-bold tracking-widest block mb-0.5">

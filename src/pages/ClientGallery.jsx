@@ -17,10 +17,13 @@ const FONT_MAP = {
   inter: "'Inter', sans-serif"
 };
 
-const ALIGN_MAP = {
-  top: "object-top",
-  center: "object-center",
-  bottom: "object-bottom"
+const getObjectPositionStyle = (val) => {
+  if (val === "top" || val === 0 || val === "0") return "center 0%";
+  if (val === "bottom" || val === 100 || val === "100") return "center 100%";
+  if (val === "center" || val === 50 || val === "50" || !val) return "center 50%";
+  const num = Number(String(val).replace("%", ""));
+  if (!isNaN(num)) return `center ${num}%`;
+  return "center 50%";
 };
 
 const TEXT_ALIGN_MAP = {
@@ -305,7 +308,8 @@ const ClientGallery = () => {
   const activeColor = (isLocked ? meta?.coverColor : (gallery?.coverColor || meta?.coverColor)) || "#b4975a";
   const activeFontKey = (isLocked ? meta?.coverFont : (gallery?.coverFont || meta?.coverFont)) || "cormorant";
   const activeFontFamily = FONT_MAP[activeFontKey] || FONT_MAP.cormorant;
-  const activeAlignClass = ALIGN_MAP[(isLocked ? meta?.coverAlign : (gallery?.coverAlign || meta?.coverAlign)) || "center"] || "object-center";
+  const rawAlign = (isLocked ? meta?.coverAlign : (gallery?.coverAlign || meta?.coverAlign)) ?? "50%";
+  const activePositionStyle = getObjectPositionStyle(rawAlign);
   const activeTextAlign = TEXT_ALIGN_MAP[(isLocked ? meta?.coverTextAlign : (gallery?.coverTextAlign || meta?.coverTextAlign)) || "center"] || "text-center items-center";
 
   // Loading indicator
@@ -332,8 +336,11 @@ const ClientGallery = () => {
         <div className="relative flex-grow flex items-center justify-center p-4 sm:p-6 min-h-screen overflow-hidden">
           {/* Cinematic Cover Background */}
           <div 
-            className={`absolute inset-0 bg-cover bg-center ${activeAlignClass} scale-105 filter blur-[4px] brightness-40 opacity-50 transition-all duration-1000`}
-            style={{ backgroundImage: `url(${meta?.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200"})` }}
+            className="absolute inset-0 bg-cover scale-105 filter blur-[4px] brightness-40 opacity-50 transition-all duration-1000"
+            style={{ 
+              backgroundImage: `url(${meta?.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200"})`,
+              backgroundPosition: activePositionStyle
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/80" />
 
@@ -360,7 +367,8 @@ const ClientGallery = () => {
                 <img 
                   src={meta.coverUrl} 
                   alt="Wedding Cover" 
-                  className={`w-full h-full object-cover ${activeAlignClass} group-hover:scale-105 transition-transform duration-700 brightness-90`} 
+                  style={{ objectPosition: activePositionStyle }}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 brightness-90" 
                 />
                 <div className={`absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex flex-col justify-end p-5 ${activeTextAlign}`}>
                   <span 
