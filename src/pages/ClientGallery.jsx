@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Lock, Eye, EyeOff, AlertCircle, ArrowLeft, Download, 
   Share2, X, ChevronLeft, ChevronRight, RefreshCw, ZoomIn,
-  Heart, Check, Sparkles, Filter, Search, Camera, Copy
+  Heart, Check, Sparkles, Filter, Search, Camera, Copy,
+  LayoutGrid, Grid
 } from "lucide-react";
 import SEO from "../components/SEO";
 import { downloadPhotosAsZip } from "../utils/zipDownloader";
@@ -311,13 +312,24 @@ const ClientGallery = () => {
     }
   };
 
+  // Active theme styling properties
+  const activeColor = (isLocked ? meta?.coverColor : (gallery?.coverColor || meta?.coverColor)) || "#b4975a";
+  const activeFontKey = (isLocked ? meta?.coverFont : (gallery?.coverFont || meta?.coverFont)) || "cormorant";
+  const activeFontFamily = FONT_MAP[activeFontKey] || FONT_MAP.cormorant;
+  const rawAlign = (isLocked ? meta?.coverAlign : (gallery?.coverAlign || meta?.coverAlign)) ?? "50%";
+  const activePositionStyle = getObjectPositionStyle(rawAlign);
+  const activeTextAlign = TEXT_ALIGN_MAP[(isLocked ? meta?.coverTextAlign : (gallery?.coverTextAlign || meta?.coverTextAlign)) || "center"] || "text-center items-center";
+
   // Computed gallery photos
-  const allPhotos = gallery?.photos || [];
-  const displayedPhotos = filterMode === "favorites"
+  const allPhotos = isDirectDownloadMode 
+    ? (selectedPhotosData?.photos || [])
+    : (gallery?.photos || []);
+
+  const displayedPhotos = filterMode === "favorites" && !isDirectDownloadMode
     ? allPhotos.filter(p => selectedPhotoIds.has(p.id))
     : allPhotos;
 
-  // 4. Navigation inside Lightbox
+  // 4. Navigation inside Single Photo Showcase View
   const handlePrevPhoto = (e) => {
     if (e) e.stopPropagation();
     if (!displayedPhotos || displayedPhotos.length === 0 || !activePhoto) return;
@@ -340,7 +352,7 @@ const ClientGallery = () => {
     }
   };
 
-  // Keybindings for lightbox
+  // Keybindings for single photo view
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!activePhoto) return;
@@ -365,14 +377,6 @@ const ClientGallery = () => {
       alert("📋 Gallery link copied to clipboard!");
     }
   };
-
-  // Active theme styling properties
-  const activeColor = (isLocked ? meta?.coverColor : (gallery?.coverColor || meta?.coverColor)) || "#b4975a";
-  const activeFontKey = (isLocked ? meta?.coverFont : (gallery?.coverFont || meta?.coverFont)) || "cormorant";
-  const activeFontFamily = FONT_MAP[activeFontKey] || FONT_MAP.cormorant;
-  const rawAlign = (isLocked ? meta?.coverAlign : (gallery?.coverAlign || meta?.coverAlign)) ?? "50%";
-  const activePositionStyle = getObjectPositionStyle(rawAlign);
-  const activeTextAlign = TEXT_ALIGN_MAP[(isLocked ? meta?.coverTextAlign : (gallery?.coverTextAlign || meta?.coverTextAlign)) || "center"] || "text-center items-center";
 
   // Loading indicator
   if (loading) {
@@ -442,7 +446,7 @@ const ClientGallery = () => {
           </div>
         </header>
 
-        {/* Main Content */}
+        {/* Main Content Grid */}
         <main className="flex-grow max-w-7xl w-full mx-auto px-6 py-10 space-y-8">
           {/* Cover Hero Banner */}
           {selectedPhotosData.coverUrl && (
@@ -469,7 +473,7 @@ const ClientGallery = () => {
                   )}
                 </h2>
                 <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1.5">
-                  {photos.length} selected photos ready for download and album layout.
+                  {photos.length} selected photos ready for download and album layout. Tap any photo to view full size.
                 </p>
               </div>
             </div>
@@ -499,7 +503,8 @@ const ClientGallery = () => {
               {photos.map((photo, index) => (
                 <div 
                   key={photo.id || index}
-                  className="group relative bg-zinc-900 border border-zinc-800/80 rounded-2xl overflow-hidden aspect-[4/5] shadow-lg shadow-black/20"
+                  onClick={() => setActivePhoto(photo)}
+                  className="group relative bg-zinc-900 border border-zinc-800/80 rounded-2xl overflow-hidden aspect-[4/5] shadow-lg shadow-black/20 cursor-pointer"
                 >
                   <img 
                     src={photo.url} 
@@ -517,6 +522,7 @@ const ClientGallery = () => {
                       target="_blank" 
                       rel="noreferrer"
                       download={`selected_photo_${index + 1}.jpg`}
+                      onClick={(e) => e.stopPropagation()}
                       className="p-2.5 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 border border-zinc-800 rounded-xl text-white transition-all cursor-pointer block"
                       title="Download Single HD Photo"
                     >
@@ -532,6 +538,107 @@ const ClientGallery = () => {
             </div>
           )}
         </main>
+
+        {/* SINGLE PHOTO SHOWCASE VIEW (LIGHTBOX WITH DEDICATED BACK TO GRID BUTTON) */}
+        <AnimatePresence>
+          {activePhoto && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex flex-col justify-between"
+            >
+              {/* Top Navigation Bar with Dedicated 'Back to Grid' Button */}
+              <div className="p-4 sm:px-8 flex justify-between items-center text-white z-20 w-full bg-gradient-to-b from-black/90 to-transparent border-b border-white/5">
+                {/* ⊞ DEDICATED BACK TO GRID BUTTON */}
+                <button 
+                  onClick={() => setActivePhoto(null)}
+                  className="px-4 py-2.5 bg-zinc-900/90 hover:bg-[#b4975a] hover:text-zinc-950 border border-zinc-700/80 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shadow-lg group active:scale-95"
+                  title="Return to Grid View"
+                >
+                  <LayoutGrid size={16} className="group-hover:scale-110 transition-transform" />
+                  <span>Back to Grid</span>
+                </button>
+
+                <span className="text-xs text-zinc-400 font-mono">
+                  {displayedPhotos ? `${displayedPhotos.findIndex(p => p.id === activePhoto.id) + 1} / ${displayedPhotos.length}` : ""}
+                </span>
+                
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <a 
+                    href={activePhoto.url} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    style={{ borderColor: activeColor }}
+                    className="px-3.5 py-2 bg-zinc-900/80 hover:brightness-110 border rounded-xl text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider cursor-pointer"
+                  >
+                    <Download size={14} /> <span className="hidden sm:inline">Download HD</span>
+                  </a>
+                  
+                  <button 
+                    onClick={() => setActivePhoto(null)}
+                    className="p-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-all cursor-pointer"
+                    title="Close (Esc)"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Showcase Photo Main View */}
+              <div className="relative flex-grow flex items-center justify-center p-2 sm:p-6 overflow-hidden">
+                <button 
+                  onClick={handlePrevPhoto}
+                  title="Previous Photo (Left Arrow)"
+                  className="absolute left-3 sm:left-6 z-30 p-3 sm:p-4 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-700/60 rounded-full shadow-2xl cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group"
+                >
+                  <ChevronLeft size={24} className="group-hover:-translate-x-0.5 transition-transform" />
+                </button>
+
+                <motion.img 
+                  key={activePhoto.id || activePhoto.url}
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.2 }}
+                  src={activePhoto.url} 
+                  className="max-h-[75vh] sm:max-h-[80vh] max-w-[92vw] object-contain rounded-2xl border border-zinc-800/80 shadow-2xl select-none z-10"
+                  alt="Fullscreen Showcase"
+                />
+
+                <button 
+                  onClick={handleNextPhoto}
+                  title="Next Photo (Right Arrow)"
+                  className="absolute right-3 sm:right-6 z-30 p-3 sm:p-4 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-700/60 rounded-full shadow-2xl cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group"
+                >
+                  <ChevronRight size={24} className="group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </div>
+
+              {/* Bottom Filmstrip Thumbnails */}
+              <div className="p-3 sm:p-4 bg-gradient-to-t from-black/90 via-black/70 to-transparent border-t border-white/5 flex flex-col items-center gap-2 z-20">
+                <div className="flex items-center gap-2 overflow-x-auto max-w-full py-1 px-4 no-scrollbar">
+                  {displayedPhotos.map((p, pIdx) => (
+                    <button
+                      key={p.id || pIdx}
+                      onClick={() => setActivePhoto(p)}
+                      className={`relative shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                        p.id === activePhoto.id
+                          ? "border-[#b4975a] scale-110 ring-2 ring-[#b4975a]/50 opacity-100"
+                          : "border-zinc-800 opacity-50 hover:opacity-100"
+                      }`}
+                    >
+                      <img src={p.url} alt={`Thumb ${pIdx + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[10px] text-zinc-500 font-light">
+                  Use Left / Right arrow keys or tap thumbnails. Click <strong>Back to Grid</strong> to return.
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }
@@ -687,7 +794,7 @@ const ClientGallery = () => {
         </div>
       ) : (
         /* ========================================================= */
-        /* 2. UNLOCKED GALLERY MAIN EXPERIENCE */
+        /* 2. UNLOCKED GALLERY MAIN EXPERIENCE (GRID VIEW) */
         /* ========================================================= */
         <div className="min-h-screen flex flex-col">
           {/* Top Sticky Header */}
@@ -773,7 +880,7 @@ const ClientGallery = () => {
                 Capturing Your <span style={{ color: activeColor }} className="italic font-serif">Love Story</span>
               </h2>
               <p className="text-zinc-400 text-xs font-light leading-relaxed">
-                Click the ❤️ heart button on any photo to favorite and select photos for your album. Your selections are automatically saved for the Dreamwed team.
+                Tap on any photo to open full showcase view. Click the ❤️ heart button to favorite photos for your wedding album.
               </p>
               <div 
                 style={{ backgroundColor: `${activeColor}80` }}
@@ -788,7 +895,7 @@ const ClientGallery = () => {
                   return (
                     <div 
                       key={photo.id || index}
-                      className="group relative bg-zinc-900 border border-zinc-800/80 rounded-2xl overflow-hidden cursor-zoom-in aspect-[4/5] shadow-lg shadow-black/20"
+                      className="group relative bg-zinc-900 border border-zinc-800/80 rounded-2xl overflow-hidden cursor-pointer aspect-[4/5] shadow-lg shadow-black/20 hover:border-[#b4975a]/50 transition-all duration-300"
                       onClick={() => setActivePhoto(photo)}
                     >
                       <img 
@@ -880,27 +987,38 @@ const ClientGallery = () => {
         </div>
       )}
 
-      {/* LIGHTBOX MODAL */}
+      {/* ========================================================= */}
+      {/* 3. SINGLE PHOTO SHOWCASE VIEW (WITH DEDICATED BACK TO GRID BUTTON) */}
+      {/* ========================================================= */}
       <AnimatePresence>
         {activePhoto && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex flex-col justify-between"
-            onClick={() => setActivePhoto(null)}
+            className="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex flex-col justify-between"
           >
-            {/* Lightbox Header */}
-            <div className="p-4 flex justify-between items-center text-white z-10 w-full bg-gradient-to-b from-black/60 to-transparent">
-              <span className="text-xs text-zinc-400 font-light ml-2">
+            {/* Top Navigation Bar with Dedicated 'Back to Grid' Button */}
+            <div className="p-4 sm:px-8 flex justify-between items-center text-white z-20 w-full bg-gradient-to-b from-black/90 to-transparent border-b border-white/5">
+              {/* ⊞ DEDICATED BACK TO GRID BUTTON */}
+              <button 
+                onClick={() => setActivePhoto(null)}
+                className="px-4 py-2.5 bg-zinc-900/90 hover:bg-[#b4975a] hover:text-zinc-950 border border-zinc-700/80 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shadow-lg group active:scale-95"
+                title="Return to Grid View"
+              >
+                <LayoutGrid size={16} className="group-hover:scale-110 transition-transform" />
+                <span>Back to Grid</span>
+              </button>
+
+              <span className="text-xs text-zinc-400 font-mono">
                 {displayedPhotos ? `${displayedPhotos.findIndex(p => p.id === activePhoto.id) + 1} / ${displayedPhotos.length}` : ""}
               </span>
               
-              <div className="flex items-center gap-3 sm:gap-4">
-                {/* Heart Button in Lightbox */}
+              <div className="flex items-center gap-2 sm:gap-3">
+                {/* Heart Button in Showcase View */}
                 <button
                   onClick={(e) => toggleHeartPhoto(activePhoto.id, e)}
-                  className={`p-2.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider cursor-pointer ${
+                  className={`px-3.5 py-2 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider cursor-pointer ${
                     selectedPhotoIds.has(activePhoto.id)
                       ? "bg-red-500 text-white border-red-400 shadow-[0_0_15px_rgba(239,68,68,0.4)]"
                       : "bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-red-400 border-zinc-800"
@@ -918,52 +1036,77 @@ const ClientGallery = () => {
                   rel="noreferrer"
                   onClick={(e) => e.stopPropagation()}
                   style={{ borderColor: activeColor }}
-                  className="p-2.5 bg-zinc-900/80 hover:brightness-110 border rounded-xl text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider cursor-pointer"
+                  className="px-3.5 py-2 bg-zinc-900/80 hover:brightness-110 border rounded-xl text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider cursor-pointer"
                 >
                   <Download size={14} /> <span className="hidden sm:inline">Download HD</span>
                 </a>
                 
                 <button 
                   onClick={() => setActivePhoto(null)}
-                  className="p-2.5 bg-zinc-900/80 hover:bg-zinc-850 border border-zinc-800 rounded-xl text-zinc-300 hover:text-white transition-all cursor-pointer"
+                  className="p-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-all cursor-pointer"
+                  title="Close (Esc)"
                 >
-                  <X size={16} />
+                  <X size={18} />
                 </button>
               </div>
             </div>
 
-            {/* Lightbox Main View */}
-            <div className="relative flex-grow flex items-center justify-center p-4">
+            {/* Showcase Main Photo Container */}
+            <div className="relative flex-grow flex items-center justify-center p-2 sm:p-6 overflow-hidden">
               {/* Prev Button */}
               <button 
                 onClick={handlePrevPhoto}
-                title="Previous Photo (Left Arrow key)"
-                className="absolute left-2 sm:left-6 z-30 p-3 sm:p-4 bg-zinc-950/80 hover:brightness-125 text-white border border-zinc-700/60 rounded-full shadow-2xl cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group"
+                title="Previous Photo (Left Arrow)"
+                className="absolute left-3 sm:left-6 z-30 p-3 sm:p-4 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-700/60 rounded-full shadow-2xl cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group"
               >
-                <ChevronLeft size={26} className="group-hover:-translate-x-0.5 transition-transform" />
+                <ChevronLeft size={24} className="group-hover:-translate-x-0.5 transition-transform" />
               </button>
 
-              {/* Photo */}
-              <img 
+              {/* Photo with smooth transition */}
+              <motion.img 
+                key={activePhoto.id || activePhoto.url}
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.2 }}
                 src={activePhoto.url} 
-                className="max-h-[80vh] max-w-[90vw] object-contain rounded-lg border border-zinc-900 shadow-2xl select-none z-10"
-                onClick={(e) => e.stopPropagation()}
-                alt="Fullscreen Preview"
+                className="max-h-[75vh] sm:max-h-[80vh] max-w-[92vw] object-contain rounded-2xl border border-zinc-800/80 shadow-2xl select-none z-10"
+                alt="Fullscreen Showcase"
               />
 
               {/* Next Button */}
               <button 
                 onClick={handleNextPhoto}
-                title="Next Photo (Right Arrow key)"
-                className="absolute right-2 sm:right-6 z-30 p-3 sm:p-4 bg-zinc-950/80 hover:brightness-125 text-white border border-zinc-700/60 rounded-full shadow-2xl cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group"
+                title="Next Photo (Right Arrow)"
+                className="absolute right-3 sm:right-6 z-30 p-3 sm:p-4 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-700/60 rounded-full shadow-2xl cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group"
               >
-                <ChevronRight size={26} className="group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight size={24} className="group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
 
-            {/* Lightbox Footer */}
-            <div className="p-4 text-center text-zinc-500 text-[10px] font-light bg-gradient-to-t from-black/60 to-transparent">
-              Use Left &amp; Right arrow keys to navigate, Esc to close.
+            {/* Bottom Filmstrip Thumbnails Navigation */}
+            <div className="p-3 sm:p-4 bg-gradient-to-t from-black/90 via-black/70 to-transparent border-t border-white/5 flex flex-col items-center gap-2 z-20">
+              <div className="flex items-center gap-2 overflow-x-auto max-w-full py-1 px-4 no-scrollbar">
+                {displayedPhotos.map((p, pIdx) => (
+                  <button
+                    key={p.id || pIdx}
+                    onClick={() => setActivePhoto(p)}
+                    className={`relative shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                      p.id === activePhoto.id
+                        ? "border-[#b4975a] scale-110 ring-2 ring-[#b4975a]/50 opacity-100"
+                        : "border-zinc-800 opacity-50 hover:opacity-100"
+                    }`}
+                  >
+                    <img src={p.url} alt={`Thumb ${pIdx + 1}`} className="w-full h-full object-cover" />
+                    {selectedPhotoIds.has(p.id) && (
+                      <div className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-red-500 ring-1 ring-white" />
+                    )}
+                  </button>
+                ))}
+              </div>
+              <span className="text-[10px] text-zinc-500 font-light">
+                Use Left / Right arrow keys or tap thumbnails. Click <strong>Back to Grid</strong> to return.
+              </span>
             </div>
           </motion.div>
         )}
