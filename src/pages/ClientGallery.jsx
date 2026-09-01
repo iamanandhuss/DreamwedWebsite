@@ -786,7 +786,7 @@ const ClientGallery = () => {
           <div className="hidden md:flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-1 text-xs">
             <button
               onClick={() => { setActiveSectionView("story"); scrollToStory(); }}
-              className={`px-3 py-1 rounded-lg transition-all cursor-pointer font-bold ${
+              className={`px-3.5 py-1 rounded-lg transition-all cursor-pointer font-bold ${
                 activeSectionView === "story" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
               }`}
             >
@@ -794,20 +794,22 @@ const ClientGallery = () => {
             </button>
             <button
               onClick={() => setActiveSectionView("highlights")}
-              className={`px-3 py-1 rounded-lg transition-all cursor-pointer font-bold ${
+              className={`px-3.5 py-1 rounded-lg transition-all cursor-pointer font-bold ${
                 activeSectionView === "highlights" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
               }`}
             >
-              Highlights ({highlights.length})
+              Editorial Highlights ({highlights.length})
             </button>
-            <button
-              onClick={() => setActiveSectionView("archive")}
-              className={`px-3 py-1 rounded-lg transition-all cursor-pointer font-bold ${
-                activeSectionView === "archive" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Full Archive ({allPhotos.length})
-            </button>
+            {isCoupleSelectionMode && (
+              <button
+                onClick={() => setActiveSectionView("archive")}
+                className={`px-3.5 py-1 rounded-lg transition-all cursor-pointer font-bold ${
+                  activeSectionView === "archive" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                💍 Selection Lounge ({selectedPhotoIds.size})
+              </button>
+            )}
           </div>
 
           <button 
@@ -1013,22 +1015,20 @@ const ClientGallery = () => {
         </div>
 
         {/* Asymmetric Highlights Showcase Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          {highlights.slice(0, 7).map((photo, idx) => {
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6">
+          {highlights.map((photo, idx) => {
             const isLiked = isLikedByMe(photo.id);
-            let colSpan = "md:col-span-4";
-            let aspect = "aspect-[4/5]";
-            if (idx === 0) { colSpan = "md:col-span-8"; aspect = "aspect-[16/10]"; }
-            else if (idx === 1) { colSpan = "md:col-span-4"; aspect = "aspect-[4/5]"; }
-            else if (idx === 2 || idx === 3 || idx === 4) { colSpan = "md:col-span-4"; aspect = "aspect-[4/5]"; }
-            else if (idx === 5) { colSpan = "md:col-span-6"; aspect = "aspect-[16/11]"; }
-            else if (idx === 6) { colSpan = "md:col-span-6"; aspect = "aspect-[16/11]"; }
+            const colSpan = photo.colSpan || "col-span-12 md:col-span-4";
+            const aspect = photo.aspect || "aspect-[4/5]";
+            const isHero = photo.isHeroFrame || idx === 0;
 
             return (
               <div 
                 key={photo.id || idx}
                 onClick={() => setActivePhoto(photo)}
-                className={`group relative rounded-[28px] overflow-hidden bg-zinc-900 border border-zinc-800/80 cursor-pointer shadow-2xl transition-all duration-500 hover:border-[#b4975a]/60 ${colSpan} ${aspect}`}
+                className={`group relative rounded-[28px] overflow-hidden bg-zinc-900 border cursor-pointer shadow-2xl transition-all duration-500 hover:border-[#b4975a]/60 ${colSpan} ${aspect} ${
+                  isHero ? "border-[#b4975a]/40 ring-1 ring-[#b4975a]/20" : "border-zinc-800/80"
+                }`}
               >
                 <img 
                   src={photo.url} 
@@ -1037,6 +1037,15 @@ const ClientGallery = () => {
                   loading="lazy"
                 />
                 
+                {/* Key Moment badge for hero frames */}
+                {isHero && (
+                  <div className="absolute top-4 left-4 z-20 pointer-events-none">
+                    <span className="bg-black/75 backdrop-blur-md text-amber-300 border border-amber-500/30 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1 font-mono">
+                      <Sparkles size={10} /> Key Moment
+                    </span>
+                  </div>
+                )}
+
                 {/* Heart Selection Button - Exclusive to Bride & Groom */}
                 {isCoupleSelectionMode && (
                   <button
@@ -1052,18 +1061,12 @@ const ClientGallery = () => {
                   </button>
                 )}
 
+                {/* Hover Overlay: Clean for Guests, NO DOWNLOAD */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex items-end justify-between p-5 pointer-events-none">
-                  <span className="text-xs text-zinc-300 font-light">Highlight #{idx + 1}</span>
-                  <a 
-                    href={photo.url} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="p-2 bg-zinc-950/90 text-white hover:bg-[#b4975a] hover:text-zinc-950 rounded-xl transition-all pointer-events-auto"
-                    title="Download HD"
-                  >
-                    <Download size={14} />
-                  </a>
+                  <span className="text-xs text-zinc-300 font-light font-mono">#{idx + 1}</span>
+                  <span className="text-xs text-zinc-400 font-light flex items-center gap-1">
+                    <ZoomIn size={13} /> View
+                  </span>
                 </div>
               </div>
             );
@@ -1090,15 +1093,21 @@ const ClientGallery = () => {
                   </p>
                 </div>
 
-                {/* Chapter Photo Layout */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+                {/* Chapter Dynamic Editorial Layout */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6">
                   {chapter.photos.map((photo, pIdx) => {
                     const isLiked = isLikedByMe(photo.id);
+                    const colSpan = photo.colSpan || "col-span-12 md:col-span-4";
+                    const aspect = photo.aspect || "aspect-[4/5]";
+                    const isHero = photo.isHeroFrame || pIdx === 0;
+
                     return (
                       <div 
                         key={photo.id || pIdx}
                         onClick={() => setActivePhoto(photo)}
-                        className="group relative rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800/80 aspect-[4/5] cursor-pointer shadow-xl hover:border-[#b4975a]/50 transition-all duration-300"
+                        className={`group relative rounded-2xl overflow-hidden bg-zinc-900 border cursor-pointer shadow-xl hover:border-[#b4975a]/50 transition-all duration-300 ${colSpan} ${aspect} ${
+                          isHero ? "border-[#b4975a]/35 ring-1 ring-[#b4975a]/15" : "border-zinc-800/80"
+                        }`}
                       >
                         <img 
                           src={photo.url} 
@@ -1106,6 +1115,15 @@ const ClientGallery = () => {
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                           loading="lazy"
                         />
+
+                        {/* Feature Frame Badge */}
+                        {isHero && (
+                          <div className="absolute top-3 left-3 z-20 pointer-events-none">
+                            <span className="bg-black/75 backdrop-blur-md text-amber-300 border border-amber-500/30 text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full shadow-lg font-mono">
+                              ⭐ Feature Frame
+                            </span>
+                          </div>
+                        )}
 
                         {/* Heart Button - Exclusive to Bride & Groom */}
                         {isCoupleSelectionMode && (
@@ -1121,18 +1139,12 @@ const ClientGallery = () => {
                           </button>
                         )}
 
+                        {/* Hover Overlay: Clean for Guests, NO DOWNLOAD */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-4 pointer-events-none">
                           <span className="text-[10px] text-zinc-300 font-mono">0{cIdx + 1}.{pIdx + 1}</span>
-                          <a 
-                            href={photo.url} 
-                            target="_blank" 
-                            rel="noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="p-2 bg-zinc-950/90 text-white hover:bg-[#b4975a] hover:text-zinc-950 rounded-xl transition-all pointer-events-auto"
-                            title="Download HD"
-                          >
-                            <Download size={13} />
-                          </a>
+                          <span className="text-[10px] text-zinc-400 font-light flex items-center gap-1">
+                            <ZoomIn size={12} /> View
+                          </span>
                         </div>
                       </div>
                     );
@@ -1144,152 +1156,145 @@ const ClientGallery = () => {
         )}
 
         {/* ========================================================= */}
-        {/* 2.4. FULL WEDDING ARCHIVE WITH ROLE FILTERS & COLUMN SWITCHER */}
+        {/* 2.4. FULL WEDDING ARCHIVE (EXCLUSIVE TO BRIDE & GROOM SELECTION) */}
         {/* ========================================================= */}
-        <div className="space-y-8 pt-12 border-t border-zinc-850">
-          <div className="text-center max-w-xl mx-auto space-y-2">
-            <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.25em]">
-              Complete Collection
-            </span>
-            <h3 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-4xl text-white font-light">
-              Explore The Full <span style={{ color: activeColor }} className="italic font-serif">Archive</span>
-            </h3>
-            <p className="text-zinc-400 text-xs font-light">
-              {isCoupleSelectionMode 
-                ? `Logged in as ${currentUser?.role || "Couple"} • Select photos with the heart icon for the album.`
-                : `Guest Viewing Experience • Explore all ${allPhotos.length} high-resolution photographs.`}
-            </p>
-          </div>
-
-          {/* Filter Pills & Grid Layout Controls */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-900/60 p-3.5 rounded-2xl border border-zinc-800">
-            {/* Filter Buttons */}
-            <div className="flex items-center flex-wrap gap-2">
-              <button
-                onClick={() => setFilterMode("all")}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                  filterMode === "all" ? "bg-white text-black shadow-md" : "bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
-                }`}
-              >
-                All ({allPhotos.length})
-              </button>
-
-              <button
-                onClick={() => setFilterMode("highlights")}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  filterMode === "highlights" ? "bg-amber-400 text-zinc-950 shadow-md font-bold" : "bg-zinc-900 text-zinc-400 hover:text-amber-400 border border-zinc-800"
-                }`}
-              >
-                <span>✨ Highlights ({highlights.length})</span>
-              </button>
-
-              {/* Couple Selection Mode Filters */}
-              {isCoupleSelectionMode && (
-                <>
-                  <button
-                    onClick={() => setFilterMode("my")}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                      filterMode === "my" ? "bg-red-500 text-white shadow-md shadow-red-500/30" : "bg-zinc-900 text-zinc-400 hover:text-red-400 border border-zinc-800"
-                    }`}
-                  >
-                    <Heart size={12} className={myPicks.length > 0 ? "fill-current" : ""} />
-                    My Picks ({myPicks.length})
-                  </button>
-
-                  <button
-                    onClick={() => setFilterMode("all-favorites")}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                      filterMode === "all-favorites" ? "bg-[#b4975a] text-zinc-950 shadow-md" : "bg-zinc-900 text-zinc-400 hover:text-[#b4975a] border border-zinc-800"
-                    }`}
-                  >
-                    <Users size={12} />
-                    Couple Picks ({selectedPhotoIds.size})
-                  </button>
-
-                  {bridePicks.length > 0 && (
-                    <button
-                      onClick={() => setFilterMode("Bride")}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                        filterMode === "Bride" ? "bg-pink-600 text-white shadow-md" : "bg-zinc-900 text-pink-300 hover:text-white border border-pink-900/40"
-                      }`}
-                    >
-                      <span>👰 Bride ({bridePicks.length})</span>
-                    </button>
-                  )}
-
-                  {groomPicks.length > 0 && (
-                    <button
-                      onClick={() => setFilterMode("Groom")}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                        filterMode === "Groom" ? "bg-sky-600 text-white shadow-md" : "bg-zinc-900 text-sky-300 hover:text-white border border-sky-900/40"
-                      }`}
-                    >
-                      <span>🤵 Groom ({groomPicks.length})</span>
-                    </button>
-                  )}
-                </>
-              )}
+        {isCoupleSelectionMode && (
+          <div className="space-y-8 pt-12 border-t border-zinc-850">
+            <div className="text-center max-w-xl mx-auto space-y-2">
+              <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.25em]">
+                Album Selection Lounge
+              </span>
+              <h3 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-4xl text-white font-light">
+                Select Your <span style={{ color: activeColor }} className="italic font-serif">Album Picks</span>
+              </h3>
+              <p className="text-zinc-400 text-xs font-light">
+                Logged in as {currentUser?.role || "Couple"} &bull; Tap the heart on photos you want in your final wedding album.
+              </p>
             </div>
 
-            {/* Grid Column Layout Switcher */}
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Layout:</span>
-              <div className="flex items-center bg-zinc-950 border border-zinc-800 rounded-xl p-1 text-xs">
+            {/* Filter Pills & Grid Layout Controls */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-900/60 p-3.5 rounded-2xl border border-zinc-800">
+              {/* Filter Buttons */}
+              <div className="flex items-center flex-wrap gap-2">
                 <button
-                  onClick={() => setGridCols(2)}
-                  className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${gridCols === 2 ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"}`}
-                  title="2-Column Editorial View"
+                  onClick={() => setFilterMode("all")}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    filterMode === "all" ? "bg-white text-black shadow-md" : "bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
+                  }`}
                 >
-                  2 Col
+                  All ({allPhotos.length})
                 </button>
+
                 <button
-                  onClick={() => setGridCols(3)}
-                  className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${gridCols === 3 ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"}`}
-                  title="3-Column Classic View"
+                  onClick={() => setFilterMode("highlights")}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    filterMode === "highlights" ? "bg-amber-400 text-zinc-950 shadow-md font-bold" : "bg-zinc-900 text-zinc-400 hover:text-amber-400 border border-zinc-800"
+                  }`}
                 >
-                  3 Col
+                  <span>✨ Highlights ({highlights.length})</span>
                 </button>
+
                 <button
-                  onClick={() => setGridCols(4)}
-                  className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${gridCols === 4 ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"}`}
-                  title="4-Column Compact Grid"
+                  onClick={() => setFilterMode("my")}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    filterMode === "my" ? "bg-red-500 text-white shadow-md shadow-red-500/30" : "bg-zinc-900 text-zinc-400 hover:text-red-400 border border-zinc-800"
+                  }`}
                 >
-                  4 Col
+                  <Heart size={12} className={myPicks.length > 0 ? "fill-current" : ""} />
+                  My Picks ({myPicks.length})
                 </button>
+
+                <button
+                  onClick={() => setFilterMode("all-favorites")}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    filterMode === "all-favorites" ? "bg-[#b4975a] text-zinc-950 shadow-md" : "bg-zinc-900 text-zinc-400 hover:text-[#b4975a] border border-zinc-800"
+                  }`}
+                >
+                  <Users size={12} />
+                  Couple Picks ({selectedPhotoIds.size})
+                </button>
+
+                {bridePicks.length > 0 && (
+                  <button
+                    onClick={() => setFilterMode("Bride")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                      filterMode === "Bride" ? "bg-pink-600 text-white shadow-md" : "bg-zinc-900 text-pink-300 hover:text-white border border-pink-900/40"
+                    }`}
+                  >
+                    <span>👰 Bride ({bridePicks.length})</span>
+                  </button>
+                )}
+
+                {groomPicks.length > 0 && (
+                  <button
+                    onClick={() => setFilterMode("Groom")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                      filterMode === "Groom" ? "bg-sky-600 text-white shadow-md" : "bg-zinc-900 text-sky-300 hover:text-white border border-sky-900/40"
+                    }`}
+                  >
+                    <span>🤵 Groom ({groomPicks.length})</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Grid Column Layout Switcher */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Layout:</span>
+                <div className="flex items-center bg-zinc-950 border border-zinc-800 rounded-xl p-1 text-xs">
+                  <button
+                    onClick={() => setGridCols(2)}
+                    className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${gridCols === 2 ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"}`}
+                    title="2-Column View"
+                  >
+                    2 Col
+                  </button>
+                  <button
+                    onClick={() => setGridCols(3)}
+                    className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${gridCols === 3 ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"}`}
+                    title="3-Column View"
+                  >
+                    3 Col
+                  </button>
+                  <button
+                    onClick={() => setGridCols(4)}
+                    className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${gridCols === 4 ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"}`}
+                    title="4-Column Grid"
+                  >
+                    4 Col
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Archive Grid */}
-          {displayedPhotos.length > 0 ? (
-            <div className={
-              gridCols === 2
-                ? "grid grid-cols-1 sm:grid-cols-2 gap-6"
-                : gridCols === 4
-                ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-                : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5"
-            }>
-              {displayedPhotos.map((photo, index) => {
-                const usersWhoLiked = getUsersForPhoto(photo.id);
-                const likedByMe = isLikedByMe(photo.id);
+            {/* Archive Grid */}
+            {displayedPhotos.length > 0 ? (
+              <div className={
+                gridCols === 2
+                  ? "grid grid-cols-1 sm:grid-cols-2 gap-6"
+                  : gridCols === 4
+                  ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+                  : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5"
+              }>
+                {displayedPhotos.map((photo, index) => {
+                  const usersWhoLiked = getUsersForPhoto(photo.id);
+                  const likedByMe = isLikedByMe(photo.id);
 
-                return (
-                  <div 
-                    key={photo.id || index}
-                    className={`group relative bg-zinc-900 border rounded-2xl overflow-hidden cursor-pointer aspect-[4/5] shadow-lg transition-all duration-300 ${
-                      likedByMe ? "border-red-500/60 ring-1 ring-red-500/30" : "border-zinc-800/80 hover:border-[#b4975a]/50"
-                    }`}
-                    onClick={() => setActivePhoto(photo)}
-                  >
-                    <img 
-                      src={photo.url} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                      loading="lazy"
-                      alt={`Archive photo ${index + 1}`}
-                    />
+                  return (
+                    <div 
+                      key={photo.id || index}
+                      className={`group relative bg-zinc-900 border rounded-2xl overflow-hidden cursor-pointer aspect-[4/5] shadow-lg transition-all duration-300 ${
+                        likedByMe ? "border-red-500/60 ring-1 ring-red-500/30" : "border-zinc-800/80 hover:border-[#b4975a]/50"
+                      }`}
+                      onClick={() => setActivePhoto(photo)}
+                    >
+                      <img 
+                        src={photo.url} 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                        loading="lazy"
+                        alt={`Archive photo ${index + 1}`}
+                      />
 
-                    {/* ❤️ Heart Favorite Button - Exclusive to Bride & Groom */}
-                    {isCoupleSelectionMode && (
+                      {/* ❤️ Heart Favorite Button */}
                       <button
                         onClick={(e) => toggleHeartPhoto(photo.id, e)}
                         className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
@@ -1300,45 +1305,38 @@ const ClientGallery = () => {
                       >
                         <Heart size={14} className={likedByMe ? "fill-white text-white" : "text-white"} />
                       </button>
-                    )}
 
-                    {/* Member Pills */}
-                    {usersWhoLiked.length > 0 && isCoupleSelectionMode && (
-                      <div className="absolute top-3 left-3 flex flex-wrap gap-1 max-w-[70%] z-20 pointer-events-none">
-                        {usersWhoLiked.slice(0, 2).map((u, uIdx) => (
-                          <span 
-                            key={uIdx} 
-                            className="bg-black/80 backdrop-blur-md text-white text-[8px] font-bold px-2 py-0.5 rounded-full border border-white/15 shadow-sm"
-                          >
-                            {u.role === 'Bride' ? '👰' : (u.role === 'Groom' ? '🤵' : '❤️')} {u.name}
-                          </span>
-                        ))}
+                      {/* Member Pills */}
+                      {usersWhoLiked.length > 0 && (
+                        <div className="absolute top-3 left-3 flex flex-wrap gap-1 max-w-[70%] z-20 pointer-events-none">
+                          {usersWhoLiked.slice(0, 2).map((u, uIdx) => (
+                            <span 
+                              key={uIdx} 
+                              className="bg-black/80 backdrop-blur-md text-white text-[8px] font-bold px-2 py-0.5 rounded-full border border-white/15 shadow-sm"
+                            >
+                              {u.role === 'Bride' ? '👰' : (u.role === 'Groom' ? '🤵' : '❤️')} {u.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-3.5 pointer-events-none">
+                        <span className="text-[10px] text-zinc-300 font-light font-mono">#{index + 1}</span>
+                        <span className="text-[10px] text-zinc-400 font-light flex items-center gap-1">
+                          <ZoomIn size={12} /> View
+                        </span>
                       </div>
-                    )}
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-3.5 pointer-events-none">
-                      <span className="text-[10px] text-zinc-300 font-light">#{index + 1}</span>
-                      <a 
-                        href={photo.url} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        onClick={(e) => e.stopPropagation()} 
-                        className="p-2 bg-zinc-950/90 hover:bg-[#b4975a] hover:text-zinc-950 border border-zinc-800 rounded-xl text-white transition-all cursor-pointer pointer-events-auto"
-                        title="Download HD"
-                      >
-                        <Download size={13} />
-                      </a>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-20 border border-zinc-800 rounded-3xl text-zinc-500 font-light text-sm">
-              No photos found under this filter.
-            </div>
-          )}
-        </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-20 border border-zinc-800 rounded-3xl text-zinc-500 font-light text-sm">
+                No photos found under this filter.
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Floating Status Pill - Active for Bride & Groom */}
@@ -1412,21 +1410,24 @@ const ClientGallery = () => {
                     </span>
                   </button>
                 ) : (
-                  <span className="text-[10px] bg-zinc-900 border border-zinc-800 text-zinc-400 px-3 py-1.5 rounded-xl">
+                  <span className="text-[10px] bg-zinc-900 border border-zinc-800 text-zinc-400 px-3 py-1.5 rounded-xl font-mono">
                     ✨ Guest View
                   </span>
                 )}
 
-                <a 
-                  href={activePhoto.url} 
-                  target="_blank" 
-                  rel="noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  style={{ borderColor: activeColor }}
-                  className="px-3.5 py-2 bg-zinc-900/80 hover:brightness-110 border rounded-xl text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider cursor-pointer"
-                >
-                  <Download size={14} /> <span className="hidden sm:inline">Download HD</span>
-                </a>
+                {/* Download is Strictly Disabled for Guests */}
+                {isCoupleSelectionMode && (
+                  <a 
+                    href={activePhoto.url} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ borderColor: activeColor }}
+                    className="px-3.5 py-2 bg-zinc-900/80 hover:brightness-110 border rounded-xl text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider cursor-pointer"
+                  >
+                    <Download size={14} /> <span className="hidden sm:inline">Download HD</span>
+                  </a>
+                )}
                 
                 <button 
                   onClick={() => setActivePhoto(null)}

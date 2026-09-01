@@ -118,6 +118,60 @@ export const detectBurstSequences = (photos) => {
 };
 
 /**
+ * Assigns dynamic editorial layout roles so important photos are bigger
+ * with rich visual rhythm (hero spreads, diptychs, triptychs, panoramas)
+ */
+export const assignEditorialLayoutRoles = (photos) => {
+  if (!photos || photos.length === 0) return [];
+  
+  return photos.map((p, idx) => {
+    // 7-step editorial pattern cycle for magazine-grade visual rhythm
+    const pos = idx % 7;
+    let role = "medium_portrait";
+    let colSpan = "col-span-12 md:col-span-4";
+    let aspect = "aspect-[4/5]";
+    let isHeroFrame = false;
+
+    if (pos === 0) {
+      // ⭐ Key Feature Highlight Frame (Grand & Prominent!)
+      role = "grand_feature";
+      colSpan = "col-span-12 md:col-span-8";
+      aspect = "aspect-[16/10]";
+      isHeroFrame = true;
+    } else if (pos === 1) {
+      // 👑 Tall Editorial Portrait
+      role = "editorial_tall";
+      colSpan = "col-span-12 md:col-span-4";
+      aspect = "aspect-[4/5]";
+    } else if (pos === 2 || pos === 3) {
+      // ✨ Balanced Diptych Pair (Side-by-Side)
+      role = "diptych_duo";
+      colSpan = "col-span-12 md:col-span-6";
+      aspect = "aspect-[4/5]";
+    } else if (pos === 4) {
+      // 🎬 Panoramic Wide Moment (Full-Bleed Centerpiece)
+      role = "cinematic_wide";
+      colSpan = "col-span-12";
+      aspect = "aspect-[16/9] md:aspect-[21/9]";
+      isHeroFrame = true;
+    } else if (pos === 5 || pos === 6) {
+      // 🎞️ Intimate Portraits Pair
+      role = "intimate_moment";
+      colSpan = "col-span-12 md:col-span-6";
+      aspect = "aspect-[4/5]";
+    }
+
+    return {
+      ...p,
+      editorialRole: role,
+      colSpan,
+      aspect,
+      isHeroFrame
+    };
+  });
+};
+
+/**
  * Synthesizes dynamic story chapters and editorial layouts
  */
 export const curateWeddingStory = ({
@@ -152,15 +206,14 @@ export const curateWeddingStory = ({
   const sortedByHero = [...scoredPhotos].sort((a, b) => b.heroScore - a.heroScore);
   const heroImage = sortedByHero[0] || photos[0];
 
-  // 3. Select Best Moments / Highlights (top 15-35 standout frames depending on collection size)
-  const highlightCount = Math.min(30, Math.max(12, Math.floor(total * 0.35)));
-  const highlights = sortedByHero.slice(0, highlightCount);
+  // 3. Select Best Moments / Highlights with Dynamic Editorial Roles
+  const highlightCount = Math.min(35, Math.max(12, Math.floor(total * 0.35)));
+  const highlights = assignEditorialLayoutRoles(sortedByHero.slice(0, highlightCount));
 
   // 4. Group into Dynamic Story Chapters
   let chapters = [];
 
   if (total <= 12) {
-    // For small galleries, create one elegant unified chapter
     chapters = [
       {
         id: "chapter-moments",
@@ -169,11 +222,10 @@ export const curateWeddingStory = ({
         subtitle: `${coupleTitle}'s Wedding Day`,
         description: "Every glance, smile, and timeless memory captured in pure editorial clarity.",
         layout: "editorial_masonry",
-        photos: scoredPhotos
+        photos: assignEditorialLayoutRoles(scoredPhotos)
       }
     ];
   } else {
-    // Divide into 3 to 5 cinematic chapters
     const sliceSize = Math.ceil(total / CHAPTER_TEMPLATES.length);
     chapters = CHAPTER_TEMPLATES.map((tmpl, cIdx) => {
       const start = cIdx * sliceSize;
@@ -182,22 +234,14 @@ export const curateWeddingStory = ({
 
       if (chapterPhotos.length === 0) return null;
 
-      // Assign dynamic layout style depending on chapter
-      let layoutType = tmpl.layout;
-      if (cIdx === 0) layoutType = "asymmetric_two_up"; // Getting ready: editorial pair
-      else if (cIdx === 1) layoutType = "triptych"; // Vows: 3 rhythmic frames
-      else if (cIdx === 2) layoutType = "full_bleed_editorial"; // Couple: large cinematic
-      else if (cIdx === 3) layoutType = "editorial_masonry"; // Family: organic grid
-      else layoutType = "dynamic_revelry"; // Celebration: high energy flow
-
       return {
         id: `chapter-${tmpl.key}-${cIdx}`,
         key: tmpl.key,
         title: tmpl.title,
         subtitle: tmpl.subtitle,
         description: tmpl.description,
-        layout: layoutType,
-        photos: chapterPhotos
+        layout: tmpl.layout,
+        photos: assignEditorialLayoutRoles(chapterPhotos)
       };
     }).filter(Boolean);
   }
