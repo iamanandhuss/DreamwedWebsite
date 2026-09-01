@@ -879,12 +879,21 @@ const Admin = () => {
       const res = await fetch(`${API_BASE}/api/galleries`);
       if (res.ok) {
         const data = await res.json();
-        setAiGalleries(data);
+        if (Array.isArray(data)) {
+          setAiGalleries(data);
+          localStorage.setItem("dreamwed_galleries", JSON.stringify(data));
+          return;
+        }
       }
+      throw new Error("Invalid response");
     } catch (e) {
-      console.error("Error fetching galleries:", e);
-      const storedGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
-      setAiGalleries(storedGals);
+      console.warn("Loading galleries from localStorage fallback:", e);
+      try {
+        const storedGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
+        setAiGalleries(Array.isArray(storedGals) ? storedGals : []);
+      } catch (err) {
+        setAiGalleries([]);
+      }
     }
   };
 
@@ -3947,20 +3956,20 @@ const Admin = () => {
                             onClick={() => setNewGalCoverColor(c.hex)}
                             title={c.name}
                             className={`w-6 h-6 rounded-full transition-transform cursor-pointer border relative flex items-center justify-center ${
-                              newGalCoverColor.toLowerCase() === c.hex.toLowerCase()
+                              (newGalCoverColor || "#b4975a").toLowerCase() === c.hex.toLowerCase()
                                 ? "scale-110 border-white ring-2 ring-[#b4975a]"
                                 : "border-zinc-700 hover:scale-105 opacity-80 hover:opacity-100"
                             }`}
                             style={{ backgroundColor: c.hex }}
                           >
-                            {newGalCoverColor.toLowerCase() === c.hex.toLowerCase() && (
+                            {(newGalCoverColor || "#b4975a").toLowerCase() === c.hex.toLowerCase() && (
                               <Check size={11} className={c.hex === "#f8fafc" ? "text-black" : "text-white"} />
                             )}
                           </button>
                         ))}
                         <input
                           type="color"
-                          value={newGalCoverColor}
+                          value={newGalCoverColor || "#b4975a"}
                           onChange={(e) => setNewGalCoverColor(e.target.value)}
                           className="w-6 h-6 rounded-full cursor-pointer bg-transparent border-0 p-0 overflow-hidden"
                           title="Custom Hex Color"
@@ -3976,10 +3985,10 @@ const Admin = () => {
                         <img 
                           src={newGalCover} 
                           alt="Cover Preview" 
-                          className={`w-full h-full object-cover object-${newGalCoverAlign} brightness-75 group-hover:scale-105 transition-transform duration-700`} 
+                          className={`w-full h-full object-cover object-${newGalCoverAlign || "center"} brightness-75 group-hover:scale-105 transition-transform duration-700`} 
                         />
-                        <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-3.5 text-${newGalCoverTextAlign} items-${newGalCoverTextAlign === "left" ? "start" : (newGalCoverTextAlign === "right" ? "end" : "center")}`}>
-                          <span style={{ color: newGalCoverColor }} className="text-[7px] uppercase font-bold tracking-widest">
+                        <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-3.5 text-${newGalCoverTextAlign || "center"} items-${newGalCoverTextAlign === "left" ? "start" : (newGalCoverTextAlign === "right" ? "end" : "center")}`}>
+                          <span style={{ color: newGalCoverColor || "#b4975a" }} className="text-[7px] uppercase font-bold tracking-widest">
                             Live Lock Preview
                           </span>
                           <span 
@@ -3991,7 +4000,7 @@ const Admin = () => {
                             {newGroomName && newBrideName ? (
                               <>
                                 <span>{newGroomName}</span>{" "}
-                                <span style={{ color: newGalCoverColor }} className="italic font-serif">&amp;</span>{" "}
+                                <span style={{ color: newGalCoverColor || "#b4975a" }} className="italic font-serif">&amp;</span>{" "}
                                 <span>{newBrideName}</span>
                               </>
                             ) : (
@@ -4002,7 +4011,7 @@ const Admin = () => {
                       </div>
                       <div className="bg-zinc-950 px-3 py-1.5 border-t border-zinc-850 flex items-center justify-between text-[9px] text-zinc-400">
                         <span className="flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: newGalCoverColor }} />
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: newGalCoverColor || "#b4975a" }} />
                           Custom Style Configured
                         </span>
                         <button
@@ -4027,46 +4036,49 @@ const Admin = () => {
             {/* Galleries list */}
             <div className="md:col-span-3 bg-zinc-950 border border-zinc-800 rounded-[28px] p-6 space-y-4">
               <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-zinc-800">
-                💍 Active Dreamwed Galleries ({aiGalleries.length})
+                💍 Active Dreamwed Galleries ({Array.isArray(aiGalleries) ? aiGalleries.length : 0})
               </h3>
               
-              {aiGalleries.length === 0 ? (
+              {(!Array.isArray(aiGalleries) || aiGalleries.length === 0) ? (
                 <div className="text-center py-16 text-zinc-600 text-xs font-light">No active Dreamwed galleries found.</div>
               ) : (
                 <div className="space-y-3.5">
                   {aiGalleries.map((g) => (
-                    <div key={g.id} className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div key={g?.id || Math.random()} className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                       <div className="flex items-center gap-3 w-full md:w-auto">
-                        <img src={g.coverUrl} className="w-14 h-14 rounded-lg object-cover border border-zinc-750 shrink-0" alt="Wedding Cover" />
+                        <img src={g?.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800"} className="w-14 h-14 rounded-lg object-cover border border-zinc-750 shrink-0" alt="Wedding Cover" />
                         <div className="space-y-1">
-                          <span className="font-bold text-white text-sm block">{g.name}</span>
+                          <span className="font-bold text-white text-sm block">{g?.name || "Dreamwed Wedding"}</span>
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-[9px] text-zinc-500">ID: {g.id}</span>
+                            <span className="text-[9px] text-zinc-500">ID: {g?.id}</span>
                             <span className="text-[9px] text-zinc-400 font-bold bg-zinc-950 px-2 py-0.5 border border-zinc-850 rounded flex items-center gap-1">
-                              🔑 Code: <strong className="text-[#b4975a] font-mono">{g.accessCode}</strong>
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigator.clipboard.writeText(g.accessCode);
-                                  alert(`🔑 Passcode ${g.accessCode} copied to clipboard!`);
-                                }}
-                                className="text-[8px] text-zinc-500 hover:text-white ml-1 transition-colors cursor-pointer"
-                                title="Copy Passcode"
-                              >
-                                <Copy size={10} />
-                              </button>
+                              🔑 Code: <strong className="text-[#b4975a] font-mono">{g?.accessCode || "—"}</strong>
+                              {g?.accessCode && (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigator.clipboard.writeText(g.accessCode);
+                                    alert(`🔑 Passcode ${g.accessCode} copied to clipboard!`);
+                                  }}
+                                  className="text-[8px] text-zinc-500 hover:text-white ml-1 transition-colors cursor-pointer"
+                                  title="Copy Passcode"
+                                >
+                                  <Copy size={10} />
+                                </button>
+                              )}
                             </span>
                             <span className="text-[9px] text-red-400 font-bold bg-red-950/40 px-2 py-0.5 border border-red-800/40 rounded-full flex items-center gap-1">
                               <Heart size={10} className="fill-current text-red-400" />
-                              {g.selectedCount || (g.selectedPhotoIds?.length) || 0} Selected
+                              {(g?.selectedCount || (Array.isArray(g?.selectedPhotoIds) ? g.selectedPhotoIds.length : 0)) || 0} Selected
                             </span>
                           </div>
                           <div className="text-[10px] text-zinc-500 flex items-center gap-1.5 mt-0.5">
-                            <span className="font-light truncate max-w-[200px] sm:max-w-xs">{window.location.origin}/gallery/{g.id}</span>
+                            <span className="font-light truncate max-w-[200px] sm:max-w-xs">{typeof window !== "undefined" ? window.location.origin : ""}/gallery/{g?.id}</span>
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigator.clipboard.writeText(window.location.origin + "/gallery/" + g.id);
+                                const link = (typeof window !== "undefined" ? window.location.origin : "") + "/gallery/" + (g?.id || "");
+                                navigator.clipboard.writeText(link);
                                 alert("🔗 Branded Gallery Link copied to clipboard!");
                               }}
                               className="text-zinc-500 hover:text-[#b4975a] transition-colors cursor-pointer"
@@ -4081,52 +4093,54 @@ const Admin = () => {
                       <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full md:w-auto justify-end border-t border-zinc-800/40 md:border-t-0 pt-3 md:pt-0">
                         {/* 📥 1-Click Download Selected Photos */}
                         <button 
-                          onClick={() => handleOpenSelectedPhotos(g.id)}
+                          onClick={() => handleOpenSelectedPhotos(g?.id)}
                           className="px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500 hover:text-white text-red-400 text-[10px] font-bold uppercase tracking-wider border border-red-500/30 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
                           title="View & Download Selected Photos in 1 Click"
                         >
                           <Heart size={12} className="fill-current" />
-                          Download Selected ({g.selectedCount || (g.selectedPhotoIds?.length) || 0})
+                          Download Selected ({(g?.selectedCount || (Array.isArray(g?.selectedPhotoIds) ? g.selectedPhotoIds.length : 0)) || 0})
                         </button>
 
                         <button 
-                          onClick={() => handleSyncDrivePhotos(g.id)}
-                          disabled={syncingGalId === g.id}
+                          onClick={() => handleSyncDrivePhotos(g?.id)}
+                          disabled={syncingGalId === g?.id}
                           className="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-[#b4975a] hover:text-zinc-950 text-white text-[10px] font-bold uppercase tracking-wider border border-zinc-750 transition-all flex items-center gap-1 cursor-pointer disabled:bg-zinc-900 disabled:text-zinc-650 disabled:cursor-not-allowed"
                         >
-                          {syncingGalId === g.id ? (
+                          {syncingGalId === g?.id ? (
                             <>
                               <RefreshCw size={12} className="animate-spin" /> Syncing...
                             </>
                           ) : (
                             <>
-                              <RefreshCw size={12} /> Sync ({g.photosCount || (g.photos ? g.photos.length : 0)})
+                              <RefreshCw size={12} /> Sync ({(g?.photosCount || (Array.isArray(g?.photos) ? g.photos.length : 0)) || 0})
                             </>
                           )}
                         </button>
                         
-                        <div className="flex items-center gap-1.5">
-                          <a href={g.gdriveLink} target="_blank" rel="noopener noreferrer"
-                            className="text-[10px] text-[#b4975a] font-bold uppercase tracking-wider hover:underline shrink-0">
-                            {g.extraDriveLink ? "Drive 1 ↗" : "Drive ↗"}
-                          </a>
-                          {g.extraDriveLink && (
-                            <a href={g.extraDriveLink} target="_blank" rel="noopener noreferrer"
-                              className="text-[10px] text-amber-400/90 font-bold uppercase tracking-wider hover:underline shrink-0">
-                              Drive 2 ↗
+                        {g?.gdriveLink && (
+                          <div className="flex items-center gap-1.5">
+                            <a href={g.gdriveLink} target="_blank" rel="noopener noreferrer"
+                              className="text-[10px] text-[#b4975a] font-bold uppercase tracking-wider hover:underline shrink-0">
+                              {g.extraDriveLink ? "Drive 1 ↗" : "Drive ↗"}
                             </a>
-                          )}
-                        </div>
+                            {g.extraDriveLink && (
+                              <a href={g.extraDriveLink} target="_blank" rel="noopener noreferrer"
+                                className="text-[10px] text-amber-400/90 font-bold uppercase tracking-wider hover:underline shrink-0">
+                                Drive 2 ↗
+                              </a>
+                            )}
+                          </div>
+                        )}
 
                         {/* 🎨 Edit Cover Button */}
                         <button
                           onClick={() => {
                             setEditingCoverGallery(g);
-                            setEditCoverValue(g.coverUrl || "");
-                            setEditCoverAlign(g.coverAlign || "center");
-                            setEditCoverTextAlign(g.coverTextAlign || "center");
-                            setEditCoverFont(g.coverFont || "cormorant");
-                            setEditCoverColor(g.coverColor || "#b4975a");
+                            setEditCoverValue(g?.coverUrl || "");
+                            setEditCoverAlign(g?.coverAlign || "center");
+                            setEditCoverTextAlign(g?.coverTextAlign || "center");
+                            setEditCoverFont(g?.coverFont || "cormorant");
+                            setEditCoverColor(g?.coverColor || "#b4975a");
                             setEditCoverMode("upload");
                           }}
                           className="px-2.5 py-2 rounded-xl bg-zinc-800 hover:bg-[#b4975a] hover:text-zinc-950 text-zinc-300 text-[10px] font-bold uppercase tracking-wider border border-zinc-750 transition-all flex items-center gap-1 cursor-pointer"
@@ -4135,7 +4149,7 @@ const Admin = () => {
                           <ImageIcon size={11} /> Cover
                         </button>
 
-                        <button onClick={() => handleDeleteAiGallery(g.id)}
+                        <button onClick={() => handleDeleteAiGallery(g?.id)}
                           className="p-1.5 text-zinc-650 hover:text-red-500 transition-colors cursor-pointer shrink-0 ml-1">
                           <Trash2 size={14} />
                         </button>
@@ -6011,20 +6025,20 @@ const Admin = () => {
                         onClick={() => setEditCoverColor(c.hex)}
                         title={c.name}
                         className={`w-6 h-6 rounded-full transition-transform cursor-pointer border relative flex items-center justify-center ${
-                          editCoverColor.toLowerCase() === c.hex.toLowerCase()
+                          (editCoverColor || "#b4975a").toLowerCase() === c.hex.toLowerCase()
                             ? "scale-110 border-white ring-2 ring-[#b4975a]"
                             : "border-zinc-700 hover:scale-105 opacity-80 hover:opacity-100"
                         }`}
                         style={{ backgroundColor: c.hex }}
                       >
-                        {editCoverColor.toLowerCase() === c.hex.toLowerCase() && (
+                        {(editCoverColor || "#b4975a").toLowerCase() === c.hex.toLowerCase() && (
                           <Check size={11} className={c.hex === "#f8fafc" ? "text-black" : "text-white"} />
                         )}
                       </button>
                     ))}
                     <input
                       type="color"
-                      value={editCoverColor}
+                      value={editCoverColor || "#b4975a"}
                       onChange={(e) => setEditCoverColor(e.target.value)}
                       className="w-6 h-6 rounded-full cursor-pointer bg-transparent border-0 p-0 overflow-hidden"
                       title="Custom Hex Color"
@@ -6039,10 +6053,10 @@ const Admin = () => {
                   <img 
                     src={editCoverValue} 
                     alt="Cover Preview" 
-                    className={`w-full h-full object-cover object-${editCoverAlign}`} 
+                    className={`w-full h-full object-cover object-${editCoverAlign || "center"}`} 
                   />
-                  <div className={`absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-4 text-${editCoverTextAlign} items-${editCoverTextAlign === "left" ? "start" : (editCoverTextAlign === "right" ? "end" : "center")}`}>
-                    <span style={{ color: editCoverColor }} className="text-[7px] uppercase font-bold tracking-widest block mb-0.5">
+                  <div className={`absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-4 text-${editCoverTextAlign || "center"} items-${editCoverTextAlign === "left" ? "start" : (editCoverTextAlign === "right" ? "end" : "center")}`}>
+                    <span style={{ color: editCoverColor || "#b4975a" }} className="text-[7px] uppercase font-bold tracking-widest block mb-0.5">
                       Deliverable Cover Preview
                     </span>
                     <span 
@@ -6051,14 +6065,14 @@ const Admin = () => {
                       }} 
                       className="text-lg text-white font-medium truncate leading-tight"
                     >
-                      {editingCoverGallery.groomName && editingCoverGallery.brideName ? (
+                      {editingCoverGallery?.groomName && editingCoverGallery?.brideName ? (
                         <>
                           <span>{editingCoverGallery.groomName}</span>{" "}
-                          <span style={{ color: editCoverColor }} className="italic font-serif">&amp;</span>{" "}
+                          <span style={{ color: editCoverColor || "#b4975a" }} className="italic font-serif">&amp;</span>{" "}
                           <span>{editingCoverGallery.brideName}</span>
                         </>
                       ) : (
-                        editingCoverGallery.name
+                        editingCoverGallery?.name || "Dreamwed Wedding"
                       )}
                     </span>
                   </div>
