@@ -1046,6 +1046,54 @@ app.delete('/api/galleries/:id', (req, res) => {
   }
 });
 
+// Image Proxy endpoint to avoid any cross-origin restrictions when downloading or zipping images
+app.get('/api/proxy-image', async (req, res) => {
+  try {
+    const { url } = req.query;
+    if (!url) return res.status(400).send('Missing url parameter');
+    const response = await axios.get(url, { 
+      responseType: 'arraybuffer',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
+    const contentType = response.headers['content-type'] || 'image/jpeg';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.send(Buffer.from(response.data));
+  } catch (err) {
+    console.error('Proxy image error:', err.message);
+    res.status(500).send('Failed to proxy image');
+  }
+});
+
+// GET Public Selected Photos for Client/Designer Shareable Download Page
+app.get('/api/public/galleries/:id/selected-photos', (req, res) => {
+  try {
+    const gallery = getGallery(req.params.id);
+    if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
+    
+    const selectedIds = new Set(gallery.selectedPhotoIds || []);
+    const selectedPhotos = (gallery.photos || []).filter(p => selectedIds.has(p.id));
+    
+    res.json({
+      galleryId: gallery.id,
+      galleryName: gallery.name,
+      groomName: gallery.groomName || "",
+      brideName: gallery.brideName || "",
+      coverUrl: gallery.coverUrl,
+      coverAlign: gallery.coverAlign || "center",
+      coverTextAlign: gallery.coverTextAlign || "center",
+      coverFont: gallery.coverFont || "cormorant",
+      coverColor: gallery.coverColor || "#b4975a",
+      count: selectedPhotos.length,
+      photos: selectedPhotos
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET Selected Photos for Admin 1-Click Download
 app.get('/api/galleries/:id/selected-photos', (req, res) => {
   try {
@@ -1060,6 +1108,11 @@ app.get('/api/galleries/:id/selected-photos', (req, res) => {
       galleryName: gallery.name,
       groomName: gallery.groomName || "",
       brideName: gallery.brideName || "",
+      coverUrl: gallery.coverUrl,
+      coverAlign: gallery.coverAlign || "center",
+      coverTextAlign: gallery.coverTextAlign || "center",
+      coverFont: gallery.coverFont || "cormorant",
+      coverColor: gallery.coverColor || "#b4975a",
       count: selectedPhotos.length,
       photos: selectedPhotos
     });

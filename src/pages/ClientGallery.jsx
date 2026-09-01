@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Lock, Eye, EyeOff, AlertCircle, ArrowLeft, Download, 
   Share2, X, ChevronLeft, ChevronRight, RefreshCw, ZoomIn,
-  Heart, Check, Sparkles, Filter, Search, Camera
+  Heart, Check, Sparkles, Filter, Search, Camera, Copy
 } from "lucide-react";
 import SEO from "../components/SEO";
+import { downloadPhotosAsZip } from "../utils/zipDownloader";
 
 const FONT_MAP = {
   cormorant: "'Cormorant Garamond', serif",
@@ -35,8 +36,15 @@ const TEXT_ALIGN_MAP = {
 const ClientGallery = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [isLocked, setIsLocked] = useState(true);
+  // Check if opened via shareable download link (?download=favorites or ?mode=selections)
+  const searchParams = new URLSearchParams(location.search);
+  const isDirectDownloadMode = searchParams.get("download") === "favorites" || 
+                               searchParams.get("download") === "selections" || 
+                               searchParams.get("mode") === "favorites";
+
+  const [isLocked, setIsLocked] = useState(!isDirectDownloadMode);
   const [passcode, setPasscode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(!!id);
@@ -46,10 +54,12 @@ const ClientGallery = () => {
   // Gallery states
   const [meta, setMeta] = useState(null); // Locked state metadata
   const [gallery, setGallery] = useState(null); // Full gallery after unlock
+  const [selectedPhotosData, setSelectedPhotosData] = useState(null); // When in direct download mode
   const [activePhoto, setActivePhoto] = useState(null);
   const [selectedPhotoIds, setSelectedPhotoIds] = useState(new Set());
   const [filterMode, setFilterMode] = useState("all"); // 'all' | 'favorites'
   const [saveStatus, setSaveStatus] = useState(""); // '', 'saving', 'saved'
+  const [zippingState, setZippingState] = useState(null); // { isZipping: bool, percent: number, status: string }
   const syncTimeoutRef = useRef(null);
 
   const API_BASE = typeof window !== "undefined"
@@ -69,6 +79,54 @@ const ClientGallery = () => {
       setLoading(true);
       setError("");
 
+      // If in direct shareable download mode, fetch the selected photos directly
+      if (isDirectDownloadMode) {
+        try {
+          // Check local storage first
+          const localGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
+          const localMatch = localGals.find(g => 
+            g.id === id || 
+            g.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id ||
+            g.accessCode === id
+          );
+
+          if (localMatch && isMounted) {
+            setMeta(localMatch);
+            const favIds = new Set(localMatch.selectedPhotoIds || []);
+            const favPhotos = (localMatch.photos || []).filter(p => favIds.has(p.id));
+            setSelectedPhotosData({
+              galleryId: localMatch.id,
+              galleryName: localMatch.name,
+              groomName: localMatch.groomName || "",
+              brideName: localMatch.brideName || "",
+              coverUrl: localMatch.coverUrl,
+              coverAlign: localMatch.coverAlign || "center",
+              coverTextAlign: localMatch.coverTextAlign || "center",
+              coverFont: localMatch.coverFont || "cormorant",
+              coverColor: localMatch.coverColor || "#b4975a",
+              count: favPhotos.length,
+              photos: favPhotos
+            });
+            setLoading(false);
+          }
+
+          // Fetch from backend public selected photos endpoint
+          const res = await fetch(`${API_BASE}/api/public/galleries/${id}/selected-photos`);
+          if (res.ok) {
+            const data = await res.json();
+            if (isMounted) {
+              setSelectedPhotosData(data);
+              setMeta(data);
+              setLoading(false);
+            }
+          }
+        } catch (err) {
+          console.error("Direct download fetch error:", err);
+        }
+        return;
+      }
+
+      // Normal locked gallery flow
       // 1a. Instant check local storage
       let hadLocal = false;
       try {
@@ -112,120 +170,98 @@ const ClientGallery = () => {
     
     fetchPublicInfo();
     return () => { isMounted = false; };
-  }, [id, API_BASE]);
+  }, [id, API_BASE, isDirectDownloadMode]);
 
   // 2. Handle unlock with access code
   const handleUnlock = async (e) => {
     if (e) e.preventDefault();
     const cleanCode = passcode.trim();
-    if (!cleanCode) return;
-    
+    if (!cleanCode) {
+      setError("Please enter the gallery access code.");
+      return;
+    }
+
     setUnlocking(true);
     setError("");
 
-    // Check local fallback first
+    // 2a. Check localStorage first
     try {
       const localGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
       const localMatch = localGals.find(g => 
-        (id ? (g.id === id || g.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id) : true) && 
-        String(g.accessCode).trim() === cleanCode
+        (g.id === id || !id) && 
+        (String(g.accessCode).trim().toLowerCase() === cleanCode.toLowerCase() ||
+         String(g.id).toLowerCase() === cleanCode.toLowerCase())
       );
+
       if (localMatch) {
-        setMeta(localMatch);
         setGallery(localMatch);
-        if (localMatch.selectedPhotoIds && Array.isArray(localMatch.selectedPhotoIds)) {
-          setSelectedPhotoIds(new Set(localMatch.selectedPhotoIds));
-        }
+        setMeta(localMatch);
+        setSelectedPhotoIds(new Set(localMatch.selectedPhotoIds || []));
         setIsLocked(false);
         setUnlocking(false);
-        if (!id) {
-          navigate(`/gallery/${localMatch.id}`, { replace: true });
-        }
+        if (!id) navigate(`/gallery/${localMatch.id}`, { replace: true });
         return;
       }
     } catch (e) {}
 
-    // Fetch from backend
-    const targetGalleryId = id || meta?.id;
-    if (targetGalleryId) {
-      try {
-        const res = await fetch(`${API_BASE}/api/public/galleries/${targetGalleryId}/unlock`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ accessCode: cleanCode })
-        });
-        
-        if (!res.ok) {
-          if (res.status === 401) {
-            throw new Error("Invalid access code. Please check and try again.");
-          }
-          throw new Error("Failed to unlock gallery");
-        }
-        
+    // 2b. If no local match, authenticate with backend
+    try {
+      const targetId = id || cleanCode;
+      const res = await fetch(`${API_BASE}/api/public/galleries/${targetId}/unlock`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessCode: cleanCode })
+      });
+
+      if (!res.ok) {
         const data = await res.json();
-        setGallery(data);
-        setMeta(data);
-        if (data.selectedPhotoIds && Array.isArray(data.selectedPhotoIds)) {
-          setSelectedPhotoIds(new Set(data.selectedPhotoIds));
-        }
-        setIsLocked(false);
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
-      } finally {
-        setUnlocking(false);
+        throw new Error(data.error || "Incorrect access code. Please try again.");
       }
-    } else {
-      // Direct search by access code across backend
-      try {
-        const res = await fetch(`${API_BASE}/api/galleries`);
-        if (res.ok) {
-          const list = await res.json();
-          const match = list.find(g => String(g.accessCode).trim() === cleanCode);
-          if (match) {
-            // Unlock match
-            const unlockRes = await fetch(`${API_BASE}/api/public/galleries/${match.id}/unlock`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ accessCode: cleanCode })
-            });
-            if (unlockRes.ok) {
-              const fullData = await unlockRes.json();
-              setGallery(fullData);
-              setMeta(fullData);
-              if (fullData.selectedPhotoIds && Array.isArray(fullData.selectedPhotoIds)) {
-                setSelectedPhotoIds(new Set(fullData.selectedPhotoIds));
-              }
-              setIsLocked(false);
-              navigate(`/gallery/${match.id}`, { replace: true });
-              return;
-            }
-          }
-        }
-        throw new Error("No gallery found matching this access code.");
-      } catch (err) {
-        console.error(err);
-        setError(err.message || "Invalid passcode.");
-      } finally {
-        setUnlocking(false);
-      }
+
+      const galData = await res.json();
+      setGallery(galData);
+      setMeta(galData);
+      setSelectedPhotoIds(new Set(galData.selectedPhotoIds || []));
+      setIsLocked(false);
+      if (!id) navigate(`/gallery/${galData.id}`, { replace: true });
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Failed to unlock gallery. Verify your access code.");
+    } finally {
+      setUnlocking(false);
     }
   };
 
-  // 3. Sync favorite hearts to backend
-  const syncSelectionsToBackend = (idsSet) => {
-    const currentGalId = gallery?.id || id;
-    if (!currentGalId) return;
-
-    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+  // 3. Heart selection toggle & background auto-sync
+  const syncSelectionsToBackend = (newSet) => {
     setSaveStatus("saving");
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+
     syncTimeoutRef.current = setTimeout(async () => {
+      const selectedArray = Array.from(newSet);
+      
+      // Update local storage copy
       try {
-        await fetch(`${API_BASE}/api/public/galleries/${currentGalId}/selections`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ selectedPhotoIds: Array.from(idsSet) })
+        const localGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
+        const updated = localGals.map(g => {
+          if (g.id === gallery?.id || g.id === id) {
+            return { ...g, selectedPhotoIds: selectedArray };
+          }
+          return g;
         });
+        localStorage.setItem("dreamwed_galleries", JSON.stringify(updated));
+      } catch (e) {}
+
+      // Sync with backend API
+      try {
+        const targetId = gallery?.id || id;
+        if (targetId) {
+          await fetch(`${API_BASE}/api/public/galleries/${targetId}/selections`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ selectedPhotoIds: selectedArray })
+          });
+        }
         setSaveStatus("saved");
         setTimeout(() => setSaveStatus(""), 3000);
       } catch (e) {
@@ -247,6 +283,32 @@ const ClientGallery = () => {
       syncSelectionsToBackend(next);
       return next;
     });
+  };
+
+  // 1-Click ZIP Downloader
+  const handleDownloadZipPackage = async (photosToDownload) => {
+    if (!photosToDownload || photosToDownload.length === 0) {
+      alert("No photos to download.");
+      return;
+    }
+
+    try {
+      setZippingState({ isZipping: true, percent: 5, status: `Packaging ${photosToDownload.length} photos into ZIP...` });
+      await downloadPhotosAsZip({
+        photos: photosToDownload,
+        galleryName: meta?.name || gallery?.name || "Dreamwed_Wedding",
+        groomName: meta?.groomName || gallery?.groomName || "",
+        brideName: meta?.brideName || gallery?.brideName || "",
+        apiBase: API_BASE,
+        onProgress: (p) => setZippingState({ isZipping: true, percent: p.percent, status: p.status })
+      });
+      setZippingState({ isZipping: false, percent: 100, status: "✅ ZIP Downloaded Successfully!" });
+      setTimeout(() => setZippingState(null), 3500);
+    } catch (err) {
+      console.error("ZIP Error:", err);
+      alert("Failed to create ZIP: " + err.message);
+      setZippingState(null);
+    }
   };
 
   // Computed gallery photos
@@ -318,6 +380,158 @@ const ClientGallery = () => {
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-light p-6">
         <RefreshCw size={36} className="animate-spin text-[#b4975a] mb-4" />
         <p className="text-zinc-400 text-xs tracking-widest uppercase font-mono">Loading Private Gallery...</p>
+      </div>
+    );
+  }
+
+  // =========================================================
+  // SPECIAL VIEW: SHAREABLE CLIENT SELECTIONS DOWNLOAD HUB
+  // (Triggered when someone opens link with ?download=favorites)
+  // =========================================================
+  if (isDirectDownloadMode && selectedPhotosData) {
+    const photos = selectedPhotosData.photos || [];
+    return (
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col selection:bg-[#b4975a] selection:text-black">
+        <SEO 
+          title={`Download Selections: ${selectedPhotosData.galleryName || "Wedding"} | Dreamwed Stories`}
+          description="Download all approved and favorited high-res wedding deliverables from Dreamwed Stories in 1-click."
+        />
+
+        {/* Top Header */}
+        <header className="border-b border-zinc-850/80 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link 
+              to={`/gallery/${id}`}
+              className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
+              title="Open full interactive gallery"
+            >
+              <ArrowLeft size={16} />
+            </Link>
+            <div>
+              <h1 style={{ fontFamily: activeFontFamily }} className="text-xl text-white font-medium leading-none">
+                {selectedPhotosData.groomName && selectedPhotosData.brideName 
+                  ? `${selectedPhotosData.groomName} & ${selectedPhotosData.brideName}`
+                  : selectedPhotosData.galleryName}
+              </h1>
+              <span style={{ color: activeColor }} className="text-[9px] font-bold uppercase tracking-wider block mt-1">
+                Client Selections Repository
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => {
+                const urls = photos.map(p => p.url).join("\n");
+                navigator.clipboard.writeText(urls);
+                alert(`📋 Copied ${photos.length} photo URLs to clipboard!`);
+              }}
+              className="px-3.5 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl border border-zinc-800 transition-all text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+            >
+              <Copy size={13} /> Copy Links
+            </button>
+
+            <button
+              disabled={zippingState?.isZipping || photos.length === 0}
+              onClick={() => handleDownloadZipPackage(photos)}
+              className="px-5 py-2 bg-gradient-to-r from-red-600 to-rose-600 hover:brightness-110 disabled:opacity-50 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer shadow-lg shadow-red-600/30 transition-all"
+            >
+              <Download size={14} className={zippingState?.isZipping ? "animate-bounce" : ""} />
+              {zippingState?.isZipping ? "Zipping Photos..." : `⚡ Download All ZIP (${photos.length})`}
+            </button>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-grow max-w-7xl w-full mx-auto px-6 py-10 space-y-8">
+          {/* Cover Hero Banner */}
+          {selectedPhotosData.coverUrl && (
+            <div className="relative h-64 sm:h-80 w-full rounded-[32px] overflow-hidden border border-zinc-800 shadow-2xl group">
+              <img 
+                src={selectedPhotosData.coverUrl} 
+                alt="Wedding Cover"
+                style={{ objectPosition: activePositionStyle }}
+                className="w-full h-full object-cover brightness-75 group-hover:scale-105 transition-transform duration-700" 
+              />
+              <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-6 sm:p-8 ${activeTextAlign}`}>
+                <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.25em] mb-1 block">
+                  Approved Deliverables Package
+                </span>
+                <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light leading-tight">
+                  {selectedPhotosData.groomName && selectedPhotosData.brideName ? (
+                    <>
+                      <span>{selectedPhotosData.groomName}</span>{" "}
+                      <span style={{ color: activeColor }} className="italic font-serif">&amp;</span>{" "}
+                      <span>{selectedPhotosData.brideName}</span>
+                    </>
+                  ) : (
+                    selectedPhotosData.galleryName
+                  )}
+                </h2>
+                <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1.5">
+                  {photos.length} selected photos ready for download and album layout.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Real-time Progress Bar */}
+          {zippingState && (
+            <div className="bg-zinc-900/90 border border-zinc-800 p-4 rounded-2xl space-y-2 max-w-2xl mx-auto shadow-xl">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-zinc-300 font-medium flex items-center gap-2">
+                  <RefreshCw size={13} className="animate-spin text-[#b4975a]" /> {zippingState.status}
+                </span>
+                <span className="text-[#b4975a] font-mono font-bold">{zippingState.percent}%</span>
+              </div>
+              <div className="w-full bg-zinc-950 rounded-full h-2.5 overflow-hidden border border-zinc-800">
+                <div 
+                  className="bg-gradient-to-r from-[#b4975a] via-amber-400 to-amber-200 h-full rounded-full transition-all duration-300"
+                  style={{ width: `${zippingState.percent}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Selected Photos Grid */}
+          {photos.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-2">
+              {photos.map((photo, index) => (
+                <div 
+                  key={photo.id || index}
+                  className="group relative bg-zinc-900 border border-zinc-800/80 rounded-2xl overflow-hidden aspect-[4/5] shadow-lg shadow-black/20"
+                >
+                  <img 
+                    src={photo.url} 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                    loading="lazy"
+                    alt={`Selection ${index + 1}`}
+                  />
+                  <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-mono text-zinc-300 border border-white/10">
+                    #{index + 1}
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex items-end justify-between p-4">
+                    <span className="text-[10px] text-zinc-300 font-light">Photo {index + 1}</span>
+                    <a 
+                      href={photo.url} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      download={`selected_photo_${index + 1}.jpg`}
+                      className="p-2.5 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 border border-zinc-800 rounded-xl text-white transition-all cursor-pointer block"
+                      title="Download Single HD Photo"
+                    >
+                      <Download size={14} />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20 border border-zinc-800 rounded-3xl text-zinc-500 font-light text-sm">
+              No photos have been favorited yet in this gallery.
+            </div>
+          )}
+        </main>
       </div>
     );
   }
@@ -394,41 +608,38 @@ const ClientGallery = () => {
                 </div>
               </div>
             ) : (
-              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-850 space-y-1 text-center">
-                <span className="text-[#b4975a] text-[10px] font-bold uppercase tracking-widest">Client Photo Portal</span>
-                <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl text-white font-light">
-                  Find Your Wedding Gallery
+              <div className="space-y-1">
+                <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl text-white font-light tracking-wide">
+                  Private Wedding Gallery
                 </h2>
+                <p className="text-zinc-400 text-xs font-light">
+                  Enter your personalized passcode to access your high-resolution wedding deliverables.
+                </p>
               </div>
             )}
 
-            {/* Passcode Lock Notice */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-center gap-2 text-zinc-300 text-xs font-light">
-                <Lock size={13} style={{ color: activeColor }} />
-                <span>Private Gallery • 4-Digit Passcode Required</span>
-              </div>
-            </div>
-
-            {/* Unlock Form */}
-            <form onSubmit={handleUnlock} className="space-y-4 text-left">
-              <div className="space-y-1.5">
-                <label className="text-zinc-400 font-bold uppercase tracking-wider text-[9px] block ml-1">
-                  Enter 4-Digit Passcode
+            {/* Form */}
+            <form onSubmit={handleUnlock} className="space-y-4">
+              <div className="space-y-1.5 text-left">
+                <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider block">
+                  Gallery Access Passcode
                 </label>
-                <div className="relative">
-                  <input 
+                <div className="relative flex items-center">
+                  <input
                     type={showPassword ? "text" : "password"}
                     value={passcode}
-                    onChange={(e) => setPasscode(e.target.value)}
-                    placeholder="e.g., 3493"
+                    onChange={(e) => {
+                      setPasscode(e.target.value);
+                      if (error) setError("");
+                    }}
+                    placeholder="e.g. akash2026"
+                    className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-2xl px-4 py-3.5 pr-12 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#b4975a] focus:ring-1 focus:ring-[#b4975a] transition-all font-mono"
                     autoFocus
-                    className="w-full bg-zinc-900/90 border border-zinc-800 focus:border-[#b4975a] text-center text-white tracking-[0.3em] font-mono rounded-2xl py-3.5 px-4 focus:outline-none transition-all placeholder:tracking-normal placeholder:font-sans placeholder:text-zinc-650 text-sm"
                   />
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                    className="absolute right-3.5 p-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -436,36 +647,57 @@ const ClientGallery = () => {
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 p-3 bg-red-950/40 border border-red-900/40 text-red-400 text-[11px] rounded-xl font-light">
-                  <AlertCircle size={14} className="shrink-0" />
+                <motion.div 
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-950/40 border border-red-800/50 p-3 rounded-xl flex items-center gap-2 text-red-300 text-xs text-left"
+                >
+                  <AlertCircle size={14} className="flex-shrink-0 text-red-400" />
                   <span>{error}</span>
-                </div>
+                </motion.div>
               )}
 
-              <button 
+              <button
                 type="submit"
-                disabled={unlocking}
-                style={{ backgroundColor: activeColor }}
-                className="w-full py-4 text-zinc-950 font-bold rounded-2xl text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg hover:brightness-110 disabled:opacity-50"
+                disabled={unlocking || !passcode.trim()}
+                style={{
+                  backgroundColor: activeColor,
+                  color: "#09090b"
+                }}
+                className="w-full py-4 font-bold rounded-2xl text-xs uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110 shadow-lg shadow-black/40 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {unlocking ? (
-                  <RefreshCw size={14} className="animate-spin" />
+                  <>
+                    <RefreshCw size={14} className="animate-spin" />
+                    <span>Unlocking...</span>
+                  </>
                 ) : (
-                  "Unlock & Enter Gallery"
+                  <>
+                    <Lock size={14} />
+                    <span>Enter Private Gallery</span>
+                  </>
                 )}
               </button>
             </form>
+
+            <div className="pt-4 border-t border-zinc-850/80 text-[11px] text-zinc-500 font-light flex items-center justify-center gap-1.5">
+              <span>Protected with 256-bit Dreamwed Client Security</span>
+            </div>
           </div>
         </div>
       ) : (
         /* ========================================================= */
-        /* 2. UNLOCKED GALLERY VIEW WITH HEART SELECTIONS */
+        /* 2. UNLOCKED GALLERY MAIN EXPERIENCE */
         /* ========================================================= */
-        <div className="flex-grow flex flex-col pb-24">
-          {/* Gallery Sticky Header */}
-          <header className="sticky top-0 bg-zinc-950/85 backdrop-blur-xl border-b border-zinc-900 z-40 px-6 py-4 flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <Link to="/" className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl border border-zinc-800 transition-all cursor-pointer">
+        <div className="min-h-screen flex flex-col">
+          {/* Top Sticky Header */}
+          <header className="border-b border-zinc-850/80 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link 
+                to="/"
+                className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                title="Return to Home"
+              >
                 <ArrowLeft size={16} />
               </Link>
               <div>
@@ -486,7 +718,22 @@ const ClientGallery = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
+              {/* If user has favorites, show 1-click ZIP download button in header */}
+              {selectedPhotoIds.size > 0 && (
+                <button
+                  disabled={zippingState?.isZipping}
+                  onClick={() => {
+                    const favs = allPhotos.filter(p => selectedPhotoIds.has(p.id));
+                    handleDownloadZipPackage(favs);
+                  }}
+                  className="px-3.5 py-2 bg-gradient-to-r from-red-600 to-rose-600 hover:brightness-110 disabled:opacity-50 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-lg shadow-red-600/30 transition-all"
+                >
+                  <Download size={13} className={zippingState?.isZipping ? "animate-bounce" : ""} />
+                  {zippingState?.isZipping ? "Zipping..." : `Download ZIP (${selectedPhotoIds.size})`}
+                </button>
+              )}
+
               <button 
                 onClick={handleShareGallery}
                 className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl border border-zinc-800 transition-all text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer"
@@ -495,6 +742,26 @@ const ClientGallery = () => {
               </button>
             </div>
           </header>
+
+          {/* Real-time ZIP Compression Progress Banner */}
+          {zippingState && (
+            <div className="bg-zinc-900/95 border-b border-zinc-800 px-6 py-3 sticky top-[65px] z-20 shadow-xl">
+              <div className="max-w-xl mx-auto space-y-1.5">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-zinc-200 font-medium flex items-center gap-2">
+                    <RefreshCw size={12} className="animate-spin text-[#b4975a]" /> {zippingState.status}
+                  </span>
+                  <span className="text-[#b4975a] font-mono font-bold">{zippingState.percent}%</span>
+                </div>
+                <div className="w-full bg-zinc-950 rounded-full h-2 overflow-hidden border border-zinc-800">
+                  <div 
+                    className="bg-gradient-to-r from-[#b4975a] to-amber-300 h-full rounded-full transition-all duration-300"
+                    style={{ width: `${zippingState.percent}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Gallery Photo Grid */}
           <main className="flex-grow max-w-7xl w-full mx-auto px-6 py-10 space-y-8">

@@ -8,6 +8,7 @@ import {
   Settings, Moon, Sun, Info, TrendingDown, ArrowUpRight, Upload, Sparkles, Image as ImageIcon
 } from "lucide-react";
 import SEO from "../components/SEO";
+import { downloadPhotosAsZip } from "../utils/zipDownloader";
 
 const ADMIN_PASS = "dreamwed2026";
 const API_BASE = typeof window !== "undefined"
@@ -153,6 +154,7 @@ const Admin = () => {
   const [selectedPhotosModalData, setSelectedPhotosModalData] = useState(null);
   const [bulkPhotoUrls, setBulkPhotoUrls] = useState("");
   const [syncingGalId, setSyncingGalId] = useState(null);
+  const [zippingState, setZippingState] = useState(null);
 
   // Dreamwed Office states
   const [officeBudgets, setOfficeBudgets] = useState([]);
@@ -1623,20 +1625,32 @@ const Admin = () => {
     }
   };
 
-  const handleDownloadAllSelected = (photos) => {
-    if (!photos || photos.length === 0) return;
-    alert(`⚡ Downloading ${photos.length} selected photos. Please allow multiple downloads in your browser if prompted.`);
-    photos.forEach((photo, idx) => {
-      setTimeout(() => {
-        const a = document.createElement("a");
-        a.href = photo.url;
-        a.download = `wedding_photo_${idx + 1}.jpg`;
-        a.target = "_blank";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }, idx * 300);
-    });
+  const handleDownloadAllSelected = async (modalData) => {
+    if (!modalData?.photos || modalData.photos.length === 0) return;
+    try {
+      setZippingState({ isZipping: true, percent: 5, status: `Packaging ${modalData.photos.length} HD photos...` });
+      await downloadPhotosAsZip({
+        photos: modalData.photos,
+        galleryName: modalData.galleryName || "Wedding",
+        groomName: modalData.groomName || "",
+        brideName: modalData.brideName || "",
+        apiBase: API_BASE,
+        onProgress: (p) => setZippingState({ isZipping: true, percent: p.percent, status: p.status })
+      });
+      setZippingState({ isZipping: false, percent: 100, status: "✅ ZIP Downloaded Successfully!" });
+      setTimeout(() => setZippingState(null), 3500);
+    } catch (err) {
+      console.error("Zipping error:", err);
+      alert("Error generating ZIP download: " + err.message);
+      setZippingState(null);
+    }
+  };
+
+  const handleCopyShareDownloadLink = (galleryId) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://dreamwedstories.co.in";
+    const shareUrl = `${origin}/gallery/${galleryId}?download=favorites`;
+    navigator.clipboard.writeText(shareUrl);
+    alert(`🔗 Shareable Selections Download Link Copied!\n\n${shareUrl}\n\nAnyone (album designers, clients, or printing partners) can open this link to download all selected photos as a ZIP in 1 click!`);
   };
 
   const convertGoogleDriveUrl = (url) => {
@@ -4119,7 +4133,15 @@ const Admin = () => {
                           title="View & Download Selected Photos in 1 Click"
                         >
                           <Heart size={12} className="fill-current" />
-                          Download Selected ({(g?.selectedCount || (Array.isArray(g?.selectedPhotoIds) ? g.selectedPhotoIds.length : 0)) || 0})
+                          Selected ({(g?.selectedCount || (Array.isArray(g?.selectedPhotoIds) ? g.selectedPhotoIds.length : 0)) || 0})
+                        </button>
+
+                        <button 
+                          onClick={() => handleCopyShareDownloadLink(g?.id)}
+                          className="p-2 rounded-xl bg-[#b4975a]/10 hover:bg-[#b4975a] hover:text-zinc-950 text-[#b4975a] border border-[#b4975a]/30 transition-all flex items-center justify-center cursor-pointer shadow-sm"
+                          title="Copy Shareable Selections Download Link"
+                        >
+                          <Share2 size={13} />
                         </button>
 
                         <button 
@@ -5810,19 +5832,47 @@ const Admin = () => {
                       navigator.clipboard.writeText(urls);
                       alert(`📋 Copied ${selectedPhotosModalData.photos.length} photo URLs to clipboard!`);
                     }}
-                    className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all"
+                    className="px-3.5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all"
                   >
-                    <Copy size={13} /> Copy All Links
+                    <Copy size={13} /> Copy Links
                   </button>
 
                   <button
-                    onClick={() => handleDownloadAllSelected(selectedPhotosModalData.photos)}
-                    className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer shadow-lg shadow-red-600/20 transition-all"
+                    onClick={() => handleCopyShareDownloadLink(selectedPhotosModalData.galleryId)}
+                    className="px-3.5 py-2.5 rounded-xl bg-[#b4975a]/10 hover:bg-[#b4975a]/20 border border-[#b4975a]/30 text-[#b4975a] hover:text-[#d4b97a] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all"
+                    title="Generate client/designer shareable 1-click download link"
                   >
-                    <Download size={14} /> ⚡ Download All ({selectedPhotosModalData.count})
+                    <Share2 size={13} /> Share Link
+                  </button>
+
+                  <button
+                    disabled={zippingState?.isZipping}
+                    onClick={() => handleDownloadAllSelected(selectedPhotosModalData)}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:brightness-110 disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer shadow-lg shadow-red-600/25 transition-all"
+                  >
+                    <Download size={14} className={zippingState?.isZipping ? "animate-bounce" : ""} /> 
+                    {zippingState?.isZipping ? "Zipping Photos..." : `⚡ Download ZIP (${selectedPhotosModalData.count})`}
                   </button>
                 </div>
               </div>
+
+              {/* Real-time ZIP Compression Progress Bar */}
+              {zippingState && (
+                <div className="bg-zinc-900/90 border border-zinc-800 p-4 rounded-2xl space-y-2">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-zinc-300 font-medium flex items-center gap-2">
+                      <RefreshCw size={13} className="animate-spin text-[#b4975a]" /> {zippingState.status}
+                    </span>
+                    <span className="text-[#b4975a] font-mono font-bold">{zippingState.percent}%</span>
+                  </div>
+                  <div className="w-full bg-zinc-950 rounded-full h-2 overflow-hidden border border-zinc-800">
+                    <div 
+                      className="bg-gradient-to-r from-[#b4975a] to-amber-300 h-full rounded-full transition-all duration-300"
+                      style={{ width: `${zippingState.percent}%` }}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Photos Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[55vh] overflow-y-auto pr-1">
