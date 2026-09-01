@@ -810,20 +810,6 @@ const ClientGallery = () => {
             </button>
           </div>
 
-          {selectedPhotoIds.size > 0 && (
-            <button
-              disabled={zippingState?.isZipping}
-              onClick={() => {
-                const favs = allPhotos.filter(p => selectedPhotoIds.has(p.id));
-                handleDownloadZipPackage(favs, "Selected_Photos");
-              }}
-              className="px-3 py-2 bg-gradient-to-r from-red-600 to-rose-600 hover:brightness-110 disabled:opacity-50 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-lg shadow-red-600/30 transition-all shrink-0"
-            >
-              <Download size={13} className={zippingState?.isZipping ? "animate-bounce" : ""} />
-              <span className="hidden sm:inline">ZIP</span> ({selectedPhotoIds.size})
-            </button>
-          )}
-
           <button 
             onClick={handleShareGallery}
             className="px-3 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl border border-zinc-800 transition-all text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shrink-0"
@@ -841,6 +827,57 @@ const ClientGallery = () => {
           </button>
         </div>
       </header>
+
+      {/* ========================================================= */}
+      {/* 2.0. PRODUCTION & EDITOR LOUNGE (DIRECT SHARE LINK ONLY) */}
+      {/* ========================================================= */}
+      {isDirectDownloadMode && (
+        <div className="bg-gradient-to-r from-amber-950/90 via-zinc-900 to-amber-950/90 border-b border-amber-500/30 px-4 sm:px-8 py-3.5 sticky top-[57px] z-30 shadow-2xl">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+            <div className="space-y-0.5">
+              <span className="text-[10px] text-amber-400 font-bold uppercase tracking-widest flex items-center gap-1.5 font-mono">
+                <span>🎨</span> Production &amp; Editor Portal
+              </span>
+              <p className="text-xs text-zinc-300 font-light">
+                Client Selected Photos for Album Design &amp; Retouching ({selectedPhotoIds.size} Total Favorites)
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {bridePicks.length > 0 && (
+                <button
+                  disabled={zippingState?.isZipping}
+                  onClick={() => handleDownloadZipPackage(bridePicks, "Bride_Selections")}
+                  className="px-3 py-1.5 bg-pink-600 hover:bg-pink-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-md transition-all"
+                >
+                  <Download size={12} /> 👰 Bride ZIP ({bridePicks.length})
+                </button>
+              )}
+
+              {groomPicks.length > 0 && (
+                <button
+                  disabled={zippingState?.isZipping}
+                  onClick={() => handleDownloadZipPackage(groomPicks, "Groom_Selections")}
+                  className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-md transition-all"
+                >
+                  <Download size={12} /> 🤵 Groom ZIP ({groomPicks.length})
+                </button>
+              )}
+
+              <button
+                disabled={zippingState?.isZipping || selectedPhotoIds.size === 0}
+                onClick={() => {
+                  const allSelected = allPhotos.filter(p => selectedPhotoIds.has(p.id));
+                  handleDownloadZipPackage(allSelected, "All_Client_Selections");
+                }}
+                className="px-4 py-1.5 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-lg transition-all"
+              >
+                <Download size={13} /> ⚡ Download All Selections ZIP ({selectedPhotoIds.size})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Real-time ZIP Compression Progress Bar */}
       {zippingState && (
@@ -954,18 +991,6 @@ const ClientGallery = () => {
               <Play size={13} className="fill-current" />
               <span>Play Slideshow</span>
             </button>
-
-            {/* Bulk ZIP is strictly for Bride & Groom */}
-            {isCoupleSelectionMode && (
-              <button
-                disabled={zippingState?.isZipping || allPhotos.length === 0}
-                onClick={() => handleDownloadZipPackage(allPhotos, "Complete_Wedding_Archive")}
-                className="px-5 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/80 backdrop-blur-md transition-all text-xs font-bold uppercase tracking-[0.18em] flex items-center gap-2 cursor-pointer shadow-xl"
-              >
-                <Download size={13} />
-                <span>Download All ZIP</span>
-              </button>
-            )}
           </motion.div>
         </div>
       </section>
@@ -1323,15 +1348,6 @@ const ClientGallery = () => {
             <Heart size={14} className="fill-red-500 text-red-500" />
             <strong>{myPicks.length}</strong> {currentUser?.role || "My"} picks &bull; <strong>{selectedPhotoIds.size}</strong> couple total
           </span>
-
-          {myPicks.length > 0 && (
-            <button
-              onClick={() => handleDownloadZipPackage(myPicks, `${currentUser?.role || "Couple"}_Picks`)}
-              className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-full font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer ml-1"
-            >
-              Download ZIP
-            </button>
-          )}
 
           {saveStatus === "saving" && (
             <span style={{ color: activeColor }} className="text-[10px] font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1">
