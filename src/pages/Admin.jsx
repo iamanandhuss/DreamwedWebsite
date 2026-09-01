@@ -5,7 +5,7 @@ import {
   ChevronRight, FileText, Package, Users, MessageSquare, Plus, Trash2, Edit3,
   Eye, EyeOff, Save, X, Camera, Video, BookOpen, RefreshCw, Search, Share2,
   Download, Heart, Printer, Coins, Percent, Sliders, ArrowLeft, Copy, Wallet,
-  Settings, Moon, Sun, Info, TrendingDown, ArrowUpRight, Upload
+  Settings, Moon, Sun, Info, TrendingDown, ArrowUpRight, Upload, Sparkles, Image as ImageIcon
 } from "lucide-react";
 import SEO from "../components/SEO";
 
@@ -105,6 +105,11 @@ const Admin = () => {
   const [newGalDrive, setNewGalDrive] = useState("");
   const [newGalExtraDrive, setNewGalExtraDrive] = useState("");
   const [newGalCover, setNewGalCover] = useState("https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800");
+  const [coverInputMode, setCoverInputMode] = useState("upload"); // 'upload' | 'url' | 'presets'
+  const [isDraggingCover, setIsDraggingCover] = useState(false);
+  const [editingCoverGallery, setEditingCoverGallery] = useState(null);
+  const [editCoverValue, setEditCoverValue] = useState("");
+  const [editCoverMode, setEditCoverMode] = useState("upload");
   const [selectedGalForPhotos, setSelectedGalForPhotos] = useState(null);
   const [selectedPhotosModalData, setSelectedPhotosModalData] = useState(null);
   const [bulkPhotoUrls, setBulkPhotoUrls] = useState("");
@@ -1496,6 +1501,53 @@ const Admin = () => {
       const updated = aiGalleries.filter(g => g.id !== id);
       setAiGalleries(updated);
       localStorage.setItem("dreamwed_galleries", JSON.stringify(updated));
+    }
+  };
+
+  const handleCoverFileUpload = (file, isEdit = false) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload a valid image file (JPG, PNG, WEBP).");
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      alert("Image is larger than 15MB. Please choose a slightly smaller photo.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (isEdit) {
+        setEditCoverValue(e.target.result);
+      } else {
+        setNewGalCover(e.target.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUpdateGalleryCover = async () => {
+    if (!editingCoverGallery || !editCoverValue) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/galleries`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingCoverGallery.id,
+          name: editingCoverGallery.name,
+          coverUrl: editCoverValue
+        })
+      });
+      if (res.ok) {
+        await fetchGalleries();
+        setEditingCoverGallery(null);
+        setEditCoverValue("");
+        alert("✨ Cover image updated successfully!");
+      } else {
+        throw new Error("Failed to update cover on server");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error updating cover image.");
     }
   };
 
@@ -3668,29 +3720,143 @@ const Admin = () => {
                     className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none" />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Cover Image</label>
-                  
-                  {/* Custom URL Input */}
-                  <input type="url" placeholder="Paste custom cover image URL or pick preset below"
-                    value={newGalCover} onChange={(e) => setNewGalCover(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none" />
+                {/* ================= COVER IMAGE DESIGNER ================= */}
+                <div className="space-y-2.5 p-4 rounded-2xl bg-zinc-900/70 border border-zinc-800">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[9px] font-bold text-[#b4975a] uppercase tracking-widest flex items-center gap-1.5">
+                      <ImageIcon size={12} /> Gallery Cover Photo
+                    </label>
+                    <span className="text-[8px] text-zinc-500 uppercase tracking-wider font-mono">Hero Branding</span>
+                  </div>
 
-                  {/* Preset Selector */}
-                  <select value={newGalCover} onChange={(e) => setNewGalCover(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-zinc-300 text-xs focus:border-[#b4975a] focus:outline-none">
-                    <option value="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800">🌹 Preset 1: Wedding Altar & Florals (Warm Rose)</option>
-                    <option value="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800">✨ Preset 2: Couple Walkout Celebration</option>
-                    <option value="https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800">👑 Preset 3: Traditional Golden Mandap</option>
-                    <option value="https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=800">💍 Preset 4: Bridal Luxury Details</option>
-                  </select>
+                  {/* Mode Switcher */}
+                  <div className="grid grid-cols-3 gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-850">
+                    <button
+                      type="button"
+                      onClick={() => setCoverInputMode("upload")}
+                      className={`py-1.5 px-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                        coverInputMode === "upload" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                      }`}
+                    >
+                      <Upload size={10} /> Upload
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCoverInputMode("url")}
+                      className={`py-1.5 px-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                        coverInputMode === "url" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                      }`}
+                    >
+                      <Link2 size={10} /> Paste Link
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCoverInputMode("presets")}
+                      className={`py-1.5 px-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                        coverInputMode === "presets" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                      }`}
+                    >
+                      <Sparkles size={10} /> Presets
+                    </button>
+                  </div>
 
-                  {/* Live Cover Preview */}
+                  {/* Tab 1: Upload File */}
+                  {coverInputMode === "upload" && (
+                    <div
+                      onDragOver={(e) => { e.preventDefault(); setIsDraggingCover(true); }}
+                      onDragLeave={() => setIsDraggingCover(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setIsDraggingCover(false);
+                        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                          handleCoverFileUpload(e.dataTransfer.files[0]);
+                        }
+                      }}
+                      className={`relative border-2 border-dashed rounded-xl p-4 text-center transition-all cursor-pointer ${
+                        isDraggingCover
+                          ? "border-[#b4975a] bg-[#b4975a]/10"
+                          : "border-zinc-800 hover:border-zinc-700 bg-zinc-950/60"
+                      }`}
+                    >
+                      <input
+                        type="file"
+                        id="cover-upload-input"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleCoverFileUpload(e.target.files[0]);
+                          }
+                        }}
+                      />
+                      <label htmlFor="cover-upload-input" className="cursor-pointer block space-y-1.5">
+                        <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-[#b4975a]">
+                          <Upload size={14} />
+                        </div>
+                        <div className="text-[10px] text-zinc-300 font-medium">
+                          Click to browse device or drag & drop photo
+                        </div>
+                        <div className="text-[8px] text-zinc-500">Supports high-res JPG, PNG, WEBP</div>
+                      </label>
+                    </div>
+                  )}
+
+                  {/* Tab 2: URL Input */}
+                  {coverInputMode === "url" && (
+                    <input
+                      type="url"
+                      placeholder="https://... (Direct image link or Google Drive thumbnail)"
+                      value={newGalCover}
+                      onChange={(e) => setNewGalCover(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                    />
+                  )}
+
+                  {/* Tab 3: Presets */}
+                  {coverInputMode === "presets" && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { name: "Warm Rose Altar", url: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800" },
+                        { name: "Couple Celebration", url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800" },
+                        { name: "Golden Mandap", url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800" },
+                        { name: "Luxury Details", url: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=800" }
+                      ].map((preset) => (
+                        <button
+                          key={preset.name}
+                          type="button"
+                          onClick={() => setNewGalCover(preset.url)}
+                          className={`relative rounded-xl overflow-hidden border text-left p-1.5 transition-all cursor-pointer group ${
+                            newGalCover === preset.url ? "border-[#b4975a] ring-1 ring-[#b4975a]" : "border-zinc-800 hover:border-zinc-700"
+                          }`}
+                        >
+                          <img src={preset.url} alt={preset.name} className="w-full h-12 object-cover rounded-lg" />
+                          <span className="text-[8px] font-bold text-zinc-300 truncate block mt-1 px-0.5">{preset.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Live Realistic Mockup Studio */}
                   {newGalCover && (
-                    <div className="relative h-20 rounded-xl overflow-hidden border border-zinc-800 group">
-                      <img src={newGalCover} alt="Cover Preview" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-[10px] text-white font-bold uppercase tracking-wider">Live Cover Preview</span>
+                    <div className="relative rounded-2xl overflow-hidden border border-zinc-800 shadow-xl group">
+                      <div className="relative h-28 w-full">
+                        <img src={newGalCover} alt="Cover Preview" className="w-full h-full object-cover brightness-75 group-hover:scale-105 transition-transform duration-700" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-3 text-left">
+                          <span className="text-[7px] uppercase font-bold tracking-widest text-[#b4975a]">Live Client Lock Mockup</span>
+                          <span style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-base text-white font-medium truncate leading-tight">
+                            {newGroomName && newBrideName ? `${newGroomName} & ${newBrideName}` : (newGalName || "Groom & Bride")}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="bg-zinc-950 px-3 py-1.5 border-t border-zinc-850 flex items-center justify-between text-[9px] text-zinc-400">
+                        <span>✓ Cover Image Active</span>
+                        <button
+                          type="button"
+                          onClick={() => setNewGalCover("")}
+                          className="text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+                        >
+                          Clear
+                        </button>
                       </div>
                     </div>
                   )}
@@ -3796,6 +3962,19 @@ const Admin = () => {
                             </a>
                           )}
                         </div>
+
+                        {/* 🎨 Edit Cover Button */}
+                        <button
+                          onClick={() => {
+                            setEditingCoverGallery(g);
+                            setEditCoverValue(g.coverUrl || "");
+                            setEditCoverMode("upload");
+                          }}
+                          className="px-2.5 py-2 rounded-xl bg-zinc-800 hover:bg-[#b4975a] hover:text-zinc-950 text-zinc-300 text-[10px] font-bold uppercase tracking-wider border border-zinc-750 transition-all flex items-center gap-1 cursor-pointer"
+                          title="Change / Redesign Cover Photo"
+                        >
+                          <ImageIcon size={11} /> Cover
+                        </button>
 
                         <button onClick={() => handleDeleteAiGallery(g.id)}
                           className="p-1.5 text-zinc-650 hover:text-red-500 transition-colors cursor-pointer shrink-0 ml-1">
@@ -5471,6 +5650,160 @@ const Admin = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 4.6. Edit / Redesign Gallery Cover Modal */}
+      <AnimatePresence>
+        {editingCoverGallery && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
+            onClick={() => setEditingCoverGallery(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              className="bg-zinc-950 border border-zinc-800 max-w-lg w-full rounded-[32px] p-6 sm:p-8 space-y-5 text-zinc-300 relative shadow-2xl overflow-y-auto max-h-[90vh] text-left"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setEditingCoverGallery(null)}
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 hover:bg-white text-white hover:text-black border border-white/5 flex items-center justify-center transition-all cursor-pointer z-10"
+              >
+                <X size={15} />
+              </button>
+
+              <div className="space-y-1 border-b border-zinc-850 pb-4">
+                <span className="text-[#b4975a] font-bold text-[9px] tracking-[0.2em] uppercase flex items-center gap-1">
+                  <ImageIcon size={11} /> Cover Image Studio
+                </span>
+                <h3 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl text-white font-light">
+                  Redesign Cover for <span className="italic font-serif text-[#b4975a]">{editingCoverGallery.name}</span>
+                </h3>
+              </div>
+
+              {/* Mode Switcher */}
+              <div className="grid grid-cols-3 gap-1 bg-zinc-900 p-1 rounded-xl border border-zinc-800">
+                <button
+                  type="button"
+                  onClick={() => setEditCoverMode("upload")}
+                  className={`py-1.5 px-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                    editCoverMode === "upload" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                  }`}
+                >
+                  <Upload size={10} /> Upload
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditCoverMode("url")}
+                  className={`py-1.5 px-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                    editCoverMode === "url" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                  }`}
+                >
+                  <Link2 size={10} /> Paste Link
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditCoverMode("presets")}
+                  className={`py-1.5 px-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                    editCoverMode === "presets" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                  }`}
+                >
+                  <Sparkles size={10} /> Presets
+                </button>
+              </div>
+
+              {/* Upload */}
+              {editCoverMode === "upload" && (
+                <div className="border-2 border-dashed border-zinc-800 hover:border-zinc-700 rounded-xl p-5 text-center bg-zinc-900/40">
+                  <input
+                    type="file"
+                    id="edit-cover-upload"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        handleCoverFileUpload(e.target.files[0], true);
+                      }
+                    }}
+                  />
+                  <label htmlFor="edit-cover-upload" className="cursor-pointer block space-y-2">
+                    <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-[#b4975a]">
+                      <Upload size={16} />
+                    </div>
+                    <div className="text-xs text-zinc-300 font-medium">Click to choose image from device</div>
+                    <div className="text-[9px] text-zinc-500">JPG, PNG, or WEBP (up to 15MB)</div>
+                  </label>
+                </div>
+              )}
+
+              {/* URL */}
+              {editCoverMode === "url" && (
+                <input
+                  type="url"
+                  placeholder="https://... (Direct image link or Google Drive thumbnail)"
+                  value={editCoverValue}
+                  onChange={(e) => setEditCoverValue(e.target.value)}
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white text-xs focus:border-[#b4975a] focus:outline-none"
+                />
+              )}
+
+              {/* Presets */}
+              {editCoverMode === "presets" && (
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { name: "Warm Rose Altar", url: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800" },
+                    { name: "Couple Celebration", url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800" },
+                    { name: "Golden Mandap", url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800" },
+                    { name: "Luxury Details", url: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=800" }
+                  ].map((preset) => (
+                    <button
+                      key={preset.name}
+                      type="button"
+                      onClick={() => setEditCoverValue(preset.url)}
+                      className={`relative rounded-xl overflow-hidden border text-left p-1.5 transition-all cursor-pointer group ${
+                        editCoverValue === preset.url ? "border-[#b4975a] ring-1 ring-[#b4975a]" : "border-zinc-800 hover:border-zinc-700"
+                      }`}
+                    >
+                      <img src={preset.url} alt={preset.name} className="w-full h-14 object-cover rounded-lg" />
+                      <span className="text-[9px] font-bold text-zinc-300 truncate block mt-1 px-0.5">{preset.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Live Preview */}
+              {editCoverValue && (
+                <div className="relative rounded-2xl overflow-hidden border border-zinc-800 shadow-xl h-36">
+                  <img src={editCoverValue} alt="Cover Preview" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-3">
+                    <span className="text-xs text-white font-medium">{editingCoverGallery.name}</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingCoverGallery(null)}
+                  className="w-1/2 py-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleUpdateGalleryCover}
+                  className="w-1/2 py-3 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl text-xs uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-[#b4975a]/10"
+                >
+                  Save Cover Photo
+                </button>
               </div>
             </motion.div>
           </motion.div>
