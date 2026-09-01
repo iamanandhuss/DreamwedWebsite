@@ -77,7 +77,7 @@ const Header = () => {
           <img
             src="/appIcon.png"
             alt="Dreamwed Stories Logo"
-            className="w-10 h-10 md:w-11 md:h-11 object-contain filter drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)] group-hover:scale-105 transition-transform duration-300"
+            className="w-11 h-11 md:w-12 md:h-12 object-contain filter drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)] group-hover:scale-105 transition-transform duration-300"
           />
 
           <span className="text-xl font-light tracking-tight text-white">
