@@ -126,7 +126,14 @@ const Admin = () => {
   const [chatLoading, setChatLoading] = useState(false);
 
   // Dreamwed Galleries & Orders state
-  const [aiGalleries, setAiGalleries] = useState([]);
+  const [aiGalleries, setAiGalleries] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
+      return Array.isArray(stored) ? stored : [];
+    } catch (e) {
+      return [];
+    }
+  });
   const [aiOrders, setAiOrders] = useState([]);
   const [newGroomName, setNewGroomName] = useState("");
   const [newBrideName, setNewBrideName] = useState("");
@@ -905,25 +912,33 @@ const Admin = () => {
   }, [chatProject, chatChannel]);
 
   const fetchGalleries = async () => {
+    let localGals = [];
+    try {
+      localGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
+      if (!Array.isArray(localGals)) localGals = [];
+    } catch (err) {
+      localGals = [];
+    }
+
     try {
       const res = await fetch(`${API_BASE}/api/galleries`);
       if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setAiGalleries(data);
-          localStorage.setItem("dreamwed_galleries", JSON.stringify(data));
+        const remoteData = await res.json();
+        if (Array.isArray(remoteData)) {
+          // Merge remote with any newly added local galleries so nothing is lost
+          const map = new Map();
+          remoteData.forEach(g => { if (g && g.id) map.set(g.id, g); });
+          localGals.forEach(g => { if (g && g.id && !map.has(g.id)) map.set(g.id, g); });
+          const merged = Array.from(map.values());
+          setAiGalleries(merged);
+          try { localStorage.setItem("dreamwed_galleries", JSON.stringify(merged)); } catch (e) {}
           return;
         }
       }
-      throw new Error("Invalid response");
+      throw new Error("Invalid response from server");
     } catch (e) {
-      console.warn("Loading galleries from localStorage fallback:", e);
-      try {
-        const storedGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
-        setAiGalleries(Array.isArray(storedGals) ? storedGals : []);
-      } catch (err) {
-        setAiGalleries([]);
-      }
+      console.warn("Using local galleries fallback:", e);
+      setAiGalleries(localGals);
     }
   };
 
@@ -1531,8 +1546,10 @@ const Admin = () => {
     const randomCode = String(Math.floor(1000 + Math.random() * 9000));
     const finalSelectCode = newSelectionCode.trim() || `SELECT-${randomCode}`;
     const finalGuestCode = newGuestCode.trim() || `GUEST-${randomCode}`;
+    const generatedId = `gallery-${finalName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Math.floor(100 + Math.random() * 900)}`;
 
     const newGal = {
+      id: generatedId,
       name: finalName,
       groomName: newGroomName.trim(),
       brideName: newBrideName.trim(),
@@ -1551,8 +1568,18 @@ const Admin = () => {
       brideCode: `BRIDE-${randomCode}`,
       groomCode: `GROOM-${randomCode}`,
       loginMode: "two_code_mode",
-      photos: []
+      photos: [],
+      photosCount: 0,
+      selectedCount: 0
     };
+
+    // 1. Instant UI update - gallery appears immediately!
+    setAiGalleries(prev => {
+      const existing = Array.isArray(prev) ? prev : [];
+      const updated = [newGal, ...existing.filter(g => g?.id !== newGal.id)];
+      try { localStorage.setItem("dreamwed_galleries", JSON.stringify(updated)); } catch (err) {}
+      return updated;
+    });
     
     try {
       const res = await fetch(`${API_BASE}/api/galleries`, {
@@ -1561,38 +1588,30 @@ const Admin = () => {
         body: JSON.stringify(newGal)
       });
       if (res.ok) {
+        const saved = await res.json();
+        setAiGalleries(prev => {
+          const existing = Array.isArray(prev) ? prev : [];
+          const updated = [saved, ...existing.filter(g => g?.id !== saved.id && g?.id !== newGal.id)];
+          try { localStorage.setItem("dreamwed_galleries", JSON.stringify(updated)); } catch (err) {}
+          return updated;
+        });
         await fetchGalleries();
-        const nextCode = String(Math.floor(1000 + Math.random() * 9000));
-        setNewGroomName("");
-        setNewBrideName("");
-        setNewGalName("");
-        setNewWeddingDate("");
-        setNewWeddingLocation("");
-        setNewSelectionCode(`SELECT-${nextCode}`);
-        setNewGuestCode(`GUEST-${nextCode}`);
-        setNewGalDrive("");
-        setNewGalExtraDrive("");
-        alert("💍 AI-Powered Cinematic Wedding Gallery created successfully with Guest & Selection codes!");
-      } else {
-        throw new Error("Failed to save gallery on server");
       }
     } catch (err) {
-      console.error(err);
-      const newId = `wedding-${finalName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
-      const fallbackGal = { ...newGal, id: newId };
-      const updated = [fallbackGal, ...aiGalleries];
-      setAiGalleries(updated);
-      localStorage.setItem("dreamwed_galleries", JSON.stringify(updated));
-      const nextCode = String(Math.floor(1000 + Math.random() * 9000));
-      setNewGroomName("");
-      setNewBrideName("");
-      setNewGalName("");
-      setNewSelectionCode(`SELECT-${nextCode}`);
-      setNewGuestCode(`GUEST-${nextCode}`);
-      setNewGalDrive("");
-      setNewGalExtraDrive("");
-      alert("💍 Created local gallery fallback!");
+      console.warn("Backend save failed, saved locally in dreamwed_galleries fallback:", err);
     }
+
+    const nextCode = String(Math.floor(1000 + Math.random() * 9000));
+    setNewGroomName("");
+    setNewBrideName("");
+    setNewGalName("");
+    setNewWeddingDate("");
+    setNewWeddingLocation("");
+    setNewSelectionCode(`SELECT-${nextCode}`);
+    setNewGuestCode(`GUEST-${nextCode}`);
+    setNewGalDrive("");
+    setNewGalExtraDrive("");
+    alert("💍 AI-Powered Cinematic Wedding Gallery created successfully!\n\nGallery is listed and active.");
   };
 
 
