@@ -949,12 +949,44 @@ function deleteGallery(id) {
   return false;
 }
 
-function saveGallerySelections(id, selectedPhotoIds) {
+function recordGalleryViewer(id, user) {
+  data.galleries = data.galleries || [];
+  const gallery = data.galleries.find(g => g.id === id);
+  if (!gallery || !user || !user.name) return null;
+
+  gallery.viewers = gallery.viewers || [];
+  const existing = gallery.viewers.find(v => 
+    (v.email && user.email && v.email.toLowerCase() === user.email.toLowerCase()) || 
+    (v.name && user.name && v.name.toLowerCase() === user.name.toLowerCase())
+  );
+  if (existing) {
+    existing.lastVisited = getDbDate();
+    existing.role = user.role || existing.role || "Guest";
+    if (user.email) existing.email = user.email;
+  } else {
+    gallery.viewers.push({
+      name: user.name.trim(),
+      email: (user.email || "").trim(),
+      role: user.role || "Guest",
+      firstVisited: getDbDate(),
+      lastVisited: getDbDate()
+    });
+  }
+  saveToDisk();
+  return gallery;
+}
+
+function saveGallerySelections(id, selectedPhotoIds, selectionsDetail) {
   data.galleries = data.galleries || [];
   const gallery = data.galleries.find(g => g.id === id);
   if (!gallery) return null;
   
-  gallery.selectedPhotoIds = Array.isArray(selectedPhotoIds) ? selectedPhotoIds : [];
+  if (Array.isArray(selectedPhotoIds)) {
+    gallery.selectedPhotoIds = selectedPhotoIds;
+  }
+  if (Array.isArray(selectionsDetail)) {
+    gallery.selectionsDetail = selectionsDetail;
+  }
   gallery.updated_at = getDbDate();
   saveToDisk();
   return gallery;
@@ -1094,6 +1126,6 @@ module.exports = {
   getOfficeBudgets, saveOfficeBudget, deleteOfficeBudget,
   getOfficeInvoices, saveOfficeInvoice, deleteOfficeInvoice,
   getOfficeSettings, saveOfficeSettings,
-  getGalleries, getGallery, saveGallery, deleteGallery, syncGalleryDrivePhotos, saveGallerySelections
+  getGalleries, getGallery, saveGallery, deleteGallery, syncGalleryDrivePhotos, saveGallerySelections, recordGalleryViewer
 };
 

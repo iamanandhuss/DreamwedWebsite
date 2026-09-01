@@ -46,7 +46,8 @@ const {
   saveGallery,
   deleteGallery,
   syncGalleryDrivePhotos,
-  saveGallerySelections
+  saveGallerySelections,
+  recordGalleryViewer
 } = require('./bot/database');
 const { startReminderScheduler } = require('./bot/reminders');
 
@@ -1074,7 +1075,15 @@ app.get('/api/public/galleries/:id/selected-photos', (req, res) => {
     if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
     
     const selectedIds = new Set(gallery.selectedPhotoIds || []);
-    const selectedPhotos = (gallery.photos || []).filter(p => selectedIds.has(p.id));
+    const selectionsDetail = gallery.selectionsDetail || [];
+    
+    const selectedPhotos = (gallery.photos || []).filter(p => selectedIds.has(p.id)).map(photo => {
+      const matchingUsers = selectionsDetail.filter(s => s.photoId === photo.id).map(s => s.user).filter(Boolean);
+      return {
+        ...photo,
+        selectedBy: matchingUsers.length > 0 ? matchingUsers : [{ name: "Client", role: "Couple" }]
+      };
+    });
     
     res.json({
       galleryId: gallery.id,
@@ -1087,21 +1096,31 @@ app.get('/api/public/galleries/:id/selected-photos', (req, res) => {
       coverFont: gallery.coverFont || "cormorant",
       coverColor: gallery.coverColor || "#b4975a",
       count: selectedPhotos.length,
-      photos: selectedPhotos
+      photos: selectedPhotos,
+      selectionsDetail: gallery.selectionsDetail || [],
+      viewers: gallery.viewers || []
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET Selected Photos for Admin 1-Click Download
+// GET Selected Photos for Admin 1-Click Download & Role Attribution
 app.get('/api/galleries/:id/selected-photos', (req, res) => {
   try {
     const gallery = getGallery(req.params.id);
     if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
     
     const selectedIds = new Set(gallery.selectedPhotoIds || []);
-    const selectedPhotos = (gallery.photos || []).filter(p => selectedIds.has(p.id));
+    const selectionsDetail = gallery.selectionsDetail || [];
+    
+    const selectedPhotos = (gallery.photos || []).filter(p => selectedIds.has(p.id)).map(photo => {
+      const matchingUsers = selectionsDetail.filter(s => s.photoId === photo.id).map(s => s.user).filter(Boolean);
+      return {
+        ...photo,
+        selectedBy: matchingUsers.length > 0 ? matchingUsers : [{ name: "Client", role: "Couple" }]
+      };
+    });
     
     res.json({
       galleryId: gallery.id,
@@ -1114,7 +1133,9 @@ app.get('/api/galleries/:id/selected-photos', (req, res) => {
       coverFont: gallery.coverFont || "cormorant",
       coverColor: gallery.coverColor || "#b4975a",
       count: selectedPhotos.length,
-      photos: selectedPhotos
+      photos: selectedPhotos,
+      selectionsDetail: gallery.selectionsDetail || [],
+      viewers: gallery.viewers || []
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -1144,27 +1165,36 @@ app.get('/api/public/galleries/:id', (req, res) => {
   }
 });
 
-// POST Save Client Heart Selections
+// POST Save Client Heart Selections with User Attribution
 app.post('/api/public/galleries/:id/selections', (req, res) => {
   try {
-    const { selectedPhotoIds } = req.body;
-    const updated = saveGallerySelections(req.params.id, selectedPhotoIds);
+    const { selectedPhotoIds, selectionsDetail } = req.body;
+    const updated = saveGallerySelections(req.params.id, selectedPhotoIds, selectionsDetail);
     if (!updated) return res.status(404).json({ error: 'Gallery not found' });
-    res.json({ success: true, count: (updated.selectedPhotoIds || []).length, selectedPhotoIds: updated.selectedPhotoIds });
+    res.json({ 
+      success: true, 
+      count: (updated.selectedPhotoIds || []).length, 
+      selectedPhotoIds: updated.selectedPhotoIds,
+      selectionsDetail: updated.selectionsDetail || []
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST Unlock public gallery using Access Code
+// POST Unlock public gallery using Access Code & Register Viewer Identity
 app.post('/api/public/galleries/:id/unlock', (req, res) => {
   try {
-    const { accessCode } = req.body;
+    const { accessCode, user } = req.body;
     const gallery = getGallery(req.params.id);
     if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
     
     if (gallery.accessCode !== String(accessCode).trim()) {
       return res.status(401).json({ error: 'Invalid access code' });
+    }
+    
+    if (user && user.name) {
+      recordGalleryViewer(req.params.id, user);
     }
     
     res.json(gallery);

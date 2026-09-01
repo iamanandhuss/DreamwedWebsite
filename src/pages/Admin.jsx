@@ -152,6 +152,7 @@ const Admin = () => {
 
   const [selectedGalForPhotos, setSelectedGalForPhotos] = useState(null);
   const [selectedPhotosModalData, setSelectedPhotosModalData] = useState(null);
+  const [adminSelectedFilter, setAdminSelectedFilter] = useState("all");
   const [bulkPhotoUrls, setBulkPhotoUrls] = useState("");
   const [syncingGalId, setSyncingGalId] = useState(null);
   const [zippingState, setZippingState] = useState(null);
@@ -5812,89 +5813,216 @@ const Admin = () => {
                 <X size={15} />
               </button>
 
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-850 pb-5">
-                <div className="space-y-1">
-                  <span className="text-red-400 font-bold text-[9px] tracking-[0.2em] uppercase flex items-center gap-1">
-                    <Heart size={11} className="fill-current" /> Client Selections Repository
-                  </span>
-                  <h3 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl text-white font-light">
-                    Selected Photos for <span className="italic font-serif text-[#b4975a]">{selectedPhotosModalData.galleryName}</span>
-                  </h3>
-                  <p className="text-zinc-500 text-[11px] font-light">
-                    {selectedPhotosModalData.count} photos selected by client with the ❤️ heart button.
-                  </p>
-                </div>
+              {/* Helper computations for Role-based voter filtering */}
+              {(() => {
+                const allModalPhotos = selectedPhotosModalData.photos || [];
+                const bridePhotos = allModalPhotos.filter(p => (p.selectedBy || []).some(u => u.role === 'Bride'));
+                const groomPhotos = allModalPhotos.filter(p => (p.selectedBy || []).some(u => u.role === 'Groom'));
+                const brideFamPhotos = allModalPhotos.filter(p => (p.selectedBy || []).some(u => u.role === 'BrideFamily'));
+                const groomFamPhotos = allModalPhotos.filter(p => (p.selectedBy || []).some(u => u.role === 'GroomFamily'));
+                const guestPhotos = allModalPhotos.filter(p => (p.selectedBy || []).some(u => u.role === 'Guest'));
 
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    onClick={() => {
-                      const urls = selectedPhotosModalData.photos.map(p => p.url).join("\n");
-                      navigator.clipboard.writeText(urls);
-                      alert(`📋 Copied ${selectedPhotosModalData.photos.length} photo URLs to clipboard!`);
-                    }}
-                    className="px-3.5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all"
-                  >
-                    <Copy size={13} /> Copy Links
-                  </button>
+                let filteredModalPhotos = allModalPhotos;
+                let activeRoleLabel = "All Selections";
+                if (adminSelectedFilter === 'Bride') { filteredModalPhotos = bridePhotos; activeRoleLabel = "Bride's Picks"; }
+                else if (adminSelectedFilter === 'Groom') { filteredModalPhotos = groomPhotos; activeRoleLabel = "Groom's Picks"; }
+                else if (adminSelectedFilter === 'BrideFamily') { filteredModalPhotos = brideFamPhotos; activeRoleLabel = "Bride's Family"; }
+                else if (adminSelectedFilter === 'GroomFamily') { filteredModalPhotos = groomFamPhotos; activeRoleLabel = "Groom's Family"; }
+                else if (adminSelectedFilter === 'Guest') { filteredModalPhotos = guestPhotos; activeRoleLabel = "Friends & Guests"; }
 
-                  <button
-                    onClick={() => handleCopyShareDownloadLink(selectedPhotosModalData.galleryId)}
-                    className="px-3.5 py-2.5 rounded-xl bg-[#b4975a]/10 hover:bg-[#b4975a]/20 border border-[#b4975a]/30 text-[#b4975a] hover:text-[#d4b97a] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all"
-                    title="Generate client/designer shareable 1-click download link"
-                  >
-                    <Share2 size={13} /> Share Link
-                  </button>
+                return (
+                  <>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-850 pb-5">
+                      <div className="space-y-1">
+                        <span className="text-red-400 font-bold text-[9px] tracking-[0.2em] uppercase flex items-center gap-1">
+                          <Heart size={11} className="fill-current" /> Client Selections Repository
+                        </span>
+                        <h3 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl text-white font-light">
+                          Selected Photos for <span className="italic font-serif text-[#b4975a]">{selectedPhotosModalData.galleryName}</span>
+                        </h3>
+                        <p className="text-zinc-500 text-[11px] font-light">
+                          {selectedPhotosModalData.count} total favorites with member &amp; role attribution.
+                        </p>
+                      </div>
 
-                  <button
-                    disabled={zippingState?.isZipping}
-                    onClick={() => handleDownloadAllSelected(selectedPhotosModalData)}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:brightness-110 disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer shadow-lg shadow-red-600/25 transition-all"
-                  >
-                    <Download size={14} className={zippingState?.isZipping ? "animate-bounce" : ""} /> 
-                    {zippingState?.isZipping ? "Zipping Photos..." : `⚡ Download ZIP (${selectedPhotosModalData.count})`}
-                  </button>
-                </div>
-              </div>
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <button
+                          onClick={() => {
+                            const summaryText = filteredModalPhotos.map((p, i) => {
+                              const voters = (p.selectedBy || []).map(u => `${u.name} (${u.role})`).join(", ");
+                              return `Photo #${i + 1}: ${p.url}\nSelected by: ${voters || 'Client'}\n`;
+                            }).join("\n");
+                            navigator.clipboard.writeText(summaryText);
+                            alert(`📋 Copied ${filteredModalPhotos.length} photo URLs with selection details!`);
+                          }}
+                          className="px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all"
+                        >
+                          <Copy size={13} /> Copy Details
+                        </button>
 
-              {/* Real-time ZIP Compression Progress Bar */}
-              {zippingState && (
-                <div className="bg-zinc-900/90 border border-zinc-800 p-4 rounded-2xl space-y-2">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-zinc-300 font-medium flex items-center gap-2">
-                      <RefreshCw size={13} className="animate-spin text-[#b4975a]" /> {zippingState.status}
-                    </span>
-                    <span className="text-[#b4975a] font-mono font-bold">{zippingState.percent}%</span>
-                  </div>
-                  <div className="w-full bg-zinc-950 rounded-full h-2 overflow-hidden border border-zinc-800">
-                    <div 
-                      className="bg-gradient-to-r from-[#b4975a] to-amber-300 h-full rounded-full transition-all duration-300"
-                      style={{ width: `${zippingState.percent}%` }}
-                    />
-                  </div>
-                </div>
-              )}
+                        <button
+                          onClick={() => handleCopyShareDownloadLink(selectedPhotosModalData.galleryId)}
+                          className="px-3 py-2 rounded-xl bg-[#b4975a]/10 hover:bg-[#b4975a]/20 border border-[#b4975a]/30 text-[#b4975a] hover:text-[#d4b97a] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all"
+                          title="Generate client/designer shareable 1-click download link"
+                        >
+                          <Share2 size={13} /> Share Link
+                        </button>
 
-              {/* Photos Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[55vh] overflow-y-auto pr-1">
-                {selectedPhotosModalData.photos.map((photo, idx) => (
-                  <div key={photo.id || idx} className="relative group rounded-2xl overflow-hidden border border-zinc-800 aspect-[4/5] bg-zinc-900">
-                    <img src={photo.url} alt={`Selection ${idx+1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-3">
-                      <span className="text-[10px] text-zinc-300 font-mono">#{idx + 1}</span>
-                      <a
-                        href={photo.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        download={`photo_${idx+1}.jpg`}
-                        className="p-2 rounded-xl bg-white text-black hover:bg-[#b4975a] hover:text-white transition-all"
-                        title="Download HD"
-                      >
-                        <Download size={13} />
-                      </a>
+                        <button
+                          disabled={zippingState?.isZipping || filteredModalPhotos.length === 0}
+                          onClick={() => handleDownloadAllSelected({
+                            ...selectedPhotosModalData,
+                            photos: filteredModalPhotos,
+                            galleryName: `${selectedPhotosModalData.galleryName || "Wedding"}_${activeRoleLabel.replace(/[^a-zA-Z0-9]/g, '_')}`
+                          })}
+                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:brightness-110 disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer shadow-lg shadow-red-600/25 transition-all"
+                        >
+                          <Download size={14} className={zippingState?.isZipping ? "animate-bounce" : ""} /> 
+                          {zippingState?.isZipping ? "Zipping..." : `⚡ Download ZIP (${filteredModalPhotos.length})`}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+
+                    {/* Filter Tabs by Member & Role */}
+                    <div className="flex items-center gap-2 flex-wrap pt-1">
+                      <button
+                        onClick={() => setAdminSelectedFilter('all')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          adminSelectedFilter === 'all' ? "bg-white text-black shadow-md" : "bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
+                        }`}
+                      >
+                        All Selections ({allModalPhotos.length})
+                      </button>
+
+                      {bridePhotos.length > 0 && (
+                        <button
+                          onClick={() => setAdminSelectedFilter('Bride')}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            adminSelectedFilter === 'Bride' ? "bg-pink-600 text-white shadow-md" : "bg-zinc-900 text-pink-300 hover:text-white border border-pink-900/40"
+                          }`}
+                        >
+                          <span>👰 Bride ({bridePhotos.length})</span>
+                        </button>
+                      )}
+
+                      {groomPhotos.length > 0 && (
+                        <button
+                          onClick={() => setAdminSelectedFilter('Groom')}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            adminSelectedFilter === 'Groom' ? "bg-sky-600 text-white shadow-md" : "bg-zinc-900 text-sky-300 hover:text-white border border-sky-900/40"
+                          }`}
+                        >
+                          <span>🤵 Groom ({groomPhotos.length})</span>
+                        </button>
+                      )}
+
+                      {brideFamPhotos.length > 0 && (
+                        <button
+                          onClick={() => setAdminSelectedFilter('BrideFamily')}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                            adminSelectedFilter === 'BrideFamily' ? "bg-purple-600 text-white shadow-md" : "bg-zinc-900 text-purple-300 hover:text-white border border-purple-900/40"
+                          }`}
+                        >
+                          👨‍👩‍👧 Bride's Family ({brideFamPhotos.length})
+                        </button>
+                      )}
+
+                      {groomFamPhotos.length > 0 && (
+                        <button
+                          onClick={() => setAdminSelectedFilter('GroomFamily')}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                            adminSelectedFilter === 'GroomFamily' ? "bg-blue-600 text-white shadow-md" : "bg-zinc-900 text-blue-300 hover:text-white border border-blue-900/40"
+                          }`}
+                        >
+                          👨‍👩‍👦 Groom's Family ({groomFamPhotos.length})
+                        </button>
+                      )}
+
+                      {guestPhotos.length > 0 && (
+                        <button
+                          onClick={() => setAdminSelectedFilter('Guest')}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                            adminSelectedFilter === 'Guest' ? "bg-[#b4975a] text-zinc-950 shadow-md" : "bg-zinc-900 text-amber-300 hover:text-white border border-amber-900/40"
+                          }`}
+                        >
+                          ✨ Guests ({guestPhotos.length})
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Real-time ZIP Compression Progress Bar */}
+                    {zippingState && (
+                      <div className="bg-zinc-900/90 border border-zinc-800 p-4 rounded-2xl space-y-2">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-zinc-300 font-medium flex items-center gap-2">
+                            <RefreshCw size={13} className="animate-spin text-[#b4975a]" /> {zippingState.status}
+                          </span>
+                          <span className="text-[#b4975a] font-mono font-bold">{zippingState.percent}%</span>
+                        </div>
+                        <div className="w-full bg-zinc-950 rounded-full h-2 overflow-hidden border border-zinc-800">
+                          <div 
+                            className="bg-gradient-to-r from-[#b4975a] to-amber-300 h-full rounded-full transition-all duration-300"
+                            style={{ width: `${zippingState.percent}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Photos Grid with Voter Attribution Badges */}
+                    {filteredModalPhotos.length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[55vh] overflow-y-auto pr-1">
+                        {filteredModalPhotos.map((photo, idx) => {
+                          const voters = photo.selectedBy || [];
+                          return (
+                            <div key={photo.id || idx} className="relative group rounded-2xl overflow-hidden border border-zinc-800 aspect-[4/5] bg-zinc-900 flex flex-col justify-between">
+                              <img src={photo.url} alt={`Selection ${idx+1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                              
+                              {/* Top Index & Role Badges */}
+                              <div className="absolute top-2.5 left-2.5 right-2.5 flex flex-wrap gap-1 items-start z-10 pointer-events-none">
+                                <span className="text-[9px] text-zinc-300 font-mono bg-black/80 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10">
+                                  #{idx + 1}
+                                </span>
+                                {voters.map((u, uIdx) => (
+                                  <span 
+                                    key={uIdx} 
+                                    className={`text-[8px] font-bold px-2 py-0.5 rounded-full shadow-sm ${
+                                      u.role === 'Bride' ? 'bg-pink-600 text-white' : 
+                                      u.role === 'Groom' ? 'bg-sky-600 text-white' : 
+                                      u.role === 'BrideFamily' ? 'bg-purple-600 text-white' : 
+                                      u.role === 'GroomFamily' ? 'bg-blue-600 text-white' : 
+                                      'bg-[#b4975a] text-zinc-950'
+                                    }`}
+                                  >
+                                    {u.role === 'Bride' ? '👰' : u.role === 'Groom' ? '🤵' : '👤'} {u.name}
+                                  </span>
+                                ))}
+                              </div>
+
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-3">
+                                <span className="text-[10px] text-zinc-300 font-mono">#{idx + 1}</span>
+                                <a
+                                  href={photo.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  download={`photo_${idx+1}.jpg`}
+                                  className="p-2 rounded-xl bg-white text-black hover:bg-[#b4975a] hover:text-white transition-all"
+                                  title="Download HD"
+                                >
+                                  <Download size={13} />
+                                </a>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-16 border border-zinc-800 rounded-2xl text-zinc-500 text-xs">
+                        No photos selected under this role filter.
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </motion.div>
           </motion.div>
         )}
