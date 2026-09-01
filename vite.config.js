@@ -66,7 +66,7 @@ const gdriveProxyPlugin = () => ({
 });
 
 export default defineConfig({
-  base: "./",
+  base: "/",
   plugins: [react(), gdriveProxyPlugin()],
   server: {
     proxy: {
