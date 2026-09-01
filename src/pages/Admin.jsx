@@ -133,10 +133,11 @@ const Admin = () => {
   const [newGalName, setNewGalName] = useState("");
   const [newWeddingDate, setNewWeddingDate] = useState("");
   const [newWeddingLocation, setNewWeddingLocation] = useState("");
-  const [newLoginMode, setNewLoginMode] = useState("three_tier_split"); // 'three_tier_split' | 'single'
+  const [newLoginMode, setNewLoginMode] = useState("two_code_mode");
+  const [newSelectionCode, setNewSelectionCode] = useState("");
+  const [newGuestCode, setNewGuestCode] = useState("");
   const [newBrideCode, setNewBrideCode] = useState("");
   const [newGroomCode, setNewGroomCode] = useState("");
-  const [newGuestCode, setNewGuestCode] = useState("");
   const [newGalDrive, setNewGalDrive] = useState("");
   const [newGalExtraDrive, setNewGalExtraDrive] = useState("");
   const [newGalCover, setNewGalCover] = useState("https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800");
@@ -1494,11 +1495,10 @@ const Admin = () => {
     const groom = gallery.groomName || "";
     const bride = gallery.brideName || "";
     const couple = groom && bride ? `${groom} & ${bride}` : (gallery.name || "Wedding Gallery");
-    const bCode = gallery.brideCode || `BRIDE-${gallery.accessCode || '1000'}`;
-    const gCode = gallery.groomCode || `GROOM-${gallery.accessCode || '1000'}`;
+    const selectCode = gallery.selectionCode || `SELECT-${gallery.accessCode || '1000'}`;
     const guestCode = gallery.guestCode || `GUEST-${gallery.accessCode || '1000'}`;
 
-    const message = `✨ *Private Wedding Gallery & Story: ${couple}* ✨\n\n📸 *View the Cinematic Wedding Highlights:*\n🔗 ${url}\n\n🔐 *Access Passcodes:*\n👰 *Bride Code:* \`${bCode}\` (Full album selection rights)\n🤵 *Groom Code:* \`${gCode}\` (Full album selection rights)\n👥 *Family & Guest Code:* \`${guestCode}\` (Explore & Favorite moments)\n\n_Protected by Dreamwed Stories_`;
+    const message = `✨ *Private Wedding Gallery: ${couple}* ✨\n\n📸 *View the Cinematic Story (Guests):*\n🔗 ${url}\n👥 *Guest Passcode:* \`${guestCode}\`\n\n💍 *Album Photo Selection (Bride & Groom):*\n🔗 ${url}\n👰🤵 *Selection Passcode:* \`${selectCode}\` (Prompts for Bride or Groom)\n\n_Protected & Curated by Dreamwed Stories_`;
 
     navigator.clipboard.writeText(message);
     alert(`💬 WhatsApp Group Invitation Copied to Clipboard!\n\n${message}`);
@@ -1517,8 +1517,7 @@ const Admin = () => {
     }
     
     const randomCode = String(Math.floor(1000 + Math.random() * 9000));
-    const finalBrideCode = newBrideCode.trim() || `BRIDE-${randomCode}`;
-    const finalGroomCode = newGroomCode.trim() || `GROOM-${randomCode}`;
+    const finalSelectCode = newSelectionCode.trim() || `SELECT-${randomCode}`;
     const finalGuestCode = newGuestCode.trim() || `GUEST-${randomCode}`;
 
     const newGal = {
@@ -1535,10 +1534,11 @@ const Admin = () => {
       coverFont: newGalCoverFont,
       coverColor: newGalCoverColor,
       accessCode: randomCode,
-      brideCode: finalBrideCode,
-      groomCode: finalGroomCode,
+      selectionCode: finalSelectCode,
       guestCode: finalGuestCode,
-      loginMode: newLoginMode,
+      brideCode: `BRIDE-${randomCode}`,
+      groomCode: `GROOM-${randomCode}`,
+      loginMode: "two_code_mode",
       photos: []
     };
     
@@ -1555,12 +1555,11 @@ const Admin = () => {
         setNewGalName("");
         setNewWeddingDate("");
         setNewWeddingLocation("");
-        setNewBrideCode("");
-        setNewGroomCode("");
+        setNewSelectionCode("");
         setNewGuestCode("");
         setNewGalDrive("");
         setNewGalExtraDrive("");
-        alert("💍 AI-Powered Cinematic Wedding Gallery created successfully!");
+        alert("💍 AI-Powered Cinematic Wedding Gallery created successfully with Guest & Selection codes!");
       } else {
         throw new Error("Failed to save gallery on server");
       }
@@ -3829,31 +3828,32 @@ const Admin = () => {
                   </div>
                 </div>
 
-                {/* Multi-Tier Access Passcodes */}
-                <div className="space-y-2 p-3 rounded-2xl bg-zinc-900/80 border border-zinc-800">
+                {/* 2 Dedicated Access Passcodes */}
+                <div className="space-y-2.5 p-3.5 rounded-2xl bg-zinc-900/80 border border-zinc-800">
                   <div className="flex items-center justify-between">
                     <label className="text-[9px] font-bold text-[#b4975a] uppercase tracking-widest flex items-center gap-1.5">
-                      <Lock size={11} /> Access Passcodes (Bride, Groom &amp; Guests)
+                      <Lock size={11} /> 2 Dedicated Access Passcodes
                     </label>
+                    <span className="text-[8px] text-zinc-500 font-mono">Custom or Auto</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="space-y-0.5">
-                      <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">👰 Bride Code</label>
-                      <input type="text" placeholder="BRIDE-..."
-                        value={newBrideCode} onChange={(e) => setNewBrideCode(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-[11px] text-white font-mono focus:border-[#b4975a] focus:outline-none" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">🤵 Groom Code</label>
-                      <input type="text" placeholder="GROOM-..."
-                        value={newGroomCode} onChange={(e) => setNewGroomCode(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-[11px] text-white font-mono focus:border-[#b4975a] focus:outline-none" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">👥 Guest Code</label>
-                      <input type="text" placeholder="GUEST-..."
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-bold text-amber-400 uppercase tracking-wider block flex items-center gap-1">
+                        👥 Guest Code (AI Story)
+                      </label>
+                      <input type="text" placeholder="e.g. GUEST-374"
                         value={newGuestCode} onChange={(e) => setNewGuestCode(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-[11px] text-white font-mono focus:border-[#b4975a] focus:outline-none" />
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:border-[#b4975a] focus:outline-none" />
+                      <span className="text-[7.5px] text-zinc-500 block leading-tight">For guests to view AI story &amp; moments</span>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-bold text-pink-400 uppercase tracking-wider block flex items-center gap-1">
+                        💍 Selection Code (Couple)
+                      </label>
+                      <input type="text" placeholder="e.g. SELECT-374"
+                        value={newSelectionCode} onChange={(e) => setNewSelectionCode(e.target.value)}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:border-[#b4975a] focus:outline-none" />
+                      <span className="text-[7.5px] text-zinc-500 block leading-tight">Prompts Bride or Groom to select photos</span>
                     </div>
                   </div>
                 </div>
@@ -4174,14 +4174,11 @@ const Admin = () => {
                         <div className="space-y-1">
                           <span className="font-bold text-white text-sm block">{g?.name || "Dreamwed Wedding"}</span>
                           <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                            <span className="text-[9px] text-pink-400 font-bold bg-pink-950/40 px-2 py-0.5 border border-pink-800/40 rounded flex items-center gap-1">
-                              👰 Bride: <strong className="text-white font-mono">{g?.brideCode || `BRIDE-${g?.accessCode || "1000"}`}</strong>
-                            </span>
-                            <span className="text-[9px] text-sky-400 font-bold bg-sky-950/40 px-2 py-0.5 border border-sky-800/40 rounded flex items-center gap-1">
-                              🤵 Groom: <strong className="text-white font-mono">{g?.groomCode || `GROOM-${g?.accessCode || "1000"}`}</strong>
-                            </span>
                             <span className="text-[9px] text-amber-400 font-bold bg-amber-950/40 px-2 py-0.5 border border-amber-800/40 rounded flex items-center gap-1">
-                              👥 Guest: <strong className="text-white font-mono">{g?.guestCode || `GUEST-${g?.accessCode || "1000"}`}</strong>
+                              👥 Guest Code: <strong className="text-white font-mono">{g?.guestCode || `GUEST-${g?.accessCode || "1000"}`}</strong>
+                            </span>
+                            <span className="text-[9px] text-pink-400 font-bold bg-pink-950/40 px-2 py-0.5 border border-pink-800/40 rounded flex items-center gap-1">
+                              💍 Selection Code: <strong className="text-white font-mono">{g?.selectionCode || `SELECT-${g?.accessCode || "1000"}`}</strong>
                             </span>
                             <span className="text-[9px] text-red-400 font-bold bg-red-950/40 px-2 py-0.5 border border-red-800/40 rounded-full flex items-center gap-1">
                               <Heart size={10} className="fill-current text-red-400" />

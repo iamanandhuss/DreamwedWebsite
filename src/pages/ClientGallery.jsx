@@ -565,62 +565,29 @@ const ClientGallery = () => {
 
           {/* Login Form */}
           <form onSubmit={handleUnlock} className="space-y-3.5 text-left">
-            {/* Role quick selector */}
+            {/* Passcode input with dynamic code-type indicator */}
             <div className="space-y-1">
-              <label className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider flex items-center justify-between">
-                <span>Who is viewing?</span>
-                <span className="text-[#b4975a] font-normal">Select your relationship</span>
-              </label>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
-                {USER_ROLES.map(r => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => setViewerRole(r.id)}
-                    className={`p-2 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
-                      viewerRole === r.id
-                        ? "bg-[#b4975a] text-zinc-950 font-bold border-[#b4975a] shadow-md scale-102"
-                        : "bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-850"
-                    }`}
-                  >
-                    <span className="text-sm">{r.icon}</span>
-                    <span className="text-[8px] leading-tight truncate w-full">{r.label}</span>
-                  </button>
-                ))}
+              <div className="flex justify-between items-center">
+                <label className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider block">
+                  Gallery Passcode <span className="text-red-400">*</span>
+                </label>
+                <span className="text-[9px] text-[#b4975a] font-medium">
+                  {passcode.toLowerCase().includes("select") || (meta?.selectionCode && passcode.trim().toLowerCase() === meta.selectionCode.toLowerCase())
+                    ? "💍 Selection Code Detected"
+                    : (passcode.toLowerCase().includes("guest") || (meta?.guestCode && passcode.trim().toLowerCase() === meta.guestCode.toLowerCase())
+                      ? "✨ Guest Code Detected"
+                      : "Enter Guest or Selection Code")}
+                </span>
               </div>
-            </div>
-
-            {/* Name input */}
-            <div className="space-y-1">
-              <label className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider block">
-                Your Full Name <span className="text-red-400">*</span>
-              </label>
-              <div className="relative flex items-center">
-                <input
-                  type="text"
-                  value={viewerName}
-                  onChange={(e) => { setViewerName(e.target.value); if (error) setError(""); }}
-                  placeholder="e.g. Parvathi (Bride) or Akash (Groom)"
-                  className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#b4975a]"
-                  required
-                />
-                <User size={14} className="absolute right-3.5 text-zinc-500 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Passcode input */}
-            <div className="space-y-1">
-              <label className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider block">
-                Passcode (Bride / Groom / Guest Code) <span className="text-red-400">*</span>
-              </label>
               <div className="relative flex items-center">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={passcode}
                   onChange={(e) => { setPasscode(e.target.value); if (error) setError(""); }}
-                  placeholder="e.g. BRIDE-2026 or akash2026"
+                  placeholder="e.g. GUEST-374 or SELECT-374"
                   className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl px-3.5 py-2.5 pr-10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#b4975a] font-mono"
                   required
+                  autoFocus
                 />
                 <button
                   type="button"
@@ -629,6 +596,92 @@ const ClientGallery = () => {
                 >
                   {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
+              </div>
+            </div>
+
+            {/* If Selection Code or User explicitly chooses Couple Selection */}
+            {(passcode.toLowerCase().includes("select") || 
+              (meta?.selectionCode && passcode.trim().toLowerCase() === meta.selectionCode.toLowerCase()) ||
+              viewerRole === "Bride" || viewerRole === "Groom") ? (
+              <motion.div 
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3 bg-red-950/20 border border-red-800/40 rounded-2xl space-y-2"
+              >
+                <label className="text-[9px] uppercase font-bold text-red-300 tracking-wider block text-center">
+                  💍 Album Selection Lounge: Who is selecting?
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setViewerRole("Bride")}
+                    className={`py-2 px-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                      viewerRole === "Bride"
+                        ? "bg-pink-600 text-white border-pink-500 shadow-md scale-102"
+                        : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    <span>👰 Bride</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewerRole("Groom")}
+                    className={`py-2 px-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                      viewerRole === "Groom"
+                        ? "bg-sky-600 text-white border-sky-500 shadow-md scale-102"
+                        : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    <span>🤵 Groom</span>
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              /* Guest Mode Indicator */
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider flex items-center justify-between">
+                  <span>Guest Experience</span>
+                  <span className="text-zinc-500 text-[8px]">AI Story &amp; Best Moments</span>
+                </label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[
+                    { id: "Guest", label: "Friend / Guest", icon: "✨" },
+                    { id: "BrideFamily", label: "Bride's Family", icon: "👨‍👩‍👧" },
+                    { id: "GroomFamily", label: "Groom's Family", icon: "👨‍👩‍👦" }
+                  ].map(r => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => setViewerRole(r.id)}
+                      className={`p-2 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
+                        viewerRole === r.id
+                          ? "bg-[#b4975a] text-zinc-950 font-bold border-[#b4975a] shadow-md"
+                          : "bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      <span className="text-xs">{r.icon}</span>
+                      <span className="text-[8px] leading-tight truncate w-full">{r.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Name input */}
+            <div className="space-y-1">
+              <label className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider block">
+                Your Name <span className="text-red-400">*</span>
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  value={viewerName}
+                  onChange={(e) => { setViewerName(e.target.value); if (error) setError(""); }}
+                  placeholder={viewerRole === "Bride" ? "e.g. Parvathi (Bride)" : (viewerRole === "Groom" ? "e.g. Akash (Groom)" : "e.g. Rahul (Guest)")}
+                  className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#b4975a]"
+                  required
+                />
+                <User size={14} className="absolute right-3.5 text-zinc-500 pointer-events-none" />
               </div>
             </div>
 

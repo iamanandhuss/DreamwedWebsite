@@ -1182,7 +1182,7 @@ app.post('/api/public/galleries/:id/selections', (req, res) => {
   }
 });
 
-// POST Unlock public gallery using Multi-Tier Passcode (Bride/Groom/Guest) & Register Viewer Identity
+// POST Unlock public gallery using 2 Passcodes (Guest AI Story Code vs Couple Selection Code)
 app.post('/api/public/galleries/:id/unlock', (req, res) => {
   try {
     const { accessCode, user } = req.body;
@@ -1191,28 +1191,37 @@ app.post('/api/public/galleries/:id/unlock', (req, res) => {
     
     const cleanCode = String(accessCode || "").trim().toLowerCase();
     const gAccess = String(gallery.accessCode || "").trim().toLowerCase();
+    const gSelect = String(gallery.selectionCode || "").trim().toLowerCase();
+    const gGuest = String(gallery.guestCode || "").trim().toLowerCase();
     const gBride = String(gallery.brideCode || "").trim().toLowerCase();
     const gGroom = String(gallery.groomCode || "").trim().toLowerCase();
-    const gGuest = String(gallery.guestCode || "").trim().toLowerCase();
 
     let resolvedRole = user?.role || "Guest";
     let isAuthorized = false;
+    let accessType = "guest"; // 'guest' | 'selection'
 
-    if (cleanCode && (cleanCode === gBride || cleanCode === `bride-${gAccess}`)) {
+    if (cleanCode && (cleanCode === gSelect || cleanCode === `select-${gAccess}` || cleanCode === `selection-${gAccess}` || cleanCode === "select")) {
+      // 💍 SELECTION CODE ENTERED: Bride or Groom selection lounge
+      resolvedRole = (user?.role === "Groom" || user?.role === "groom") ? "Groom" : "Bride";
+      accessType = "selection";
+      isAuthorized = true;
+    } else if (cleanCode && (cleanCode === gBride || cleanCode === `bride-${gAccess}`)) {
       resolvedRole = "Bride";
+      accessType = "selection";
       isAuthorized = true;
     } else if (cleanCode && (cleanCode === gGroom || cleanCode === `groom-${gAccess}`)) {
       resolvedRole = "Groom";
+      accessType = "selection";
       isAuthorized = true;
-    } else if (cleanCode && (cleanCode === gGuest || cleanCode === `guest-${gAccess}`)) {
-      resolvedRole = "Guest";
-      isAuthorized = true;
-    } else if (cleanCode && cleanCode === gAccess) {
+    } else if (cleanCode && (cleanCode === gGuest || cleanCode === `guest-${gAccess}` || cleanCode === gAccess)) {
+      // 👥 GUEST AI STORY CODE ENTERED
+      resolvedRole = user?.role || "Guest";
+      accessType = "guest";
       isAuthorized = true;
     }
 
     if (!isAuthorized) {
-      return res.status(401).json({ error: 'Invalid access passcode. Please check your invitation code.' });
+      return res.status(401).json({ error: 'Invalid access passcode. Please check your guest code or selection code.' });
     }
     
     const activeUserProfile = {
@@ -1225,7 +1234,8 @@ app.post('/api/public/galleries/:id/unlock', (req, res) => {
     
     res.json({
       ...gallery,
-      viewerRole: resolvedRole
+      viewerRole: resolvedRole,
+      accessType
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
