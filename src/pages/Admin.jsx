@@ -96,12 +96,13 @@ const Admin = () => {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatLoading, setChatLoading] = useState(false);
 
-  // AI Galleries & Orders state
+  // Dreamwed Galleries & Orders state
   const [aiGalleries, setAiGalleries] = useState([]);
   const [aiOrders, setAiOrders] = useState([]);
+  const [newGroomName, setNewGroomName] = useState("");
+  const [newBrideName, setNewBrideName] = useState("");
   const [newGalName, setNewGalName] = useState("");
   const [newGalDrive, setNewGalDrive] = useState("");
-  const [newGalType, setNewGalType] = useState("After Event Gallery");
   const [newGalCover, setNewGalCover] = useState("https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800");
   const [selectedGalForPhotos, setSelectedGalForPhotos] = useState(null);
   const [bulkPhotoUrls, setBulkPhotoUrls] = useState("");
@@ -1419,14 +1420,23 @@ const Admin = () => {
 
   const handleCreateAiGallery = async (e) => {
     e.preventDefault();
-    if (!newGalName || !newGalDrive) return;
+    const finalName = newGalName.trim() || 
+      ((newGroomName.trim() && newBrideName.trim()) 
+        ? `${newGroomName.trim()} & ${newBrideName.trim()}` 
+        : (newGroomName.trim() || newBrideName.trim() || "Dreamwed Wedding"));
+
+    if (!finalName || !newGalDrive) {
+      alert("Please enter Groom/Bride name (or Wedding name) and Google Drive link.");
+      return;
+    }
     
     const randomCode = String(Math.floor(1000 + Math.random() * 9000));
     const newGal = {
-      name: newGalName,
-      gdriveLink: newGalDrive,
-      type: newGalType,
-      coverUrl: newGalCover,
+      name: finalName,
+      groomName: newGroomName.trim(),
+      brideName: newBrideName.trim(),
+      gdriveLink: newGalDrive.trim(),
+      coverUrl: newGalCover.trim() || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800",
       accessCode: randomCode,
       photos: []
     };
@@ -1439,6 +1449,8 @@ const Admin = () => {
       });
       if (res.ok) {
         await fetchGalleries();
+        setNewGroomName("");
+        setNewBrideName("");
         setNewGalName("");
         setNewGalDrive("");
         alert("💍 Branded Client Gallery created successfully!");
@@ -1447,11 +1459,13 @@ const Admin = () => {
       }
     } catch (err) {
       console.error(err);
-      const newId = `wedding-${newGalName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+      const newId = `wedding-${finalName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
       const fallbackGal = { ...newGal, id: newId };
       const updated = [fallbackGal, ...aiGalleries];
       setAiGalleries(updated);
       localStorage.setItem("dreamwed_galleries", JSON.stringify(updated));
+      setNewGroomName("");
+      setNewBrideName("");
       setNewGalName("");
       setNewGalDrive("");
       alert("💍 Created local gallery fallback!");
@@ -3580,51 +3594,66 @@ const Admin = () => {
               </h3>
               
               <form onSubmit={handleCreateAiGallery} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Wedding Name</label>
-                  <input type="text" placeholder="e.g., Kabir & Ananya's Royal Vows" required
-                    value={newGalName} onChange={(e) => setNewGalName(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white text-xs focus:border-[#b4975a] focus:outline-none" />
-                </div>
-                
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Google Drive Link</label>
-                  <input type="url" placeholder="https://drive.google.com/..." required
-                    value={newGalDrive} onChange={(e) => setNewGalDrive(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white text-xs focus:border-[#b4975a] focus:outline-none" />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Gallery Type</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button type="button" onClick={() => setNewGalType("After Event Gallery")}
-                      className={`py-2 px-3 rounded-xl border text-[10px] font-bold uppercase tracking-wider text-center transition-all ${
-                        newGalType === "After Event Gallery" ? "bg-zinc-800 text-[#b4975a] border-[#b4975a]/30" : "bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700"
-                      }`}>
-                      After Event
-                    </button>
-                    <button type="button" onClick={() => setNewGalType("Live Gallery")}
-                      className={`py-2 px-3 rounded-xl border text-[10px] font-bold uppercase tracking-wider text-center transition-all ${
-                        newGalType === "Live Gallery" ? "bg-zinc-800 text-[#b4975a] border-[#b4975a]/30" : "bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700"
-                      }`}>
-                      Live Gallery
-                    </button>
+                {/* Groom & Bride Names */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Groom Name</label>
+                    <input type="text" placeholder="e.g., Akash"
+                      value={newGroomName} onChange={(e) => setNewGroomName(e.target.value)}
+                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Bride Name</label>
+                    <input type="text" placeholder="e.g., Ananya"
+                      value={newBrideName} onChange={(e) => setNewBrideName(e.target.value)}
+                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none" />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Client Cover Photo Preset</label>
+                  <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Wedding Event Title (Optional)</label>
+                  <input type="text" placeholder="e.g., The Royal Wedding Ceremony (or leave blank)"
+                    value={newGalName} onChange={(e) => setNewGalName(e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none" />
+                </div>
+                
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Google Drive Link</label>
+                  <input type="url" placeholder="https://drive.google.com/drive/folders/..." required
+                    value={newGalDrive} onChange={(e) => setNewGalDrive(e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none" />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Cover Image</label>
+                  
+                  {/* Custom URL Input */}
+                  <input type="url" placeholder="Paste custom cover image URL or pick preset below"
+                    value={newGalCover} onChange={(e) => setNewGalCover(e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none" />
+
+                  {/* Preset Selector */}
                   <select value={newGalCover} onChange={(e) => setNewGalCover(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white text-xs focus:border-[#b4975a] focus:outline-none">
-                    <option value="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800">Wedding Altar & Florals (Warm Rose)</option>
-                    <option value="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800">Couple Walkout Celebration</option>
-                    <option value="https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800">Traditional Golden Mandap</option>
-                    <option value="https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=800">Bridal Luxury Details</option>
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-zinc-300 text-xs focus:border-[#b4975a] focus:outline-none">
+                    <option value="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800">🌹 Preset 1: Wedding Altar & Florals (Warm Rose)</option>
+                    <option value="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800">✨ Preset 2: Couple Walkout Celebration</option>
+                    <option value="https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800">👑 Preset 3: Traditional Golden Mandap</option>
+                    <option value="https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=800">💍 Preset 4: Bridal Luxury Details</option>
                   </select>
+
+                  {/* Live Cover Preview */}
+                  {newGalCover && (
+                    <div className="relative h-20 rounded-xl overflow-hidden border border-zinc-800 group">
+                      <img src={newGalCover} alt="Cover Preview" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-[10px] text-white font-bold uppercase tracking-wider">Live Cover Preview</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <button type="submit"
-                  className="w-full py-3 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2">
+                  className="w-full py-3.5 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-[#b4975a]/10">
                   <Plus size={14} /> Create Dreamwed Gallery
                 </button>
               </form>
@@ -3647,11 +3676,6 @@ const Admin = () => {
                         <div className="space-y-1">
                           <span className="font-bold text-white text-sm block">{g.name}</span>
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className={`text-[8px] font-bold uppercase tracking-wide px-2.5 py-0.5 rounded-full ${
-                              g.type === "Live Gallery" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-sky-500/10 text-sky-400 border border-sky-500/20"
-                            }`}>
-                              {g.type}
-                            </span>
                             <span className="text-[9px] text-zinc-500">ID: {g.id}</span>
                             <span className="text-[9px] text-zinc-400 font-bold bg-zinc-950 px-2 py-0.5 border border-zinc-850 rounded flex items-center gap-1">
                               🔑 Code: <strong className="text-[#b4975a] font-mono">{g.accessCode}</strong>

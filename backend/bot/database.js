@@ -894,8 +894,10 @@ function saveGallery(gallery) {
     const existing = data.galleries[existingIndex];
     const updated = {
       ...existing,
+      name: gallery.name || existing.name,
+      groomName: gallery.groomName !== undefined ? gallery.groomName : (existing.groomName || ""),
+      brideName: gallery.brideName !== undefined ? gallery.brideName : (existing.brideName || ""),
       gdriveLink: gallery.gdriveLink || existing.gdriveLink,
-      type: gallery.type || existing.type,
       coverUrl: gallery.coverUrl || existing.coverUrl,
       updated_at: getDbDate()
     };
@@ -903,13 +905,17 @@ function saveGallery(gallery) {
     saveToDisk();
     return updated;
   } else {
-    const id = gallery.id || `gallery-${gallery.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Math.floor(100 + Math.random() * 900)}`;
+    const groomName = gallery.groomName || "";
+    const brideName = gallery.brideName || "";
+    const name = gallery.name || (groomName && brideName ? `${groomName} & ${brideName}` : (groomName || brideName || "Dreamwed Wedding"));
+    const id = gallery.id || `gallery-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Math.floor(100 + Math.random() * 900)}`;
     const accessCode = gallery.accessCode || String(Math.floor(1000 + Math.random() * 9000));
     const newGallery = {
       id,
-      name: gallery.name,
+      name,
+      groomName,
+      brideName,
       gdriveLink: gallery.gdriveLink,
-      type: gallery.type || "After Event Gallery",
       coverUrl: gallery.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800",
       accessCode,
       photos: gallery.photos || [],

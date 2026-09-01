@@ -188,7 +188,13 @@ const ClientGallery = () => {
               <div className="space-y-2">
                 <span className="text-[#b4975a] uppercase font-bold tracking-widest text-[9px] block">Dreamwed Stories</span>
                 <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-4xl text-white font-light leading-none">
-                  {meta?.name}
+                  {meta?.groomName && meta?.brideName ? (
+                    <>
+                      <span>{meta.groomName}</span> <span className="italic font-serif text-[#b4975a]">&</span> <span>{meta.brideName}</span>
+                    </>
+                  ) : (
+                    meta?.name
+                  )}
                 </h1>
                 <p className="text-zinc-400 text-xs tracking-wider font-light mt-1">Wedding Photography Gallery</p>
               </div>
@@ -266,7 +272,9 @@ const ClientGallery = () => {
                 </Link>
                 <div>
                   <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-xl text-white font-medium leading-none">
-                    {gallery?.name}
+                    {gallery?.groomName && gallery?.brideName 
+                      ? `${gallery.groomName} & ${gallery.brideName}` 
+                      : (gallery?.name || "Dreamwed Gallery")}
                   </h1>
                   <span className="text-[9px] text-[#b4975a] font-bold uppercase tracking-wider block mt-1">Dreamwed Stories Gallery</span>
                 </div>
