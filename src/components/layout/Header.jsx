@@ -44,7 +44,6 @@ const Header = () => {
     { name: "About", path: "/about" },
     { name: "Services", path: "/services" },
     { name: "Packages", path: "/packages" },
-    { name: "AI Photo Search ✨", path: "/ai-search" },
     { name: "Blog", path: "/blog" },
     { name: "Contact", path: "/contact" },
   ];
@@ -169,12 +168,6 @@ const Header = () => {
                   className="absolute right-0 top-full mt-2 w-48 bg-zinc-950/95 backdrop-blur-xl border border-white/10 rounded-xl p-2.5 flex flex-col gap-1 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-50"
                 >
                   <NavLink 
-                    to="/ai-search" 
-                    className="px-4 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-zinc-300 hover:text-[#b4975a] hover:bg-white/5 transition-all text-left block"
-                  >
-                    ✨ AI Photo Search
-                  </NavLink>
-                  <NavLink 
                     to="/my-booking" 
                     className="px-4 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-zinc-300 hover:text-[#b4975a] hover:bg-white/5 transition-all text-left block"
                   >
@@ -278,13 +271,6 @@ const Header = () => {
             {/* Mobile login items */}
             <div className="w-full border-t border-white/5 pt-4 mt-2 flex flex-col items-center gap-4">
               <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">Workspace Portals</span>
-              <NavLink
-                to="/ai-search"
-                onClick={() => setIsOpen(false)}
-                className="text-base text-zinc-300 hover:text-[#b4975a] tracking-wide transition-all uppercase"
-              >
-                ✨ AI Photo Search
-              </NavLink>
               <NavLink
                 to="/my-booking"
                 onClick={() => setIsOpen(false)}
