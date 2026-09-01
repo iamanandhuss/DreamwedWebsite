@@ -9,14 +9,18 @@ const CustomCursor = () => {
   const mouseX = useMotionValue(-100);
   const mouseY = useMotionValue(-100);
 
-  // Spring configuration for lagging luxury effect
+  // Spring configuration
   const springConfig = { damping: 35, stiffness: 350, mass: 0.5 };
   const cursorXSpring = useSpring(mouseX, springConfig);
   const cursorYSpring = useSpring(mouseY, springConfig);
 
   useEffect(() => {
+    // Disable on touch devices
+    if (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
+      return;
+    }
+
     const moveCursor = (e) => {
-      // Offset by half of outer circle dimensions (32px / 2 = 16px)
       mouseX.set(e.clientX - 16);
       mouseY.set(e.clientY - 16);
       if (!isVisible) setIsVisible(true);
@@ -29,28 +33,28 @@ const CustomCursor = () => {
     document.addEventListener("mouseleave", handleMouseLeave);
     document.addEventListener("mouseenter", handleMouseEnter);
 
-    const addHoverListeners = () => {
-      const hoverElements = document.querySelectorAll(
-        "a, button, [role='button'], .cursor-pointer, input, textarea, iframe"
-      );
-      
-      hoverElements.forEach((el) => {
-        el.addEventListener("mouseenter", () => setCursorType("hover"));
-        el.addEventListener("mouseleave", () => setCursorType("default"));
-      });
+    const handleMouseOver = (e) => {
+      const target = e.target;
+      if (target && (
+        target.tagName === 'A' || 
+        target.tagName === 'BUTTON' || 
+        target.getAttribute('role') === 'button' ||
+        target.classList.contains('cursor-pointer') ||
+        target.closest('a, button, [role="button"], .cursor-pointer')
+      )) {
+        setCursorType("hover");
+      } else {
+        setCursorType("default");
+      }
     };
 
-    addHoverListeners();
-
-    // Listen for dynamic DOM adjustments to keep cursor bounds accurate
-    const observer = new MutationObserver(addHoverListeners);
-    observer.observe(document.body, { childList: true, subtree: true });
+    document.addEventListener("mouseover", handleMouseOver);
 
     return () => {
       window.removeEventListener("mousemove", moveCursor);
       document.removeEventListener("mouseleave", handleMouseLeave);
       document.removeEventListener("mouseenter", handleMouseEnter);
-      observer.disconnect();
+      document.removeEventListener("mouseover", handleMouseOver);
     };
   }, [isVisible]);
 

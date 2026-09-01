@@ -32,11 +32,11 @@ const ScrollToTop = () => {
   return null;
 };
 
-// Global Error Boundary to prevent any blank screen crash
+// Global Error Boundary with detailed message
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
 
   static getDerivedStateFromError(error) {
@@ -44,29 +44,43 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error("Dreamwed UI Error Boundary Caught:", error, errorInfo);
+    console.error("Dreamwed ErrorBoundary:", error, errorInfo);
+    this.setState({ errorInfo });
   }
 
   render() {
     if (this.state.hasError) {
+      const errText = this.state.error?.message || String(this.state.error) || "An unexpected error occurred.";
       return (
         <div className="min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center p-6 text-center space-y-4">
           <div className="w-16 h-16 rounded-full bg-red-950/50 border border-red-800/40 flex items-center justify-center text-red-400 mx-auto">
             <span className="text-2xl font-bold">⚠️</span>
           </div>
           <h1 className="text-2xl font-light">Something went wrong</h1>
-          <p className="text-zinc-400 text-xs max-w-md font-mono bg-zinc-900 p-3 rounded-xl border border-zinc-800 break-words">
-            {this.state.error?.message || "An unexpected error occurred."}
-          </p>
-          <button
-            onClick={() => {
-              this.setState({ hasError: false, error: null });
-              window.location.reload();
-            }}
-            className="px-6 py-2.5 bg-[#b4975a] text-zinc-950 font-bold uppercase tracking-wider rounded-xl text-xs hover:brightness-110 transition-all cursor-pointer shadow-lg"
-          >
-            Reload Page
-          </button>
+          <div className="text-left bg-zinc-900 border border-zinc-800 p-4 rounded-2xl max-w-lg w-full space-y-2">
+            <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider block">Error Details</span>
+            <p className="text-red-400 text-xs font-mono break-all leading-relaxed">
+              {errText}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                this.setState({ hasError: false, error: null, errorInfo: null });
+                window.location.reload();
+              }}
+              className="px-6 py-2.5 bg-[#b4975a] text-zinc-950 font-bold uppercase tracking-wider rounded-xl text-xs hover:brightness-110 transition-all cursor-pointer shadow-lg"
+            >
+              Reload Page
+            </button>
+            <a
+              href="/"
+              onClick={() => this.setState({ hasError: false, error: null, errorInfo: null })}
+              className="px-6 py-2.5 bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white font-bold uppercase tracking-wider rounded-xl text-xs hover:bg-zinc-800 transition-all cursor-pointer"
+            >
+              Return Home
+            </a>
+          </div>
         </div>
       );
     }
@@ -75,9 +89,8 @@ class ErrorBoundary extends React.Component {
 }
 
 const AnimatedRoutes = () => {
-  const location = useLocation();
   return (
-    <Routes location={location} key={location.pathname}>
+    <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/about" element={<About />} />
       <Route path="/services" element={<Services />} />
