@@ -385,9 +385,10 @@ const ClientGallery = () => {
               {/* Prev Button */}
               <button 
                 onClick={handlePrevPhoto}
-                className="absolute left-6 p-3 bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 text-white rounded-2xl cursor-pointer hover:border-[#b4975a] transition-all"
+                title="Previous Photo (Left Arrow key)"
+                className="absolute left-2 sm:left-6 z-30 p-3 sm:p-4 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-700/60 hover:border-[#b4975a] rounded-full shadow-2xl cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group"
               >
-                <ChevronLeft size={24} />
+                <ChevronLeft size={26} className="group-hover:-translate-x-0.5 transition-transform" />
               </button>
 
               {/* Photo */}
@@ -398,7 +399,7 @@ const ClientGallery = () => {
                 exit={{ scale: 0.95, opacity: 0 }}
                 transition={{ duration: 0.3 }}
                 src={activePhoto.url} 
-                className="max-h-[80vh] max-w-[90vw] object-contain rounded-lg border border-zinc-900 shadow-2xl select-none"
+                className="max-h-[80vh] max-w-[90vw] object-contain rounded-lg border border-zinc-900 shadow-2xl select-none z-10"
                 onClick={(e) => e.stopPropagation()}
                 alt="Fullscreen Preview"
               />
@@ -406,9 +407,10 @@ const ClientGallery = () => {
               {/* Next Button */}
               <button 
                 onClick={handleNextPhoto}
-                className="absolute right-6 p-3 bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 text-white rounded-2xl cursor-pointer hover:border-[#b4975a] transition-all"
+                title="Next Photo (Right Arrow key)"
+                className="absolute right-2 sm:right-6 z-30 p-3 sm:p-4 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-700/60 hover:border-[#b4975a] rounded-full shadow-2xl cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group"
               >
-                <ChevronRight size={24} />
+                <ChevronRight size={26} className="group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
 
