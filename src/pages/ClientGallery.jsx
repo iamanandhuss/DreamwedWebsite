@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Lock, Eye, EyeOff, AlertCircle, ArrowLeft, Download, 
   Share2, X, ChevronLeft, ChevronRight, RefreshCw, ZoomIn,
-  Heart, Check, Sparkles, Filter
+  Heart, Check, Sparkles, Filter, Search, Camera
 } from "lucide-react";
 import SEO from "../components/SEO";
 
@@ -31,10 +31,12 @@ const TEXT_ALIGN_MAP = {
 
 const ClientGallery = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const [isLocked, setIsLocked] = useState(true);
   const [passcode, setPasscode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!id);
   const [unlocking, setUnlocking] = useState(false);
   const [error, setError] = useState("");
   
@@ -51,19 +53,28 @@ const ClientGallery = () => {
     ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com")
     : "https://dreamwed-backend.onrender.com";
 
-  // 1. Fetch public info on mount with instant localStorage fallback
+  // 1. Fetch gallery info on mount if ID is present
   useEffect(() => {
     let isMounted = true;
     
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+
     const fetchPublicInfo = async () => {
       setLoading(true);
       setError("");
 
-      // Instant check local storage
+      // 1a. Instant check local storage
       let hadLocal = false;
       try {
         const localGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
-        const localMatch = localGals.find(g => g.id === id || g.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id);
+        const localMatch = localGals.find(g => 
+          g.id === id || 
+          g.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id ||
+          g.accessCode === id
+        );
         if (localMatch && isMounted) {
           hadLocal = true;
           setMeta(localMatch);
@@ -72,6 +83,7 @@ const ClientGallery = () => {
         }
       } catch (e) {}
 
+      // 1b. Fetch from backend API
       try {
         const res = await fetch(`${API_BASE}/api/public/galleries/${id}`);
         if (res.ok) {
@@ -82,7 +94,7 @@ const ClientGallery = () => {
           }
         } else if (!hadLocal) {
           if (isMounted) {
-            throw new Error(res.status === 404 ? "Gallery not found" : "Failed to load gallery info");
+            throw new Error(res.status === 404 ? "Gallery not found on server" : "Failed to load gallery info");
           }
         }
       } catch (err) {
@@ -101,7 +113,7 @@ const ClientGallery = () => {
 
   // 2. Handle unlock with access code
   const handleUnlock = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     const cleanCode = passcode.trim();
     if (!cleanCode) return;
     
@@ -111,53 +123,102 @@ const ClientGallery = () => {
     // Check local fallback first
     try {
       const localGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
-      const localMatch = localGals.find(g => g.id === id || g.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id);
-      if (localMatch && String(localMatch.accessCode).trim() === cleanCode) {
+      const localMatch = localGals.find(g => 
+        (id ? (g.id === id || g.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id) : true) && 
+        String(g.accessCode).trim() === cleanCode
+      );
+      if (localMatch) {
+        setMeta(localMatch);
         setGallery(localMatch);
         if (localMatch.selectedPhotoIds && Array.isArray(localMatch.selectedPhotoIds)) {
           setSelectedPhotoIds(new Set(localMatch.selectedPhotoIds));
         }
         setIsLocked(false);
         setUnlocking(false);
+        if (!id) {
+          navigate(`/gallery/${localMatch.id}`, { replace: true });
+        }
         return;
       }
     } catch (e) {}
 
-    try {
-      const res = await fetch(`${API_BASE}/api/public/galleries/${id}/unlock`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accessCode: cleanCode })
-      });
-      
-      if (!res.ok) {
-        if (res.status === 401) {
-          throw new Error("Invalid access code. Please try again.");
+    // Fetch from backend
+    const targetGalleryId = id || meta?.id;
+    if (targetGalleryId) {
+      try {
+        const res = await fetch(`${API_BASE}/api/public/galleries/${targetGalleryId}/unlock`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accessCode: cleanCode })
+        });
+        
+        if (!res.ok) {
+          if (res.status === 401) {
+            throw new Error("Invalid access code. Please check and try again.");
+          }
+          throw new Error("Failed to unlock gallery");
         }
-        throw new Error("Failed to unlock gallery");
+        
+        const data = await res.json();
+        setGallery(data);
+        setMeta(data);
+        if (data.selectedPhotoIds && Array.isArray(data.selectedPhotoIds)) {
+          setSelectedPhotoIds(new Set(data.selectedPhotoIds));
+        }
+        setIsLocked(false);
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setUnlocking(false);
       }
-      
-      const data = await res.json();
-      setGallery(data);
-      if (data.selectedPhotoIds && Array.isArray(data.selectedPhotoIds)) {
-        setSelectedPhotoIds(new Set(data.selectedPhotoIds));
+    } else {
+      // Direct search by access code across backend
+      try {
+        const res = await fetch(`${API_BASE}/api/galleries`);
+        if (res.ok) {
+          const list = await res.json();
+          const match = list.find(g => String(g.accessCode).trim() === cleanCode);
+          if (match) {
+            // Unlock match
+            const unlockRes = await fetch(`${API_BASE}/api/public/galleries/${match.id}/unlock`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ accessCode: cleanCode })
+            });
+            if (unlockRes.ok) {
+              const fullData = await unlockRes.json();
+              setGallery(fullData);
+              setMeta(fullData);
+              if (fullData.selectedPhotoIds && Array.isArray(fullData.selectedPhotoIds)) {
+                setSelectedPhotoIds(new Set(fullData.selectedPhotoIds));
+              }
+              setIsLocked(false);
+              navigate(`/gallery/${match.id}`, { replace: true });
+              return;
+            }
+          }
+        }
+        throw new Error("No gallery found matching this access code.");
+      } catch (err) {
+        console.error(err);
+        setError(err.message || "Invalid passcode.");
+      } finally {
+        setUnlocking(false);
       }
-      setIsLocked(false);
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    } finally {
-      setUnlocking(false);
     }
   };
 
   // 3. Sync favorite hearts to backend
   const syncSelectionsToBackend = (idsSet) => {
+    const currentGalId = gallery?.id || id;
+    if (!currentGalId) return;
+
     if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
     setSaveStatus("saving");
     syncTimeoutRef.current = setTimeout(async () => {
       try {
-        await fetch(`${API_BASE}/api/public/galleries/${id}/selections`, {
+        await fetch(`${API_BASE}/api/public/galleries/${currentGalId}/selections`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ selectedPhotoIds: Array.from(idsSet) })
@@ -240,37 +301,19 @@ const ClientGallery = () => {
     }
   };
 
-  // Active theme properties
+  // Active theme styling properties
   const activeColor = (isLocked ? meta?.coverColor : (gallery?.coverColor || meta?.coverColor)) || "#b4975a";
   const activeFontKey = (isLocked ? meta?.coverFont : (gallery?.coverFont || meta?.coverFont)) || "cormorant";
   const activeFontFamily = FONT_MAP[activeFontKey] || FONT_MAP.cormorant;
   const activeAlignClass = ALIGN_MAP[(isLocked ? meta?.coverAlign : (gallery?.coverAlign || meta?.coverAlign)) || "center"] || "object-center";
   const activeTextAlign = TEXT_ALIGN_MAP[(isLocked ? meta?.coverTextAlign : (gallery?.coverTextAlign || meta?.coverTextAlign)) || "center"] || "text-center items-center";
 
-  // Render Loading state
+  // Loading indicator
   if (loading) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-light p-6">
         <RefreshCw size={36} className="animate-spin text-[#b4975a] mb-4" />
         <p className="text-zinc-400 text-xs tracking-widest uppercase font-mono">Loading Private Gallery...</p>
-      </div>
-    );
-  }
-
-  // Render 404 / Error state
-  if (error && isLocked && !meta) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center text-white space-y-4">
-        <div className="w-16 h-16 rounded-full bg-red-950/40 border border-red-800/40 flex items-center justify-center text-red-400 mx-auto">
-          <AlertCircle size={32} />
-        </div>
-        <h1 className="text-2xl font-light text-white">Gallery Unavailable</h1>
-        <p className="text-zinc-500 text-xs max-w-sm font-light leading-relaxed">
-          {error || "The requested wedding gallery could not be found or has been removed."}
-        </p>
-        <Link to="/" className="px-6 py-2.5 bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
-          Return Home
-        </Link>
       </div>
     );
   }
@@ -283,20 +326,20 @@ const ClientGallery = () => {
       />
 
       {/* ========================================================= */}
-      {/* LOCK & INTRO SCREEN: COVER IMAGE + BRANDING + PASSCODE */}
+      {/* 1. LOCK SCREEN / PORTAL GATEWAY */}
       {/* ========================================================= */}
       {isLocked ? (
         <div className="relative flex-grow flex items-center justify-center p-4 sm:p-6 min-h-screen overflow-hidden">
-          {/* Cinematic Full-Bleed Cover Background */}
+          {/* Cinematic Cover Background */}
           <div 
             className={`absolute inset-0 bg-cover bg-center ${activeAlignClass} scale-105 filter blur-[4px] brightness-40 opacity-50 transition-all duration-1000`}
             style={{ backgroundImage: `url(${meta?.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200"})` }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/80" />
 
-          {/* Lock Container */}
+          {/* Lock Card Container */}
           <div className="relative w-full max-w-lg bg-zinc-950/85 backdrop-blur-2xl border border-zinc-800/80 p-6 sm:p-10 rounded-[36px] shadow-[0_20px_70px_rgba(0,0,0,0.8)] text-center space-y-6 z-10">
-            {/* Official Brand Monogram */}
+            {/* Monogram Brand Header */}
             <div className="flex flex-col items-center space-y-2">
               <img 
                 src="/appIcon.png" 
@@ -311,8 +354,8 @@ const ClientGallery = () => {
               </span>
             </div>
 
-            {/* Cover Card Preview */}
-            {meta?.coverUrl && (
+            {/* If specific gallery metadata exists, show live cover card */}
+            {meta?.coverUrl ? (
               <div className="relative h-48 sm:h-56 w-full rounded-2xl overflow-hidden border border-zinc-800/80 shadow-inner group">
                 <img 
                   src={meta.coverUrl} 
@@ -342,28 +385,35 @@ const ClientGallery = () => {
                   </h2>
                 </div>
               </div>
+            ) : (
+              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-850 space-y-1 text-center">
+                <span className="text-[#b4975a] text-[10px] font-bold uppercase tracking-widest">Client Photo Portal</span>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl text-white font-light">
+                  Find Your Wedding Gallery
+                </h2>
+              </div>
             )}
 
-            {/* Lock Notice */}
+            {/* Passcode Lock Notice */}
             <div className="space-y-1">
               <div className="flex items-center justify-center gap-2 text-zinc-300 text-xs font-light">
                 <Lock size={13} style={{ color: activeColor }} />
-                <span>Private Gallery • Access Code Required</span>
+                <span>Private Gallery • 4-Digit Passcode Required</span>
               </div>
             </div>
 
-            {/* Form */}
+            {/* Unlock Form */}
             <form onSubmit={handleUnlock} className="space-y-4 text-left">
               <div className="space-y-1.5">
                 <label className="text-zinc-400 font-bold uppercase tracking-wider text-[9px] block ml-1">
-                  Enter Passcode
+                  Enter 4-Digit Passcode
                 </label>
                 <div className="relative">
                   <input 
                     type={showPassword ? "text" : "password"}
                     value={passcode}
                     onChange={(e) => setPasscode(e.target.value)}
-                    placeholder="Enter 4-digit code"
+                    placeholder="e.g., 3493"
                     autoFocus
                     className="w-full bg-zinc-900/90 border border-zinc-800 focus:border-[#b4975a] text-center text-white tracking-[0.3em] font-mono rounded-2xl py-3.5 px-4 focus:outline-none transition-all placeholder:tracking-normal placeholder:font-sans placeholder:text-zinc-650 text-sm"
                   />
@@ -401,10 +451,10 @@ const ClientGallery = () => {
         </div>
       ) : (
         /* ========================================================= */
-        /* UNLOCKED GALLERY VIEW WITH HEART SELECTIONS */
+        /* 2. UNLOCKED GALLERY VIEW WITH HEART SELECTIONS */
         /* ========================================================= */
         <div className="flex-grow flex flex-col pb-24">
-          {/* Gallery Header */}
+          {/* Gallery Sticky Header */}
           <header className="sticky top-0 bg-zinc-950/85 backdrop-blur-xl border-b border-zinc-900 z-40 px-6 py-4 flex justify-between items-center">
             <div className="flex items-center gap-4">
               <Link to="/" className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl border border-zinc-800 transition-all cursor-pointer">
@@ -438,7 +488,7 @@ const ClientGallery = () => {
             </div>
           </header>
 
-          {/* Gallery Grid */}
+          {/* Gallery Photo Grid */}
           <main className="flex-grow max-w-7xl w-full mx-auto px-6 py-10 space-y-8">
             <div className="text-center max-w-xl mx-auto space-y-2.5">
               <h2 
@@ -518,7 +568,7 @@ const ClientGallery = () => {
             )}
           </main>
 
-          {/* Floating Selection Bar */}
+          {/* Floating Selection Filter Pill */}
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-full px-4 sm:px-6 py-3 shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex items-center gap-3 text-xs">
             <button
               onClick={() => setFilterMode("all")}

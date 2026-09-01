@@ -68,6 +68,7 @@ const AnimatedRoutes = () => {
         <Route path="/custom-package" element={<PageWrapper><CustomPackage /></PageWrapper>} />
         <Route path="/packages" element={<PageWrapper><Packages /></PageWrapper>} />
         <Route path="/proposal" element={<PageWrapper><DigitalProposal /></PageWrapper>} />
+        <Route path="/gallery" element={<PageWrapper><ClientGallery /></PageWrapper>} />
         <Route path="/gallery/:id" element={<PageWrapper><ClientGallery /></PageWrapper>} />
         <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
       </Routes>
