@@ -182,6 +182,10 @@ const ClientGallery = () => {
     return () => { isMounted = false; };
   }, [id, API_BASE, isDirectDownloadMode]);
 
+  // Role permissions check
+  const isCoupleSelectionMode = currentUser?.role === "Bride" || currentUser?.role === "Groom";
+  const isGuestMode = !isCoupleSelectionMode;
+
   // 2. Handle unlock with multi-tier passcode
   const handleUnlock = async (e) => {
     if (e) e.preventDefault();
@@ -200,12 +204,18 @@ const ClientGallery = () => {
     setUnlocking(true);
     setError("");
 
-    // Infer role from code prefix if applicable
+    // Infer role: If selection code is used, respect Bride / Groom choice
     let targetRole = viewerRole;
     const lowerCode = cleanCode.toLowerCase();
-    if (lowerCode.includes("bride")) targetRole = "Bride";
-    else if (lowerCode.includes("groom")) targetRole = "Groom";
-    else if (lowerCode.includes("guest")) targetRole = "Guest";
+    if (lowerCode.includes("select") || (meta?.selectionCode && lowerCode === meta.selectionCode.toLowerCase())) {
+      targetRole = viewerRole === "Groom" ? "Groom" : "Bride";
+    } else if (lowerCode.includes("bride")) {
+      targetRole = "Bride";
+    } else if (lowerCode.includes("groom")) {
+      targetRole = "Groom";
+    } else {
+      targetRole = "Guest";
+    }
 
     const activeUserProfile = {
       name: cleanName,
@@ -224,9 +234,10 @@ const ClientGallery = () => {
       const localMatch = localGals.find(g => 
         (g.id === id || !id) && 
         (String(g.accessCode).trim().toLowerCase() === lowerCode ||
+         String(g.selectionCode || "").trim().toLowerCase() === lowerCode ||
+         String(g.guestCode || "").trim().toLowerCase() === lowerCode ||
          String(g.brideCode || "").trim().toLowerCase() === lowerCode ||
          String(g.groomCode || "").trim().toLowerCase() === lowerCode ||
-         String(g.guestCode || "").trim().toLowerCase() === lowerCode ||
          String(g.id).toLowerCase() === lowerCode)
       );
 
@@ -299,7 +310,7 @@ const ClientGallery = () => {
       setIsLocked(false);
       if (!id) navigate(`/gallery/${galData.id}`, { replace: true });
     } catch (err) {
-      setError(err.message || "Failed to unlock gallery.");
+      setError(err.message || "Failed to unlock gallery. Please verify your passcode.");
     } finally {
       setUnlocking(false);
     }
@@ -357,7 +368,14 @@ const ClientGallery = () => {
 
   const toggleHeartPhoto = (photoId, e) => {
     if (e) e.stopPropagation();
-    const user = currentUser || { name: viewerName || "Guest", email: viewerEmail || "", role: viewerRole || "Guest" };
+    if (!photoId) return;
+
+    if (isGuestMode) {
+      alert("✨ Guest Viewing Mode Active\n\nPhoto selection for the wedding album is reserved for the 👰 Bride and 🤵 Groom using the Selection Passcode.");
+      return;
+    }
+
+    const user = currentUser || { name: viewerName || (viewerRole === "Bride" ? "Bride" : "Groom"), email: viewerEmail || "", role: viewerRole || "Bride" };
 
     const alreadyLikedByMe = selectionsDetail.some(s => 
       s.photoId === photoId && 
@@ -971,18 +989,20 @@ const ClientGallery = () => {
                   loading="lazy"
                 />
                 
-                {/* Heart Selection Button */}
-                <button
-                  onClick={(e) => toggleHeartPhoto(photo.id, e)}
-                  title={isLiked ? "Remove from my picks" : `Select as ${currentUser?.name || "Member"}`}
-                  className={`absolute top-4 right-4 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
-                    isLiked 
-                      ? "bg-red-500 text-white scale-110 shadow-red-500/50" 
-                      : "bg-black/60 backdrop-blur-md text-white/80 hover:text-red-400 hover:scale-110 border border-white/10"
-                  }`}
-                >
-                  <Heart size={15} className={isLiked ? "fill-white text-white" : "text-white"} />
-                </button>
+                {/* Heart Selection Button - Exclusive to Bride & Groom */}
+                {isCoupleSelectionMode && (
+                  <button
+                    onClick={(e) => toggleHeartPhoto(photo.id, e)}
+                    title={isLiked ? "Remove from my album picks" : `Select as ${currentUser?.role || "Couple"}`}
+                    className={`absolute top-4 right-4 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
+                      isLiked 
+                        ? "bg-red-500 text-white scale-110 shadow-red-500/50" 
+                        : "bg-black/60 backdrop-blur-md text-white/80 hover:text-red-400 hover:scale-110 border border-white/10"
+                    }`}
+                  >
+                    <Heart size={15} className={isLiked ? "fill-white text-white" : "text-white"} />
+                  </button>
+                )}
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex items-end justify-between p-5 pointer-events-none">
                   <span className="text-xs text-zinc-300 font-light">Highlight #{idx + 1}</span>
@@ -1022,7 +1042,7 @@ const ClientGallery = () => {
                   </p>
                 </div>
 
-                {/* Chapter Photo Layout (Asymmetric Pairs / Triptychs / Masonry) */}
+                {/* Chapter Photo Layout */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                   {chapter.photos.map((photo, pIdx) => {
                     const isLiked = isLikedByMe(photo.id);
@@ -1039,17 +1059,19 @@ const ClientGallery = () => {
                           loading="lazy"
                         />
 
-                        {/* Heart Button */}
-                        <button
-                          onClick={(e) => toggleHeartPhoto(photo.id, e)}
-                          className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
-                            isLiked 
-                              ? "bg-red-500 text-white scale-110 shadow-red-500/50" 
-                              : "bg-black/60 backdrop-blur-md text-white/80 hover:text-red-400 border border-white/10"
-                          }`}
-                        >
-                          <Heart size={14} className={isLiked ? "fill-white text-white" : "text-white"} />
-                        </button>
+                        {/* Heart Button - Exclusive to Bride & Groom */}
+                        {isCoupleSelectionMode && (
+                          <button
+                            onClick={(e) => toggleHeartPhoto(photo.id, e)}
+                            className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
+                              isLiked 
+                                ? "bg-red-500 text-white scale-110 shadow-red-500/50" 
+                                : "bg-black/60 backdrop-blur-md text-white/80 hover:text-red-400 border border-white/10"
+                            }`}
+                          >
+                            <Heart size={14} className={isLiked ? "fill-white text-white" : "text-white"} />
+                          </button>
+                        )}
 
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-4 pointer-events-none">
                           <span className="text-[10px] text-zinc-300 font-mono">0{cIdx + 1}.{pIdx + 1}</span>
@@ -1085,7 +1107,9 @@ const ClientGallery = () => {
               Explore The Full <span style={{ color: activeColor }} className="italic font-serif">Archive</span>
             </h3>
             <p className="text-zinc-400 text-xs font-light">
-              Filter by favorites or explore all {allPhotos.length} high-resolution photographs.
+              {isCoupleSelectionMode 
+                ? `Logged in as ${currentUser?.role || "Couple"} • Select photos with the heart icon for the album.`
+                : `Guest Viewing Experience • Explore all ${allPhotos.length} high-resolution photographs.`}
             </p>
           </div>
 
@@ -1101,45 +1125,59 @@ const ClientGallery = () => {
             </button>
 
             <button
-              onClick={() => setFilterMode("my")}
+              onClick={() => setFilterMode("highlights")}
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                filterMode === "my" ? "bg-red-500 text-white shadow-md shadow-red-500/30" : "bg-zinc-900 text-zinc-400 hover:text-red-400 border border-zinc-800"
+                filterMode === "highlights" ? "bg-amber-400 text-zinc-950 shadow-md font-bold" : "bg-zinc-900 text-zinc-400 hover:text-amber-400 border border-zinc-800"
               }`}
             >
-              <Heart size={12} className={myPicks.length > 0 ? "fill-current" : ""} />
-              My Picks ({myPicks.length})
+              <span>✨ Highlights ({highlights.length})</span>
             </button>
 
-            <button
-              onClick={() => setFilterMode("all-favorites")}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                filterMode === "all-favorites" ? "bg-[#b4975a] text-zinc-950 shadow-md" : "bg-zinc-900 text-zinc-400 hover:text-[#b4975a] border border-zinc-800"
-              }`}
-            >
-              <Users size={12} />
-              Group Picks ({selectedPhotoIds.size})
-            </button>
+            {/* Couple Selection Mode Filters */}
+            {isCoupleSelectionMode && (
+              <>
+                <button
+                  onClick={() => setFilterMode("my")}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    filterMode === "my" ? "bg-red-500 text-white shadow-md shadow-red-500/30" : "bg-zinc-900 text-zinc-400 hover:text-red-400 border border-zinc-800"
+                  }`}
+                >
+                  <Heart size={12} className={myPicks.length > 0 ? "fill-current" : ""} />
+                  My Picks ({myPicks.length})
+                </button>
 
-            {bridePicks.length > 0 && (
-              <button
-                onClick={() => setFilterMode("Bride")}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                  filterMode === "Bride" ? "bg-pink-600 text-white shadow-md" : "bg-zinc-900 text-pink-300 hover:text-white border border-pink-900/40"
-                }`}
-              >
-                <span>👰 Bride ({bridePicks.length})</span>
-              </button>
-            )}
+                <button
+                  onClick={() => setFilterMode("all-favorites")}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    filterMode === "all-favorites" ? "bg-[#b4975a] text-zinc-950 shadow-md" : "bg-zinc-900 text-zinc-400 hover:text-[#b4975a] border border-zinc-800"
+                  }`}
+                >
+                  <Users size={12} />
+                  Couple Picks ({selectedPhotoIds.size})
+                </button>
 
-            {groomPicks.length > 0 && (
-              <button
-                onClick={() => setFilterMode("Groom")}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                  filterMode === "Groom" ? "bg-sky-600 text-white shadow-md" : "bg-zinc-900 text-sky-300 hover:text-white border border-sky-900/40"
-                }`}
-              >
-                <span>🤵 Groom ({groomPicks.length})</span>
-              </button>
+                {bridePicks.length > 0 && (
+                  <button
+                    onClick={() => setFilterMode("Bride")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                      filterMode === "Bride" ? "bg-pink-600 text-white shadow-md" : "bg-zinc-900 text-pink-300 hover:text-white border border-pink-900/40"
+                    }`}
+                  >
+                    <span>👰 Bride ({bridePicks.length})</span>
+                  </button>
+                )}
+
+                {groomPicks.length > 0 && (
+                  <button
+                    onClick={() => setFilterMode("Groom")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                      filterMode === "Groom" ? "bg-sky-600 text-white shadow-md" : "bg-zinc-900 text-sky-300 hover:text-white border border-sky-900/40"
+                    }`}
+                  >
+                    <span>🤵 Groom ({groomPicks.length})</span>
+                  </button>
+                )}
+              </>
             )}
           </div>
 
@@ -1165,20 +1203,22 @@ const ClientGallery = () => {
                       alt={`Archive photo ${index + 1}`}
                     />
 
-                    {/* ❤️ Heart Favorite Button */}
-                    <button
-                      onClick={(e) => toggleHeartPhoto(photo.id, e)}
-                      className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
-                        likedByMe 
-                          ? "bg-red-500 text-white scale-110 shadow-red-500/50" 
-                          : "bg-black/60 backdrop-blur-md text-white/80 hover:text-red-400 border border-white/10"
-                      }`}
-                    >
-                      <Heart size={14} className={likedByMe ? "fill-white text-white" : "text-white"} />
-                    </button>
+                    {/* ❤️ Heart Favorite Button - Exclusive to Bride & Groom */}
+                    {isCoupleSelectionMode && (
+                      <button
+                        onClick={(e) => toggleHeartPhoto(photo.id, e)}
+                        className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
+                          likedByMe 
+                            ? "bg-red-500 text-white scale-110 shadow-red-500/50" 
+                            : "bg-black/60 backdrop-blur-md text-white/80 hover:text-red-400 border border-white/10"
+                        }`}
+                      >
+                        <Heart size={14} className={likedByMe ? "fill-white text-white" : "text-white"} />
+                      </button>
+                    )}
 
                     {/* Member Pills */}
-                    {usersWhoLiked.length > 0 && (
+                    {usersWhoLiked.length > 0 && isCoupleSelectionMode && (
                       <div className="absolute top-3 left-3 flex flex-wrap gap-1 max-w-[70%] z-20 pointer-events-none">
                         {usersWhoLiked.slice(0, 2).map((u, uIdx) => (
                           <span 
@@ -1216,27 +1256,38 @@ const ClientGallery = () => {
         </div>
       </div>
 
-      {/* Floating Status Pill */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-full px-5 py-3 shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex items-center gap-3 text-xs">
-        <span className="text-zinc-300 flex items-center gap-1.5">
-          <Heart size={14} className="fill-red-500 text-red-500" />
-          <strong>{myPicks.length}</strong> my picks &bull; <strong>{selectedPhotoIds.size}</strong> group total
-        </span>
+      {/* Floating Status Pill - Active for Bride & Groom */}
+      {isCoupleSelectionMode && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-full px-5 py-3 shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex items-center gap-3 text-xs">
+          <span className="text-zinc-300 flex items-center gap-1.5">
+            <Heart size={14} className="fill-red-500 text-red-500" />
+            <strong>{myPicks.length}</strong> {currentUser?.role || "My"} picks &bull; <strong>{selectedPhotoIds.size}</strong> couple total
+          </span>
 
-        {saveStatus === "saving" && (
-          <span style={{ color: activeColor }} className="text-[10px] font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1">
-            <RefreshCw size={11} className="animate-spin" /> Syncing...
-          </span>
-        )}
-        {saveStatus === "saved" && (
-          <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1">
-            <Check size={11} /> Saved
-          </span>
-        )}
-      </div>
+          {myPicks.length > 0 && (
+            <button
+              onClick={() => handleDownloadZipPackage(myPicks, `${currentUser?.role || "Couple"}_Picks`)}
+              className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-full font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer ml-1"
+            >
+              Download ZIP
+            </button>
+          )}
+
+          {saveStatus === "saving" && (
+            <span style={{ color: activeColor }} className="text-[10px] font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1">
+              <RefreshCw size={11} className="animate-spin" /> Syncing...
+            </span>
+          )}
+          {saveStatus === "saved" && (
+            <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1">
+              <Check size={11} /> Saved
+            </span>
+          )}
+        </div>
+      )}
 
       {/* ========================================================= */}
-      {/* 3. FULLSCREEN SHOWCASE VIEWER (WITH DEDICATED BACK TO GRID BUTTON) */}
+      {/* 3. FULLSCREEN SHOWCASE VIEWER */}
       {/* ========================================================= */}
       <AnimatePresence>
         {activePhoto && (
@@ -1262,7 +1313,7 @@ const ClientGallery = () => {
                 <span className="text-xs text-zinc-400 font-mono">
                   {displayedPhotos ? `${displayedPhotos.findIndex(p => p.id === activePhoto.id) + 1} / ${displayedPhotos.length}` : ""}
                 </span>
-                {getUsersForPhoto(activePhoto.id).length > 0 && (
+                {getUsersForPhoto(activePhoto.id).length > 0 && isCoupleSelectionMode && (
                   <span className="text-[10px] bg-red-950/60 border border-red-800/50 text-red-300 px-2 py-0.5 rounded-full flex items-center gap-1">
                     ❤️ {getUsersForPhoto(activePhoto.id).map(u => u.name).join(", ")}
                   </span>
@@ -1270,19 +1321,25 @@ const ClientGallery = () => {
               </div>
               
               <div className="flex items-center gap-2 sm:gap-3">
-                <button
-                  onClick={(e) => toggleHeartPhoto(activePhoto.id, e)}
-                  className={`px-3.5 py-2 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider cursor-pointer ${
-                    isLikedByMe(activePhoto.id)
-                      ? "bg-red-500 text-white border-red-400 shadow-[0_0_15px_rgba(239,68,68,0.4)]"
-                      : "bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-red-400 border-zinc-800"
-                  }`}
-                >
-                  <Heart size={14} className={isLikedByMe(activePhoto.id) ? "fill-white" : ""} />
-                  <span className="hidden sm:inline">
-                    {isLikedByMe(activePhoto.id) ? "My Pick" : "Select Photo"}
+                {isCoupleSelectionMode ? (
+                  <button
+                    onClick={(e) => toggleHeartPhoto(activePhoto.id, e)}
+                    className={`px-3.5 py-2 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider cursor-pointer ${
+                      isLikedByMe(activePhoto.id)
+                        ? "bg-red-500 text-white border-red-400 shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+                        : "bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-red-400 border-zinc-800"
+                    }`}
+                  >
+                    <Heart size={14} className={isLikedByMe(activePhoto.id) ? "fill-white" : ""} />
+                    <span className="hidden sm:inline">
+                      {isLikedByMe(activePhoto.id) ? "My Pick" : "Select Photo"}
+                    </span>
+                  </button>
+                ) : (
+                  <span className="text-[10px] bg-zinc-900 border border-zinc-800 text-zinc-400 px-3 py-1.5 rounded-xl">
+                    ✨ Guest View
                   </span>
-                </button>
+                )}
 
                 <a 
                   href={activePhoto.url} 
