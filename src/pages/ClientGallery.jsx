@@ -51,41 +51,83 @@ const ClientGallery = () => {
     ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com")
     : "https://dreamwed-backend.onrender.com";
 
-  // 1. Fetch public info on mount
+  // 1. Fetch public info on mount with instant localStorage fallback
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchPublicInfo = async () => {
       setLoading(true);
       setError("");
+
+      // Instant check local storage
+      let hadLocal = false;
+      try {
+        const localGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
+        const localMatch = localGals.find(g => g.id === id || g.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id);
+        if (localMatch && isMounted) {
+          hadLocal = true;
+          setMeta(localMatch);
+          setGallery(localMatch);
+          setLoading(false);
+        }
+      } catch (e) {}
+
       try {
         const res = await fetch(`${API_BASE}/api/public/galleries/${id}`);
-        if (!res.ok) {
-          throw new Error(res.status === 404 ? "Gallery not found" : "Failed to load gallery info");
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted) {
+            setMeta(data);
+            setLoading(false);
+          }
+        } else if (!hadLocal) {
+          if (isMounted) {
+            throw new Error(res.status === 404 ? "Gallery not found" : "Failed to load gallery info");
+          }
         }
-        const data = await res.json();
-        setMeta(data);
       } catch (err) {
         console.error(err);
-        setError(err.message);
+        if (isMounted && !hadLocal) {
+          setError(err.message || "Failed to load gallery.");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     
     fetchPublicInfo();
+    return () => { isMounted = false; };
   }, [id, API_BASE]);
 
   // 2. Handle unlock with access code
   const handleUnlock = async (e) => {
     e.preventDefault();
-    if (!passcode.trim()) return;
+    const cleanCode = passcode.trim();
+    if (!cleanCode) return;
     
     setUnlocking(true);
     setError("");
+
+    // Check local fallback first
+    try {
+      const localGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
+      const localMatch = localGals.find(g => g.id === id || g.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id);
+      if (localMatch && String(localMatch.accessCode).trim() === cleanCode) {
+        setGallery(localMatch);
+        if (localMatch.selectedPhotoIds && Array.isArray(localMatch.selectedPhotoIds)) {
+          setSelectedPhotoIds(new Set(localMatch.selectedPhotoIds));
+        }
+        setIsLocked(false);
+        setUnlocking(false);
+        return;
+      }
+    } catch (e) {}
+
     try {
       const res = await fetch(`${API_BASE}/api/public/galleries/${id}/unlock`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accessCode: passcode.trim() })
+        body: JSON.stringify({ accessCode: cleanCode })
       });
       
       if (!res.ok) {
@@ -143,6 +185,12 @@ const ClientGallery = () => {
     });
   };
 
+  // Computed gallery photos
+  const allPhotos = gallery?.photos || [];
+  const displayedPhotos = filterMode === "favorites"
+    ? allPhotos.filter(p => selectedPhotoIds.has(p.id))
+    : allPhotos;
+
   // 4. Navigation inside Lightbox
   const handlePrevPhoto = (e) => {
     if (e) e.stopPropagation();
@@ -176,7 +224,7 @@ const ClientGallery = () => {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activePhoto, gallery, filterMode, selectedPhotoIds]);
+  }, [activePhoto, displayedPhotos]);
 
   // Share functionality
   const handleShareGallery = () => {
@@ -199,18 +247,12 @@ const ClientGallery = () => {
   const activeAlignClass = ALIGN_MAP[(isLocked ? meta?.coverAlign : (gallery?.coverAlign || meta?.coverAlign)) || "center"] || "object-center";
   const activeTextAlign = TEXT_ALIGN_MAP[(isLocked ? meta?.coverTextAlign : (gallery?.coverTextAlign || meta?.coverTextAlign)) || "center"] || "text-center items-center";
 
-  // Filtered photos list
-  const allPhotos = gallery?.photos || [];
-  const displayedPhotos = filterMode === "favorites"
-    ? allPhotos.filter(p => selectedPhotoIds.has(p.id))
-    : allPhotos;
-
   // Render Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-light">
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-light p-6">
         <RefreshCw size={36} className="animate-spin text-[#b4975a] mb-4" />
-        <p className="text-zinc-400 text-xs tracking-widest uppercase">Loading Private Gallery...</p>
+        <p className="text-zinc-400 text-xs tracking-widest uppercase font-mono">Loading Private Gallery...</p>
       </div>
     );
   }
@@ -224,7 +266,7 @@ const ClientGallery = () => {
         </div>
         <h1 className="text-2xl font-light text-white">Gallery Unavailable</h1>
         <p className="text-zinc-500 text-xs max-w-sm font-light leading-relaxed">
-          The requested wedding gallery could not be found or has been removed.
+          {error || "The requested wedding gallery could not be found or has been removed."}
         </p>
         <Link to="/" className="px-6 py-2.5 bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
           Return Home
@@ -240,303 +282,278 @@ const ClientGallery = () => {
         description="View private high-quality client photos protected by Dreamwed Stories."
       />
 
-      <AnimatePresence mode="wait">
-        {/* ========================================================= */}
-        {/* LOCK & INTRO SCREEN: COVER IMAGE + BRANDING + PASSCODE */}
-        {/* ========================================================= */}
-        {isLocked ? (
-          <motion.div 
-            key="lock-screen"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="relative flex-grow flex items-center justify-center p-4 sm:p-6 min-h-screen overflow-hidden"
-          >
-            {/* Cinematic Full-Bleed Cover Background */}
-            <div 
-              className={`absolute inset-0 bg-cover bg-center ${activeAlignClass} scale-105 filter blur-[4px] brightness-40 opacity-50 transition-all duration-1000`}
-              style={{ backgroundImage: `url(${meta?.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200"})` }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/80" />
+      {/* ========================================================= */}
+      {/* LOCK & INTRO SCREEN: COVER IMAGE + BRANDING + PASSCODE */}
+      {/* ========================================================= */}
+      {isLocked ? (
+        <div className="relative flex-grow flex items-center justify-center p-4 sm:p-6 min-h-screen overflow-hidden">
+          {/* Cinematic Full-Bleed Cover Background */}
+          <div 
+            className={`absolute inset-0 bg-cover bg-center ${activeAlignClass} scale-105 filter blur-[4px] brightness-40 opacity-50 transition-all duration-1000`}
+            style={{ backgroundImage: `url(${meta?.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200"})` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/80" />
 
-            {/* Lock Container */}
-            <motion.div 
-              initial={{ y: 25, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.15, duration: 0.8 }}
-              className="relative w-full max-w-lg bg-zinc-950/85 backdrop-blur-2xl border border-zinc-800/80 p-6 sm:p-10 rounded-[36px] shadow-[0_20px_70px_rgba(0,0,0,0.8)] text-center space-y-6 z-10"
-            >
-              {/* Official Brand Monogram */}
-              <div className="flex flex-col items-center space-y-2">
+          {/* Lock Container */}
+          <div className="relative w-full max-w-lg bg-zinc-950/85 backdrop-blur-2xl border border-zinc-800/80 p-6 sm:p-10 rounded-[36px] shadow-[0_20px_70px_rgba(0,0,0,0.8)] text-center space-y-6 z-10">
+            {/* Official Brand Monogram */}
+            <div className="flex flex-col items-center space-y-2">
+              <img 
+                src="/appIcon.png" 
+                alt="Dreamwed Stories" 
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain filter drop-shadow-[0_4px_20px_rgba(255,255,255,0.25)]" 
+              />
+              <span 
+                style={{ color: activeColor }}
+                className="uppercase font-bold tracking-[0.3em] text-[10px] block"
+              >
+                Dreamwed Stories
+              </span>
+            </div>
+
+            {/* Cover Card Preview */}
+            {meta?.coverUrl && (
+              <div className="relative h-48 sm:h-56 w-full rounded-2xl overflow-hidden border border-zinc-800/80 shadow-inner group">
                 <img 
-                  src="/appIcon.png" 
-                  alt="Dreamwed Stories" 
-                  className="w-16 h-16 sm:w-20 sm:h-20 object-contain filter drop-shadow-[0_4px_20px_rgba(255,255,255,0.25)]" 
+                  src={meta.coverUrl} 
+                  alt="Wedding Cover" 
+                  className={`w-full h-full object-cover ${activeAlignClass} group-hover:scale-105 transition-transform duration-700 brightness-90`} 
                 />
-                <span 
-                  style={{ color: activeColor }}
-                  className="uppercase font-bold tracking-[0.3em] text-[10px] block"
-                >
-                  Dreamwed Stories
-                </span>
-              </div>
-
-              {/* Cover Card Preview */}
-              {meta?.coverUrl && (
-                <div className="relative h-48 sm:h-56 w-full rounded-2xl overflow-hidden border border-zinc-800/80 shadow-inner group">
-                  <img 
-                    src={meta.coverUrl} 
-                    alt="Wedding Cover" 
-                    className={`w-full h-full object-cover ${activeAlignClass} group-hover:scale-105 transition-transform duration-700 brightness-90`} 
-                  />
-                  <div className={`absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex flex-col justify-end p-5 ${activeTextAlign}`}>
-                    <span 
-                      style={{ color: activeColor }}
-                      className="text-[9px] uppercase font-bold tracking-widest block mb-1"
-                    >
-                      Wedding Deliverables
-                    </span>
-                    <h2 
-                      style={{ fontFamily: activeFontFamily }} 
-                      className="text-2xl sm:text-3xl text-white font-light leading-tight"
-                    >
-                      {meta?.groomName && meta?.brideName ? (
-                        <>
-                          <span>{meta.groomName}</span>{" "}
-                          <span style={{ color: activeColor }} className="italic font-serif">&amp;</span>{" "}
-                          <span>{meta.brideName}</span>
-                        </>
-                      ) : (
-                        meta?.name || "Dreamwed Wedding"
-                      )}
-                    </h2>
-                  </div>
-                </div>
-              )}
-
-              {/* Lock Notice */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-center gap-2 text-zinc-300 text-xs font-light">
-                  <Lock size={13} style={{ color: activeColor }} />
-                  <span>Private Gallery • Access Code Required</span>
-                </div>
-              </div>
-
-              {/* Form */}
-              <form onSubmit={handleUnlock} className="space-y-4 text-left">
-                <div className="space-y-1.5">
-                  <label className="text-zinc-400 font-bold uppercase tracking-wider text-[9px] block ml-1">
-                    Enter Passcode
-                  </label>
-                  <div className="relative">
-                    <input 
-                      type={showPassword ? "text" : "password"}
-                      value={passcode}
-                      onChange={(e) => setPasscode(e.target.value)}
-                      placeholder="Enter 4-digit code"
-                      autoFocus
-                      className="w-full bg-zinc-900/90 border border-zinc-800 focus:border-[#b4975a] text-center text-white tracking-[0.3em] font-mono rounded-2xl py-3.5 px-4 focus:outline-none transition-all placeholder:tracking-normal placeholder:font-sans placeholder:text-zinc-650 text-sm"
-                    />
-                    <button 
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
-                    >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-
-                {error && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-2 p-3 bg-red-950/40 border border-red-900/40 text-red-400 text-[11px] rounded-xl font-light"
-                  >
-                    <AlertCircle size={14} className="shrink-0" />
-                    <span>{error}</span>
-                  </motion.div>
-                )}
-
-                <button 
-                  type="submit"
-                  disabled={unlocking}
-                  style={{ backgroundColor: activeColor }}
-                  className="w-full py-4 text-zinc-950 font-bold rounded-2xl text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg hover:brightness-110 disabled:opacity-50"
-                >
-                  {unlocking ? (
-                    <RefreshCw size={14} className="animate-spin" />
-                  ) : (
-                    "Unlock & Enter Gallery"
-                  )}
-                </button>
-              </form>
-            </motion.div>
-          </motion.div>
-        ) : (
-          /* ========================================================= */
-          /* UNLOCKED GALLERY VIEW WITH HEART SELECTIONS */
-          /* ========================================================= */
-          <motion.div 
-            key="gallery-view"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            className="flex-grow flex flex-col pb-24"
-          >
-            {/* Gallery Header */}
-            <header className="sticky top-0 bg-zinc-950/85 backdrop-blur-xl border-b border-zinc-900 z-40 px-6 py-4 flex justify-between items-center">
-              <div className="flex items-center gap-4">
-                <Link to="/" className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl border border-zinc-800 transition-all cursor-pointer">
-                  <ArrowLeft size={16} />
-                </Link>
-                <div>
-                  <h1 
-                    style={{ fontFamily: activeFontFamily }} 
-                    className="text-xl text-white font-medium leading-none"
-                  >
-                    {gallery?.groomName && gallery?.brideName 
-                      ? `${gallery.groomName} & ${gallery.brideName}` 
-                      : (gallery?.name || "Dreamwed Gallery")}
-                  </h1>
+                <div className={`absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex flex-col justify-end p-5 ${activeTextAlign}`}>
                   <span 
                     style={{ color: activeColor }}
-                    className="text-[9px] font-bold uppercase tracking-wider block mt-1"
+                    className="text-[9px] uppercase font-bold tracking-widest block mb-1"
                   >
-                    Dreamwed Stories Gallery
+                    Wedding Deliverables
                   </span>
+                  <h2 
+                    style={{ fontFamily: activeFontFamily }} 
+                    className="text-2xl sm:text-3xl text-white font-light leading-tight"
+                  >
+                    {meta?.groomName && meta?.brideName ? (
+                      <>
+                        <span>{meta.groomName}</span>{" "}
+                        <span style={{ color: activeColor }} className="italic font-serif">&amp;</span>{" "}
+                        <span>{meta.brideName}</span>
+                      </>
+                    ) : (
+                      meta?.name || "Dreamwed Wedding"
+                    )}
+                  </h2>
+                </div>
+              </div>
+            )}
+
+            {/* Lock Notice */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-center gap-2 text-zinc-300 text-xs font-light">
+                <Lock size={13} style={{ color: activeColor }} />
+                <span>Private Gallery • Access Code Required</span>
+              </div>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleUnlock} className="space-y-4 text-left">
+              <div className="space-y-1.5">
+                <label className="text-zinc-400 font-bold uppercase tracking-wider text-[9px] block ml-1">
+                  Enter Passcode
+                </label>
+                <div className="relative">
+                  <input 
+                    type={showPassword ? "text" : "password"}
+                    value={passcode}
+                    onChange={(e) => setPasscode(e.target.value)}
+                    placeholder="Enter 4-digit code"
+                    autoFocus
+                    className="w-full bg-zinc-900/90 border border-zinc-800 focus:border-[#b4975a] text-center text-white tracking-[0.3em] font-mono rounded-2xl py-3.5 px-4 focus:outline-none transition-all placeholder:tracking-normal placeholder:font-sans placeholder:text-zinc-650 text-sm"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button 
-                  onClick={handleShareGallery}
-                  className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl border border-zinc-800 transition-all text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer"
-                >
-                  <Share2 size={12} /> Share
-                </button>
-              </div>
-            </header>
-
-            {/* Gallery Grid */}
-            <main className="flex-grow max-w-7xl w-full mx-auto px-6 py-10 space-y-8">
-              <div className="text-center max-w-xl mx-auto space-y-2.5">
-                <h2 
-                  style={{ fontFamily: activeFontFamily }} 
-                  className="text-3xl sm:text-4xl text-white font-light"
-                >
-                  Capturing Your <span style={{ color: activeColor }} className="italic font-serif">Love Story</span>
-                </h2>
-                <p className="text-zinc-400 text-xs font-light leading-relaxed">
-                  Click the ❤️ heart button on any photo to favorite and select photos for your album. Your selections are automatically saved for the Dreamwed team.
-                </p>
-                <div 
-                  style={{ backgroundColor: `${activeColor}80` }}
-                  className="w-10 h-[1px] mx-auto mt-4" 
-                />
-              </div>
-
-              {displayedPhotos && displayedPhotos.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-4">
-                  {displayedPhotos.map((photo, index) => {
-                    const isFavorited = selectedPhotoIds.has(photo.id);
-                    return (
-                      <motion.div 
-                        key={photo.id}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: Math.min(index * 0.02, 0.4), duration: 0.4 }}
-                        className="group relative bg-zinc-900 border border-zinc-800/80 rounded-2xl overflow-hidden cursor-zoom-in aspect-[4/5] shadow-lg shadow-black/20"
-                        onClick={() => setActivePhoto(photo)}
-                      >
-                        <img 
-                          src={photo.url} 
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                          loading="lazy"
-                          alt={`Wedding Deliverable ${index + 1}`}
-                        />
-                        
-                        {/* ❤️ Heart Favorite Button */}
-                        <button
-                          onClick={(e) => toggleHeartPhoto(photo.id, e)}
-                          title={isFavorited ? "Remove from Favorites" : "Add to Favorites (Love)"}
-                          className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
-                            isFavorited 
-                              ? "bg-red-500 text-white scale-110 shadow-red-500/50" 
-                              : "bg-black/60 backdrop-blur-md text-white/80 hover:text-red-400 hover:scale-110 hover:bg-black/90 border border-white/10"
-                          }`}
-                        >
-                          <Heart size={16} className={isFavorited ? "fill-white text-white" : "text-white"} />
-                        </button>
-
-                        {/* Gradient overlay on hover */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex items-end justify-between p-4 pointer-events-none" />
-                        
-                        <div className="absolute bottom-4 left-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-350">
-                          <span className="text-[10px] text-zinc-300 font-light">Photo {index + 1}</span>
-                        </div>
-                        
-                        <div className="absolute bottom-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-350">
-                          <a 
-                            href={photo.url} 
-                            target="_blank" 
-                            rel="noreferrer"
-                            onClick={(e) => e.stopPropagation()} 
-                            className="p-2 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 border border-zinc-800 rounded-xl text-white transition-all cursor-pointer block"
-                            title="Open HD Original"
-                          >
-                            <Download size={14} />
-                          </a>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-20 border border-zinc-800 rounded-3xl text-zinc-500 font-light text-sm">
-                  {filterMode === "favorites" 
-                    ? "No photos have been favorited yet. Click the ❤️ heart button on any picture to select it."
-                    : "This gallery is empty. The images might still be synchronizing from Google Drive."}
+              {error && (
+                <div className="flex items-center gap-2 p-3 bg-red-950/40 border border-red-900/40 text-red-400 text-[11px] rounded-xl font-light">
+                  <AlertCircle size={14} className="shrink-0" />
+                  <span>{error}</span>
                 </div>
               )}
-            </main>
 
-            {/* Floating Selection Bar */}
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-full px-4 sm:px-6 py-3 shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex items-center gap-3 text-xs">
-              <button
-                onClick={() => setFilterMode("all")}
-                className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer ${
-                  filterMode === "all" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
-                }`}
+              <button 
+                type="submit"
+                disabled={unlocking}
+                style={{ backgroundColor: activeColor }}
+                className="w-full py-4 text-zinc-950 font-bold rounded-2xl text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg hover:brightness-110 disabled:opacity-50"
               >
-                All ({allPhotos.length})
+                {unlocking ? (
+                  <RefreshCw size={14} className="animate-spin" />
+                ) : (
+                  "Unlock & Enter Gallery"
+                )}
               </button>
-              <button
-                onClick={() => setFilterMode("favorites")}
-                className={`px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all cursor-pointer ${
-                  filterMode === "favorites" ? "bg-red-500 text-white font-bold" : "text-zinc-400 hover:text-red-400"
-                }`}
-              >
-                <Heart size={14} className={selectedPhotoIds.size > 0 ? "fill-current" : ""} />
-                Favorites ({selectedPhotoIds.size})
-              </button>
-
-              {saveStatus === "saving" && (
+            </form>
+          </div>
+        </div>
+      ) : (
+        /* ========================================================= */
+        /* UNLOCKED GALLERY VIEW WITH HEART SELECTIONS */
+        /* ========================================================= */
+        <div className="flex-grow flex flex-col pb-24">
+          {/* Gallery Header */}
+          <header className="sticky top-0 bg-zinc-950/85 backdrop-blur-xl border-b border-zinc-900 z-40 px-6 py-4 flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <Link to="/" className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl border border-zinc-800 transition-all cursor-pointer">
+                <ArrowLeft size={16} />
+              </Link>
+              <div>
+                <h1 
+                  style={{ fontFamily: activeFontFamily }} 
+                  className="text-xl text-white font-medium leading-none"
+                >
+                  {gallery?.groomName && gallery?.brideName 
+                    ? `${gallery.groomName} & ${gallery.brideName}` 
+                    : (gallery?.name || "Dreamwed Gallery")}
+                </h1>
                 <span 
                   style={{ color: activeColor }}
-                  className="text-[10px] font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1"
+                  className="text-[9px] font-bold uppercase tracking-wider block mt-1"
                 >
-                  <RefreshCw size={11} className="animate-spin" /> Saving...
+                  Dreamwed Stories Gallery
                 </span>
-              )}
-              {saveStatus === "saved" && (
-                <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1">
-                  <Check size={11} /> Saved
-                </span>
-              )}
+              </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={handleShareGallery}
+                className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl border border-zinc-800 transition-all text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer"
+              >
+                <Share2 size={12} /> Share
+              </button>
+            </div>
+          </header>
+
+          {/* Gallery Grid */}
+          <main className="flex-grow max-w-7xl w-full mx-auto px-6 py-10 space-y-8">
+            <div className="text-center max-w-xl mx-auto space-y-2.5">
+              <h2 
+                style={{ fontFamily: activeFontFamily }} 
+                className="text-3xl sm:text-4xl text-white font-light"
+              >
+                Capturing Your <span style={{ color: activeColor }} className="italic font-serif">Love Story</span>
+              </h2>
+              <p className="text-zinc-400 text-xs font-light leading-relaxed">
+                Click the ❤️ heart button on any photo to favorite and select photos for your album. Your selections are automatically saved for the Dreamwed team.
+              </p>
+              <div 
+                style={{ backgroundColor: `${activeColor}80` }}
+                className="w-10 h-[1px] mx-auto mt-4" 
+              />
+            </div>
+
+            {displayedPhotos && displayedPhotos.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-4">
+                {displayedPhotos.map((photo, index) => {
+                  const isFavorited = selectedPhotoIds.has(photo.id);
+                  return (
+                    <div 
+                      key={photo.id || index}
+                      className="group relative bg-zinc-900 border border-zinc-800/80 rounded-2xl overflow-hidden cursor-zoom-in aspect-[4/5] shadow-lg shadow-black/20"
+                      onClick={() => setActivePhoto(photo)}
+                    >
+                      <img 
+                        src={photo.url} 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                        loading="lazy"
+                        alt={`Wedding Deliverable ${index + 1}`}
+                      />
+                      
+                      {/* ❤️ Heart Favorite Button */}
+                      <button
+                        onClick={(e) => toggleHeartPhoto(photo.id, e)}
+                        title={isFavorited ? "Remove from Favorites" : "Add to Favorites (Love)"}
+                        className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
+                          isFavorited 
+                            ? "bg-red-500 text-white scale-110 shadow-red-500/50" 
+                            : "bg-black/60 backdrop-blur-md text-white/80 hover:text-red-400 hover:scale-110 hover:bg-black/90 border border-white/10"
+                        }`}
+                      >
+                        <Heart size={16} className={isFavorited ? "fill-white text-white" : "text-white"} />
+                      </button>
+
+                      {/* Gradient overlay on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex items-end justify-between p-4 pointer-events-none" />
+                      
+                      <div className="absolute bottom-4 left-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-350">
+                        <span className="text-[10px] text-zinc-300 font-light">Photo {index + 1}</span>
+                      </div>
+                      
+                      <div className="absolute bottom-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-350">
+                        <a 
+                          href={photo.url} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          onClick={(e) => e.stopPropagation()} 
+                          className="p-2 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 border border-zinc-800 rounded-xl text-white transition-all cursor-pointer block"
+                          title="Open HD Original"
+                        >
+                          <Download size={14} />
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-20 border border-zinc-800 rounded-3xl text-zinc-500 font-light text-sm">
+                {filterMode === "favorites" 
+                  ? "No photos have been favorited yet. Click the ❤️ heart button on any picture to select it."
+                  : "This gallery is empty. The images might still be synchronizing from Google Drive."}
+              </div>
+            )}
+          </main>
+
+          {/* Floating Selection Bar */}
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-full px-4 sm:px-6 py-3 shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex items-center gap-3 text-xs">
+            <button
+              onClick={() => setFilterMode("all")}
+              className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer ${
+                filterMode === "all" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              All ({allPhotos.length})
+            </button>
+            <button
+              onClick={() => setFilterMode("favorites")}
+              className={`px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all cursor-pointer ${
+                filterMode === "favorites" ? "bg-red-500 text-white font-bold" : "text-zinc-400 hover:text-red-400"
+              }`}
+            >
+              <Heart size={14} className={selectedPhotoIds.size > 0 ? "fill-current" : ""} />
+              Favorites ({selectedPhotoIds.size})
+            </button>
+
+            {saveStatus === "saving" && (
+              <span 
+                style={{ color: activeColor }}
+                className="text-[10px] font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1"
+              >
+                <RefreshCw size={11} className="animate-spin" /> Saving...
+              </span>
+            )}
+            {saveStatus === "saved" && (
+              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1">
+                <Check size={11} /> Saved
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* LIGHTBOX MODAL */}
       <AnimatePresence>
@@ -602,12 +619,7 @@ const ClientGallery = () => {
               </button>
 
               {/* Photo */}
-              <motion.img 
-                key={activePhoto.id}
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                transition={{ duration: 0.3 }}
+              <img 
                 src={activePhoto.url} 
                 className="max-h-[80vh] max-w-[90vw] object-contain rounded-lg border border-zinc-900 shadow-2xl select-none z-10"
                 onClick={(e) => e.stopPropagation()}
