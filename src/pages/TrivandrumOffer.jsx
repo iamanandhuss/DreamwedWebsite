@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Sparkles, Clock, Check, Star, ArrowRight, Gift, Flame, 
+  Sparkles, Clock, Check, CheckCircle, Star, ArrowRight, Gift, Flame, 
   Heart, Camera, ShieldCheck, Mail, Phone, Calendar, User, MessageSquare, AlertCircle, X, Tv, Tag
 } from "lucide-react";
 import { FaWhatsapp, FaInstagram, FaFacebook } from "react-icons/fa6";

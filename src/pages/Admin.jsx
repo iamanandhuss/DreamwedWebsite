@@ -5,7 +5,7 @@ import {
   ChevronRight, FileText, Package, Users, MessageSquare, Plus, Trash2, Edit3,
   Eye, EyeOff, Save, X, Camera, Video, BookOpen, RefreshCw, Search, Share2,
   Download, Heart, Printer, Coins, Percent, Sliders, ArrowLeft, Copy, Wallet,
-  Settings, Moon, Sun, Info, TrendingDown, ArrowUpRight, Upload, Sparkles, Image as ImageIcon
+  Settings, Moon, Sun, Info, TrendingDown, ArrowUpRight, Upload, Sparkles, Lock, Image as ImageIcon
 } from "lucide-react";
 import SEO from "../components/SEO";
 import { downloadPhotosAsZip } from "../utils/zipDownloader";

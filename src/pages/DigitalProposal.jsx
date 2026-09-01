@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Camera, Check, CheckCircle, ChevronRight, Download, Edit2, FileCheck, FileText,
   Heart, Image as ImageIcon, Info, Menu, Phone, Printer, Send, Share2, Star, Trash2, X, Plus, Minus,
-  Sparkles, Sliders, Smartphone, Laptop, Lock, ShieldCheck, GripVertical, Home
+  Sparkles, Sliders, Smartphone, Laptop, Lock, ShieldCheck, GripVertical, Home, Save
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
