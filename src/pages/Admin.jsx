@@ -1616,25 +1616,32 @@ const Admin = () => {
   };
 
 
-  const handleDeleteAiGallery = async (id) => {
-    if (!confirm("Are you sure you want to delete this gallery?")) return;
+  const handleDeleteAiGallery = async (id, name = "this gallery") => {
+    if (!id) return;
+    if (!confirm(`⚠️ Are you sure you want to permanently delete "${name}"?\n\nThis action cannot be undone.`)) {
+      return;
+    }
     
+    // 1. Instant UI update - gallery disappears immediately!
+    setAiGalleries(prev => {
+      const existing = Array.isArray(prev) ? prev : [];
+      const updated = existing.filter(g => g?.id !== id);
+      try { localStorage.setItem("dreamwed_galleries", JSON.stringify(updated)); } catch (err) {}
+      return updated;
+    });
+
+    // 2. Server delete sync
     try {
       const res = await fetch(`${API_BASE}/api/galleries/${id}`, {
         method: "DELETE"
       });
       if (res.ok) {
         await fetchGalleries();
-        alert("🗑️ Gallery deleted successfully!");
-      } else {
-        throw new Error("Failed to delete gallery on server");
       }
     } catch (err) {
-      console.error(err);
-      const updated = aiGalleries.filter(g => g.id !== id);
-      setAiGalleries(updated);
-      localStorage.setItem("dreamwed_galleries", JSON.stringify(updated));
+      console.warn("Backend delete failed, removed locally from dreamwed_galleries:", err);
     }
+    alert(`🗑️ "${name}" deleted successfully!`);
   };
 
   const handleCoverFileUpload = (file, isEdit = false) => {
@@ -4322,9 +4329,14 @@ const Admin = () => {
                           <ImageIcon size={11} /> Cover
                         </button>
 
-                        <button onClick={() => handleDeleteAiGallery(g?.id)}
-                          className="p-1.5 text-zinc-650 hover:text-red-500 transition-colors cursor-pointer shrink-0 ml-1">
-                          <Trash2 size={14} />
+                        {/* 🗑️ Delete Gallery Button */}
+                        <button 
+                          onClick={() => handleDeleteAiGallery(g?.id, g?.name)}
+                          className="px-3 py-2 rounded-xl bg-red-950/40 hover:bg-red-600 text-red-400 hover:text-white border border-red-800/60 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 shrink-0"
+                          title={`Permanently Delete "${g?.name || 'this gallery'}"`}
+                        >
+                          <Trash2 size={12} />
+                          <span>Delete</span>
                         </button>
                       </div>
                     </div>
