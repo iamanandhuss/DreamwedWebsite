@@ -898,6 +898,7 @@ function saveGallery(gallery) {
       groomName: gallery.groomName !== undefined ? gallery.groomName : (existing.groomName || ""),
       brideName: gallery.brideName !== undefined ? gallery.brideName : (existing.brideName || ""),
       gdriveLink: gallery.gdriveLink || existing.gdriveLink,
+      extraDriveLink: gallery.extraDriveLink !== undefined ? gallery.extraDriveLink : (existing.extraDriveLink || ""),
       coverUrl: gallery.coverUrl || existing.coverUrl,
       updated_at: getDbDate()
     };
@@ -916,6 +917,7 @@ function saveGallery(gallery) {
       groomName,
       brideName,
       gdriveLink: gallery.gdriveLink,
+      extraDriveLink: gallery.extraDriveLink || "",
       coverUrl: gallery.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800",
       accessCode,
       photos: gallery.photos || [],
@@ -961,10 +963,10 @@ function fetchDrivePage(url) {
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
       }
     }, (res) => {
-      let responseData = '';
-      res.on('data', chunk => responseData += chunk);
-      res.on('end', () => resolve(responseData));
-    }).on('error', reject);
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => resolve(data));
+    }).on('error', err => reject(err));
   });
 }
 
@@ -972,8 +974,8 @@ function extractDriveIdsFromHtml(html) {
   const ids = new Set();
   if (!html) return ids;
 
-  // Pattern 1: /file/d/FILE_ID
-  const m1 = html.matchAll(/\/file\/d\/([a-zA-Z0-9_-]{25,45})/g);
+  // Pattern 1: drive.google.com/file/d/FILE_ID
+  const m1 = html.matchAll(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]{25,45})/g);
   for (const m of m1) if (m[1]) ids.add(m[1]);
 
   // Pattern 2: googleusercontent.com/d/FILE_ID
@@ -996,47 +998,60 @@ function extractDriveIdsFromHtml(html) {
   return ids;
 }
 
+async function scrapeDriveLinkIds(driveLink, idSet) {
+  if (!driveLink) return;
+  const folderMatch = driveLink.match(/folders\/([a-zA-Z0-9_-]+)/) || driveLink.match(/id=([a-zA-Z0-9_-]+)/);
+  const folderId = folderMatch ? folderMatch[1] : null;
+
+  if (folderId) {
+    // Embedded grid view
+    try {
+      const gridHtml = await fetchDrivePage(`https://drive.google.com/embeddedfolderview?id=${folderId}#grid`);
+      const gridIds = extractDriveIdsFromHtml(gridHtml);
+      gridIds.forEach(fid => idSet.add(fid));
+    } catch (e) {
+      console.warn(`[GDrive Grid Scrape] Warning: ${e.message}`);
+    }
+
+    // Embedded list view
+    try {
+      const listHtml = await fetchDrivePage(`https://drive.google.com/embeddedfolderview?id=${folderId}#list`);
+      const listIds = extractDriveIdsFromHtml(listHtml);
+      listIds.forEach(fid => idSet.add(fid));
+    } catch (e) {
+      console.warn(`[GDrive List Scrape] Warning: ${e.message}`);
+    }
+  }
+
+  // Standard URL
+  try {
+    const html = await fetchDrivePage(driveLink);
+    const standardIds = extractDriveIdsFromHtml(html);
+    standardIds.forEach(fid => idSet.add(fid));
+  } catch (e) {
+    console.warn(`[GDrive Standard Scrape] Warning: ${e.message}`);
+  }
+
+  if (folderId) {
+    idSet.delete(folderId);
+  }
+}
+
 async function syncGalleryDrivePhotos(id) {
   const gallery = getGallery(id);
-  if (!gallery || !gallery.gdriveLink) return null;
+  if (!gallery || (!gallery.gdriveLink && !gallery.extraDriveLink)) return null;
   
   try {
-    const folderMatch = gallery.gdriveLink.match(/folders\/([a-zA-Z0-9_-]+)/) || gallery.gdriveLink.match(/id=([a-zA-Z0-9_-]+)/);
-    const folderId = folderMatch ? folderMatch[1] : null;
-
     const idSet = new Set();
 
-    // 1. Fetch from embedded folderview grid (loads full grid preview)
-    if (folderId) {
-      try {
-        const gridHtml = await fetchDrivePage(`https://drive.google.com/embeddedfolderview?id=${folderId}#grid`);
-        const gridIds = extractDriveIdsFromHtml(gridHtml);
-        gridIds.forEach(fid => idSet.add(fid));
-      } catch (e) {
-        console.warn(`[GDrive Grid Scrape] Warning: ${e.message}`);
-      }
-
-      // 2. Fetch from embedded folderview list
-      try {
-        const listHtml = await fetchDrivePage(`https://drive.google.com/embeddedfolderview?id=${folderId}#list`);
-        const listIds = extractDriveIdsFromHtml(listHtml);
-        listIds.forEach(fid => idSet.add(fid));
-      } catch (e) {
-        console.warn(`[GDrive List Scrape] Warning: ${e.message}`);
-      }
+    // 1. Scrape Primary Google Drive Link
+    if (gallery.gdriveLink) {
+      await scrapeDriveLinkIds(gallery.gdriveLink, idSet);
     }
 
-    // 3. Fetch from primary standard URL
-    try {
-      const html = await fetchDrivePage(gallery.gdriveLink);
-      const standardIds = extractDriveIdsFromHtml(html);
-      standardIds.forEach(fid => idSet.add(fid));
-    } catch (e) {
-      console.warn(`[GDrive Standard Scrape] Warning: ${e.message}`);
-    }
-    
-    if (folderId) {
-      idSet.delete(folderId);
+    // 2. Scrape Additional Google Drive Link (if provided)
+    if (gallery.extraDriveLink) {
+      await scrapeDriveLinkIds(gallery.extraDriveLink, idSet);
     }
     
     const fileIds = Array.from(idSet);

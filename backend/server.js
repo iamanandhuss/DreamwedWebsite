@@ -1010,7 +1010,7 @@ app.post('/api/galleries', async (req, res) => {
     const saved = saveGallery(galleryData);
     
     // Automatically trigger Drive photo sync in the background
-    if (saved.gdriveLink) {
+    if (saved.gdriveLink || saved.extraDriveLink) {
       syncGalleryDrivePhotos(saved.id).catch(err => {
         console.error(`Background Drive sync failed for ${saved.id}:`, err);
       });

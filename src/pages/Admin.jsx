@@ -103,6 +103,7 @@ const Admin = () => {
   const [newBrideName, setNewBrideName] = useState("");
   const [newGalName, setNewGalName] = useState("");
   const [newGalDrive, setNewGalDrive] = useState("");
+  const [newGalExtraDrive, setNewGalExtraDrive] = useState("");
   const [newGalCover, setNewGalCover] = useState("https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800");
   const [selectedGalForPhotos, setSelectedGalForPhotos] = useState(null);
   const [selectedPhotosModalData, setSelectedPhotosModalData] = useState(null);
@@ -1437,6 +1438,7 @@ const Admin = () => {
       groomName: newGroomName.trim(),
       brideName: newBrideName.trim(),
       gdriveLink: newGalDrive.trim(),
+      extraDriveLink: newGalExtraDrive.trim(),
       coverUrl: newGalCover.trim() || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800",
       accessCode: randomCode,
       photos: []
@@ -1454,6 +1456,7 @@ const Admin = () => {
         setNewBrideName("");
         setNewGalName("");
         setNewGalDrive("");
+        setNewGalExtraDrive("");
         alert("💍 Branded Client Gallery created successfully!");
       } else {
         throw new Error("Failed to save gallery on server");
@@ -1469,6 +1472,7 @@ const Admin = () => {
       setNewBrideName("");
       setNewGalName("");
       setNewGalDrive("");
+      setNewGalExtraDrive("");
       alert("💍 Created local gallery fallback!");
     }
   };
@@ -3651,9 +3655,16 @@ const Admin = () => {
                 </div>
                 
                 <div className="space-y-1.5">
-                  <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Google Drive Link</label>
+                  <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Primary Google Drive Link</label>
                   <input type="url" placeholder="https://drive.google.com/drive/folders/..." required
                     value={newGalDrive} onChange={(e) => setNewGalDrive(e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Additional Drive Link (Optional / Secondary)</label>
+                  <input type="url" placeholder="https://drive.google.com/... (e.g. Extra photos, Haldi, Reception, or RAW files)"
+                    value={newGalExtraDrive} onChange={(e) => setNewGalExtraDrive(e.target.value)}
                     className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none" />
                 </div>
 
@@ -3772,10 +3783,20 @@ const Admin = () => {
                             </>
                           )}
                         </button>
-                        <a href={g.gdriveLink} target="_blank" rel="noopener noreferrer"
-                          className="text-[10px] text-[#b4975a] font-bold uppercase tracking-wider hover:underline shrink-0">
-                          Drive ↗
-                        </a>
+                        
+                        <div className="flex items-center gap-1.5">
+                          <a href={g.gdriveLink} target="_blank" rel="noopener noreferrer"
+                            className="text-[10px] text-[#b4975a] font-bold uppercase tracking-wider hover:underline shrink-0">
+                            {g.extraDriveLink ? "Drive 1 ↗" : "Drive ↗"}
+                          </a>
+                          {g.extraDriveLink && (
+                            <a href={g.extraDriveLink} target="_blank" rel="noopener noreferrer"
+                              className="text-[10px] text-amber-400/90 font-bold uppercase tracking-wider hover:underline shrink-0">
+                              Drive 2 ↗
+                            </a>
+                          )}
+                        </div>
+
                         <button onClick={() => handleDeleteAiGallery(g.id)}
                           className="p-1.5 text-zinc-650 hover:text-red-500 transition-colors cursor-pointer shrink-0 ml-1">
                           <Trash2 size={14} />
