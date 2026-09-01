@@ -8,6 +8,27 @@ import {
 } from "lucide-react";
 import SEO from "../components/SEO";
 
+const FONT_MAP = {
+  cormorant: "'Cormorant Garamond', serif",
+  playfair: "'Playfair Display', serif",
+  cinzel: "'Cinzel', serif",
+  greatvibes: "'Great Vibes', cursive",
+  alexbrush: "'Alex Brush', cursive",
+  inter: "'Inter', sans-serif"
+};
+
+const ALIGN_MAP = {
+  top: "object-top",
+  center: "object-center",
+  bottom: "object-bottom"
+};
+
+const TEXT_ALIGN_MAP = {
+  left: "text-left items-start",
+  center: "text-center items-center",
+  right: "text-right items-end"
+};
+
 const ClientGallery = () => {
   const { id } = useParams();
   const [isLocked, setIsLocked] = useState(true);
@@ -171,6 +192,13 @@ const ClientGallery = () => {
     }
   };
 
+  // Active theme properties
+  const activeColor = (isLocked ? meta?.coverColor : (gallery?.coverColor || meta?.coverColor)) || "#b4975a";
+  const activeFontKey = (isLocked ? meta?.coverFont : (gallery?.coverFont || meta?.coverFont)) || "cormorant";
+  const activeFontFamily = FONT_MAP[activeFontKey] || FONT_MAP.cormorant;
+  const activeAlignClass = ALIGN_MAP[(isLocked ? meta?.coverAlign : (gallery?.coverAlign || meta?.coverAlign)) || "center"] || "object-center";
+  const activeTextAlign = TEXT_ALIGN_MAP[(isLocked ? meta?.coverTextAlign : (gallery?.coverTextAlign || meta?.coverTextAlign)) || "center"] || "text-center items-center";
+
   // Filtered photos list
   const allPhotos = gallery?.photos || [];
   const displayedPhotos = filterMode === "favorites"
@@ -225,7 +253,7 @@ const ClientGallery = () => {
           >
             {/* Cinematic Full-Bleed Cover Background */}
             <div 
-              className="absolute inset-0 bg-cover bg-center scale-105 filter blur-[3px] brightness-40 opacity-50 transition-all duration-1000"
+              className={`absolute inset-0 bg-cover bg-center ${activeAlignClass} scale-105 filter blur-[4px] brightness-40 opacity-50 transition-all duration-1000`}
               style={{ backgroundImage: `url(${meta?.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200"})` }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/80" />
@@ -244,25 +272,38 @@ const ClientGallery = () => {
                   alt="Dreamwed Stories" 
                   className="w-16 h-16 sm:w-20 sm:h-20 object-contain filter drop-shadow-[0_4px_20px_rgba(255,255,255,0.25)]" 
                 />
-                <span className="text-[#b4975a] uppercase font-bold tracking-[0.3em] text-[10px] block">
+                <span 
+                  style={{ color: activeColor }}
+                  className="uppercase font-bold tracking-[0.3em] text-[10px] block"
+                >
                   Dreamwed Stories
                 </span>
               </div>
 
               {/* Cover Card Preview */}
               {meta?.coverUrl && (
-                <div className="relative h-44 sm:h-52 w-full rounded-2xl overflow-hidden border border-zinc-800/80 shadow-inner group">
+                <div className="relative h-48 sm:h-56 w-full rounded-2xl overflow-hidden border border-zinc-800/80 shadow-inner group">
                   <img 
                     src={meta.coverUrl} 
                     alt="Wedding Cover" 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 brightness-90" 
+                    className={`w-full h-full object-cover ${activeAlignClass} group-hover:scale-105 transition-transform duration-700 brightness-90`} 
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4 text-left">
-                    <span className="text-[9px] uppercase font-bold tracking-widest text-[#b4975a]">Wedding Memories</span>
-                    <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl sm:text-3xl text-white font-light leading-tight">
+                  <div className={`absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex flex-col justify-end p-5 ${activeTextAlign}`}>
+                    <span 
+                      style={{ color: activeColor }}
+                      className="text-[9px] uppercase font-bold tracking-widest block mb-1"
+                    >
+                      Wedding Deliverables
+                    </span>
+                    <h2 
+                      style={{ fontFamily: activeFontFamily }} 
+                      className="text-2xl sm:text-3xl text-white font-light leading-tight"
+                    >
                       {meta?.groomName && meta?.brideName ? (
                         <>
-                          <span>{meta.groomName}</span> <span className="italic font-serif text-[#b4975a]">&</span> <span>{meta.brideName}</span>
+                          <span>{meta.groomName}</span>{" "}
+                          <span style={{ color: activeColor }} className="italic font-serif">&amp;</span>{" "}
+                          <span>{meta.brideName}</span>
                         </>
                       ) : (
                         meta?.name || "Dreamwed Wedding"
@@ -275,7 +316,7 @@ const ClientGallery = () => {
               {/* Lock Notice */}
               <div className="space-y-1">
                 <div className="flex items-center justify-center gap-2 text-zinc-300 text-xs font-light">
-                  <Lock size={13} className="text-[#b4975a]" />
+                  <Lock size={13} style={{ color: activeColor }} />
                   <span>Private Gallery • Access Code Required</span>
                 </div>
               </div>
@@ -319,7 +360,8 @@ const ClientGallery = () => {
                 <button 
                   type="submit"
                   disabled={unlocking}
-                  className="w-full py-4 bg-[#b4975a] hover:bg-[#c5a86b] disabled:bg-zinc-800 disabled:text-zinc-600 text-zinc-950 font-bold rounded-2xl text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-[#b4975a]/10"
+                  style={{ backgroundColor: activeColor }}
+                  className="w-full py-4 text-zinc-950 font-bold rounded-2xl text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg hover:brightness-110 disabled:opacity-50"
                 >
                   {unlocking ? (
                     <RefreshCw size={14} className="animate-spin" />
@@ -348,12 +390,20 @@ const ClientGallery = () => {
                   <ArrowLeft size={16} />
                 </Link>
                 <div>
-                  <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-xl text-white font-medium leading-none">
+                  <h1 
+                    style={{ fontFamily: activeFontFamily }} 
+                    className="text-xl text-white font-medium leading-none"
+                  >
                     {gallery?.groomName && gallery?.brideName 
                       ? `${gallery.groomName} & ${gallery.brideName}` 
                       : (gallery?.name || "Dreamwed Gallery")}
                   </h1>
-                  <span className="text-[9px] text-[#b4975a] font-bold uppercase tracking-wider block mt-1">Dreamwed Stories Gallery</span>
+                  <span 
+                    style={{ color: activeColor }}
+                    className="text-[9px] font-bold uppercase tracking-wider block mt-1"
+                  >
+                    Dreamwed Stories Gallery
+                  </span>
                 </div>
               </div>
 
@@ -370,13 +420,19 @@ const ClientGallery = () => {
             {/* Gallery Grid */}
             <main className="flex-grow max-w-7xl w-full mx-auto px-6 py-10 space-y-8">
               <div className="text-center max-w-xl mx-auto space-y-2.5">
-                <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl sm:text-4xl text-white font-light">
-                  Capturing Your <span className="italic font-serif text-[#b4975a]">Love Story</span>
+                <h2 
+                  style={{ fontFamily: activeFontFamily }} 
+                  className="text-3xl sm:text-4xl text-white font-light"
+                >
+                  Capturing Your <span style={{ color: activeColor }} className="italic font-serif">Love Story</span>
                 </h2>
                 <p className="text-zinc-400 text-xs font-light leading-relaxed">
                   Click the ❤️ heart button on any photo to favorite and select photos for your album. Your selections are automatically saved for the Dreamwed team.
                 </p>
-                <div className="w-10 h-[1px] bg-[#b4975a]/50 mx-auto mt-4" />
+                <div 
+                  style={{ backgroundColor: `${activeColor}80` }}
+                  className="w-10 h-[1px] mx-auto mt-4" 
+                />
               </div>
 
               {displayedPhotos && displayedPhotos.length > 0 ? (
@@ -465,7 +521,10 @@ const ClientGallery = () => {
               </button>
 
               {saveStatus === "saving" && (
-                <span className="text-[10px] text-[#b4975a] font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1">
+                <span 
+                  style={{ color: activeColor }}
+                  className="text-[10px] font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1"
+                >
                   <RefreshCw size={11} className="animate-spin" /> Saving...
                 </span>
               )}
@@ -516,7 +575,8 @@ const ClientGallery = () => {
                   target="_blank" 
                   rel="noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="p-2.5 bg-zinc-900/80 hover:bg-[#b4975a] hover:text-zinc-950 border border-zinc-800 rounded-xl text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider cursor-pointer"
+                  style={{ borderColor: activeColor }}
+                  className="p-2.5 bg-zinc-900/80 hover:brightness-110 border rounded-xl text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider cursor-pointer"
                 >
                   <Download size={14} /> <span className="hidden sm:inline">Download HD</span>
                 </a>
@@ -536,7 +596,7 @@ const ClientGallery = () => {
               <button 
                 onClick={handlePrevPhoto}
                 title="Previous Photo (Left Arrow key)"
-                className="absolute left-2 sm:left-6 z-30 p-3 sm:p-4 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-700/60 hover:border-[#b4975a] rounded-full shadow-2xl cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group"
+                className="absolute left-2 sm:left-6 z-30 p-3 sm:p-4 bg-zinc-950/80 hover:brightness-125 text-white border border-zinc-700/60 rounded-full shadow-2xl cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group"
               >
                 <ChevronLeft size={26} className="group-hover:-translate-x-0.5 transition-transform" />
               </button>
@@ -558,7 +618,7 @@ const ClientGallery = () => {
               <button 
                 onClick={handleNextPhoto}
                 title="Next Photo (Right Arrow key)"
-                className="absolute right-2 sm:right-6 z-30 p-3 sm:p-4 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-700/60 hover:border-[#b4975a] rounded-full shadow-2xl cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group"
+                className="absolute right-2 sm:right-6 z-30 p-3 sm:p-4 bg-zinc-950/80 hover:brightness-125 text-white border border-zinc-700/60 rounded-full shadow-2xl cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group"
               >
                 <ChevronRight size={26} className="group-hover:translate-x-0.5 transition-transform" />
               </button>

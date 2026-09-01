@@ -1080,6 +1080,10 @@ app.get('/api/public/galleries/:id', (req, res) => {
       groomName: gallery.groomName || "",
       brideName: gallery.brideName || "",
       coverUrl: gallery.coverUrl,
+      coverAlign: gallery.coverAlign || "center",
+      coverTextAlign: gallery.coverTextAlign || "center",
+      coverFont: gallery.coverFont || "cormorant",
+      coverColor: gallery.coverColor || "#b4975a",
       created_at: gallery.created_at
     });
   } catch (err) {

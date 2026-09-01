@@ -16,6 +16,25 @@ const API_BASE = typeof window !== "undefined"
 
 const INITIAL_GALLERIES = [];
 
+const GALLERY_FONTS = [
+  { id: "cormorant", name: "Cormorant", family: "'Cormorant Garamond', serif", label: "Royal Serif" },
+  { id: "playfair", name: "Playfair", family: "'Playfair Display', serif", label: "Editorial Serif" },
+  { id: "cinzel", name: "Cinzel", family: "'Cinzel', serif", label: "Regal Roman" },
+  { id: "greatvibes", name: "Great Vibes", family: "'Great Vibes', cursive", label: "Handwritten" },
+  { id: "alexbrush", name: "Alex Brush", family: "'Alex Brush', cursive", label: "Calligraphy" },
+  { id: "inter", name: "Inter Sans", family: "'Inter', sans-serif", label: "Clean Modern" }
+];
+
+const GALLERY_COLORS = [
+  { hex: "#b4975a", name: "Royal Gold" },
+  { hex: "#e0a899", name: "Rose Gold" },
+  { hex: "#10b981", name: "Emerald" },
+  { hex: "#e11d48", name: "Ruby Rose" },
+  { hex: "#38bdf8", name: "Sky Celestial" },
+  { hex: "#c084fc", name: "Royal Purple" },
+  { hex: "#f8fafc", name: "Pearl White" }
+];
+
 const formatCurrency = (num) => Number(num || 0).toLocaleString("en-IN");
 
 const Admin = () => {
@@ -105,11 +124,22 @@ const Admin = () => {
   const [newGalDrive, setNewGalDrive] = useState("");
   const [newGalExtraDrive, setNewGalExtraDrive] = useState("");
   const [newGalCover, setNewGalCover] = useState("https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800");
+  const [newGalCoverAlign, setNewGalCoverAlign] = useState("center"); // 'top' | 'center' | 'bottom'
+  const [newGalCoverTextAlign, setNewGalCoverTextAlign] = useState("center"); // 'left' | 'center' | 'right'
+  const [newGalCoverFont, setNewGalCoverFont] = useState("cormorant"); // 'cormorant' | 'playfair' | 'cinzel' | 'greatvibes' | 'alexbrush' | 'inter'
+  const [newGalCoverColor, setNewGalCoverColor] = useState("#b4975a");
   const [coverInputMode, setCoverInputMode] = useState("upload"); // 'upload' | 'url' | 'presets'
   const [isDraggingCover, setIsDraggingCover] = useState(false);
+  
+  // Edit modal states
   const [editingCoverGallery, setEditingCoverGallery] = useState(null);
   const [editCoverValue, setEditCoverValue] = useState("");
   const [editCoverMode, setEditCoverMode] = useState("upload");
+  const [editCoverAlign, setEditCoverAlign] = useState("center");
+  const [editCoverTextAlign, setEditCoverTextAlign] = useState("center");
+  const [editCoverFont, setEditCoverFont] = useState("cormorant");
+  const [editCoverColor, setEditCoverColor] = useState("#b4975a");
+
   const [selectedGalForPhotos, setSelectedGalForPhotos] = useState(null);
   const [selectedPhotosModalData, setSelectedPhotosModalData] = useState(null);
   const [bulkPhotoUrls, setBulkPhotoUrls] = useState("");
@@ -1445,6 +1475,10 @@ const Admin = () => {
       gdriveLink: newGalDrive.trim(),
       extraDriveLink: newGalExtraDrive.trim(),
       coverUrl: newGalCover.trim() || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800",
+      coverAlign: newGalCoverAlign,
+      coverTextAlign: newGalCoverTextAlign,
+      coverFont: newGalCoverFont,
+      coverColor: newGalCoverColor,
       accessCode: randomCode,
       photos: []
     };
@@ -1534,14 +1568,18 @@ const Admin = () => {
         body: JSON.stringify({
           id: editingCoverGallery.id,
           name: editingCoverGallery.name,
-          coverUrl: editCoverValue
+          coverUrl: editCoverValue,
+          coverAlign: editCoverAlign,
+          coverTextAlign: editCoverTextAlign,
+          coverFont: editCoverFont,
+          coverColor: editCoverColor
         })
       });
       if (res.ok) {
         await fetchGalleries();
         setEditingCoverGallery(null);
         setEditCoverValue("");
-        alert("✨ Cover image updated successfully!");
+        alert("✨ Cover design & styling updated successfully!");
       } else {
         throw new Error("Failed to update cover on server");
       }
@@ -3720,11 +3758,11 @@ const Admin = () => {
                     className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-xs focus:border-[#b4975a] focus:outline-none" />
                 </div>
 
-                {/* ================= COVER IMAGE DESIGNER ================= */}
-                <div className="space-y-2.5 p-4 rounded-2xl bg-zinc-900/70 border border-zinc-800">
+                {/* ================= COVER IMAGE DESIGNER & STUDIO ================= */}
+                <div className="space-y-3 p-4 rounded-2xl bg-zinc-900/70 border border-zinc-800">
                   <div className="flex items-center justify-between">
                     <label className="text-[9px] font-bold text-[#b4975a] uppercase tracking-widest flex items-center gap-1.5">
-                      <ImageIcon size={12} /> Gallery Cover Photo
+                      <ImageIcon size={12} /> Gallery Cover Studio
                     </label>
                     <span className="text-[8px] text-zinc-500 uppercase tracking-wider font-mono">Hero Branding</span>
                   </div>
@@ -3836,20 +3874,137 @@ const Admin = () => {
                     </div>
                   )}
 
-                  {/* Live Realistic Mockup Studio */}
+                  {/* ================= STYLING CONTROLS ================= */}
+                  <div className="pt-2 border-t border-zinc-800/80 space-y-3">
+                    {/* 1. Image Focal Position & Text Alignment */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {/* Image Position */}
+                      <div className="space-y-1">
+                        <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Photo Focus</label>
+                        <div className="grid grid-cols-3 gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-850">
+                          {["top", "center", "bottom"].map((pos) => (
+                            <button
+                              key={pos}
+                              type="button"
+                              onClick={() => setNewGalCoverAlign(pos)}
+                              className={`py-1 text-[8px] font-bold uppercase rounded capitalize transition-all cursor-pointer ${
+                                newGalCoverAlign === pos ? "bg-[#b4975a] text-zinc-950 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                              }`}
+                            >
+                              {pos}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Text Alignment */}
+                      <div className="space-y-1">
+                        <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Text Align</label>
+                        <div className="grid grid-cols-3 gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-850">
+                          {["left", "center", "right"].map((align) => (
+                            <button
+                              key={align}
+                              type="button"
+                              onClick={() => setNewGalCoverTextAlign(align)}
+                              className={`py-1 text-[8px] font-bold uppercase rounded capitalize transition-all cursor-pointer ${
+                                newGalCoverTextAlign === align ? "bg-[#b4975a] text-zinc-950 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                              }`}
+                            >
+                              {align}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 2. Typography Font Style */}
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Typography Font Style</label>
+                      <select
+                        value={newGalCoverFont}
+                        onChange={(e) => setNewGalCoverFont(e.target.value)}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-zinc-200 text-xs focus:border-[#b4975a] focus:outline-none cursor-pointer"
+                      >
+                        {GALLERY_FONTS.map((f) => (
+                          <option key={f.id} value={f.id}>
+                            {f.name} ({f.label})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* 3. Theme & Accent Color Palette */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Theme / Accent Color</label>
+                        <span className="text-[8px] font-mono text-zinc-500">{newGalCoverColor}</span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap bg-zinc-950 p-2 rounded-xl border border-zinc-850">
+                        {GALLERY_COLORS.map((c) => (
+                          <button
+                            key={c.hex}
+                            type="button"
+                            onClick={() => setNewGalCoverColor(c.hex)}
+                            title={c.name}
+                            className={`w-6 h-6 rounded-full transition-transform cursor-pointer border relative flex items-center justify-center ${
+                              newGalCoverColor.toLowerCase() === c.hex.toLowerCase()
+                                ? "scale-110 border-white ring-2 ring-[#b4975a]"
+                                : "border-zinc-700 hover:scale-105 opacity-80 hover:opacity-100"
+                            }`}
+                            style={{ backgroundColor: c.hex }}
+                          >
+                            {newGalCoverColor.toLowerCase() === c.hex.toLowerCase() && (
+                              <Check size={11} className={c.hex === "#f8fafc" ? "text-black" : "text-white"} />
+                            )}
+                          </button>
+                        ))}
+                        <input
+                          type="color"
+                          value={newGalCoverColor}
+                          onChange={(e) => setNewGalCoverColor(e.target.value)}
+                          className="w-6 h-6 rounded-full cursor-pointer bg-transparent border-0 p-0 overflow-hidden"
+                          title="Custom Hex Color"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ================= LIVE REALISTIC MOCKUP STUDIO ================= */}
                   {newGalCover && (
                     <div className="relative rounded-2xl overflow-hidden border border-zinc-800 shadow-xl group">
-                      <div className="relative h-28 w-full">
-                        <img src={newGalCover} alt="Cover Preview" className="w-full h-full object-cover brightness-75 group-hover:scale-105 transition-transform duration-700" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-3 text-left">
-                          <span className="text-[7px] uppercase font-bold tracking-widest text-[#b4975a]">Live Client Lock Mockup</span>
-                          <span style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-base text-white font-medium truncate leading-tight">
-                            {newGroomName && newBrideName ? `${newGroomName} & ${newBrideName}` : (newGalName || "Groom & Bride")}
+                      <div className="relative h-32 w-full">
+                        <img 
+                          src={newGalCover} 
+                          alt="Cover Preview" 
+                          className={`w-full h-full object-cover object-${newGalCoverAlign} brightness-75 group-hover:scale-105 transition-transform duration-700`} 
+                        />
+                        <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-3.5 text-${newGalCoverTextAlign} items-${newGalCoverTextAlign === "left" ? "start" : (newGalCoverTextAlign === "right" ? "end" : "center")}`}>
+                          <span style={{ color: newGalCoverColor }} className="text-[7px] uppercase font-bold tracking-widest">
+                            Live Lock Preview
+                          </span>
+                          <span 
+                            style={{ 
+                              fontFamily: GALLERY_FONTS.find(f => f.id === newGalCoverFont)?.family || "'Cormorant Garamond', serif"
+                            }} 
+                            className="text-base text-white font-medium truncate leading-tight mt-0.5"
+                          >
+                            {newGroomName && newBrideName ? (
+                              <>
+                                <span>{newGroomName}</span>{" "}
+                                <span style={{ color: newGalCoverColor }} className="italic font-serif">&amp;</span>{" "}
+                                <span>{newBrideName}</span>
+                              </>
+                            ) : (
+                              newGalName || "Groom & Bride"
+                            )}
                           </span>
                         </div>
                       </div>
                       <div className="bg-zinc-950 px-3 py-1.5 border-t border-zinc-850 flex items-center justify-between text-[9px] text-zinc-400">
-                        <span>✓ Cover Image Active</span>
+                        <span className="flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: newGalCoverColor }} />
+                          Custom Style Configured
+                        </span>
                         <button
                           type="button"
                           onClick={() => setNewGalCover("")}
@@ -3968,6 +4123,10 @@ const Admin = () => {
                           onClick={() => {
                             setEditingCoverGallery(g);
                             setEditCoverValue(g.coverUrl || "");
+                            setEditCoverAlign(g.coverAlign || "center");
+                            setEditCoverTextAlign(g.coverTextAlign || "center");
+                            setEditCoverFont(g.coverFont || "cormorant");
+                            setEditCoverColor(g.coverColor || "#b4975a");
                             setEditCoverMode("upload");
                           }}
                           className="px-2.5 py-2 rounded-xl bg-zinc-800 hover:bg-[#b4975a] hover:text-zinc-950 text-zinc-300 text-[10px] font-bold uppercase tracking-wider border border-zinc-750 transition-all flex items-center gap-1 cursor-pointer"
@@ -5779,12 +5938,129 @@ const Admin = () => {
                 </div>
               )}
 
+              {/* ================= EDIT STYLING CONTROLS ================= */}
+              <div className="pt-2 border-t border-zinc-800/80 space-y-3">
+                {/* 1. Image Focal Position & Text Alignment */}
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Image Position */}
+                  <div className="space-y-1">
+                    <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Photo Focus</label>
+                    <div className="grid grid-cols-3 gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800">
+                      {["top", "center", "bottom"].map((pos) => (
+                        <button
+                          key={pos}
+                          type="button"
+                          onClick={() => setEditCoverAlign(pos)}
+                          className={`py-1 text-[8px] font-bold uppercase rounded capitalize transition-all cursor-pointer ${
+                            editCoverAlign === pos ? "bg-[#b4975a] text-zinc-950 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                          }`}
+                        >
+                          {pos}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Text Alignment */}
+                  <div className="space-y-1">
+                    <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Text Align</label>
+                    <div className="grid grid-cols-3 gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800">
+                      {["left", "center", "right"].map((align) => (
+                        <button
+                          key={align}
+                          type="button"
+                          onClick={() => setEditCoverTextAlign(align)}
+                          className={`py-1 text-[8px] font-bold uppercase rounded capitalize transition-all cursor-pointer ${
+                            editCoverTextAlign === align ? "bg-[#b4975a] text-zinc-950 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                          }`}
+                        >
+                          {align}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Typography Font Style */}
+                <div className="space-y-1">
+                  <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Typography Font Style</label>
+                  <select
+                    value={editCoverFont}
+                    onChange={(e) => setEditCoverFont(e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-zinc-200 text-xs focus:border-[#b4975a] focus:outline-none cursor-pointer"
+                  >
+                    {GALLERY_FONTS.map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.name} ({f.label})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 3. Theme & Accent Color Palette */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">Theme / Accent Color</label>
+                    <span className="text-[8px] font-mono text-zinc-500">{editCoverColor}</span>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap bg-zinc-900 p-2 rounded-xl border border-zinc-800">
+                    {GALLERY_COLORS.map((c) => (
+                      <button
+                        key={c.hex}
+                        type="button"
+                        onClick={() => setEditCoverColor(c.hex)}
+                        title={c.name}
+                        className={`w-6 h-6 rounded-full transition-transform cursor-pointer border relative flex items-center justify-center ${
+                          editCoverColor.toLowerCase() === c.hex.toLowerCase()
+                            ? "scale-110 border-white ring-2 ring-[#b4975a]"
+                            : "border-zinc-700 hover:scale-105 opacity-80 hover:opacity-100"
+                        }`}
+                        style={{ backgroundColor: c.hex }}
+                      >
+                        {editCoverColor.toLowerCase() === c.hex.toLowerCase() && (
+                          <Check size={11} className={c.hex === "#f8fafc" ? "text-black" : "text-white"} />
+                        )}
+                      </button>
+                    ))}
+                    <input
+                      type="color"
+                      value={editCoverColor}
+                      onChange={(e) => setEditCoverColor(e.target.value)}
+                      className="w-6 h-6 rounded-full cursor-pointer bg-transparent border-0 p-0 overflow-hidden"
+                      title="Custom Hex Color"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Live Preview */}
               {editCoverValue && (
                 <div className="relative rounded-2xl overflow-hidden border border-zinc-800 shadow-xl h-36">
-                  <img src={editCoverValue} alt="Cover Preview" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-3">
-                    <span className="text-xs text-white font-medium">{editingCoverGallery.name}</span>
+                  <img 
+                    src={editCoverValue} 
+                    alt="Cover Preview" 
+                    className={`w-full h-full object-cover object-${editCoverAlign}`} 
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-4 text-${editCoverTextAlign} items-${editCoverTextAlign === "left" ? "start" : (editCoverTextAlign === "right" ? "end" : "center")}`}>
+                    <span style={{ color: editCoverColor }} className="text-[7px] uppercase font-bold tracking-widest block mb-0.5">
+                      Deliverable Cover Preview
+                    </span>
+                    <span 
+                      style={{ 
+                        fontFamily: GALLERY_FONTS.find(f => f.id === editCoverFont)?.family || "'Cormorant Garamond', serif"
+                      }} 
+                      className="text-lg text-white font-medium truncate leading-tight"
+                    >
+                      {editingCoverGallery.groomName && editingCoverGallery.brideName ? (
+                        <>
+                          <span>{editingCoverGallery.groomName}</span>{" "}
+                          <span style={{ color: editCoverColor }} className="italic font-serif">&amp;</span>{" "}
+                          <span>{editingCoverGallery.brideName}</span>
+                        </>
+                      ) : (
+                        editingCoverGallery.name
+                      )}
+                    </span>
                   </div>
                 </div>
               )}
@@ -5802,7 +6078,7 @@ const Admin = () => {
                   onClick={handleUpdateGalleryCover}
                   className="w-1/2 py-3 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl text-xs uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-[#b4975a]/10"
                 >
-                  Save Cover Photo
+                  Save Cover Style
                 </button>
               </div>
             </motion.div>

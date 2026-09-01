@@ -900,6 +900,10 @@ function saveGallery(gallery) {
       gdriveLink: gallery.gdriveLink || existing.gdriveLink,
       extraDriveLink: gallery.extraDriveLink !== undefined ? gallery.extraDriveLink : (existing.extraDriveLink || ""),
       coverUrl: gallery.coverUrl || existing.coverUrl,
+      coverAlign: gallery.coverAlign || existing.coverAlign || "center",
+      coverTextAlign: gallery.coverTextAlign || existing.coverTextAlign || "center",
+      coverFont: gallery.coverFont || existing.coverFont || "cormorant",
+      coverColor: gallery.coverColor || existing.coverColor || "#b4975a",
       updated_at: getDbDate()
     };
     data.galleries[existingIndex] = updated;
@@ -919,6 +923,10 @@ function saveGallery(gallery) {
       gdriveLink: gallery.gdriveLink,
       extraDriveLink: gallery.extraDriveLink || "",
       coverUrl: gallery.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800",
+      coverAlign: gallery.coverAlign || "center",
+      coverTextAlign: gallery.coverTextAlign || "center",
+      coverFont: gallery.coverFont || "cormorant",
+      coverColor: gallery.coverColor || "#b4975a",
       accessCode,
       photos: gallery.photos || [],
       created_at: getDbDate(),
