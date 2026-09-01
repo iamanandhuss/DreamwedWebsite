@@ -937,7 +937,7 @@ const ClientGallery = () => {
           >
             <button
               onClick={scrollToStory}
-              className="px-6 py-3 rounded-full bg-white/10 hover:bg-white text-white hover:text-zinc-950 border border-white/25 backdrop-blur-md transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 cursor-pointer shadow-2xl"
+              className="px-6 py-3.5 rounded-full bg-white/10 hover:bg-white text-white hover:text-zinc-950 border border-white/25 backdrop-blur-md transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2.5 cursor-pointer shadow-2xl"
             >
               <span>Explore The Story</span>
               <ChevronDown size={14} />
@@ -949,20 +949,23 @@ const ClientGallery = () => {
                 setIsSlideshowPlaying(true);
                 setIsSlideshowActive(true);
               }}
-              className="px-5 py-3 rounded-full bg-[#b4975a]/20 hover:bg-[#b4975a] text-white hover:text-zinc-950 border border-[#b4975a]/40 backdrop-blur-md transition-all text-xs font-bold uppercase tracking-[0.18em] flex items-center gap-2 cursor-pointer shadow-2xl"
+              className="px-6 py-3.5 rounded-full bg-[#b4975a]/20 hover:bg-[#b4975a] text-white hover:text-zinc-950 border border-[#b4975a]/40 backdrop-blur-md transition-all text-xs font-bold uppercase tracking-[0.18em] flex items-center gap-2 cursor-pointer shadow-2xl"
             >
               <Play size={13} className="fill-current" />
               <span>Play Slideshow</span>
             </button>
 
-            <button
-              disabled={zippingState?.isZipping || allPhotos.length === 0}
-              onClick={() => handleDownloadZipPackage(allPhotos, "Complete_Wedding_Archive")}
-              className="px-5 py-3 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/80 backdrop-blur-md transition-all text-xs font-bold uppercase tracking-[0.18em] flex items-center gap-2 cursor-pointer shadow-xl"
-            >
-              <Download size={13} />
-              <span>Download All ZIP</span>
-            </button>
+            {/* Bulk ZIP is strictly for Bride & Groom */}
+            {isCoupleSelectionMode && (
+              <button
+                disabled={zippingState?.isZipping || allPhotos.length === 0}
+                onClick={() => handleDownloadZipPackage(allPhotos, "Complete_Wedding_Archive")}
+                className="px-5 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/80 backdrop-blur-md transition-all text-xs font-bold uppercase tracking-[0.18em] flex items-center gap-2 cursor-pointer shadow-xl"
+              >
+                <Download size={13} />
+                <span>Download All ZIP</span>
+              </button>
+            )}
           </motion.div>
         </div>
       </section>
