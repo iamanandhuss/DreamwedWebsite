@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Lock, Eye, EyeOff, AlertCircle, ArrowLeft, Download, 
-  Share2, X, ChevronLeft, ChevronRight, RefreshCw, ZoomIn
+  Share2, X, ChevronLeft, ChevronRight, RefreshCw, ZoomIn,
+  Heart, Check, Sparkles, Filter
 } from "lucide-react";
 import SEO from "../components/SEO";
 
@@ -20,7 +21,10 @@ const ClientGallery = () => {
   const [meta, setMeta] = useState(null); // Locked state metadata
   const [gallery, setGallery] = useState(null); // Full gallery after unlock
   const [activePhoto, setActivePhoto] = useState(null);
-  const [copiedIndex, setCopiedIndex] = useState(null);
+  const [selectedPhotoIds, setSelectedPhotoIds] = useState(new Set());
+  const [filterMode, setFilterMode] = useState("all"); // 'all' | 'favorites'
+  const [saveStatus, setSaveStatus] = useState(""); // '', 'saving', 'saved'
+  const syncTimeoutRef = useRef(null);
 
   const API_BASE = typeof window !== "undefined"
     ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com")
@@ -72,6 +76,9 @@ const ClientGallery = () => {
       
       const data = await res.json();
       setGallery(data);
+      if (data.selectedPhotoIds && Array.isArray(data.selectedPhotoIds)) {
+        setSelectedPhotoIds(new Set(data.selectedPhotoIds));
+      }
       setIsLocked(false);
     } catch (err) {
       console.error(err);
@@ -81,26 +88,60 @@ const ClientGallery = () => {
     }
   };
 
-  // 3. Navigation inside Lightbox
+  // 3. Sync favorite hearts to backend
+  const syncSelectionsToBackend = (idsSet) => {
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    setSaveStatus("saving");
+    syncTimeoutRef.current = setTimeout(async () => {
+      try {
+        await fetch(`${API_BASE}/api/public/galleries/${id}/selections`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ selectedPhotoIds: Array.from(idsSet) })
+        });
+        setSaveStatus("saved");
+        setTimeout(() => setSaveStatus(""), 3000);
+      } catch (e) {
+        console.error("Failed to sync selections:", e);
+        setSaveStatus("");
+      }
+    }, 600);
+  };
+
+  const toggleHeartPhoto = (photoId, e) => {
+    if (e) e.stopPropagation();
+    setSelectedPhotoIds(prev => {
+      const next = new Set(prev);
+      if (next.has(photoId)) {
+        next.delete(photoId);
+      } else {
+        next.add(photoId);
+      }
+      syncSelectionsToBackend(next);
+      return next;
+    });
+  };
+
+  // 4. Navigation inside Lightbox
   const handlePrevPhoto = (e) => {
-    e.stopPropagation();
-    if (!gallery || !gallery.photos || !activePhoto) return;
-    const currentIndex = gallery.photos.findIndex(p => p.id === activePhoto.id);
+    if (e) e.stopPropagation();
+    if (!displayedPhotos || displayedPhotos.length === 0 || !activePhoto) return;
+    const currentIndex = displayedPhotos.findIndex(p => p.id === activePhoto.id);
     if (currentIndex > 0) {
-      setActivePhoto(gallery.photos[currentIndex - 1]);
+      setActivePhoto(displayedPhotos[currentIndex - 1]);
     } else {
-      setActivePhoto(gallery.photos[gallery.photos.length - 1]); // Loop back to end
+      setActivePhoto(displayedPhotos[displayedPhotos.length - 1]);
     }
   };
 
   const handleNextPhoto = (e) => {
-    e.stopPropagation();
-    if (!gallery || !gallery.photos || !activePhoto) return;
-    const currentIndex = gallery.photos.findIndex(p => p.id === activePhoto.id);
-    if (currentIndex < gallery.photos.length - 1) {
-      setActivePhoto(gallery.photos[currentIndex + 1]);
+    if (e) e.stopPropagation();
+    if (!displayedPhotos || displayedPhotos.length === 0 || !activePhoto) return;
+    const currentIndex = displayedPhotos.findIndex(p => p.id === activePhoto.id);
+    if (currentIndex < displayedPhotos.length - 1) {
+      setActivePhoto(displayedPhotos[currentIndex + 1]);
     } else {
-      setActivePhoto(gallery.photos[0]); // Loop back to start
+      setActivePhoto(displayedPhotos[0]);
     }
   };
 
@@ -114,14 +155,14 @@ const ClientGallery = () => {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activePhoto, gallery]);
+  }, [activePhoto, gallery, filterMode, selectedPhotoIds]);
 
   // Share functionality
   const handleShareGallery = () => {
     if (navigator.share) {
       navigator.share({
         title: `${meta?.name || "Dreamwed"} Client Gallery`,
-        text: `Browse the gorgeous photo gallery of ${meta?.name || "Wedding"}.`,
+        text: `Browse the private wedding photo gallery of ${meta?.name || "Dreamwed Stories"}.`,
         url: window.location.href,
       }).catch(console.error);
     } else {
@@ -130,100 +171,134 @@ const ClientGallery = () => {
     }
   };
 
+  // Filtered photos list
+  const allPhotos = gallery?.photos || [];
+  const displayedPhotos = filterMode === "favorites"
+    ? allPhotos.filter(p => selectedPhotoIds.has(p.id))
+    : allPhotos;
+
   // Render Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-light">
-        <RefreshCw size={36} className="animate-spin text-[#d4af37] mb-4" />
+        <RefreshCw size={36} className="animate-spin text-[#b4975a] mb-4" />
         <p className="text-zinc-400 text-xs tracking-widest uppercase">Loading Private Gallery...</p>
       </div>
     );
   }
 
-  // Render Error state (if gallery doesn't exist)
-  if (error && !meta) {
+  // Render 404 / Error state
+  if (error && isLocked && !meta) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-6 text-center text-white">
-        <AlertCircle size={48} className="text-red-500 mb-4" />
-        <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl font-light mb-2">Gallery Unavailable</h2>
-        <p className="text-zinc-500 text-sm max-w-md mb-6">{error}</p>
-        <Link to="/" className="px-6 py-3 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 font-bold rounded-xl text-xs uppercase tracking-widest transition-all">
-          Back to Home
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center text-white space-y-4">
+        <div className="w-16 h-16 rounded-full bg-red-950/40 border border-red-800/40 flex items-center justify-center text-red-400 mx-auto">
+          <AlertCircle size={32} />
+        </div>
+        <h1 className="text-2xl font-light text-white">Gallery Unavailable</h1>
+        <p className="text-zinc-500 text-xs max-w-sm font-light leading-relaxed">
+          The requested wedding gallery could not be found or has been removed.
+        </p>
+        <Link to="/" className="px-6 py-2.5 bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
+          Return Home
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex flex-col select-none selection:bg-[#b4975a]/30">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col selection:bg-[#b4975a] selection:text-black">
       <SEO 
         title={`${meta?.name || "Private"} Gallery | Dreamwed Stories`}
         description="View private high-quality client photos protected by Dreamwed Stories."
       />
 
       <AnimatePresence mode="wait">
-        {/* LOCK / INTRO SCREEN */}
+        {/* ========================================================= */}
+        {/* LOCK & INTRO SCREEN: COVER IMAGE + BRANDING + PASSCODE */}
+        {/* ========================================================= */}
         {isLocked ? (
           <motion.div 
             key="lock-screen"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="relative flex-grow flex items-center justify-center p-6 min-h-screen overflow-hidden"
+            className="relative flex-grow flex items-center justify-center p-4 sm:p-6 min-h-screen overflow-hidden"
           >
-            {/* Immersive blurred cover background */}
+            {/* Cinematic Full-Bleed Cover Background */}
             <div 
-              className="absolute inset-0 bg-cover bg-center scale-105 filter blur-md brightness-50 opacity-40 transition-all duration-1000"
-              style={{ backgroundImage: `url(${meta?.coverUrl})` }}
+              className="absolute inset-0 bg-cover bg-center scale-105 filter blur-[3px] brightness-40 opacity-50 transition-all duration-1000"
+              style={{ backgroundImage: `url(${meta?.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200"})` }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/80" />
 
-            {/* Lock Box container */}
+            {/* Lock Container */}
             <motion.div 
-              initial={{ y: 30, opacity: 0 }}
+              initial={{ y: 25, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.8 }}
-              className="relative w-full max-w-md bg-zinc-900/60 backdrop-blur-xl border border-zinc-800 p-8 sm:p-10 rounded-[32px] shadow-2xl text-center space-y-8"
+              transition={{ delay: 0.15, duration: 0.8 }}
+              className="relative w-full max-w-lg bg-zinc-950/85 backdrop-blur-2xl border border-zinc-800/80 p-6 sm:p-10 rounded-[36px] shadow-[0_20px_70px_rgba(0,0,0,0.8)] text-center space-y-6 z-10"
             >
-              {/* Branding */}
-              <div className="space-y-2">
-                <span className="text-[#b4975a] uppercase font-bold tracking-widest text-[9px] block">Dreamwed Stories</span>
-                <h1 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-4xl text-white font-light leading-none">
-                  {meta?.groomName && meta?.brideName ? (
-                    <>
-                      <span>{meta.groomName}</span> <span className="italic font-serif text-[#b4975a]">&</span> <span>{meta.brideName}</span>
-                    </>
-                  ) : (
-                    meta?.name
-                  )}
-                </h1>
-                <p className="text-zinc-400 text-xs tracking-wider font-light mt-1">Wedding Photography Gallery</p>
+              {/* Official Brand Monogram */}
+              <div className="flex flex-col items-center space-y-2">
+                <img 
+                  src="/appIcon.png" 
+                  alt="Dreamwed Stories" 
+                  className="w-16 h-16 sm:w-20 sm:h-20 object-contain filter drop-shadow-[0_4px_20px_rgba(255,255,255,0.25)]" 
+                />
+                <span className="text-[#b4975a] uppercase font-bold tracking-[0.3em] text-[10px] block">
+                  Dreamwed Stories
+                </span>
               </div>
 
-              {/* Lock Indicator */}
-              <div className="w-16 h-16 bg-zinc-800/40 border border-zinc-700/50 rounded-full flex items-center justify-center mx-auto text-[#b4975a]">
-                <Lock size={22} className="animate-pulse" />
-              </div>
+              {/* Cover Card Preview */}
+              {meta?.coverUrl && (
+                <div className="relative h-44 sm:h-52 w-full rounded-2xl overflow-hidden border border-zinc-800/80 shadow-inner group">
+                  <img 
+                    src={meta.coverUrl} 
+                    alt="Wedding Cover" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 brightness-90" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4 text-left">
+                    <span className="text-[9px] uppercase font-bold tracking-widest text-[#b4975a]">Wedding Memories</span>
+                    <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl sm:text-3xl text-white font-light leading-tight">
+                      {meta?.groomName && meta?.brideName ? (
+                        <>
+                          <span>{meta.groomName}</span> <span className="italic font-serif text-[#b4975a]">&</span> <span>{meta.brideName}</span>
+                        </>
+                      ) : (
+                        meta?.name || "Dreamwed Wedding"
+                      )}
+                    </h2>
+                  </div>
+                </div>
+              )}
 
-              <p className="text-zinc-300 text-xs font-light px-4 leading-relaxed">
-                This digital gallery is private. Please enter the secure access code sent by the admin to unlock the memories.
-              </p>
+              {/* Lock Notice */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-center gap-2 text-zinc-300 text-xs font-light">
+                  <Lock size={13} className="text-[#b4975a]" />
+                  <span>Private Gallery • Access Code Required</span>
+                </div>
+              </div>
 
               {/* Form */}
               <form onSubmit={handleUnlock} className="space-y-4 text-left">
-                <div className="space-y-2">
-                  <label className="text-zinc-500 font-bold uppercase tracking-wider text-[9px] block ml-1">Access Code</label>
+                <div className="space-y-1.5">
+                  <label className="text-zinc-400 font-bold uppercase tracking-wider text-[9px] block ml-1">
+                    Enter Passcode
+                  </label>
                   <div className="relative">
                     <input 
                       type={showPassword ? "text" : "password"}
                       value={passcode}
                       onChange={(e) => setPasscode(e.target.value)}
                       placeholder="Enter 4-digit code"
-                      className="w-full bg-zinc-950/80 border border-zinc-800 focus:border-[#b4975a] text-center text-white tracking-[0.25em] font-mono rounded-2xl py-3.5 px-4 focus:outline-none transition-all placeholder:tracking-normal placeholder:font-sans placeholder:text-zinc-650 text-sm"
+                      autoFocus
+                      className="w-full bg-zinc-900/90 border border-zinc-800 focus:border-[#b4975a] text-center text-white tracking-[0.3em] font-mono rounded-2xl py-3.5 px-4 focus:outline-none transition-all placeholder:tracking-normal placeholder:font-sans placeholder:text-zinc-650 text-sm"
                     />
                     <button 
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
@@ -234,7 +309,7 @@ const ClientGallery = () => {
                   <motion.div 
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-2 p-3 bg-red-950/30 border border-red-900/40 text-red-400 text-[11px] rounded-xl font-light"
+                    className="flex items-center gap-2 p-3 bg-red-950/40 border border-red-900/40 text-red-400 text-[11px] rounded-xl font-light"
                   >
                     <AlertCircle size={14} className="shrink-0" />
                     <span>{error}</span>
@@ -249,23 +324,25 @@ const ClientGallery = () => {
                   {unlocking ? (
                     <RefreshCw size={14} className="animate-spin" />
                   ) : (
-                    "Unlock Gallery"
+                    "Unlock & Enter Gallery"
                   )}
                 </button>
               </form>
             </motion.div>
           </motion.div>
         ) : (
-          /* UNLOCKED GALLERY VIEW */
+          /* ========================================================= */
+          /* UNLOCKED GALLERY VIEW WITH HEART SELECTIONS */
+          /* ========================================================= */
           <motion.div 
             key="gallery-view"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
-            className="flex-grow flex flex-col"
+            className="flex-grow flex flex-col pb-24"
           >
             {/* Gallery Header */}
-            <header className="sticky top-0 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-900 z-40 px-6 py-4 flex justify-between items-center">
+            <header className="sticky top-0 bg-zinc-950/85 backdrop-blur-xl border-b border-zinc-900 z-40 px-6 py-4 flex justify-between items-center">
               <div className="flex items-center gap-4">
                 <Link to="/" className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl border border-zinc-800 transition-all cursor-pointer">
                   <ArrowLeft size={16} />
@@ -293,61 +370,111 @@ const ClientGallery = () => {
             {/* Gallery Grid */}
             <main className="flex-grow max-w-7xl w-full mx-auto px-6 py-10 space-y-8">
               <div className="text-center max-w-xl mx-auto space-y-2.5">
-                <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl text-white font-light">
+                <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl sm:text-4xl text-white font-light">
                   Capturing Your <span className="italic font-serif text-[#b4975a]">Love Story</span>
                 </h2>
-                <p className="text-zinc-500 text-xs font-light leading-relaxed">
-                  Thank you for letting Dreamwed Stories capture your memories. Here are your high-resolution wedding deliverables. Feel free to browse, preview, and download.
+                <p className="text-zinc-400 text-xs font-light leading-relaxed">
+                  Click the ❤️ heart button on any photo to favorite and select photos for your album. Your selections are automatically saved for the Dreamwed team.
                 </p>
                 <div className="w-10 h-[1px] bg-[#b4975a]/50 mx-auto mt-4" />
               </div>
 
-              {gallery?.photos && gallery.photos.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-6">
-                  {gallery.photos.map((photo, index) => (
-                    <motion.div 
-                      key={photo.id}
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.03, duration: 0.5 }}
-                      className="group relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden cursor-zoom-in aspect-[4/5] shadow-lg shadow-black/20"
-                      onClick={() => setActivePhoto(photo)}
-                    >
-                      <img 
-                        src={photo.url} 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                        loading="lazy"
-                        alt={`Wedding Deliverable ${index + 1}`}
-                      />
-                      
-                      {/* Gradient overlay on hover */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex items-end justify-between p-4" />
-                      
-                      <div className="absolute bottom-4 left-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-350">
-                        <span className="text-[10px] text-zinc-300 font-light">Photo {index + 1}</span>
-                      </div>
-                      
-                      <div className="absolute bottom-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-350">
-                        <a 
-                          href={photo.url} 
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={(e) => e.stopPropagation()} 
-                          className="p-2 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 border border-zinc-800 rounded-xl text-white transition-all cursor-pointer block"
-                          title="Open HD Original"
+              {displayedPhotos && displayedPhotos.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-4">
+                  {displayedPhotos.map((photo, index) => {
+                    const isFavorited = selectedPhotoIds.has(photo.id);
+                    return (
+                      <motion.div 
+                        key={photo.id}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: Math.min(index * 0.02, 0.4), duration: 0.4 }}
+                        className="group relative bg-zinc-900 border border-zinc-800/80 rounded-2xl overflow-hidden cursor-zoom-in aspect-[4/5] shadow-lg shadow-black/20"
+                        onClick={() => setActivePhoto(photo)}
+                      >
+                        <img 
+                          src={photo.url} 
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                          loading="lazy"
+                          alt={`Wedding Deliverable ${index + 1}`}
+                        />
+                        
+                        {/* ❤️ Heart Favorite Button */}
+                        <button
+                          onClick={(e) => toggleHeartPhoto(photo.id, e)}
+                          title={isFavorited ? "Remove from Favorites" : "Add to Favorites (Love)"}
+                          className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
+                            isFavorited 
+                              ? "bg-red-500 text-white scale-110 shadow-red-500/50" 
+                              : "bg-black/60 backdrop-blur-md text-white/80 hover:text-red-400 hover:scale-110 hover:bg-black/90 border border-white/10"
+                          }`}
                         >
-                          <Download size={14} />
-                        </a>
-                      </div>
-                    </motion.div>
-                  ))}
+                          <Heart size={16} className={isFavorited ? "fill-white text-white" : "text-white"} />
+                        </button>
+
+                        {/* Gradient overlay on hover */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex items-end justify-between p-4 pointer-events-none" />
+                        
+                        <div className="absolute bottom-4 left-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-350">
+                          <span className="text-[10px] text-zinc-300 font-light">Photo {index + 1}</span>
+                        </div>
+                        
+                        <div className="absolute bottom-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-350">
+                          <a 
+                            href={photo.url} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()} 
+                            className="p-2 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 border border-zinc-800 rounded-xl text-white transition-all cursor-pointer block"
+                            title="Open HD Original"
+                          >
+                            <Download size={14} />
+                          </a>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-20 border border-zinc-800 rounded-3xl text-zinc-500 font-light text-sm">
-                  This gallery is empty. The images might still be synchronizing from Google Drive.
+                  {filterMode === "favorites" 
+                    ? "No photos have been favorited yet. Click the ❤️ heart button on any picture to select it."
+                    : "This gallery is empty. The images might still be synchronizing from Google Drive."}
                 </div>
               )}
             </main>
+
+            {/* Floating Selection Bar */}
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-full px-4 sm:px-6 py-3 shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex items-center gap-3 text-xs">
+              <button
+                onClick={() => setFilterMode("all")}
+                className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer ${
+                  filterMode === "all" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                All ({allPhotos.length})
+              </button>
+              <button
+                onClick={() => setFilterMode("favorites")}
+                className={`px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all cursor-pointer ${
+                  filterMode === "favorites" ? "bg-red-500 text-white font-bold" : "text-zinc-400 hover:text-red-400"
+                }`}
+              >
+                <Heart size={14} className={selectedPhotoIds.size > 0 ? "fill-current" : ""} />
+                Favorites ({selectedPhotoIds.size})
+              </button>
+
+              {saveStatus === "saving" && (
+                <span className="text-[10px] text-[#b4975a] font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1">
+                  <RefreshCw size={11} className="animate-spin" /> Saving...
+                </span>
+              )}
+              {saveStatus === "saved" && (
+                <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1">
+                  <Check size={11} /> Saved
+                </span>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -365,18 +492,33 @@ const ClientGallery = () => {
             {/* Lightbox Header */}
             <div className="p-4 flex justify-between items-center text-white z-10 w-full bg-gradient-to-b from-black/60 to-transparent">
               <span className="text-xs text-zinc-400 font-light ml-2">
-                {gallery?.photos ? `${gallery.photos.findIndex(p => p.id === activePhoto.id) + 1} / ${gallery.photos.length}` : ""}
+                {displayedPhotos ? `${displayedPhotos.findIndex(p => p.id === activePhoto.id) + 1} / ${displayedPhotos.length}` : ""}
               </span>
               
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
+                {/* Heart Button in Lightbox */}
+                <button
+                  onClick={(e) => toggleHeartPhoto(activePhoto.id, e)}
+                  className={`p-2.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider cursor-pointer ${
+                    selectedPhotoIds.has(activePhoto.id)
+                      ? "bg-red-500 text-white border-red-400 shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+                      : "bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-red-400 border-zinc-800"
+                  }`}
+                >
+                  <Heart size={14} className={selectedPhotoIds.has(activePhoto.id) ? "fill-white" : ""} />
+                  <span className="hidden sm:inline">
+                    {selectedPhotoIds.has(activePhoto.id) ? "Favorited" : "Favorite"}
+                  </span>
+                </button>
+
                 <a 
                   href={activePhoto.url} 
-                  target="_blank"
+                  target="_blank" 
                   rel="noreferrer"
                   onClick={(e) => e.stopPropagation()}
                   className="p-2.5 bg-zinc-900/80 hover:bg-[#b4975a] hover:text-zinc-950 border border-zinc-800 rounded-xl text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider cursor-pointer"
                 >
-                  <Download size={14} /> Download HD
+                  <Download size={14} /> <span className="hidden sm:inline">Download HD</span>
                 </a>
                 
                 <button 
@@ -424,7 +566,7 @@ const ClientGallery = () => {
 
             {/* Lightbox Footer */}
             <div className="p-4 text-center text-zinc-500 text-[10px] font-light bg-gradient-to-t from-black/60 to-transparent">
-              Use your Left &amp; Right arrow keys to navigate, Esc to close.
+              Use Left &amp; Right arrow keys to navigate, Esc to close.
             </div>
           </motion.div>
         )}

@@ -45,7 +45,8 @@ const {
   getGallery,
   saveGallery,
   deleteGallery,
-  syncGalleryDrivePhotos
+  syncGalleryDrivePhotos,
+  saveGallerySelections
 } = require('./bot/database');
 const { startReminderScheduler } = require('./bot/reminders');
 
@@ -992,6 +993,8 @@ app.get('/api/galleries', (req, res) => {
     const galleries = getGalleries().map(g => ({
       ...g,
       photosCount: g.photos ? g.photos.length : 0,
+      selectedPhotoIds: g.selectedPhotoIds || [],
+      selectedCount: g.selectedPhotoIds ? g.selectedPhotoIds.length : 0,
       photos: undefined // Save payload size
     }));
     res.json(galleries);
@@ -1043,6 +1046,28 @@ app.delete('/api/galleries/:id', (req, res) => {
   }
 });
 
+// GET Selected Photos for Admin 1-Click Download
+app.get('/api/galleries/:id/selected-photos', (req, res) => {
+  try {
+    const gallery = getGallery(req.params.id);
+    if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
+    
+    const selectedIds = new Set(gallery.selectedPhotoIds || []);
+    const selectedPhotos = (gallery.photos || []).filter(p => selectedIds.has(p.id));
+    
+    res.json({
+      galleryId: gallery.id,
+      galleryName: gallery.name,
+      groomName: gallery.groomName || "",
+      brideName: gallery.brideName || "",
+      count: selectedPhotos.length,
+      photos: selectedPhotos
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET Public gallery info (Access code lock screen)
 app.get('/api/public/galleries/:id', (req, res) => {
   try {
@@ -1052,9 +1077,23 @@ app.get('/api/public/galleries/:id', (req, res) => {
     res.json({
       id: gallery.id,
       name: gallery.name,
+      groomName: gallery.groomName || "",
+      brideName: gallery.brideName || "",
       coverUrl: gallery.coverUrl,
       created_at: gallery.created_at
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST Save Client Heart Selections
+app.post('/api/public/galleries/:id/selections', (req, res) => {
+  try {
+    const { selectedPhotoIds } = req.body;
+    const updated = saveGallerySelections(req.params.id, selectedPhotoIds);
+    if (!updated) return res.status(404).json({ error: 'Gallery not found' });
+    res.json({ success: true, count: (updated.selectedPhotoIds || []).length, selectedPhotoIds: updated.selectedPhotoIds });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

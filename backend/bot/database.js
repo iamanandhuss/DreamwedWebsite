@@ -939,6 +939,17 @@ function deleteGallery(id) {
   return false;
 }
 
+function saveGallerySelections(id, selectedPhotoIds) {
+  data.galleries = data.galleries || [];
+  const gallery = data.galleries.find(g => g.id === id);
+  if (!gallery) return null;
+  
+  gallery.selectedPhotoIds = Array.isArray(selectedPhotoIds) ? selectedPhotoIds : [];
+  gallery.updated_at = getDbDate();
+  saveToDisk();
+  return gallery;
+}
+
 const https = require('https');
 
 function fetchDrivePage(url) {
@@ -1060,6 +1071,6 @@ module.exports = {
   getOfficeBudgets, saveOfficeBudget, deleteOfficeBudget,
   getOfficeInvoices, saveOfficeInvoice, deleteOfficeInvoice,
   getOfficeSettings, saveOfficeSettings,
-  getGalleries, getGallery, saveGallery, deleteGallery, syncGalleryDrivePhotos
+  getGalleries, getGallery, saveGallery, deleteGallery, syncGalleryDrivePhotos, saveGallerySelections
 };
 

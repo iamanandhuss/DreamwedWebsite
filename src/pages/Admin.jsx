@@ -105,6 +105,7 @@ const Admin = () => {
   const [newGalDrive, setNewGalDrive] = useState("");
   const [newGalCover, setNewGalCover] = useState("https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800");
   const [selectedGalForPhotos, setSelectedGalForPhotos] = useState(null);
+  const [selectedPhotosModalData, setSelectedPhotosModalData] = useState(null);
   const [bulkPhotoUrls, setBulkPhotoUrls] = useState("");
   const [syncingGalId, setSyncingGalId] = useState(null);
 
@@ -1492,6 +1493,38 @@ const Admin = () => {
       setAiGalleries(updated);
       localStorage.setItem("dreamwed_galleries", JSON.stringify(updated));
     }
+  };
+
+  const handleOpenSelectedPhotos = async (galleryId) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/galleries/${galleryId}/selected-photos`);
+      if (!res.ok) throw new Error("Failed to load selected photos");
+      const data = await res.json();
+      if (!data.photos || data.photos.length === 0) {
+        alert("ℹ️ The client has not selected/favorited any photos yet in this gallery.");
+        return;
+      }
+      setSelectedPhotosModalData(data);
+    } catch (e) {
+      console.error(e);
+      alert("Error loading selected photos.");
+    }
+  };
+
+  const handleDownloadAllSelected = (photos) => {
+    if (!photos || photos.length === 0) return;
+    alert(`⚡ Downloading ${photos.length} selected photos. Please allow multiple downloads in your browser if prompted.`);
+    photos.forEach((photo, idx) => {
+      setTimeout(() => {
+        const a = document.createElement("a");
+        a.href = photo.url;
+        a.download = `wedding_photo_${idx + 1}.jpg`;
+        a.target = "_blank";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }, idx * 300);
+    });
   };
 
   const convertGoogleDriveUrl = (url) => {
@@ -3691,6 +3724,10 @@ const Admin = () => {
                                 <Copy size={10} />
                               </button>
                             </span>
+                            <span className="text-[9px] text-red-400 font-bold bg-red-950/40 px-2 py-0.5 border border-red-800/40 rounded-full flex items-center gap-1">
+                              <Heart size={10} className="fill-current text-red-400" />
+                              {g.selectedCount || (g.selectedPhotoIds?.length) || 0} Selected
+                            </span>
                           </div>
                           <div className="text-[10px] text-zinc-500 flex items-center gap-1.5 mt-0.5">
                             <span className="font-light truncate max-w-[200px] sm:max-w-xs">{window.location.origin}/gallery/{g.id}</span>
@@ -3709,7 +3746,17 @@ const Admin = () => {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-3 shrink-0 w-full md:w-auto justify-end border-t border-zinc-800/40 md:border-t-0 pt-3 md:pt-0">
+                      <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full md:w-auto justify-end border-t border-zinc-800/40 md:border-t-0 pt-3 md:pt-0">
+                        {/* 📥 1-Click Download Selected Photos */}
+                        <button 
+                          onClick={() => handleOpenSelectedPhotos(g.id)}
+                          className="px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500 hover:text-white text-red-400 text-[10px] font-bold uppercase tracking-wider border border-red-500/30 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                          title="View & Download Selected Photos in 1 Click"
+                        >
+                          <Heart size={12} className="fill-current" />
+                          Download Selected ({g.selectedCount || (g.selectedPhotoIds?.length) || 0})
+                        </button>
+
                         <button 
                           onClick={() => handleSyncDrivePhotos(g.id)}
                           disabled={syncingGalId === g.id}
@@ -3721,13 +3768,13 @@ const Admin = () => {
                             </>
                           ) : (
                             <>
-                              <RefreshCw size={12} /> Sync Photos ({g.photosCount || (g.photos ? g.photos.length : 0)})
+                              <RefreshCw size={12} /> Sync ({g.photosCount || (g.photos ? g.photos.length : 0)})
                             </>
                           )}
                         </button>
                         <a href={g.gdriveLink} target="_blank" rel="noopener noreferrer"
                           className="text-[10px] text-[#b4975a] font-bold uppercase tracking-wider hover:underline shrink-0">
-                          Drive Folder ↗
+                          Drive ↗
                         </a>
                         <button onClick={() => handleDeleteAiGallery(g.id)}
                           className="p-1.5 text-zinc-650 hover:text-red-500 transition-colors cursor-pointer shrink-0 ml-1">
@@ -5320,6 +5367,90 @@ const Admin = () => {
                 </button>
               </div>
 
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 4.5. Selected Photos 1-Click Download Modal */}
+      <AnimatePresence>
+        {selectedPhotosModalData && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
+            onClick={() => setSelectedPhotosModalData(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              className="bg-zinc-950 border border-zinc-800 max-w-4xl w-full rounded-[32px] p-6 sm:p-8 space-y-6 text-zinc-300 relative shadow-2xl overflow-y-auto max-h-[90vh] text-left"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setSelectedPhotosModalData(null)}
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 hover:bg-white text-white hover:text-black border border-white/5 flex items-center justify-center transition-all cursor-pointer z-10"
+              >
+                <X size={15} />
+              </button>
+
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-850 pb-5">
+                <div className="space-y-1">
+                  <span className="text-red-400 font-bold text-[9px] tracking-[0.2em] uppercase flex items-center gap-1">
+                    <Heart size={11} className="fill-current" /> Client Selections Repository
+                  </span>
+                  <h3 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl text-white font-light">
+                    Selected Photos for <span className="italic font-serif text-[#b4975a]">{selectedPhotosModalData.galleryName}</span>
+                  </h3>
+                  <p className="text-zinc-500 text-[11px] font-light">
+                    {selectedPhotosModalData.count} photos selected by client with the ❤️ heart button.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={() => {
+                      const urls = selectedPhotosModalData.photos.map(p => p.url).join("\n");
+                      navigator.clipboard.writeText(urls);
+                      alert(`📋 Copied ${selectedPhotosModalData.photos.length} photo URLs to clipboard!`);
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all"
+                  >
+                    <Copy size={13} /> Copy All Links
+                  </button>
+
+                  <button
+                    onClick={() => handleDownloadAllSelected(selectedPhotosModalData.photos)}
+                    className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer shadow-lg shadow-red-600/20 transition-all"
+                  >
+                    <Download size={14} /> ⚡ Download All ({selectedPhotosModalData.count})
+                  </button>
+                </div>
+              </div>
+
+              {/* Photos Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[55vh] overflow-y-auto pr-1">
+                {selectedPhotosModalData.photos.map((photo, idx) => (
+                  <div key={photo.id || idx} className="relative group rounded-2xl overflow-hidden border border-zinc-800 aspect-[4/5] bg-zinc-900">
+                    <img src={photo.url} alt={`Selection ${idx+1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-3">
+                      <span className="text-[10px] text-zinc-300 font-mono">#{idx + 1}</span>
+                      <a
+                        href={photo.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        download={`photo_${idx+1}.jpg`}
+                        className="p-2 rounded-xl bg-white text-black hover:bg-[#b4975a] hover:text-white transition-all"
+                        title="Download HD"
+                      >
+                        <Download size={13} />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </motion.div>
           </motion.div>
         )}
