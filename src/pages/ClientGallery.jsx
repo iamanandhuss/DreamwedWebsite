@@ -43,15 +43,24 @@ const ClientGallery = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const searchParams = new URLSearchParams(location.search);
+  const searchParams = typeof window !== "undefined" && window.location
+    ? new URLSearchParams(location.search || window.location.search)
+    : { get: () => null };
+
   const isDirectDownloadMode = searchParams.get("download") === "favorites" || 
                                searchParams.get("download") === "selections" || 
                                searchParams.get("mode") === "favorites";
 
   // Viewer profile & session
-  const [viewerName, setViewerName] = useState(() => localStorage.getItem("dreamwed_viewer_name") || "");
-  const [viewerEmail, setViewerEmail] = useState(() => localStorage.getItem("dreamwed_viewer_email") || "");
-  const [viewerRole, setViewerRole] = useState(() => localStorage.getItem("dreamwed_viewer_role") || "Bride");
+  const [viewerName, setViewerName] = useState(() => {
+    try { return localStorage.getItem("dreamwed_viewer_name") || ""; } catch (e) { return ""; }
+  });
+  const [viewerEmail, setViewerEmail] = useState(() => {
+    try { return localStorage.getItem("dreamwed_viewer_email") || ""; } catch (e) { return ""; }
+  });
+  const [viewerRole, setViewerRole] = useState(() => {
+    try { return localStorage.getItem("dreamwed_viewer_role") || "Bride"; } catch (e) { return "Bride"; }
+  });
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem(`dreamwed_viewer_user_${id}`) || "null");
@@ -73,7 +82,7 @@ const ClientGallery = () => {
   const [storyData, setStoryData] = useState(null);
   const [selectedPhotosData, setSelectedPhotosData] = useState(null);
   const [activePhoto, setActivePhoto] = useState(null);
-  const [selectedPhotoIds, setSelectedPhotoIds] = useState(new Set());
+  const [selectedPhotoIds, setSelectedPhotoIds] = useState(() => new Set());
   const [selectionsDetail, setSelectionsDetail] = useState([]);
   const [filterMode, setFilterMode] = useState("all");
   const [saveStatus, setSaveStatus] = useState("");

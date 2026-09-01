@@ -49,29 +49,49 @@ export const fetchImageBlob = async (url, apiBase = "") => {
 
   // 3. HTML5 Image + Canvas Fallback
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "Anonymous";
-    img.onload = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.naturalWidth || img.width || 1200;
-        canvas.height = img.naturalHeight || img.height || 800;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
-        canvas.toBlob(
-          (blob) => {
-            if (blob) resolve(blob);
-            else reject(new Error("Canvas blob conversion failed"));
-          },
-          "image/jpeg",
-          0.95
-        );
-      } catch (e) {
-        reject(e);
+    try {
+      const img = (typeof document !== "undefined" && document.createElement)
+        ? document.createElement("img")
+        : (typeof Image !== "undefined" ? new Image() : null);
+
+      if (!img) {
+        reject(new Error("Image element not supported in this environment"));
+        return;
       }
-    };
-    img.onerror = () => reject(new Error(`Failed to load image: ${directUrl}`));
-    img.src = directUrl;
+
+      img.crossOrigin = "Anonymous";
+      img.onload = () => {
+        try {
+          if (typeof document === "undefined" || !document.createElement) {
+            reject(new Error("Document canvas unavailable"));
+            return;
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth || img.width || 1200;
+          canvas.height = img.naturalHeight || img.height || 800;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("Canvas context unavailable"));
+            return;
+          }
+          ctx.drawImage(img, 0, 0);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error("Canvas blob conversion failed"));
+            },
+            "image/jpeg",
+            0.95
+          );
+        } catch (e) {
+          reject(e);
+        }
+      };
+      img.onerror = () => reject(new Error(`Failed to load image: ${directUrl}`));
+      img.src = directUrl;
+    } catch (err) {
+      reject(err);
+    }
   });
 };
 
