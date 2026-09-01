@@ -504,6 +504,169 @@ const ClientGallery = () => {
     else setActivePhoto(displayedPhotos[0]);
   };
 
+  // Mobile Touch Swipe Navigation (Left/Right)
+  const [touchStartX, setTouchStartX] = useState(null);
+  const handleTouchStart = (e) => {
+    if (e.touches && e.touches.length > 0) {
+      setTouchStartX(e.touches[0].clientX);
+    }
+  };
+  const handleTouchEnd = (e) => {
+    if (touchStartX === null) return;
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      const touchEndX = e.changedTouches[0].clientX;
+      const diff = touchStartX - touchEndX;
+      if (diff > 45) {
+        handleNextPhoto(); // Swiped left -> Next
+      } else if (diff < -45) {
+        handlePrevPhoto(); // Swiped right -> Prev
+      }
+    }
+    setTouchStartX(null);
+  };
+
+  // Editorial Bento Mosaic Card Renderer
+  const renderMosaicCard = (photo, customClass = "h-full", isFocalHero = false, badgeText = "") => {
+    if (!photo) return null;
+    const isLiked = isLikedByMe(photo.id);
+
+    return (
+      <div 
+        key={photo.id || photo.url}
+        onClick={() => setActivePhoto(photo)}
+        className={`group relative rounded-2xl overflow-hidden bg-zinc-900 border cursor-pointer shadow-xl transition-all duration-500 hover:border-[#b4975a]/70 hover:shadow-2xl active:scale-[0.99] select-none ${customClass} ${
+          isFocalHero ? "border-[#b4975a]/40 ring-1 ring-[#b4975a]/25" : "border-zinc-800/80"
+        }`}
+      >
+        <img 
+          src={photo.url} 
+          alt="Editorial Wedding Frame"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          loading="lazy"
+        />
+
+        {/* Key Moment badge for hero frames */}
+        {(isFocalHero || badgeText) && (
+          <div className="absolute top-3 left-3 z-20 pointer-events-none">
+            <span className="bg-black/80 backdrop-blur-md text-amber-300 border border-amber-500/30 text-[8px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1 font-mono">
+              <Sparkles size={9} /> {badgeText || "Featured"}
+            </span>
+          </div>
+        )}
+
+        {/* Heart Selection Button - Exclusive to Bride & Groom */}
+        {isCoupleSelectionMode && (
+          <button
+            onClick={(e) => toggleHeartPhoto(photo.id, e)}
+            title={isLiked ? "Remove from album picks" : `Select as ${currentUser?.role || "Couple"}`}
+            className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
+              isLiked 
+                ? "bg-red-500 text-white scale-110 shadow-red-500/50" 
+                : "bg-black/60 backdrop-blur-md text-white/80 hover:text-red-400 hover:scale-110 border border-white/10"
+            }`}
+          >
+            <Heart size={14} className={isLiked ? "fill-white text-white" : "text-white"} />
+          </button>
+        )}
+
+        {/* Hover / Touch to Fullscreen indicator */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-between p-3.5 pointer-events-none">
+          <span className="text-[10px] text-zinc-300 font-mono">Tap for Fullscreen</span>
+          <span className="bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 border border-white/15">
+            <ZoomIn size={11} /> View
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  // 7-Image Editorial Bento Cluster Engine (Matches Luxury Photography Magazines)
+  const renderBentoClusters = (photosList, sectionKey = "bento") => {
+    if (!photosList || photosList.length === 0) return null;
+
+    const clusters = [];
+    for (let i = 0; i < photosList.length; i += 7) {
+      clusters.push(photosList.slice(i, i + 7));
+    }
+
+    return (
+      <div className="space-y-4 sm:space-y-5 lg:space-y-6">
+        {clusters.map((cluster, cIdx) => {
+          const isAlternate = cIdx % 2 === 1;
+          const p0 = cluster[0]; // Hero Frame (Large Top)
+          const p1 = cluster[1]; // Left bottom 1
+          const p2 = cluster[2]; // Left bottom 2
+          const p3 = cluster[3]; // Col 2 Top Landscape
+          const p4 = cluster[4]; // Col 2 Tall Portrait
+          const p5 = cluster[5]; // Col 3 Top Landscape
+          const p6 = cluster[6]; // Col 3 Tall Portrait
+
+          if (cluster.length < 4) {
+            return (
+              <div key={`${sectionKey}-cluster-${cIdx}`} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
+                {cluster.map((p, idx) => (
+                  <div key={p.id || idx} className="h-[280px] sm:h-[340px]">
+                    {renderMosaicCard(p, "h-full", idx === 0, idx === 0 ? "Featured" : "")}
+                  </div>
+                ))}
+              </div>
+            );
+          }
+
+          return (
+            <div 
+              key={`${sectionKey}-bento-cluster-${cIdx}`} 
+              className="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 lg:gap-5"
+            >
+              {/* COLUMN 1: Large Featured Card (Top) + 2 Sub-Cards (Bottom) */}
+              <div className={`col-span-12 md:col-span-6 lg:col-span-5 flex flex-col gap-3 sm:gap-4 lg:gap-5 ${isAlternate ? "lg:order-3" : "lg:order-1"}`}>
+                {p0 && (
+                  <div className="h-[260px] sm:h-[340px] lg:h-[400px]">
+                    {renderMosaicCard(p0, "h-full", true, "⭐ Key Moment")}
+                  </div>
+                )}
+                {(p1 || p2) && (
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5 h-[140px] sm:h-[180px] lg:h-[210px]">
+                    {p1 && renderMosaicCard(p1, "h-full")}
+                    {p2 && renderMosaicCard(p2, "h-full")}
+                  </div>
+                )}
+              </div>
+
+              {/* COLUMN 2: Top Landscape + Bottom Tall Portrait */}
+              <div className="col-span-12 sm:col-span-6 lg:col-span-3.5 flex flex-col gap-3 sm:gap-4 lg:gap-5 lg:order-2">
+                {p3 && (
+                  <div className="h-[140px] sm:h-[180px] lg:h-[210px]">
+                    {renderMosaicCard(p3, "h-full")}
+                  </div>
+                )}
+                {p4 && (
+                  <div className="h-[260px] sm:h-[340px] lg:h-[400px]">
+                    {renderMosaicCard(p4, "h-full", false, "Portrait")}
+                  </div>
+                )}
+              </div>
+
+              {/* COLUMN 3: Top Landscape + Bottom Tall Portrait */}
+              <div className={`col-span-12 sm:col-span-6 lg:col-span-3.5 flex flex-col gap-3 sm:gap-4 lg:gap-5 ${isAlternate ? "lg:order-1" : "lg:order-3"}`}>
+                {p5 && (
+                  <div className="h-[140px] sm:h-[180px] lg:h-[210px]">
+                    {renderMosaicCard(p5, "h-full")}
+                  </div>
+                )}
+                {p6 && (
+                  <div className="h-[260px] sm:h-[340px] lg:h-[400px]">
+                    {renderMosaicCard(p6, "h-full", false, "Portrait")}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!activePhoto) return;
@@ -1014,64 +1177,8 @@ const ClientGallery = () => {
           <div style={{ backgroundColor: `${activeColor}80` }} className="w-12 h-[1px] mx-auto mt-4" />
         </div>
 
-        {/* Asymmetric Highlights Showcase Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6">
-          {highlights.map((photo, idx) => {
-            const isLiked = isLikedByMe(photo.id);
-            const colSpan = photo.colSpan || "col-span-12 md:col-span-4";
-            const aspect = photo.aspect || "aspect-[4/5]";
-            const isHero = photo.isHeroFrame || idx === 0;
-
-            return (
-              <div 
-                key={photo.id || idx}
-                onClick={() => setActivePhoto(photo)}
-                className={`group relative rounded-[28px] overflow-hidden bg-zinc-900 border cursor-pointer shadow-2xl transition-all duration-500 hover:border-[#b4975a]/60 ${colSpan} ${aspect} ${
-                  isHero ? "border-[#b4975a]/40 ring-1 ring-[#b4975a]/20" : "border-zinc-800/80"
-                }`}
-              >
-                <img 
-                  src={photo.url} 
-                  alt={`Highlight ${idx + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="lazy"
-                />
-                
-                {/* Key Moment badge for hero frames */}
-                {isHero && (
-                  <div className="absolute top-4 left-4 z-20 pointer-events-none">
-                    <span className="bg-black/75 backdrop-blur-md text-amber-300 border border-amber-500/30 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1 font-mono">
-                      <Sparkles size={10} /> Key Moment
-                    </span>
-                  </div>
-                )}
-
-                {/* Heart Selection Button - Exclusive to Bride & Groom */}
-                {isCoupleSelectionMode && (
-                  <button
-                    onClick={(e) => toggleHeartPhoto(photo.id, e)}
-                    title={isLiked ? "Remove from my album picks" : `Select as ${currentUser?.role || "Couple"}`}
-                    className={`absolute top-4 right-4 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
-                      isLiked 
-                        ? "bg-red-500 text-white scale-110 shadow-red-500/50" 
-                        : "bg-black/60 backdrop-blur-md text-white/80 hover:text-red-400 hover:scale-110 border border-white/10"
-                    }`}
-                  >
-                    <Heart size={15} className={isLiked ? "fill-white text-white" : "text-white"} />
-                  </button>
-                )}
-
-                {/* Hover Overlay: Clean for Guests, NO DOWNLOAD */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex items-end justify-between p-5 pointer-events-none">
-                  <span className="text-xs text-zinc-300 font-light font-mono">#{idx + 1}</span>
-                  <span className="text-xs text-zinc-400 font-light flex items-center gap-1">
-                    <ZoomIn size={13} /> View
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        {/* Asymmetric Editorial Bento Highlights Mosaic */}
+        {renderBentoClusters(highlights, "highlights")}
 
         {/* ========================================================= */}
         {/* 2.3. CINEMATIC STORY CHAPTERS */}
@@ -1093,63 +1200,8 @@ const ClientGallery = () => {
                   </p>
                 </div>
 
-                {/* Chapter Dynamic Editorial Layout */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6">
-                  {chapter.photos.map((photo, pIdx) => {
-                    const isLiked = isLikedByMe(photo.id);
-                    const colSpan = photo.colSpan || "col-span-12 md:col-span-4";
-                    const aspect = photo.aspect || "aspect-[4/5]";
-                    const isHero = photo.isHeroFrame || pIdx === 0;
-
-                    return (
-                      <div 
-                        key={photo.id || pIdx}
-                        onClick={() => setActivePhoto(photo)}
-                        className={`group relative rounded-2xl overflow-hidden bg-zinc-900 border cursor-pointer shadow-xl hover:border-[#b4975a]/50 transition-all duration-300 ${colSpan} ${aspect} ${
-                          isHero ? "border-[#b4975a]/35 ring-1 ring-[#b4975a]/15" : "border-zinc-800/80"
-                        }`}
-                      >
-                        <img 
-                          src={photo.url} 
-                          alt={`Chapter ${cIdx + 1} - Photo ${pIdx + 1}`}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          loading="lazy"
-                        />
-
-                        {/* Feature Frame Badge */}
-                        {isHero && (
-                          <div className="absolute top-3 left-3 z-20 pointer-events-none">
-                            <span className="bg-black/75 backdrop-blur-md text-amber-300 border border-amber-500/30 text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full shadow-lg font-mono">
-                              ⭐ Feature Frame
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Heart Button - Exclusive to Bride & Groom */}
-                        {isCoupleSelectionMode && (
-                          <button
-                            onClick={(e) => toggleHeartPhoto(photo.id, e)}
-                            className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
-                              isLiked 
-                                ? "bg-red-500 text-white scale-110 shadow-red-500/50" 
-                                : "bg-black/60 backdrop-blur-md text-white/80 hover:text-red-400 border border-white/10"
-                            }`}
-                          >
-                            <Heart size={14} className={isLiked ? "fill-white text-white" : "text-white"} />
-                          </button>
-                        )}
-
-                        {/* Hover Overlay: Clean for Guests, NO DOWNLOAD */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-4 pointer-events-none">
-                          <span className="text-[10px] text-zinc-300 font-mono">0{cIdx + 1}.{pIdx + 1}</span>
-                          <span className="text-[10px] text-zinc-400 font-light flex items-center gap-1">
-                            <ZoomIn size={12} /> View
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                {/* Chapter Editorial Bento Mosaic Spread */}
+                {renderBentoClusters(chapter.photos, `chapter-${cIdx}`)}
               </div>
             ))}
           </div>
@@ -1372,23 +1424,23 @@ const ClientGallery = () => {
             className="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex flex-col justify-between"
           >
             {/* Top Bar */}
-            <div className="p-4 sm:px-8 flex justify-between items-center text-white z-20 w-full bg-gradient-to-b from-black/90 to-transparent border-b border-white/5">
-              {/* ⊞ DEDICATED BACK TO GRID BUTTON */}
+            <div className="p-3 sm:p-4 sm:px-8 flex justify-between items-center text-white z-30 w-full bg-gradient-to-b from-black/95 to-transparent border-b border-white/5">
+              {/* ⊞ DEDICATED BACK TO STORY BUTTON */}
               <button 
                 onClick={() => setActivePhoto(null)}
-                className="px-4 py-2.5 bg-zinc-900/90 hover:bg-[#b4975a] hover:text-zinc-950 border border-zinc-700/80 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shadow-lg group active:scale-95"
-                title="Return to Gallery"
+                className="px-4 py-2 sm:px-5 sm:py-2.5 bg-zinc-900/95 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-750/90 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shadow-2xl group active:scale-95 shrink-0"
+                title="Return to Story (Esc)"
               >
-                <LayoutGrid size={16} className="group-hover:scale-110 transition-transform" />
+                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
                 <span>Back to Story</span>
               </button>
 
               <div className="flex items-center gap-2">
-                <span className="text-xs text-zinc-400 font-mono">
+                <span className="text-xs text-zinc-400 font-mono font-bold">
                   {displayedPhotos ? `${displayedPhotos.findIndex(p => p.id === activePhoto.id) + 1} / ${displayedPhotos.length}` : ""}
                 </span>
                 {getUsersForPhoto(activePhoto.id).length > 0 && isCoupleSelectionMode && (
-                  <span className="text-[10px] bg-red-950/60 border border-red-800/50 text-red-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <span className="text-[10px] bg-red-950/60 border border-red-800/50 text-red-300 px-2.5 py-0.5 rounded-full flex items-center gap-1 font-bold">
                     ❤️ {getUsersForPhoto(activePhoto.id).map(u => u.name).join(", ")}
                   </span>
                 )}
@@ -1439,14 +1491,19 @@ const ClientGallery = () => {
               </div>
             </div>
 
-            {/* Main Showcase View */}
-            <div className="relative flex-grow flex items-center justify-center p-2 sm:p-6 overflow-hidden">
+            {/* Main Showcase View with Touch Swiping */}
+            <div 
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              className="relative flex-grow flex items-center justify-center p-2 sm:p-6 overflow-hidden select-none"
+            >
+              {/* Previous Photo Button */}
               <button 
                 onClick={handlePrevPhoto}
                 title="Previous Photo (Left Arrow)"
-                className="absolute left-3 sm:left-6 z-30 p-3 sm:p-4 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-700/60 rounded-full shadow-2xl cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group"
+                className="absolute left-2 sm:left-6 z-30 w-11 h-11 sm:w-14 sm:h-14 bg-zinc-950/85 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-700/80 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.8)] cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group active:scale-90"
               >
-                <ChevronLeft size={24} className="group-hover:-translate-x-0.5 transition-transform" />
+                <ChevronLeft size={28} className="group-hover:-translate-x-0.5 transition-transform" />
               </button>
 
               <motion.img 
@@ -1460,12 +1517,34 @@ const ClientGallery = () => {
                 alt="Fullscreen Showcase"
               />
 
+              {/* Next Photo Button */}
               <button 
                 onClick={handleNextPhoto}
                 title="Next Photo (Right Arrow)"
-                className="absolute right-3 sm:right-6 z-30 p-3 sm:p-4 bg-zinc-950/80 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-700/60 rounded-full shadow-2xl cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group"
+                className="absolute right-2 sm:right-6 z-30 w-11 h-11 sm:w-14 sm:h-14 bg-zinc-950/85 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-700/80 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.8)] cursor-pointer transition-all flex items-center justify-center backdrop-blur-md group active:scale-90"
               >
-                <ChevronRight size={24} className="group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight size={28} className="group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </div>
+
+            {/* Mobile Touch Navigation Quick Bar */}
+            <div className="flex sm:hidden items-center justify-between w-full px-4 py-2 bg-zinc-950/95 border-t border-zinc-850 z-30">
+              <button 
+                onClick={handlePrevPhoto}
+                className="flex items-center gap-1 px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white rounded-xl text-xs font-bold active:scale-95"
+              >
+                <ChevronLeft size={15} /> Prev
+              </button>
+
+              <span className="text-xs text-zinc-400 font-mono font-bold">
+                {displayedPhotos ? `${displayedPhotos.findIndex(p => p.id === activePhoto.id) + 1} / ${displayedPhotos.length}` : ""}
+              </span>
+
+              <button 
+                onClick={handleNextPhoto}
+                className="flex items-center gap-1 px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white rounded-xl text-xs font-bold active:scale-95"
+              >
+                Next <ChevronRight size={15} />
               </button>
             </div>
 
