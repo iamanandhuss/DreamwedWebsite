@@ -5963,7 +5963,17 @@ const Admin = () => {
                       type="button"
                       onClick={() => setEditCoverValue(preset.url)}
                       className={`relative rounded-xl overflow-hidden border text-left p-1.5 transition-all cursor-pointer group ${
-                   {/* ================= EDIT STYLING CONTROLS ================= */}
+                        editCoverValue === preset.url ? "border-[#b4975a] ring-1 ring-[#b4975a]" : "border-zinc-800 hover:border-zinc-700"
+                      }`}
+                    >
+                      <img src={preset.url} alt={preset.name} className="w-full h-14 object-cover rounded-lg" />
+                      <span className="text-[9px] font-bold text-zinc-300 truncate block mt-1 px-0.5">{preset.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* ================= EDIT STYLING CONTROLS ================= */}
               <div className="pt-2 border-t border-zinc-800/80 space-y-3">
                 {/* 1. Photo Focus Precision Slider Bar */}
                 <div className="space-y-1.5">
