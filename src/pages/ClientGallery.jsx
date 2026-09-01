@@ -6,7 +6,7 @@ import {
   Share2, X, ChevronLeft, ChevronRight, RefreshCw, ZoomIn,
   Heart, Check, Sparkles, Filter, Search, Camera, Copy,
   LayoutGrid, Grid, User, Users, Mail, UserCheck, ShieldCheck,
-  ChevronDown, Layers, Play, Calendar, MapPin, Film
+  ChevronDown, Layers, Play, Pause, Calendar, MapPin, Film
 } from "lucide-react";
 import SEO from "../components/SEO";
 import { downloadPhotosAsZip } from "../utils/zipDownloader";
@@ -24,9 +24,7 @@ const FONT_MAP = {
 const USER_ROLES = [
   { id: "Bride", label: "Bride", icon: "👰", color: "#e0a899" },
   { id: "Groom", label: "Groom", icon: "🤵", color: "#38bdf8" },
-  { id: "BrideFamily", label: "Bride's Family", icon: "👨‍👩‍👧", color: "#f472b6" },
-  { id: "GroomFamily", label: "Groom's Family", icon: "👨‍👩‍👦", color: "#60a5fa" },
-  { id: "Guest", label: "Friend / Guest", icon: "✨", color: "#b4975a" }
+  { id: "Guest", label: "Guest", icon: "✨", color: "#b4975a" }
 ];
 
 const getObjectPositionStyle = (val) => {
@@ -59,7 +57,7 @@ const ClientGallery = () => {
     try { return localStorage.getItem("dreamwed_viewer_email") || ""; } catch (e) { return ""; }
   });
   const [viewerRole, setViewerRole] = useState(() => {
-    try { return localStorage.getItem("dreamwed_viewer_role") || "Bride"; } catch (e) { return "Bride"; }
+    try { return localStorage.getItem("dreamwed_viewer_role") || "Guest"; } catch (e) { return "Guest"; }
   });
   const [currentUser, setCurrentUser] = useState(() => {
     try {
@@ -88,6 +86,10 @@ const ClientGallery = () => {
   const [saveStatus, setSaveStatus] = useState("");
   const [zippingState, setZippingState] = useState(null);
   const [activeSectionView, setActiveSectionView] = useState("story"); // 'story' | 'archive' | 'highlights'
+  const [gridCols, setGridCols] = useState(3); // 2 | 3 | 4
+  const [isSlideshowActive, setIsSlideshowActive] = useState(false);
+  const [slideshowIndex, setSlideshowIndex] = useState(0);
+  const [isSlideshowPlaying, setIsSlideshowPlaying] = useState(true);
   const syncTimeoutRef = useRef(null);
   const storyRef = useRef(null);
 
@@ -195,28 +197,35 @@ const ClientGallery = () => {
   const isCoupleSelectionMode = currentUser?.role === "Bride" || currentUser?.role === "Groom";
   const isGuestMode = !isCoupleSelectionMode;
 
+  const allPhotos = gallery?.photos || meta?.photos || [];
+
+  // Slideshow auto-advance timer
+  useEffect(() => {
+    let timer = null;
+    if (isSlideshowActive && isSlideshowPlaying && allPhotos.length > 0) {
+      timer = setInterval(() => {
+        setSlideshowIndex(prev => (prev + 1) % allPhotos.length);
+      }, 4500);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isSlideshowActive, isSlideshowPlaying, allPhotos.length]);
+
   // 2. Handle unlock with multi-tier passcode
   const handleUnlock = async (e) => {
     if (e) e.preventDefault();
     const cleanCode = passcode.trim();
-    const cleanName = viewerName.trim();
-
-    if (!cleanName) {
-      setError("Please enter your name.");
-      return;
-    }
     if (!cleanCode) {
       setError("Please enter the gallery access passcode.");
       return;
     }
 
-    setUnlocking(true);
-    setError("");
-
-    // Infer role: If selection code is used, respect Bride / Groom choice
-    let targetRole = viewerRole;
     const lowerCode = cleanCode.toLowerCase();
-    if (lowerCode.includes("select") || (meta?.selectionCode && lowerCode === meta.selectionCode.toLowerCase())) {
+    const isSelectionCode = lowerCode.includes("select") || (meta?.selectionCode && lowerCode === meta.selectionCode.toLowerCase());
+
+    let targetRole = "Guest";
+    if (isSelectionCode) {
       targetRole = viewerRole === "Groom" ? "Groom" : "Bride";
     } else if (lowerCode.includes("bride")) {
       targetRole = "Bride";
@@ -225,6 +234,16 @@ const ClientGallery = () => {
     } else {
       targetRole = "Guest";
     }
+
+    let cleanName = viewerName.trim();
+    if (!cleanName) {
+      if (targetRole === "Bride") cleanName = meta?.brideName || "Bride";
+      else if (targetRole === "Groom") cleanName = meta?.groomName || "Groom";
+      else cleanName = "Guest";
+    }
+
+    setUnlocking(true);
+    setError("");
 
     const activeUserProfile = {
       name: cleanName,
@@ -453,7 +472,6 @@ const ClientGallery = () => {
   const rawAlign = (isLocked ? meta?.coverAlign : (gallery?.coverAlign || meta?.coverAlign)) ?? "50%";
   const activePositionStyle = getObjectPositionStyle(rawAlign);
 
-  const allPhotos = gallery?.photos || meta?.photos || [];
   const heroImage = storyData?.heroImage || meta?.coverUrl || (allPhotos[0]?.url) || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600";
   const highlights = storyData?.highlights || allPhotos.slice(0, 16);
   const chapters = storyData?.chapters || [];
@@ -591,18 +609,18 @@ const ClientGallery = () => {
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleUnlock} className="space-y-3.5 text-left">
+          <form onSubmit={handleUnlock} className="space-y-4 text-left">
             {/* Passcode input with dynamic code-type indicator */}
             <div className="space-y-1">
               <div className="flex justify-between items-center">
                 <label className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider block">
                   Gallery Passcode <span className="text-red-400">*</span>
                 </label>
-                <span className="text-[9px] text-[#b4975a] font-medium">
+                <span className="text-[9px] font-medium" style={{ color: activeColor }}>
                   {passcode.toLowerCase().includes("select") || (meta?.selectionCode && passcode.trim().toLowerCase() === meta.selectionCode.toLowerCase())
-                    ? "💍 Selection Code Detected"
+                    ? "💍 Selection Passcode Detected"
                     : (passcode.toLowerCase().includes("guest") || (meta?.guestCode && passcode.trim().toLowerCase() === meta.guestCode.toLowerCase())
-                      ? "✨ Guest Code Detected"
+                      ? "✨ Guest Passcode Detected"
                       : "Enter Guest or Selection Code")}
                 </span>
               </div>
@@ -612,7 +630,7 @@ const ClientGallery = () => {
                   value={passcode}
                   onChange={(e) => { setPasscode(e.target.value); if (error) setError(""); }}
                   placeholder="e.g. GUEST-374 or SELECT-374"
-                  className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl px-3.5 py-2.5 pr-10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#b4975a] font-mono"
+                  className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl px-3.5 py-2.5 pr-10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#b4975a] font-mono tracking-wider font-bold"
                   required
                   autoFocus
                 />
@@ -626,25 +644,24 @@ const ClientGallery = () => {
               </div>
             </div>
 
-            {/* If Selection Code or User explicitly chooses Couple Selection */}
-            {(passcode.toLowerCase().includes("select") || 
-              (meta?.selectionCode && passcode.trim().toLowerCase() === meta.selectionCode.toLowerCase()) ||
-              viewerRole === "Bride" || viewerRole === "Groom") ? (
+            {/* If and ONLY IF Selection Code is typed, ask for Bride or Groom */}
+            {(passcode.trim().toLowerCase().includes("select") || 
+              (meta?.selectionCode && passcode.trim().toLowerCase() === meta.selectionCode.toLowerCase())) && (
               <motion.div 
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-3 bg-red-950/20 border border-red-800/40 rounded-2xl space-y-2"
+                className="p-3.5 bg-gradient-to-br from-pink-950/30 via-zinc-900 to-sky-950/30 border border-pink-700/40 rounded-2xl space-y-2"
               >
-                <label className="text-[9px] uppercase font-bold text-red-300 tracking-wider block text-center">
-                  💍 Album Selection Lounge: Who is selecting?
+                <label className="text-[9px] uppercase font-bold text-pink-300 tracking-wider block text-center">
+                  💍 Album Selection Lounge &bull; Who is selecting?
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setViewerRole("Bride")}
-                    className={`py-2 px-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    className={`py-2.5 px-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       viewerRole === "Bride"
-                        ? "bg-pink-600 text-white border-pink-500 shadow-md scale-102"
+                        ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white border-pink-400 shadow-md shadow-pink-600/30 scale-102"
                         : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
                     }`}
                   >
@@ -653,9 +670,9 @@ const ClientGallery = () => {
                   <button
                     type="button"
                     onClick={() => setViewerRole("Groom")}
-                    className={`py-2 px-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    className={`py-2.5 px-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       viewerRole === "Groom"
-                        ? "bg-sky-600 text-white border-sky-500 shadow-md scale-102"
+                        ? "bg-gradient-to-r from-sky-600 to-blue-600 text-white border-sky-400 shadow-md shadow-sky-600/30 scale-102"
                         : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
                     }`}
                   >
@@ -663,50 +680,24 @@ const ClientGallery = () => {
                   </button>
                 </div>
               </motion.div>
-            ) : (
-              /* Guest Mode Indicator */
-              <div className="space-y-1">
-                <label className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider flex items-center justify-between">
-                  <span>Guest Experience</span>
-                  <span className="text-zinc-500 text-[8px]">AI Story &amp; Best Moments</span>
-                </label>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {[
-                    { id: "Guest", label: "Friend / Guest", icon: "✨" },
-                    { id: "BrideFamily", label: "Bride's Family", icon: "👨‍👩‍👧" },
-                    { id: "GroomFamily", label: "Groom's Family", icon: "👨‍👩‍👦" }
-                  ].map(r => (
-                    <button
-                      key={r.id}
-                      type="button"
-                      onClick={() => setViewerRole(r.id)}
-                      className={`p-2 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
-                        viewerRole === r.id
-                          ? "bg-[#b4975a] text-zinc-950 font-bold border-[#b4975a] shadow-md"
-                          : "bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-white"
-                      }`}
-                    >
-                      <span className="text-xs">{r.icon}</span>
-                      <span className="text-[8px] leading-tight truncate w-full">{r.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
             )}
 
             {/* Name input */}
             <div className="space-y-1">
               <label className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider block">
-                Your Name <span className="text-red-400">*</span>
+                {(passcode.trim().toLowerCase().includes("select") || (meta?.selectionCode && passcode.trim().toLowerCase() === meta.selectionCode.toLowerCase()))
+                  ? "Your Name (Bride / Groom)"
+                  : "Your Name (Optional for Guests)"}
               </label>
               <div className="relative flex items-center">
                 <input
                   type="text"
                   value={viewerName}
                   onChange={(e) => { setViewerName(e.target.value); if (error) setError(""); }}
-                  placeholder={viewerRole === "Bride" ? "e.g. Parvathi (Bride)" : (viewerRole === "Groom" ? "e.g. Akash (Groom)" : "e.g. Rahul (Guest)")}
+                  placeholder={(passcode.trim().toLowerCase().includes("select") || (meta?.selectionCode && passcode.trim().toLowerCase() === meta.selectionCode.toLowerCase()))
+                    ? (viewerRole === "Bride" ? "e.g. Parvathi (Bride)" : "e.g. Akash (Groom)")
+                    : "e.g. Rahul (Guest)"}
                   className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#b4975a]"
-                  required
                 />
                 <User size={14} className="absolute right-3.5 text-zinc-500 pointer-events-none" />
               </div>
@@ -725,7 +716,7 @@ const ClientGallery = () => {
 
             <button
               type="submit"
-              disabled={unlocking || !passcode.trim() || !viewerName.trim()}
+              disabled={unlocking || !passcode.trim()}
               style={{ backgroundColor: activeColor, color: "#09090b" }}
               className="w-full py-3.5 font-bold rounded-xl text-xs uppercase tracking-[0.18em] transition-all duration-300 disabled:opacity-50 hover:brightness-110 shadow-lg shadow-black/40 flex items-center justify-center gap-2 cursor-pointer mt-2"
             >
@@ -942,14 +933,35 @@ const ClientGallery = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
-            className="pt-8"
+            className="pt-6 flex flex-wrap items-center justify-center gap-3"
           >
             <button
               onClick={scrollToStory}
-              className="px-6 py-3.5 rounded-full bg-white/10 hover:bg-white text-white hover:text-zinc-950 border border-white/25 backdrop-blur-md transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2.5 mx-auto cursor-pointer group shadow-2xl"
+              className="px-6 py-3 rounded-full bg-white/10 hover:bg-white text-white hover:text-zinc-950 border border-white/25 backdrop-blur-md transition-all text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 cursor-pointer shadow-2xl"
             >
               <span>Explore The Story</span>
-              <ChevronDown size={15} className="group-hover:translate-y-1 transition-transform" />
+              <ChevronDown size={14} />
+            </button>
+
+            <button
+              onClick={() => {
+                setSlideshowIndex(0);
+                setIsSlideshowPlaying(true);
+                setIsSlideshowActive(true);
+              }}
+              className="px-5 py-3 rounded-full bg-[#b4975a]/20 hover:bg-[#b4975a] text-white hover:text-zinc-950 border border-[#b4975a]/40 backdrop-blur-md transition-all text-xs font-bold uppercase tracking-[0.18em] flex items-center gap-2 cursor-pointer shadow-2xl"
+            >
+              <Play size={13} className="fill-current" />
+              <span>Play Slideshow</span>
+            </button>
+
+            <button
+              disabled={zippingState?.isZipping || allPhotos.length === 0}
+              onClick={() => handleDownloadZipPackage(allPhotos, "Complete_Wedding_Archive")}
+              className="px-5 py-3 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/80 backdrop-blur-md transition-all text-xs font-bold uppercase tracking-[0.18em] flex items-center gap-2 cursor-pointer shadow-xl"
+            >
+              <Download size={13} />
+              <span>Download All ZIP</span>
             </button>
           </motion.div>
         </div>
@@ -976,7 +988,6 @@ const ClientGallery = () => {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           {highlights.slice(0, 7).map((photo, idx) => {
             const isLiked = isLikedByMe(photo.id);
-            // Dynamic asymmetric column spans for editorial rhythm
             let colSpan = "md:col-span-4";
             let aspect = "aspect-[4/5]";
             if (idx === 0) { colSpan = "md:col-span-8"; aspect = "aspect-[16/10]"; }
@@ -1105,7 +1116,7 @@ const ClientGallery = () => {
         )}
 
         {/* ========================================================= */}
-        {/* 2.4. FULL WEDDING ARCHIVE WITH ROLE FILTERS */}
+        {/* 2.4. FULL WEDDING ARCHIVE WITH ROLE FILTERS & COLUMN SWITCHER */}
         {/* ========================================================= */}
         <div className="space-y-8 pt-12 border-t border-zinc-850">
           <div className="text-center max-w-xl mx-auto space-y-2">
@@ -1122,77 +1133,114 @@ const ClientGallery = () => {
             </p>
           </div>
 
-          {/* Filter Pills */}
-          <div className="flex items-center justify-center flex-wrap gap-2">
-            <button
-              onClick={() => setFilterMode("all")}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                filterMode === "all" ? "bg-white text-black shadow-md" : "bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
-              }`}
-            >
-              All Archive ({allPhotos.length})
-            </button>
+          {/* Filter Pills & Grid Layout Controls */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-900/60 p-3.5 rounded-2xl border border-zinc-800">
+            {/* Filter Buttons */}
+            <div className="flex items-center flex-wrap gap-2">
+              <button
+                onClick={() => setFilterMode("all")}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  filterMode === "all" ? "bg-white text-black shadow-md" : "bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
+                }`}
+              >
+                All ({allPhotos.length})
+              </button>
 
-            <button
-              onClick={() => setFilterMode("highlights")}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                filterMode === "highlights" ? "bg-amber-400 text-zinc-950 shadow-md font-bold" : "bg-zinc-900 text-zinc-400 hover:text-amber-400 border border-zinc-800"
-              }`}
-            >
-              <span>✨ Highlights ({highlights.length})</span>
-            </button>
+              <button
+                onClick={() => setFilterMode("highlights")}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  filterMode === "highlights" ? "bg-amber-400 text-zinc-950 shadow-md font-bold" : "bg-zinc-900 text-zinc-400 hover:text-amber-400 border border-zinc-800"
+                }`}
+              >
+                <span>✨ Highlights ({highlights.length})</span>
+              </button>
 
-            {/* Couple Selection Mode Filters */}
-            {isCoupleSelectionMode && (
-              <>
-                <button
-                  onClick={() => setFilterMode("my")}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    filterMode === "my" ? "bg-red-500 text-white shadow-md shadow-red-500/30" : "bg-zinc-900 text-zinc-400 hover:text-red-400 border border-zinc-800"
-                  }`}
-                >
-                  <Heart size={12} className={myPicks.length > 0 ? "fill-current" : ""} />
-                  My Picks ({myPicks.length})
-                </button>
-
-                <button
-                  onClick={() => setFilterMode("all-favorites")}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    filterMode === "all-favorites" ? "bg-[#b4975a] text-zinc-950 shadow-md" : "bg-zinc-900 text-zinc-400 hover:text-[#b4975a] border border-zinc-800"
-                  }`}
-                >
-                  <Users size={12} />
-                  Couple Picks ({selectedPhotoIds.size})
-                </button>
-
-                {bridePicks.length > 0 && (
+              {/* Couple Selection Mode Filters */}
+              {isCoupleSelectionMode && (
+                <>
                   <button
-                    onClick={() => setFilterMode("Bride")}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                      filterMode === "Bride" ? "bg-pink-600 text-white shadow-md" : "bg-zinc-900 text-pink-300 hover:text-white border border-pink-900/40"
+                    onClick={() => setFilterMode("my")}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      filterMode === "my" ? "bg-red-500 text-white shadow-md shadow-red-500/30" : "bg-zinc-900 text-zinc-400 hover:text-red-400 border border-zinc-800"
                     }`}
                   >
-                    <span>👰 Bride ({bridePicks.length})</span>
+                    <Heart size={12} className={myPicks.length > 0 ? "fill-current" : ""} />
+                    My Picks ({myPicks.length})
                   </button>
-                )}
 
-                {groomPicks.length > 0 && (
                   <button
-                    onClick={() => setFilterMode("Groom")}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                      filterMode === "Groom" ? "bg-sky-600 text-white shadow-md" : "bg-zinc-900 text-sky-300 hover:text-white border border-sky-900/40"
+                    onClick={() => setFilterMode("all-favorites")}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      filterMode === "all-favorites" ? "bg-[#b4975a] text-zinc-950 shadow-md" : "bg-zinc-900 text-zinc-400 hover:text-[#b4975a] border border-zinc-800"
                     }`}
                   >
-                    <span>🤵 Groom ({groomPicks.length})</span>
+                    <Users size={12} />
+                    Couple Picks ({selectedPhotoIds.size})
                   </button>
-                )}
-              </>
-            )}
+
+                  {bridePicks.length > 0 && (
+                    <button
+                      onClick={() => setFilterMode("Bride")}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                        filterMode === "Bride" ? "bg-pink-600 text-white shadow-md" : "bg-zinc-900 text-pink-300 hover:text-white border border-pink-900/40"
+                      }`}
+                    >
+                      <span>👰 Bride ({bridePicks.length})</span>
+                    </button>
+                  )}
+
+                  {groomPicks.length > 0 && (
+                    <button
+                      onClick={() => setFilterMode("Groom")}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                        filterMode === "Groom" ? "bg-sky-600 text-white shadow-md" : "bg-zinc-900 text-sky-300 hover:text-white border border-sky-900/40"
+                      }`}
+                    >
+                      <span>🤵 Groom ({groomPicks.length})</span>
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Grid Column Layout Switcher */}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Layout:</span>
+              <div className="flex items-center bg-zinc-950 border border-zinc-800 rounded-xl p-1 text-xs">
+                <button
+                  onClick={() => setGridCols(2)}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${gridCols === 2 ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"}`}
+                  title="2-Column Editorial View"
+                >
+                  2 Col
+                </button>
+                <button
+                  onClick={() => setGridCols(3)}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${gridCols === 3 ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"}`}
+                  title="3-Column Classic View"
+                >
+                  3 Col
+                </button>
+                <button
+                  onClick={() => setGridCols(4)}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${gridCols === 4 ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"}`}
+                  title="4-Column Compact Grid"
+                >
+                  4 Col
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Archive Grid */}
           {displayedPhotos.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            <div className={
+              gridCols === 2
+                ? "grid grid-cols-1 sm:grid-cols-2 gap-6"
+                : gridCols === 4
+                ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+                : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5"
+            }>
               {displayedPhotos.map((photo, index) => {
                 const usersWhoLiked = getUsersForPhoto(photo.id);
                 const likedByMe = isLikedByMe(photo.id);
@@ -1427,6 +1475,89 @@ const ClientGallery = () => {
               <span className="text-[10px] text-zinc-500 font-light">
                 Use Left / Right arrow keys or tap thumbnails. Click <strong>Back to Story</strong> to return.
               </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================= */}
+      {/* 4. FULLSCREEN AMBIENT CINEMA SLIDESHOW PLAYER */}
+      {/* ========================================================= */}
+      <AnimatePresence>
+        {isSlideshowActive && allPhotos.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black z-50 flex flex-col justify-between select-none"
+          >
+            {/* Top Bar */}
+            <div className="p-4 sm:px-8 flex justify-between items-center text-white z-20 bg-gradient-to-b from-black/90 to-transparent">
+              <div className="flex items-center gap-3">
+                <span style={{ color: activeColor }} className="text-xs font-bold uppercase tracking-widest font-mono flex items-center gap-2">
+                  <Film size={14} /> Cinema Slideshow
+                </span>
+                <span className="text-xs text-zinc-500 font-mono">
+                  {slideshowIndex + 1} / {allPhotos.length}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsSlideshowPlaying(!isSlideshowPlaying)}
+                  className="p-2.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-750 text-white transition-all cursor-pointer"
+                  title={isSlideshowPlaying ? "Pause" : "Play"}
+                >
+                  {isSlideshowPlaying ? <Pause size={15} /> : <Play size={15} />}
+                </button>
+                <button
+                  onClick={() => setIsSlideshowActive(false)}
+                  className="p-2.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-750 text-white transition-all cursor-pointer"
+                  title="Exit Slideshow"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Center Slide Image with Ambient Fade */}
+            <div className="relative flex-grow flex items-center justify-center p-4 overflow-hidden">
+              <motion.img
+                key={slideshowIndex}
+                initial={{ opacity: 0, scale: 1.04 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.2, ease: "easeInOut" }}
+                src={allPhotos[slideshowIndex]?.url}
+                alt={`Slide ${slideshowIndex + 1}`}
+                className="max-h-[82vh] max-w-[94vw] object-contain rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.9)]"
+              />
+            </div>
+
+            {/* Bottom Progress & Prev/Next */}
+            <div className="p-4 sm:px-8 bg-gradient-to-t from-black/90 to-transparent flex items-center justify-between z-20">
+              <button
+                onClick={() => setSlideshowIndex(prev => (prev - 1 + allPhotos.length) % allPhotos.length)}
+                className="p-3 rounded-full bg-zinc-900/80 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-800 transition-all cursor-pointer"
+                title="Previous Slide"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              
+              <div className="w-64 max-w-[50vw] bg-zinc-900 rounded-full h-1.5 overflow-hidden border border-zinc-800">
+                <div 
+                  className="bg-[#b4975a] h-full transition-all duration-300"
+                  style={{ width: `${((slideshowIndex + 1) / allPhotos.length) * 100}%` }}
+                />
+              </div>
+
+              <button
+                onClick={() => setSlideshowIndex(prev => (prev + 1) % allPhotos.length)}
+                className="p-3 rounded-full bg-zinc-900/80 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-800 transition-all cursor-pointer"
+                title="Next Slide"
+              >
+                <ChevronRight size={20} />
+              </button>
             </div>
           </motion.div>
         )}
