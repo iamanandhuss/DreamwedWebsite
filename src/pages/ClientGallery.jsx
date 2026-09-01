@@ -617,11 +617,11 @@ const ClientGallery = () => {
                   Gallery Passcode <span className="text-red-400">*</span>
                 </label>
                 <span className="text-[9px] font-medium" style={{ color: activeColor }}>
-                  {passcode.toLowerCase().includes("select") || (meta?.selectionCode && passcode.trim().toLowerCase() === meta.selectionCode.toLowerCase())
+                  {(meta?.selectionCode && passcode.trim() === String(meta.selectionCode).trim()) || passcode.toLowerCase().includes("select")
                     ? "💍 Selection Passcode Detected"
-                    : (passcode.toLowerCase().includes("guest") || (meta?.guestCode && passcode.trim().toLowerCase() === meta.guestCode.toLowerCase())
+                    : ((meta?.guestCode && passcode.trim() === String(meta.guestCode).trim()) || (meta?.accessCode && passcode.trim() === String(meta.accessCode).trim()) || passcode.toLowerCase().includes("guest")
                       ? "✨ Guest Passcode Detected"
-                      : "Enter Guest or Selection Code")}
+                      : "Enter Passcode")}
                 </span>
               </div>
               <div className="relative flex items-center">
@@ -629,7 +629,7 @@ const ClientGallery = () => {
                   type={showPassword ? "text" : "password"}
                   value={passcode}
                   onChange={(e) => { setPasscode(e.target.value); if (error) setError(""); }}
-                  placeholder="e.g. GUEST-374 or SELECT-374"
+                  placeholder="e.g. 4821 or 8392"
                   className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl px-3.5 py-2.5 pr-10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#b4975a] font-mono tracking-wider font-bold"
                   required
                   autoFocus
