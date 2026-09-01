@@ -134,8 +134,14 @@ const Admin = () => {
   const [newWeddingDate, setNewWeddingDate] = useState("");
   const [newWeddingLocation, setNewWeddingLocation] = useState("");
   const [newLoginMode, setNewLoginMode] = useState("two_code_mode");
-  const [newSelectionCode, setNewSelectionCode] = useState("");
-  const [newGuestCode, setNewGuestCode] = useState("");
+  const [newSelectionCode, setNewSelectionCode] = useState(() => {
+    const code = String(Math.floor(1000 + Math.random() * 9000));
+    return `SELECT-${code}`;
+  });
+  const [newGuestCode, setNewGuestCode] = useState(() => {
+    const code = String(Math.floor(1000 + Math.random() * 9000));
+    return `GUEST-${code}`;
+  });
   const [newBrideCode, setNewBrideCode] = useState("");
   const [newGroomCode, setNewGroomCode] = useState("");
   const [newGalDrive, setNewGalDrive] = useState("");
@@ -1488,6 +1494,12 @@ const Admin = () => {
     catch { return ts; }
   };
 
+  const handleRegenerateRandomCodes = () => {
+    const code = String(Math.floor(1000 + Math.random() * 9000));
+    setNewGuestCode(`GUEST-${code}`);
+    setNewSelectionCode(`SELECT-${code}`);
+  };
+
   const handleCopyWhatsAppInvite = (gallery) => {
     if (!gallery) return;
     const origin = typeof window !== "undefined" ? window.location.origin : "https://dreamwedstories.co.in";
@@ -1550,13 +1562,14 @@ const Admin = () => {
       });
       if (res.ok) {
         await fetchGalleries();
+        const nextCode = String(Math.floor(1000 + Math.random() * 9000));
         setNewGroomName("");
         setNewBrideName("");
         setNewGalName("");
         setNewWeddingDate("");
         setNewWeddingLocation("");
-        setNewSelectionCode("");
-        setNewGuestCode("");
+        setNewSelectionCode(`SELECT-${nextCode}`);
+        setNewGuestCode(`GUEST-${nextCode}`);
         setNewGalDrive("");
         setNewGalExtraDrive("");
         alert("💍 AI-Powered Cinematic Wedding Gallery created successfully with Guest & Selection codes!");
@@ -1570,9 +1583,12 @@ const Admin = () => {
       const updated = [fallbackGal, ...aiGalleries];
       setAiGalleries(updated);
       localStorage.setItem("dreamwed_galleries", JSON.stringify(updated));
+      const nextCode = String(Math.floor(1000 + Math.random() * 9000));
       setNewGroomName("");
       setNewBrideName("");
       setNewGalName("");
+      setNewSelectionCode(`SELECT-${nextCode}`);
+      setNewGuestCode(`GUEST-${nextCode}`);
       setNewGalDrive("");
       setNewGalExtraDrive("");
       alert("💍 Created local gallery fallback!");
@@ -3834,7 +3850,14 @@ const Admin = () => {
                     <label className="text-[9px] font-bold text-[#b4975a] uppercase tracking-widest flex items-center gap-1.5">
                       <Lock size={11} /> 2 Dedicated Access Passcodes
                     </label>
-                    <span className="text-[8px] text-zinc-500 font-mono">Custom or Auto</span>
+                    <button
+                      type="button"
+                      onClick={handleRegenerateRandomCodes}
+                      className="text-[9px] text-[#b4975a] hover:text-white font-bold transition-all cursor-pointer flex items-center gap-1 bg-zinc-950 px-2 py-1 rounded-lg border border-zinc-800 hover:border-[#b4975a] active:scale-95"
+                      title="Generate Fresh Random Codes"
+                    >
+                      <RefreshCw size={10} /> Auto-Generate
+                    </button>
                   </div>
                   <div className="grid grid-cols-2 gap-2.5">
                     <div className="space-y-1">
@@ -3843,7 +3866,7 @@ const Admin = () => {
                       </label>
                       <input type="text" placeholder="e.g. GUEST-374"
                         value={newGuestCode} onChange={(e) => setNewGuestCode(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:border-[#b4975a] focus:outline-none" />
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:border-[#b4975a] focus:outline-none font-bold" />
                       <span className="text-[7.5px] text-zinc-500 block leading-tight">For guests to view AI story &amp; moments</span>
                     </div>
                     <div className="space-y-1">
@@ -3852,7 +3875,7 @@ const Admin = () => {
                       </label>
                       <input type="text" placeholder="e.g. SELECT-374"
                         value={newSelectionCode} onChange={(e) => setNewSelectionCode(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:border-[#b4975a] focus:outline-none" />
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:border-[#b4975a] focus:outline-none font-bold" />
                       <span className="text-[7.5px] text-zinc-500 block leading-tight">Prompts Bride or Groom to select photos</span>
                     </div>
                   </div>
