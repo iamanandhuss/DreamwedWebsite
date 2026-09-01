@@ -939,7 +939,9 @@ function fetchDrivePage(url) {
   return new Promise((resolve, reject) => {
     https.get(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
       }
     }, (res) => {
       let responseData = '';
@@ -949,25 +951,75 @@ function fetchDrivePage(url) {
   });
 }
 
+function extractDriveIdsFromHtml(html) {
+  const ids = new Set();
+  if (!html) return ids;
+
+  // Pattern 1: /file/d/FILE_ID
+  const m1 = html.matchAll(/\/file\/d\/([a-zA-Z0-9_-]{25,45})/g);
+  for (const m of m1) if (m[1]) ids.add(m[1]);
+
+  // Pattern 2: googleusercontent.com/d/FILE_ID
+  const m2 = html.matchAll(/googleusercontent\.com\/d\/([a-zA-Z0-9_-]{25,45})/g);
+  for (const m of m2) if (m[1]) ids.add(m[1]);
+
+  // Pattern 3: id=FILE_ID or id\=FILE_ID
+  const m3 = html.matchAll(/[?&]id[\\=]+([a-zA-Z0-9_-]{25,45})/g);
+  for (const m of m3) if (m[1]) ids.add(m[1]);
+
+  // Pattern 4: Generic quoted 33-char alphanumeric starting with 1
+  const m4 = html.matchAll(/["'](1[a-zA-Z0-9_-]{32})["']/g);
+  for (const m of m4) {
+    const id = m[1];
+    if (!id.includes("closure") && !id.includes("google") && !id.includes("Roboto") && !id.includes("googleapis")) {
+      ids.add(id);
+    }
+  }
+
+  return ids;
+}
+
 async function syncGalleryDrivePhotos(id) {
   const gallery = getGallery(id);
   if (!gallery || !gallery.gdriveLink) return null;
   
   try {
-    const html = await fetchDrivePage(gallery.gdriveLink);
+    const folderMatch = gallery.gdriveLink.match(/folders\/([a-zA-Z0-9_-]+)/) || gallery.gdriveLink.match(/id=([a-zA-Z0-9_-]+)/);
+    const folderId = folderMatch ? folderMatch[1] : null;
+
     const idSet = new Set();
-    const regex = /"([a-zA-Z0-9_-]{33})"/g;
-    let match;
-    while ((match = regex.exec(html)) !== null) {
-      const fileId = match[1];
-      if (fileId.startsWith('1') && !fileId.includes("closure") && !fileId.includes("google") && !fileId.includes("Roboto")) {
-        idSet.add(fileId);
+
+    // 1. Fetch from embedded folderview grid (loads full grid preview)
+    if (folderId) {
+      try {
+        const gridHtml = await fetchDrivePage(`https://drive.google.com/embeddedfolderview?id=${folderId}#grid`);
+        const gridIds = extractDriveIdsFromHtml(gridHtml);
+        gridIds.forEach(fid => idSet.add(fid));
+      } catch (e) {
+        console.warn(`[GDrive Grid Scrape] Warning: ${e.message}`);
+      }
+
+      // 2. Fetch from embedded folderview list
+      try {
+        const listHtml = await fetchDrivePage(`https://drive.google.com/embeddedfolderview?id=${folderId}#list`);
+        const listIds = extractDriveIdsFromHtml(listHtml);
+        listIds.forEach(fid => idSet.add(fid));
+      } catch (e) {
+        console.warn(`[GDrive List Scrape] Warning: ${e.message}`);
       }
     }
+
+    // 3. Fetch from primary standard URL
+    try {
+      const html = await fetchDrivePage(gallery.gdriveLink);
+      const standardIds = extractDriveIdsFromHtml(html);
+      standardIds.forEach(fid => idSet.add(fid));
+    } catch (e) {
+      console.warn(`[GDrive Standard Scrape] Warning: ${e.message}`);
+    }
     
-    const folderMatch = gallery.gdriveLink.match(/folders\/([a-zA-Z0-9_-]{33})/);
-    if (folderMatch && folderMatch[1]) {
-      idSet.delete(folderMatch[1]);
+    if (folderId) {
+      idSet.delete(folderId);
     }
     
     const fileIds = Array.from(idSet);
