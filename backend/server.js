@@ -1182,22 +1182,51 @@ app.post('/api/public/galleries/:id/selections', (req, res) => {
   }
 });
 
-// POST Unlock public gallery using Access Code & Register Viewer Identity
+// POST Unlock public gallery using Multi-Tier Passcode (Bride/Groom/Guest) & Register Viewer Identity
 app.post('/api/public/galleries/:id/unlock', (req, res) => {
   try {
     const { accessCode, user } = req.body;
     const gallery = getGallery(req.params.id);
     if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
     
-    if (gallery.accessCode !== String(accessCode).trim()) {
-      return res.status(401).json({ error: 'Invalid access code' });
+    const cleanCode = String(accessCode || "").trim().toLowerCase();
+    const gAccess = String(gallery.accessCode || "").trim().toLowerCase();
+    const gBride = String(gallery.brideCode || "").trim().toLowerCase();
+    const gGroom = String(gallery.groomCode || "").trim().toLowerCase();
+    const gGuest = String(gallery.guestCode || "").trim().toLowerCase();
+
+    let resolvedRole = user?.role || "Guest";
+    let isAuthorized = false;
+
+    if (cleanCode && (cleanCode === gBride || cleanCode === `bride-${gAccess}`)) {
+      resolvedRole = "Bride";
+      isAuthorized = true;
+    } else if (cleanCode && (cleanCode === gGroom || cleanCode === `groom-${gAccess}`)) {
+      resolvedRole = "Groom";
+      isAuthorized = true;
+    } else if (cleanCode && (cleanCode === gGuest || cleanCode === `guest-${gAccess}`)) {
+      resolvedRole = "Guest";
+      isAuthorized = true;
+    } else if (cleanCode && cleanCode === gAccess) {
+      isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
+      return res.status(401).json({ error: 'Invalid access passcode. Please check your invitation code.' });
     }
     
-    if (user && user.name) {
-      recordGalleryViewer(req.params.id, user);
-    }
+    const activeUserProfile = {
+      name: user?.name || resolvedRole,
+      email: user?.email || "",
+      role: resolvedRole
+    };
+
+    recordGalleryViewer(req.params.id, activeUserProfile);
     
-    res.json(gallery);
+    res.json({
+      ...gallery,
+      viewerRole: resolvedRole
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

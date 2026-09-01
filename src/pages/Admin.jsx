@@ -131,15 +131,26 @@ const Admin = () => {
   const [newGroomName, setNewGroomName] = useState("");
   const [newBrideName, setNewBrideName] = useState("");
   const [newGalName, setNewGalName] = useState("");
+  const [newWeddingDate, setNewWeddingDate] = useState("");
+  const [newWeddingLocation, setNewWeddingLocation] = useState("");
+  const [newLoginMode, setNewLoginMode] = useState("three_tier_split"); // 'three_tier_split' | 'single'
+  const [newBrideCode, setNewBrideCode] = useState("");
+  const [newGroomCode, setNewGroomCode] = useState("");
+  const [newGuestCode, setNewGuestCode] = useState("");
   const [newGalDrive, setNewGalDrive] = useState("");
   const [newGalExtraDrive, setNewGalExtraDrive] = useState("");
   const [newGalCover, setNewGalCover] = useState("https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800");
   const [newGalCoverAlign, setNewGalCoverAlign] = useState("center"); // 'top' | 'center' | 'bottom'
   const [newGalCoverTextAlign, setNewGalCoverTextAlign] = useState("center"); // 'left' | 'center' | 'right'
-  const [newGalCoverFont, setNewGalCoverFont] = useState("cormorant"); // 'cormorant' | 'playfair' | 'cinzel' | 'greatvibes' | 'alexbrush' | 'inter'
+  const [newGalCoverFont, setNewGalCoverFont] = useState("cormorant");
   const [newGalCoverColor, setNewGalCoverColor] = useState("#b4975a");
-  const [coverInputMode, setCoverInputMode] = useState("upload"); // 'upload' | 'url' | 'presets'
+  const [coverInputMode, setCoverInputMode] = useState("upload");
   const [isDraggingCover, setIsDraggingCover] = useState(false);
+  
+  // AI Story & Curation Modal states
+  const [aiStoryModalGal, setAiStoryModalGal] = useState(null);
+  const [isRecurating, setIsRecurating] = useState(false);
+  const [curationProgress, setCurationProgress] = useState(null);
   
   // Edit modal states
   const [editingCoverGallery, setEditingCoverGallery] = useState(null);
@@ -1476,6 +1487,23 @@ const Admin = () => {
     catch { return ts; }
   };
 
+  const handleCopyWhatsAppInvite = (gallery) => {
+    if (!gallery) return;
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://dreamwedstories.co.in";
+    const url = `${origin}/gallery/${gallery.id}`;
+    const groom = gallery.groomName || "";
+    const bride = gallery.brideName || "";
+    const couple = groom && bride ? `${groom} & ${bride}` : (gallery.name || "Wedding Gallery");
+    const bCode = gallery.brideCode || `BRIDE-${gallery.accessCode || '1000'}`;
+    const gCode = gallery.groomCode || `GROOM-${gallery.accessCode || '1000'}`;
+    const guestCode = gallery.guestCode || `GUEST-${gallery.accessCode || '1000'}`;
+
+    const message = `✨ *Private Wedding Gallery & Story: ${couple}* ✨\n\n📸 *View the Cinematic Wedding Highlights:*\n🔗 ${url}\n\n🔐 *Access Passcodes:*\n👰 *Bride Code:* \`${bCode}\` (Full album selection rights)\n🤵 *Groom Code:* \`${gCode}\` (Full album selection rights)\n👥 *Family & Guest Code:* \`${guestCode}\` (Explore & Favorite moments)\n\n_Protected by Dreamwed Stories_`;
+
+    navigator.clipboard.writeText(message);
+    alert(`💬 WhatsApp Group Invitation Copied to Clipboard!\n\n${message}`);
+  };
+
   const handleCreateAiGallery = async (e) => {
     e.preventDefault();
     const finalName = newGalName.trim() || 
@@ -1489,10 +1517,16 @@ const Admin = () => {
     }
     
     const randomCode = String(Math.floor(1000 + Math.random() * 9000));
+    const finalBrideCode = newBrideCode.trim() || `BRIDE-${randomCode}`;
+    const finalGroomCode = newGroomCode.trim() || `GROOM-${randomCode}`;
+    const finalGuestCode = newGuestCode.trim() || `GUEST-${randomCode}`;
+
     const newGal = {
       name: finalName,
       groomName: newGroomName.trim(),
       brideName: newBrideName.trim(),
+      weddingDate: newWeddingDate.trim(),
+      location: newWeddingLocation.trim(),
       gdriveLink: newGalDrive.trim(),
       extraDriveLink: newGalExtraDrive.trim(),
       coverUrl: newGalCover.trim() || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800",
@@ -1501,6 +1535,10 @@ const Admin = () => {
       coverFont: newGalCoverFont,
       coverColor: newGalCoverColor,
       accessCode: randomCode,
+      brideCode: finalBrideCode,
+      groomCode: finalGroomCode,
+      guestCode: finalGuestCode,
+      loginMode: newLoginMode,
       photos: []
     };
     
@@ -1515,9 +1553,14 @@ const Admin = () => {
         setNewGroomName("");
         setNewBrideName("");
         setNewGalName("");
+        setNewWeddingDate("");
+        setNewWeddingLocation("");
+        setNewBrideCode("");
+        setNewGroomCode("");
+        setNewGuestCode("");
         setNewGalDrive("");
         setNewGalExtraDrive("");
-        alert("💍 Branded Client Gallery created successfully!");
+        alert("💍 AI-Powered Cinematic Wedding Gallery created successfully!");
       } else {
         throw new Error("Failed to save gallery on server");
       }
@@ -3770,6 +3813,51 @@ const Admin = () => {
                   </div>
                 </div>
 
+                {/* Wedding Date & Location */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Wedding Date (Optional)</label>
+                    <input type="text" placeholder="e.g., 12 Feb 2026"
+                      value={newWeddingDate} onChange={(e) => setNewWeddingDate(e.target.value)}
+                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Location / Venue</label>
+                    <input type="text" placeholder="e.g., Kochi, Kerala"
+                      value={newWeddingLocation} onChange={(e) => setNewWeddingLocation(e.target.value)}
+                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2 text-white text-xs focus:border-[#b4975a] focus:outline-none" />
+                  </div>
+                </div>
+
+                {/* Multi-Tier Access Passcodes */}
+                <div className="space-y-2 p-3 rounded-2xl bg-zinc-900/80 border border-zinc-800">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[9px] font-bold text-[#b4975a] uppercase tracking-widest flex items-center gap-1.5">
+                      <Lock size={11} /> Access Passcodes (Bride, Groom &amp; Guests)
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-0.5">
+                      <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">👰 Bride Code</label>
+                      <input type="text" placeholder="BRIDE-..."
+                        value={newBrideCode} onChange={(e) => setNewBrideCode(e.target.value)}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-[11px] text-white font-mono focus:border-[#b4975a] focus:outline-none" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">🤵 Groom Code</label>
+                      <input type="text" placeholder="GROOM-..."
+                        value={newGroomCode} onChange={(e) => setNewGroomCode(e.target.value)}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-[11px] text-white font-mono focus:border-[#b4975a] focus:outline-none" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <label className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider block">👥 Guest Code</label>
+                      <input type="text" placeholder="GUEST-..."
+                        value={newGuestCode} onChange={(e) => setNewGuestCode(e.target.value)}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-[11px] text-white font-mono focus:border-[#b4975a] focus:outline-none" />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-1.5">
                   <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block">Wedding Event Title (Optional)</label>
                   <input type="text" placeholder="e.g., The Royal Wedding Ceremony (or leave blank)"
@@ -4085,23 +4173,15 @@ const Admin = () => {
                         <img src={g?.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800"} className="w-14 h-14 rounded-lg object-cover border border-zinc-750 shrink-0" alt="Wedding Cover" />
                         <div className="space-y-1">
                           <span className="font-bold text-white text-sm block">{g?.name || "Dreamwed Wedding"}</span>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-[9px] text-zinc-500">ID: {g?.id}</span>
-                            <span className="text-[9px] text-zinc-400 font-bold bg-zinc-950 px-2 py-0.5 border border-zinc-850 rounded flex items-center gap-1">
-                              🔑 Code: <strong className="text-[#b4975a] font-mono">{g?.accessCode || "—"}</strong>
-                              {g?.accessCode && (
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigator.clipboard.writeText(g.accessCode);
-                                    alert(`🔑 Passcode ${g.accessCode} copied to clipboard!`);
-                                  }}
-                                  className="text-[8px] text-zinc-500 hover:text-white ml-1 transition-colors cursor-pointer"
-                                  title="Copy Passcode"
-                                >
-                                  <Copy size={10} />
-                                </button>
-                              )}
+                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                            <span className="text-[9px] text-pink-400 font-bold bg-pink-950/40 px-2 py-0.5 border border-pink-800/40 rounded flex items-center gap-1">
+                              👰 Bride: <strong className="text-white font-mono">{g?.brideCode || `BRIDE-${g?.accessCode || "1000"}`}</strong>
+                            </span>
+                            <span className="text-[9px] text-sky-400 font-bold bg-sky-950/40 px-2 py-0.5 border border-sky-800/40 rounded flex items-center gap-1">
+                              🤵 Groom: <strong className="text-white font-mono">{g?.groomCode || `GROOM-${g?.accessCode || "1000"}`}</strong>
+                            </span>
+                            <span className="text-[9px] text-amber-400 font-bold bg-amber-950/40 px-2 py-0.5 border border-amber-800/40 rounded flex items-center gap-1">
+                              👥 Guest: <strong className="text-white font-mono">{g?.guestCode || `GUEST-${g?.accessCode || "1000"}`}</strong>
                             </span>
                             <span className="text-[9px] text-red-400 font-bold bg-red-950/40 px-2 py-0.5 border border-red-800/40 rounded-full flex items-center gap-1">
                               <Heart size={10} className="fill-current text-red-400" />
@@ -4127,6 +4207,15 @@ const Admin = () => {
                       </div>
                       
                       <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full md:w-auto justify-end border-t border-zinc-800/40 md:border-t-0 pt-3 md:pt-0">
+                        {/* 💬 WhatsApp Invite Button */}
+                        <button
+                          onClick={() => handleCopyWhatsAppInvite(g)}
+                          className="px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500 hover:text-white text-emerald-400 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                          title="Copy Ready-to-Send WhatsApp Group Invite Message"
+                        >
+                          <Share2 size={12} /> Invite Group
+                        </button>
+
                         {/* 📥 1-Click Download Selected Photos */}
                         <button 
                           onClick={() => handleOpenSelectedPhotos(g?.id)}
