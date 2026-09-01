@@ -74,11 +74,11 @@ const Header = () => {
       <div className="container flex justify-between items-center px-6 md:px-10">
         
         {/* LOGO */}
-        <NavLink to="/" className="flex items-center gap-3">
+        <NavLink to="/" className="flex items-center gap-3 group">
           <img
             src="/appIcon.png"
             alt="Dreamwed Stories Logo"
-            className="w-12 h-12 object-contain"
+            className="w-10 h-10 md:w-11 md:h-11 object-contain filter drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)] group-hover:scale-105 transition-transform duration-300"
           />
 
           <span className="text-xl font-light tracking-tight text-white">
