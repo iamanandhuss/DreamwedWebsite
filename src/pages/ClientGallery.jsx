@@ -263,9 +263,11 @@ const ClientGallery = () => {
     return () => { isMounted = false; };
   }, [id, API_BASE, isDirectDownloadMode]);
 
-  // Role permissions check
-  const isCoupleSelectionMode = explicitViewOverride === "selection" || 
-    (explicitViewOverride !== "guest" && (currentUser?.role === "Bride" || currentUser?.role === "Groom"));
+  // Role permissions check - GUEST IS STRICTLY LOCKED TO GUEST MODE
+  const isCoupleUser = currentUser?.role === "Bride" || currentUser?.role === "Groom";
+  const isCoupleSelectionMode = isCoupleUser 
+    ? (explicitViewOverride !== "guest") 
+    : (explicitViewOverride === "selection" && currentUser?.role !== "Guest");
   const isGuestMode = !isCoupleSelectionMode;
 
   const allPhotos = gallery?.photos || meta?.photos || [];
@@ -1235,47 +1237,50 @@ const ClientGallery = () => {
 
         {/* View Switcher Tabs & Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Mode Switcher Pill (Guest AI vs Couple Selection) */}
-          <div className="flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-0.5 text-xs shrink-0">
-            <button
-              onClick={() => {
-                setExplicitViewOverride("guest");
-                const url = new URL(window.location.href);
-                url.searchParams.set("view", "guest");
-                window.history.replaceState({}, "", url.toString());
-              }}
-              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] ${
-                isGuestMode
-                  ? "bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 shadow-md"
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              <Sparkles size={10} className={isGuestMode ? "fill-zinc-950 text-zinc-950" : "text-amber-400"} />
-              <span>Guest<span className="hidden sm:inline"> (AI Story)</span></span>
-            </button>
+          {/* Mode Switcher Pill (ONLY VISIBLE TO BRIDE / GROOM / COUPLE) */}
+          {isCoupleUser && (
+            <div className="flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-0.5 text-xs shrink-0">
+              <button
+                onClick={() => {
+                  setExplicitViewOverride("guest");
+                  const url = new URL(window.location.href);
+                  url.searchParams.set("view", "guest");
+                  window.history.replaceState({}, "", url.toString());
+                }}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] ${
+                  isGuestMode
+                    ? "bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 shadow-md"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                <Sparkles size={10} className={isGuestMode ? "fill-zinc-950 text-zinc-950" : "text-amber-400"} />
+                <span>Guest<span className="hidden sm:inline"> (AI Story)</span></span>
+              </button>
 
-            <button
-              onClick={() => {
-                setExplicitViewOverride("selection");
-                const url = new URL(window.location.href);
-                url.searchParams.set("view", "selection");
-                window.history.replaceState({}, "", url.toString());
-              }}
-              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] ${
-                isCoupleSelectionMode
-                  ? "bg-gradient-to-r from-pink-500 to-rose-600 text-white shadow-md"
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              <Heart size={10} className={isCoupleSelectionMode ? "fill-white text-white" : "text-pink-400"} />
-              <span>Selection<span className="hidden sm:inline"> ({selectedPhotoIds.size})</span></span>
-            </button>
-          </div>
+              <button
+                onClick={() => {
+                  setExplicitViewOverride("selection");
+                  const url = new URL(window.location.href);
+                  url.searchParams.set("view", "selection");
+                  window.history.replaceState({}, "", url.toString());
+                }}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] ${
+                  isCoupleSelectionMode
+                    ? "bg-gradient-to-r from-pink-500 to-rose-600 text-white shadow-md"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                <Heart size={10} className={isCoupleSelectionMode ? "fill-white text-white" : "text-pink-400"} />
+                <span>Selection<span className="hidden sm:inline"> ({selectedPhotoIds.size})</span></span>
+              </button>
+            </div>
+          )}
 
-          <div className="hidden lg:flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-1 text-xs">
+          {/* Navigation Tabs for All Viewers */}
+          <div className="flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-0.5 sm:p-1 text-xs shrink-0">
             <button
               onClick={() => { setActiveSectionView("story"); scrollToStory(); }}
-              className={`px-3 py-1 rounded-lg transition-all cursor-pointer font-bold ${
+              className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all cursor-pointer font-bold text-[10px] sm:text-xs ${
                 activeSectionView === "story" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
               }`}
             >
@@ -1287,25 +1292,25 @@ const ClientGallery = () => {
                 {guestTiers.top25BestPhotos.length > 0 && (
                   <button
                     onClick={() => { setActiveSectionView("story"); scrollToGuestAct("guest-act-1"); }}
-                    className="px-2.5 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
+                    className="px-2 sm:px-2.5 py-1 rounded-lg transition-all cursor-pointer font-bold text-[10px] sm:text-xs text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
                   >
-                    Top 25 ({guestTiers.top25BestPhotos.length})
+                    Top 25
                   </button>
                 )}
                 {guestTiers.ritualGroupPhotos.length > 0 && (
                   <button
                     onClick={() => { setActiveSectionView("story"); scrollToGuestAct("guest-act-2"); }}
-                    className="px-2.5 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
+                    className="px-2 sm:px-2.5 py-1 rounded-lg transition-all cursor-pointer font-bold text-[10px] sm:text-xs text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
                   >
-                    Rituals ({guestTiers.ritualGroupPhotos.length})
+                    Rituals
                   </button>
                 )}
                 {guestTiers.restOfPhotos.length > 0 && (
                   <button
                     onClick={() => { setActiveSectionView("story"); scrollToGuestAct("guest-act-3"); }}
-                    className="px-2.5 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
+                    className="hidden sm:inline-block px-2 sm:px-2.5 py-1 rounded-lg transition-all cursor-pointer font-bold text-[10px] sm:text-xs text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
                   >
-                    Full Story ({guestTiers.restOfPhotos.length})
+                    Full Archive
                   </button>
                 )}
               </>
@@ -1313,7 +1318,7 @@ const ClientGallery = () => {
               <>
                 <button
                   onClick={() => setActiveSectionView("highlights")}
-                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer font-bold ${
+                  className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all cursor-pointer font-bold text-[10px] sm:text-xs ${
                     activeSectionView === "highlights" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
                   }`}
                 >
@@ -1321,13 +1326,13 @@ const ClientGallery = () => {
                 </button>
                 <button
                   onClick={() => setActiveSectionView("archive")}
-                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer font-bold flex items-center gap-1.5 ${
+                  className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all cursor-pointer font-bold text-[10px] sm:text-xs flex items-center gap-1.5 ${
                     activeSectionView === "archive" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
                   }`}
                 >
                   <Heart size={11} className={selectedPhotoIds.size > 0 ? "fill-red-500 text-red-500" : ""} />
                   <span>Archive</span>
-                  <span className="text-[9px] opacity-75 font-mono">👰 {bridePicks.length} • 🤵 {groomPicks.length}</span>
+                  <span className="text-[9px] opacity-75 font-mono hidden sm:inline">👰 {bridePicks.length} • 🤵 {groomPicks.length}</span>
                 </button>
               </>
             )}
