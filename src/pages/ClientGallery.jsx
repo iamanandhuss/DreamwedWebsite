@@ -1197,32 +1197,32 @@ const ClientGallery = () => {
       />
 
       {/* Sticky Top Luxury Header */}
-      <header className="border-b border-zinc-850/80 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-40 px-4 sm:px-8 py-3.5 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+      <header className="border-b border-zinc-850/80 bg-zinc-950/90 backdrop-blur-xl sticky top-0 z-40 px-3 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link 
             to="/"
-            className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-colors shrink-0"
+            className="p-1.5 sm:p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-colors shrink-0"
             title="Home"
           >
-            <ArrowLeft size={15} />
+            <ArrowLeft size={14} className="sm:w-[15px] sm:h-[15px]" />
           </Link>
-          <div>
+          <div className="min-w-0">
             <h1 
               style={{ fontFamily: activeFontFamily }} 
-              className="text-lg sm:text-xl text-white font-medium leading-none truncate max-w-[180px] sm:max-w-md"
+              className="text-sm sm:text-lg md:text-xl text-white font-medium leading-tight truncate max-w-[110px] xs:max-w-[150px] sm:max-w-md"
             >
               {gallery?.groomName && gallery?.brideName 
                 ? `${formatTitleCase(gallery.groomName)} & ${formatTitleCase(gallery.brideName)}` 
                 : formatTitleCase(gallery?.name || "Wedding Gallery")}
             </h1>
-            <div className="flex items-center gap-2 mt-1">
-              <span style={{ color: activeColor }} className="text-[9px] font-bold uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span style={{ color: activeColor }} className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider shrink-0">
                 Dreamwed Stories
               </span>
               {currentUser && (
-                <span className="text-[9px] bg-zinc-900 text-zinc-300 px-2.5 py-0.5 rounded-full border border-zinc-800 flex items-center gap-1 shadow-sm">
+                <span className="text-[8px] sm:text-[9px] bg-zinc-900 text-zinc-300 px-1.5 sm:px-2.5 py-0.5 rounded-full border border-zinc-800 flex items-center gap-1 shadow-sm shrink-0">
                   <span>{USER_ROLES.find(r => r.id === currentUser.role)?.icon || "👤"}</span>
-                  <strong className="text-white">
+                  <strong className="text-white hidden xs:inline">
                     {currentUser.name && currentUser.name.toLowerCase() !== currentUser.role?.toLowerCase() && currentUser.name.toLowerCase() !== "guest"
                       ? `${currentUser.name} (${currentUser.role})`
                       : currentUser.role || "Guest"}
@@ -1234,9 +1234,9 @@ const ClientGallery = () => {
         </div>
 
         {/* View Switcher Tabs & Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Mode Switcher Pill (Guest AI vs Couple Selection) */}
-          <div className="flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-0.5 text-xs">
+          <div className="flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-0.5 text-xs shrink-0">
             <button
               onClick={() => {
                 setExplicitViewOverride("guest");
@@ -1244,14 +1244,14 @@ const ClientGallery = () => {
                 url.searchParams.set("view", "guest");
                 window.history.replaceState({}, "", url.toString());
               }}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 text-[11px] ${
+              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] ${
                 isGuestMode
-                  ? "bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 shadow-md scale-102"
+                  ? "bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 shadow-md"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
-              <Sparkles size={11} className={isGuestMode ? "fill-zinc-950 text-zinc-950" : "text-amber-400"} />
-              <span>✨ Guest (AI Story)</span>
+              <Sparkles size={10} className={isGuestMode ? "fill-zinc-950 text-zinc-950" : "text-amber-400"} />
+              <span>Guest<span className="hidden sm:inline"> (AI Story)</span></span>
             </button>
 
             <button
@@ -1261,14 +1261,14 @@ const ClientGallery = () => {
                 url.searchParams.set("view", "selection");
                 window.history.replaceState({}, "", url.toString());
               }}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 text-[11px] ${
+              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] ${
                 isCoupleSelectionMode
-                  ? "bg-gradient-to-r from-pink-500 to-rose-600 text-white shadow-md scale-102"
+                  ? "bg-gradient-to-r from-pink-500 to-rose-600 text-white shadow-md"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
-              <Heart size={11} className={isCoupleSelectionMode ? "fill-white text-white" : "text-pink-400"} />
-              <span>💍 Couple Selection ({selectedPhotoIds.size})</span>
+              <Heart size={10} className={isCoupleSelectionMode ? "fill-white text-white" : "text-pink-400"} />
+              <span>Selection<span className="hidden sm:inline"> ({selectedPhotoIds.size})</span></span>
             </button>
           </div>
 
@@ -1335,19 +1335,19 @@ const ClientGallery = () => {
 
           <button 
             onClick={() => setIsShareModalOpen(true)}
-            className="px-3 py-2 bg-gradient-to-r from-amber-500/20 to-[#b4975a]/20 hover:from-amber-500 hover:to-[#b4975a] text-amber-300 hover:text-zinc-950 rounded-xl border border-amber-500/30 transition-all text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shrink-0 shadow-sm"
+            className="p-2 sm:px-3 sm:py-2 bg-gradient-to-r from-amber-500/20 to-[#b4975a]/20 hover:from-amber-500 hover:to-[#b4975a] text-amber-300 hover:text-zinc-950 rounded-xl border border-amber-500/30 transition-all text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shrink-0 shadow-sm"
             title="Share 2 dedicated gallery links (Guest AI vs Couple Selection)"
           >
-            <Share2 size={12} /> <span className="hidden sm:inline">Invite Links</span>
+            <Share2 size={13} /> <span className="hidden md:inline">Invite Links</span>
           </button>
 
           <button
             onClick={handleSwitchPerson}
-            className="px-2.5 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl border border-zinc-800 text-[10px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+            className="p-2 sm:px-2.5 sm:py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl border border-zinc-800 text-[10px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
             title="Re-enter passcode or switch viewer"
           >
-            <Lock size={12} className="text-[#b4975a]" />
-            <span className="hidden sm:inline">Re-enter Code</span>
+            <Lock size={13} className="text-[#b4975a]" />
+            <span className="hidden md:inline">Re-enter Code</span>
           </button>
         </div>
       </header>
@@ -1538,11 +1538,11 @@ const ClientGallery = () => {
             {/* TIER 1: TOP 25 BEST PHOTOS (NO REPEATS) */}
             {guestTiers.top25BestPhotos.length > 0 && (
               <div id="guest-act-1" className="space-y-8 scroll-mt-24">
-                <div className="text-center max-w-2xl mx-auto space-y-3">
-                  <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center justify-center gap-1.5 font-mono">
-                    <Sparkles size={11} /> ✨ AI Vision &bull; Top {guestTiers.top25BestPhotos.length} Best Moments (0 Repeats)
+                <div className="text-center max-w-2xl mx-auto space-y-3 px-2">
+                  <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.25em] inline-flex items-center justify-center gap-1.5 font-mono">
+                    <Sparkles size={11} /> AI VISION &bull; TOP {guestTiers.top25BestPhotos.length} BEST MOMENTS (0 REPEATS)
                   </span>
-                  <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light">
+                  <h2 style={{ fontFamily: activeFontFamily }} className="text-2xl sm:text-4xl md:text-5xl text-white font-light">
                     The Best <span style={{ color: activeColor }} className="italic font-serif">Curated Moments</span>
                   </h2>
                   <p className="text-zinc-400 text-xs sm:text-sm font-light leading-relaxed">
@@ -1558,11 +1558,11 @@ const ClientGallery = () => {
             {/* TIER 2: RITUALS, CEREMONY & GROUP PHOTOS */}
             {guestTiers.ritualGroupPhotos.length > 0 && (
               <div id="guest-act-2" className="space-y-8 pt-12 border-t border-zinc-850/80 scroll-mt-24">
-                <div className="text-center max-w-2xl mx-auto space-y-3">
-                  <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center justify-center gap-1.5 font-mono">
-                    <Users size={12} /> 👥 AI Curated &bull; Rituals &amp; Group Moments
+                <div className="text-center max-w-2xl mx-auto space-y-3 px-2">
+                  <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.25em] inline-flex items-center justify-center gap-1.5 font-mono">
+                    <Users size={12} /> AI CURATED &bull; RITUALS &amp; GROUP MOMENTS
                   </span>
-                  <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light">
+                  <h2 style={{ fontFamily: activeFontFamily }} className="text-2xl sm:text-4xl md:text-5xl text-white font-light">
                     Rituals, Stage &amp; <span style={{ color: activeColor }} className="italic font-serif">Group Memories</span>
                   </h2>
                   <p className="text-zinc-400 text-xs sm:text-sm font-light leading-relaxed">
@@ -1578,11 +1578,11 @@ const ClientGallery = () => {
             {/* TIER 3: FULL STORY & ALL REMAINING MEMORIES */}
             {guestTiers.restOfPhotos.length > 0 && (
               <div id="guest-act-3" className="space-y-8 pt-12 border-t border-zinc-850/80 scroll-mt-24">
-                <div className="text-center max-w-2xl mx-auto space-y-3">
-                  <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center justify-center gap-1.5 font-mono">
-                    <Camera size={12} /> 📸 AI Curated &bull; Complete Story Archive
+                <div className="text-center max-w-2xl mx-auto space-y-3 px-2">
+                  <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.25em] inline-flex items-center justify-center gap-1.5 font-mono">
+                    <Camera size={12} /> AI CURATED &bull; COMPLETE STORY ARCHIVE
                   </span>
-                  <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light">
+                  <h2 style={{ fontFamily: activeFontFamily }} className="text-2xl sm:text-4xl md:text-5xl text-white font-light">
                     The Full <span style={{ color: activeColor }} className="italic font-serif">Story &amp; Candids</span>
                   </h2>
                   <p className="text-zinc-400 text-xs sm:text-sm font-light leading-relaxed">
