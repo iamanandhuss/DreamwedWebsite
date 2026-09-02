@@ -1135,19 +1135,33 @@ app.get('/api/public/galleries/:id/selected-photos', (req, res) => {
     const gallery = getGallery(req.params.id);
     if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
     
-    const selectedIds = new Set(gallery.selectedPhotoIds || []);
+    let selectedIds = new Set(gallery.selectedPhotoIds || []);
     const selectionsDetail = gallery.selectionsDetail || [];
+
+    if (selectedIds.size === 0 && selectionsDetail.length > 0) {
+      selectedIds = new Set(selectionsDetail.map(s => s.photoId));
+    }
     
-    const selectedPhotos = (gallery.photos || []).filter(p => selectedIds.has(p.id)).map(photo => {
+    let selectedPhotos = (gallery.photos || []).filter(p => selectedIds.has(p.id)).map(photo => {
       const matchingUsers = selectionsDetail.filter(s => s.photoId === photo.id).map(s => s.user).filter(Boolean);
       return {
         ...photo,
         selectedBy: matchingUsers.length > 0 ? matchingUsers : [{ name: "Client", role: "Couple" }]
       };
     });
+
+    if (selectedPhotos.length === 0 && gallery.photos && gallery.photos.length > 0) {
+      selectedPhotos = gallery.photos.map(photo => ({
+        ...photo,
+        selectedBy: [{ name: "Client", role: "Couple" }]
+      }));
+      selectedIds = new Set(selectedPhotos.map(p => p.id));
+    }
     
     res.json({
+      id: gallery.id,
       galleryId: gallery.id,
+      name: gallery.name,
       galleryName: gallery.name,
       groomName: gallery.groomName || "",
       brideName: gallery.brideName || "",
@@ -1158,6 +1172,7 @@ app.get('/api/public/galleries/:id/selected-photos', (req, res) => {
       coverColor: gallery.coverColor || "#b4975a",
       count: selectedPhotos.length,
       photos: selectedPhotos,
+      selectedPhotoIds: Array.from(selectedIds),
       selectionsDetail: gallery.selectionsDetail || [],
       viewers: gallery.viewers || []
     });
@@ -1172,19 +1187,33 @@ app.get('/api/galleries/:id/selected-photos', (req, res) => {
     const gallery = getGallery(req.params.id);
     if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
     
-    const selectedIds = new Set(gallery.selectedPhotoIds || []);
+    let selectedIds = new Set(gallery.selectedPhotoIds || []);
     const selectionsDetail = gallery.selectionsDetail || [];
+
+    if (selectedIds.size === 0 && selectionsDetail.length > 0) {
+      selectedIds = new Set(selectionsDetail.map(s => s.photoId));
+    }
     
-    const selectedPhotos = (gallery.photos || []).filter(p => selectedIds.has(p.id)).map(photo => {
+    let selectedPhotos = (gallery.photos || []).filter(p => selectedIds.has(p.id)).map(photo => {
       const matchingUsers = selectionsDetail.filter(s => s.photoId === photo.id).map(s => s.user).filter(Boolean);
       return {
         ...photo,
         selectedBy: matchingUsers.length > 0 ? matchingUsers : [{ name: "Client", role: "Couple" }]
       };
     });
+
+    if (selectedPhotos.length === 0 && gallery.photos && gallery.photos.length > 0) {
+      selectedPhotos = gallery.photos.map(photo => ({
+        ...photo,
+        selectedBy: [{ name: "Client", role: "Couple" }]
+      }));
+      selectedIds = new Set(selectedPhotos.map(p => p.id));
+    }
     
     res.json({
+      id: gallery.id,
       galleryId: gallery.id,
+      name: gallery.name,
       galleryName: gallery.name,
       groomName: gallery.groomName || "",
       brideName: gallery.brideName || "",
@@ -1195,6 +1224,7 @@ app.get('/api/galleries/:id/selected-photos', (req, res) => {
       coverColor: gallery.coverColor || "#b4975a",
       count: selectedPhotos.length,
       photos: selectedPhotos,
+      selectedPhotoIds: Array.from(selectedIds),
       selectionsDetail: gallery.selectionsDetail || [],
       viewers: gallery.viewers || []
     });

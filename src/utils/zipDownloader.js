@@ -186,18 +186,32 @@ export const downloadPhotosAsZip = async ({
     status: "Starting ZIP download..."
   });
 
-  // Trigger browser download
+  // Trigger browser download with full cross-platform and mobile browser compatibility
+  const fileName = `${folderName}.zip`;
   const downloadUrl = URL.createObjectURL(zipBlob);
-  const a = document.createElement("a");
-  a.href = downloadUrl;
-  a.download = `${folderName}.zip`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
 
-  setTimeout(() => {
-    URL.revokeObjectURL(downloadUrl);
-  }, 10000);
+  if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
+    navigator.msSaveOrOpenBlob(zipBlob, fileName);
+  } else {
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = downloadUrl;
+    a.download = fileName;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    
+    const evt = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      view: window
+    });
+    a.dispatchEvent(evt);
 
-  return { success: true, fileName: `${folderName}.zip` };
+    setTimeout(() => {
+      if (document.body.contains(a)) document.body.removeChild(a);
+      URL.revokeObjectURL(downloadUrl);
+    }, 60000);
+  }
+
+  return { success: true, fileName };
 };

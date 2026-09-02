@@ -877,7 +877,16 @@ function getGalleries() {
 }
 
 function getGallery(id) {
-  return (data.galleries || []).find(g => g.id === id);
+  if (!id) return null;
+  data.galleries = data.galleries || [];
+  const cleanId = String(id).trim().toLowerCase();
+  return data.galleries.find(g => 
+    String(g.id).toLowerCase() === cleanId ||
+    String(g.name || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, '-') === cleanId ||
+    String(g.accessCode || "").toLowerCase().trim() === cleanId ||
+    String(g.guestCode || "").toLowerCase().trim() === cleanId ||
+    String(g.selectionCode || "").toLowerCase().trim() === cleanId
+  ) || null;
 }
 
 function saveGallery(gallery) {
