@@ -39,7 +39,7 @@ const AnimatedCounter = ({ value, duration = 2 }) => {
 const ExperienceBento = () => {
   return (
     <section className="bg-white py-20 md:py-32">
-      <div className="container">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* LEFT COLUMN */}

@@ -70,7 +70,7 @@ const Header = () => {
         }
       `}
     >
-      <div className="container flex justify-between items-center px-6 md:px-10">
+      <div className="max-w-7xl mx-auto w-full flex justify-between items-center px-4 sm:px-6 md:px-10">
         
         {/* LOGO */}
         <NavLink to="/" className="flex items-center gap-3 group">

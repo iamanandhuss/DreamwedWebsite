@@ -50,7 +50,7 @@ const Hero = () => {
       {/* 3. Luxury Black/Dark Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-zinc-950/40 to-zinc-950 z-0" />
 
-      <div className="container relative z-10 text-center text-white px-6">
+      <div className="max-w-7xl mx-auto w-full relative z-10 text-center text-white px-4 sm:px-6 md:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

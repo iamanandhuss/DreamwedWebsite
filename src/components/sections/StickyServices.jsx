@@ -28,7 +28,7 @@ const servicesData = [
 const StickyServices = () => {
   return (
     <section className="w-full py-20 md:py-32 bg-white relative">
-      <div className="container grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-20 items-start relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-20 items-start relative">
         
         {/* LEFT STICKY CONTENT */}
         <div className="lg:sticky lg:top-[15%] flex flex-col justify-center h-auto lg:h-[70vh] mb-12 lg:mb-0">

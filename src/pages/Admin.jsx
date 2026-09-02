@@ -3823,9 +3823,9 @@ const Admin = () => {
 
         {/* =============================== AI GALLERIES TAB ================================ */}
         {activeTab === "ai-galleries" && (
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-start text-left">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-left">
             {/* Gallery Creation Sidebar */}
-            <div className="md:col-span-2 bg-zinc-950 border border-zinc-800 rounded-[28px] p-6 space-y-5">
+            <div className="lg:col-span-5 xl:col-span-4 bg-zinc-950 border border-zinc-800 rounded-[28px] p-6 space-y-5">
               <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-zinc-800">
                 <Camera size={16} className="text-[#b4975a]" /> Create Dreamwed Gallery
               </h3>
@@ -4200,7 +4200,7 @@ const Admin = () => {
             </div>
 
             {/* Galleries list */}
-            <div className="md:col-span-3 bg-zinc-950 border border-zinc-800 rounded-[28px] p-6 space-y-4">
+            <div className="lg:col-span-7 xl:col-span-8 bg-zinc-950 border border-zinc-800 rounded-[28px] p-6 space-y-4">
               <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-zinc-800">
                 💍 Active Dreamwed Galleries ({Array.isArray(aiGalleries) ? aiGalleries.length : 0})
               </h3>

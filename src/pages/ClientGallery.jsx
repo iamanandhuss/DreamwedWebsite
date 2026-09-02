@@ -616,17 +616,17 @@ const ClientGallery = () => {
           return (
             <div 
               key={`${sectionKey}-bento-cluster-${cIdx}`} 
-              className="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 lg:gap-5"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3.5 sm:gap-4 lg:gap-5 items-stretch"
             >
               {/* COLUMN 1: Large Featured Card (Top) + 2 Sub-Cards (Bottom) */}
-              <div className={`col-span-12 md:col-span-6 lg:col-span-5 flex flex-col gap-3 sm:gap-4 lg:gap-5 ${isAlternate ? "lg:order-3" : "lg:order-1"}`}>
+              <div className={`col-span-1 md:col-span-2 lg:col-span-6 xl:col-span-5 flex flex-col gap-3.5 sm:gap-4 lg:gap-5 ${isAlternate ? "lg:order-3" : "lg:order-1"}`}>
                 {p0 && (
-                  <div className="h-[260px] sm:h-[340px] lg:h-[400px]">
+                  <div className="h-[260px] sm:h-[320px] md:h-[360px] lg:h-[400px]">
                     {renderMosaicCard(p0, "h-full", true, "⭐ Key Moment")}
                   </div>
                 )}
                 {(p1 || p2) && (
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5 h-[140px] sm:h-[180px] lg:h-[210px]">
+                  <div className="grid grid-cols-2 gap-3.5 sm:gap-4 lg:gap-5 h-[140px] sm:h-[160px] md:h-[180px] lg:h-[200px]">
                     {p1 && renderMosaicCard(p1, "h-full")}
                     {p2 && renderMosaicCard(p2, "h-full")}
                   </div>
@@ -634,28 +634,28 @@ const ClientGallery = () => {
               </div>
 
               {/* COLUMN 2: Top Landscape + Bottom Tall Portrait */}
-              <div className="col-span-12 sm:col-span-6 lg:col-span-3.5 flex flex-col gap-3 sm:gap-4 lg:gap-5 lg:order-2">
+              <div className="col-span-1 md:col-span-1 lg:col-span-3 xl:col-span-3.5 xl:col-span-3 flex flex-col gap-3.5 sm:gap-4 lg:gap-5 lg:order-2">
                 {p3 && (
-                  <div className="h-[140px] sm:h-[180px] lg:h-[210px]">
+                  <div className="h-[140px] sm:h-[160px] md:h-[180px] lg:h-[200px]">
                     {renderMosaicCard(p3, "h-full")}
                   </div>
                 )}
                 {p4 && (
-                  <div className="h-[260px] sm:h-[340px] lg:h-[400px]">
+                  <div className="h-[260px] sm:h-[320px] md:h-[360px] lg:h-[400px]">
                     {renderMosaicCard(p4, "h-full", false, "Portrait")}
                   </div>
                 )}
               </div>
 
               {/* COLUMN 3: Top Landscape + Bottom Tall Portrait */}
-              <div className={`col-span-12 sm:col-span-6 lg:col-span-3.5 flex flex-col gap-3 sm:gap-4 lg:gap-5 ${isAlternate ? "lg:order-1" : "lg:order-3"}`}>
+              <div className={`col-span-1 md:col-span-1 lg:col-span-3 xl:col-span-4 flex flex-col gap-3.5 sm:gap-4 lg:gap-5 ${isAlternate ? "lg:order-1" : "lg:order-3"}`}>
                 {p5 && (
-                  <div className="h-[140px] sm:h-[180px] lg:h-[210px]">
+                  <div className="h-[140px] sm:h-[160px] md:h-[180px] lg:h-[200px]">
                     {renderMosaicCard(p5, "h-full")}
                   </div>
                 )}
                 {p6 && (
-                  <div className="h-[260px] sm:h-[340px] lg:h-[400px]">
+                  <div className="h-[260px] sm:h-[320px] md:h-[360px] lg:h-[400px]">
                     {renderMosaicCard(p6, "h-full", false, "Portrait")}
                   </div>
                 )}
