@@ -121,8 +121,19 @@ const ClientGallery = () => {
           if (res.ok) {
             const data = await res.json();
             if (isMounted) {
+              const photoList = data.photos || [];
+              const photoIdList = data.selectedPhotoIds || photoList.map(p => p.id);
+              const photoIdSet = new Set(photoIdList);
+
               setSelectedPhotosData(data);
               setMeta(data);
+              setGallery({
+                ...data,
+                photos: photoList,
+                selectedPhotoIds: Array.from(photoIdSet)
+              });
+              setSelectedPhotoIds(photoIdSet);
+              setSelectionsDetail(data.selectionsDetail || []);
               setIsLocked(false);
               setLoading(false);
             }
@@ -1261,7 +1272,7 @@ const ClientGallery = () => {
                 <span>🎨</span> Production &amp; Editor Portal
               </span>
               <p className="text-xs text-zinc-300 font-light">
-                Client Selected Photos for Album Design &amp; Retouching ({selectedPhotoIds.size} Total Favorites)
+                Client Selected Photos for Album Design &amp; Retouching ({Math.max(selectedPhotoIds.size, allPhotos.length)} Total Available)
               </p>
             </div>
 
@@ -1287,14 +1298,16 @@ const ClientGallery = () => {
               )}
 
               <button
-                disabled={zippingState?.isZipping || selectedPhotoIds.size === 0}
+                disabled={zippingState?.isZipping || allPhotos.length === 0}
                 onClick={() => {
-                  const allSelected = allPhotos.filter(p => selectedPhotoIds.has(p.id));
+                  const allSelected = (selectedPhotoIds.size > 0 && allPhotos.some(p => selectedPhotoIds.has(p.id)))
+                    ? allPhotos.filter(p => selectedPhotoIds.has(p.id))
+                    : allPhotos;
                   handleDownloadZipPackage(allSelected, "All_Client_Selections");
                 }}
                 className="px-4 py-1.5 bg-[#b4975a] hover:bg-[#c5a86b] text-zinc-950 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-lg transition-all"
               >
-                <Download size={13} /> ⚡ Download All Selections ZIP ({selectedPhotoIds.size})
+                <Download size={13} /> ⚡ Download All Selections ZIP ({Math.max(selectedPhotoIds.size, allPhotos.length)})
               </button>
             </div>
           </div>
