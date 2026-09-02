@@ -1539,9 +1539,10 @@ const ClientGallery = () => {
             {guestTiers.top25BestPhotos.length > 0 && (
               <div id="guest-act-1" className="space-y-8 scroll-mt-24">
                 <div className="text-center max-w-2xl mx-auto space-y-3 px-2">
-                  <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.25em] inline-flex items-center justify-center gap-1.5 font-mono">
-                    <Sparkles size={11} /> AI VISION &bull; TOP {guestTiers.top25BestPhotos.length} BEST MOMENTS (0 REPEATS)
-                  </span>
+                  <div style={{ color: activeColor }} className="text-[9px] sm:text-[10px] uppercase font-bold tracking-[0.2em] sm:tracking-[0.25em] flex items-center justify-center gap-1.5 font-mono text-center">
+                    <Sparkles size={11} className="shrink-0" />
+                    <span>AI VISION &bull; TOP {guestTiers.top25BestPhotos.length} BEST MOMENTS (0 REPEATS)</span>
+                  </div>
                   <h2 style={{ fontFamily: activeFontFamily }} className="text-2xl sm:text-4xl md:text-5xl text-white font-light">
                     The Best <span style={{ color: activeColor }} className="italic font-serif">Curated Moments</span>
                   </h2>
@@ -1559,9 +1560,10 @@ const ClientGallery = () => {
             {guestTiers.ritualGroupPhotos.length > 0 && (
               <div id="guest-act-2" className="space-y-8 pt-12 border-t border-zinc-850/80 scroll-mt-24">
                 <div className="text-center max-w-2xl mx-auto space-y-3 px-2">
-                  <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.25em] inline-flex items-center justify-center gap-1.5 font-mono">
-                    <Users size={12} /> AI CURATED &bull; RITUALS &amp; GROUP MOMENTS
-                  </span>
+                  <div style={{ color: activeColor }} className="text-[9px] sm:text-[10px] uppercase font-bold tracking-[0.2em] sm:tracking-[0.25em] flex items-center justify-center gap-1.5 font-mono text-center">
+                    <Users size={12} className="shrink-0" />
+                    <span>AI CURATED &bull; RITUALS &amp; GROUP MOMENTS</span>
+                  </div>
                   <h2 style={{ fontFamily: activeFontFamily }} className="text-2xl sm:text-4xl md:text-5xl text-white font-light">
                     Rituals, Stage &amp; <span style={{ color: activeColor }} className="italic font-serif">Group Memories</span>
                   </h2>
@@ -1579,9 +1581,10 @@ const ClientGallery = () => {
             {guestTiers.restOfPhotos.length > 0 && (
               <div id="guest-act-3" className="space-y-8 pt-12 border-t border-zinc-850/80 scroll-mt-24">
                 <div className="text-center max-w-2xl mx-auto space-y-3 px-2">
-                  <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.25em] inline-flex items-center justify-center gap-1.5 font-mono">
-                    <Camera size={12} /> AI CURATED &bull; COMPLETE STORY ARCHIVE
-                  </span>
+                  <div style={{ color: activeColor }} className="text-[9px] sm:text-[10px] uppercase font-bold tracking-[0.2em] sm:tracking-[0.25em] flex items-center justify-center gap-1.5 font-mono text-center">
+                    <Camera size={12} className="shrink-0" />
+                    <span>AI CURATED &bull; COMPLETE STORY ARCHIVE</span>
+                  </div>
                   <h2 style={{ fontFamily: activeFontFamily }} className="text-2xl sm:text-4xl md:text-5xl text-white font-light">
                     The Full <span style={{ color: activeColor }} className="italic font-serif">Story &amp; Candids</span>
                   </h2>
