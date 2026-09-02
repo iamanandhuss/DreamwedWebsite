@@ -636,26 +636,122 @@ const ClientGallery = () => {
     );
   };
 
-  // 7-Image Editorial Bento Cluster Engine (Matches Luxury Photography Magazines)
+  // Dynamic Adaptive Editorial Bento Cluster Engine (Matches Luxury Photography Magazines)
   const renderBentoClusters = (photosList, sectionKey = "bento") => {
     if (!photosList || photosList.length === 0) return null;
 
+    // Strict URL deduplication within this display container
+    const seen = new Set();
+    const uniqueList = [];
+    for (const p of photosList) {
+      if (!p || !p.url) continue;
+      const key = String(p.url).trim().toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueList.push(p);
+      }
+    }
+
+    if (uniqueList.length === 0) return null;
+
+    // 1 Photo: Grand Hero Feature
+    if (uniqueList.length === 1) {
+      return (
+        <div key={`${sectionKey}-single`} className="max-w-4xl mx-auto h-[360px] sm:h-[500px]">
+          {renderMosaicCard(uniqueList[0], "h-full", true, "⭐ Key Moment")}
+        </div>
+      );
+    }
+
+    // 2 Photos: Balanced Editorial Diptych Duo
+    if (uniqueList.length === 2) {
+      return (
+        <div key={`${sectionKey}-diptych`} className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-5">
+          <div className="h-[320px] sm:h-[440px]">{renderMosaicCard(uniqueList[0], "h-full", true, "⭐ Featured")}</div>
+          <div className="h-[320px] sm:h-[440px]">{renderMosaicCard(uniqueList[1], "h-full", false, "Portrait")}</div>
+        </div>
+      );
+    }
+
+    // 3 Photos: Editorial Triptych
+    if (uniqueList.length === 3) {
+      return (
+        <div key={`${sectionKey}-triptych`} className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-5">
+          <div className="h-[300px] sm:h-[380px]">{renderMosaicCard(uniqueList[0], "h-full", true, "⭐ Featured")}</div>
+          <div className="h-[300px] sm:h-[380px]">{renderMosaicCard(uniqueList[1], "h-full", false, "Portrait")}</div>
+          <div className="h-[300px] sm:h-[380px]">{renderMosaicCard(uniqueList[2], "h-full", false, "Portrait")}</div>
+        </div>
+      );
+    }
+
+    // 4 Photos: 1 Grand Feature (Left) + 3-Grid (Right)
+    if (uniqueList.length === 4) {
+      return (
+        <div key={`${sectionKey}-quad`} className="grid grid-cols-1 md:grid-cols-12 gap-3.5 sm:gap-5 items-stretch">
+          <div className="col-span-12 md:col-span-7 h-[340px] sm:h-[420px]">
+            {renderMosaicCard(uniqueList[0], "h-full", true, "⭐ Key Moment")}
+          </div>
+          <div className="col-span-12 md:col-span-5 grid grid-cols-1 sm:grid-cols-3 md:grid-cols-1 gap-3.5 h-[340px] sm:h-[420px]">
+            <div className="h-full">{renderMosaicCard(uniqueList[1], "h-full")}</div>
+            <div className="h-full">{renderMosaicCard(uniqueList[2], "h-full")}</div>
+            <div className="h-full">{renderMosaicCard(uniqueList[3], "h-full")}</div>
+          </div>
+        </div>
+      );
+    }
+
+    // 5 Photos: 1 Grand Feature (Left) + 2x2 Grid (Right)
+    if (uniqueList.length === 5) {
+      return (
+        <div key={`${sectionKey}-pent`} className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-5 items-stretch">
+          <div className="col-span-12 lg:col-span-6 h-[340px] sm:h-[420px] lg:h-[480px]">
+            {renderMosaicCard(uniqueList[0], "h-full", true, "⭐ Key Moment")}
+          </div>
+          <div className="col-span-12 lg:col-span-6 grid grid-cols-2 gap-3.5 h-[340px] sm:h-[420px] lg:h-[480px]">
+            <div className="h-full">{renderMosaicCard(uniqueList[1], "h-full")}</div>
+            <div className="h-full">{renderMosaicCard(uniqueList[2], "h-full")}</div>
+            <div className="h-full">{renderMosaicCard(uniqueList[3], "h-full")}</div>
+            <div className="h-full">{renderMosaicCard(uniqueList[4], "h-full")}</div>
+          </div>
+        </div>
+      );
+    }
+
+    // 6 Photos: 2 Large (Top) + 4 (Bottom)
+    if (uniqueList.length === 6) {
+      return (
+        <div key={`${sectionKey}-hex`} className="space-y-3.5 sm:space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-5">
+            <div className="h-[280px] sm:h-[360px]">{renderMosaicCard(uniqueList[0], "h-full", true, "⭐ Key Moment")}</div>
+            <div className="h-[280px] sm:h-[360px]">{renderMosaicCard(uniqueList[1], "h-full", false, "Featured")}</div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-5">
+            <div className="h-[180px] sm:h-[240px]">{renderMosaicCard(uniqueList[2], "h-full")}</div>
+            <div className="h-[180px] sm:h-[240px]">{renderMosaicCard(uniqueList[3], "h-full")}</div>
+            <div className="h-[180px] sm:h-[240px]">{renderMosaicCard(uniqueList[4], "h-full")}</div>
+            <div className="h-[180px] sm:h-[240px]">{renderMosaicCard(uniqueList[5], "h-full")}</div>
+          </div>
+        </div>
+      );
+    }
+
+    // 7+ Photos: Full 7-Photo 3-Column Magazine Bento Clusters
     const clusters = [];
-    for (let i = 0; i < photosList.length; i += 7) {
-      clusters.push(photosList.slice(i, i + 7));
+    for (let i = 0; i < uniqueList.length; i += 7) {
+      clusters.push(uniqueList.slice(i, i + 7));
     }
 
     return (
       <div className="space-y-4 sm:space-y-5 lg:space-y-6">
         {clusters.map((cluster, cIdx) => {
           const isAlternate = cIdx % 2 === 1;
-          const p0 = cluster[0]; // Hero Frame (Large Top)
-          const p1 = cluster[1]; // Left bottom 1
-          const p2 = cluster[2]; // Left bottom 2
-          const p3 = cluster[3]; // Col 2 Top Landscape
-          const p4 = cluster[4]; // Col 2 Tall Portrait
-          const p5 = cluster[5]; // Col 3 Top Landscape
-          const p6 = cluster[6]; // Col 3 Tall Portrait
+          const p0 = cluster[0];
+          const p1 = cluster[1];
+          const p2 = cluster[2];
+          const p3 = cluster[3];
+          const p4 = cluster[4];
+          const p5 = cluster[5];
+          const p6 = cluster[6];
 
           if (cluster.length < 4) {
             return (

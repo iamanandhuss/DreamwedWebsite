@@ -279,37 +279,75 @@ export const curateGuestThreeTierSections = (photos = [], coupleTitle = "Couple"
     };
   }
 
-  const total = photos.length;
-  
-  // 1. Calculate AI attribute scores for each photo
-  const scored = photos.map((p, idx) => ({
+  // 1. Strict Unique Deduplication by URL and Image Identity
+  const seen = new Set();
+  const uniquePhotos = [];
+  for (const p of photos) {
+    if (!p || !p.url) continue;
+    const cleanUrl = String(p.url).trim().toLowerCase();
+    if (!seen.has(cleanUrl)) {
+      seen.add(cleanUrl);
+      uniquePhotos.push(p);
+    }
+  }
+
+  const total = uniquePhotos.length;
+  if (total === 0) {
+    return {
+      couplePortraits: [],
+      functionGroupPhotos: [],
+      restOfPhotos: []
+    };
+  }
+
+  // 2. Calculate AI attribute scores for each unique photo
+  const scored = uniquePhotos.map((p, idx) => ({
     ...p,
     ...calculatePhotoScore(p, idx, total)
   }));
 
-  // Determine size of Tier 1 (10% of total photos, minimum 7 photos if album is small, up to 21 for large albums)
-  let tier1Count = 7;
-  if (total <= 12) {
-    tier1Count = Math.min(total, 4);
-  } else if (total <= 50) {
-    tier1Count = Math.min(total, Math.max(6, Math.round(total * 0.12)));
-  } else {
-    tier1Count = Math.min(21, Math.max(10, Math.round(total * 0.10)));
+  // Handle small photo albums gracefully without repeating
+  if (total === 1) {
+    return {
+      couplePortraits: assignEditorialLayoutRoles(scored),
+      functionGroupPhotos: [],
+      restOfPhotos: []
+    };
   }
-  
+  if (total === 2) {
+    return {
+      couplePortraits: assignEditorialLayoutRoles([scored[0]]),
+      functionGroupPhotos: assignEditorialLayoutRoles([scored[1]]),
+      restOfPhotos: []
+    };
+  }
+  if (total <= 4) {
+    return {
+      couplePortraits: assignEditorialLayoutRoles(scored.slice(0, Math.ceil(total / 3))),
+      functionGroupPhotos: assignEditorialLayoutRoles(scored.slice(Math.ceil(total / 3), Math.ceil((total * 2) / 3))),
+      restOfPhotos: assignEditorialLayoutRoles(scored.slice(Math.ceil((total * 2) / 3)))
+    };
+  }
+
+  // 3. Classify into 3 distinct acts:
+  // Act 1: ~10% Couple & Solo Portraits (min 3, max 14 distinct photos)
+  let tier1Count = Math.min(14, Math.max(3, Math.round(total * 0.10)));
+  if (total <= 10) tier1Count = Math.min(total, 3);
+  else if (total <= 20) tier1Count = Math.min(total, 4);
+
   // Sort by aesthetic hero score to extract the strongest Couple & Solo Portraits
   const sortedByHero = [...scored].sort((a, b) => b.heroScore - a.heroScore);
-  
   const couplePortraits = sortedByHero.slice(0, tier1Count);
   const tier1Ids = new Set(couplePortraits.map(p => p.id));
-  
-  // Remaining pool of photos (preserving natural chronological order)
+
+  // Remaining pool of photos for Act 2 and Act 3 (preserving natural chronological order)
   const remaining = scored.filter(p => !tier1Ids.has(p.id));
-  
-  // Determine size of Tier 2: Function, Ceremony, Stage, Group photos (~50% of remaining)
-  const tier2Count = Math.round(remaining.length * 0.50);
-  
+
+  // Act 2: Function, Ceremony, Stage, Group photos (~50% of remaining)
+  const tier2Count = Math.max(1, Math.round(remaining.length * 0.50));
   const functionGroupPhotos = remaining.slice(0, tier2Count);
+
+  // Act 3: Rest of the Photos & Candids
   const restOfPhotos = remaining.slice(tier2Count);
 
   return {
