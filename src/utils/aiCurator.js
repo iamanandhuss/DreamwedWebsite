@@ -9,6 +9,26 @@
  * 5. Generates subtle, elegant chapter narratives
  */
 
+/**
+ * Generates an ultra-optimized, high-speed thumbnail URL for buttery-smooth mobile rendering
+ * Downscales multi-megabyte Google Drive links to compact 400-800px web thumbnails.
+ */
+export const getOptimizedThumbnailUrl = (url, width = 600) => {
+  if (!url) return "";
+  const str = String(url).trim();
+  if (str.includes("drive.google.com/thumbnail")) {
+    return str.replace(/sz=w\d+/i, `sz=w${width}`);
+  }
+  const matchId = str.match(/id=([a-zA-Z0-9_-]+)/) || str.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (matchId && matchId[1]) {
+    return `https://drive.google.com/thumbnail?id=${matchId[1]}&sz=w${width}`;
+  }
+  if (str.includes("googleusercontent.com/d/")) {
+    return `${str.split("=")[0]}=w${width}`;
+  }
+  return str;
+};
+
 // Subtle non-cliché chapter narratives
 const CHAPTER_TEMPLATES = [
   {

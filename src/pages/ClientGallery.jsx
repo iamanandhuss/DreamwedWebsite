@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import SEO from "../components/SEO";
 import { downloadPhotosAsZip } from "../utils/zipDownloader";
-import { curateWeddingStory, curateGuestThreeTierSections } from "../utils/aiCurator";
+import { curateWeddingStory, curateGuestThreeTierSections, getOptimizedThumbnailUrl } from "../utils/aiCurator";
 
 const FONT_MAP = {
   cormorant: "'Cormorant Garamond', serif",
@@ -95,6 +95,8 @@ const ClientGallery = () => {
   const [isSlideshowActive, setIsSlideshowActive] = useState(false);
   const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [isSlideshowPlaying, setIsSlideshowPlaying] = useState(true);
+  const [act3VisibleCount, setAct3VisibleCount] = useState(24);
+  const [archiveVisibleCount, setArchiveVisibleCount] = useState(36);
   const syncTimeoutRef = useRef(null);
   const storyRef = useRef(null);
 
@@ -547,18 +549,24 @@ const ClientGallery = () => {
   const activePositionStyle = getObjectPositionStyle(rawAlign);
 
   const heroImage = storyData?.heroImage || meta?.coverUrl || (allPhotos[0]?.url) || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600";
-  const highlights = (storyData?.highlights && storyData.highlights.length > 0) 
-    ? storyData.highlights 
-    : (allPhotos.length > 0 ? allPhotos.slice(0, Math.min(28, allPhotos.length)) : []);
-  const chapters = (storyData?.chapters && storyData.chapters.length > 0)
-    ? storyData.chapters
-    : (allPhotos.length > 0 ? [{
-        id: "chapter-all",
-        title: "The Wedding Story",
-        subtitle: `${formatTitleCase(gallery?.name || meta?.name || "Wedding Highlights")}`,
-        description: "A cinematic collection of cherished memories and timeless moments.",
-        photos: allPhotos
-      }] : []);
+  
+  const highlights = React.useMemo(() => {
+    return (storyData?.highlights && storyData.highlights.length > 0) 
+      ? storyData.highlights 
+      : (allPhotos.length > 0 ? allPhotos.slice(0, Math.min(28, allPhotos.length)) : []);
+  }, [storyData?.highlights, allPhotos]);
+
+  const chapters = React.useMemo(() => {
+    return (storyData?.chapters && storyData.chapters.length > 0)
+      ? storyData.chapters
+      : (allPhotos.length > 0 ? [{
+          id: "chapter-all",
+          title: "The Wedding Story",
+          subtitle: `${formatTitleCase(gallery?.name || meta?.name || "Wedding Highlights")}`,
+          description: "A cinematic collection of cherished memories and timeless moments.",
+          photos: allPhotos
+        }] : []);
+  }, [storyData?.chapters, allPhotos, gallery?.name, meta?.name]);
 
   // 3-Tier AI Sections exclusively for Guest Mode
   const guestTiers = React.useMemo(() => {
@@ -572,16 +580,26 @@ const ClientGallery = () => {
     }
   };
 
-  const myPicks = allPhotos.filter(p => isLikedByMe(p.id));
-  const bridePicks = allPhotos.filter(p => selectionsDetail.some(s => s.photoId === p.id && s.user?.role === "Bride"));
-  const groomPicks = allPhotos.filter(p => selectionsDetail.some(s => s.photoId === p.id && s.user?.role === "Groom"));
+  const myPicks = React.useMemo(() => {
+    return allPhotos.filter(p => isLikedByMe(p.id));
+  }, [allPhotos, selectedPhotoIds, selectionsDetail, currentUser]);
 
-  let displayedPhotos = allPhotos;
-  if (filterMode === "my") displayedPhotos = myPicks;
-  else if (filterMode === "all-favorites") displayedPhotos = allPhotos.filter(p => selectedPhotoIds.has(p.id));
-  else if (filterMode === "Bride") displayedPhotos = bridePicks;
-  else if (filterMode === "Groom") displayedPhotos = groomPicks;
-  else if (filterMode === "highlights") displayedPhotos = highlights;
+  const bridePicks = React.useMemo(() => {
+    return allPhotos.filter(p => selectionsDetail.some(s => s.photoId === p.id && (s.user?.role === "Bride" || s.role === "Bride")));
+  }, [allPhotos, selectionsDetail]);
+
+  const groomPicks = React.useMemo(() => {
+    return allPhotos.filter(p => selectionsDetail.some(s => s.photoId === p.id && (s.user?.role === "Groom" || s.role === "Groom")));
+  }, [allPhotos, selectionsDetail]);
+
+  const displayedPhotos = React.useMemo(() => {
+    if (filterMode === "my") return myPicks;
+    if (filterMode === "all-favorites") return allPhotos.filter(p => selectedPhotoIds.has(p.id));
+    if (filterMode === "Bride") return bridePicks;
+    if (filterMode === "Groom") return groomPicks;
+    if (filterMode === "highlights") return highlights;
+    return allPhotos;
+  }, [filterMode, myPicks, allPhotos, selectedPhotoIds, bridePicks, groomPicks, highlights]);
 
   // Single Photo Showcase Navigation
   const handlePrevPhoto = (e) => {
@@ -625,20 +643,24 @@ const ClientGallery = () => {
   const renderMosaicCard = (photo, customClass = "h-full", isFocalHero = false, badgeText = "") => {
     if (!photo) return null;
     const isLiked = isLikedByMe(photo.id);
+    const thumbUrl = getOptimizedThumbnailUrl(photo.url, isFocalHero ? 800 : 500);
 
     return (
       <div 
         key={photo.id || photo.url}
         onClick={() => setActivePhoto(photo)}
-        className={`group relative rounded-2xl overflow-hidden bg-zinc-900 border cursor-pointer shadow-xl transition-all duration-500 hover:border-[#b4975a]/70 hover:shadow-2xl active:scale-[0.99] select-none ${customClass} ${
+        style={{ willChange: "transform" }}
+        className={`group relative rounded-2xl overflow-hidden bg-zinc-900 border cursor-pointer shadow-xl transition-all duration-300 hover:border-[#b4975a]/70 hover:shadow-2xl active:scale-[0.99] select-none ${customClass} ${
           isFocalHero ? "border-[#b4975a]/40 ring-1 ring-[#b4975a]/25" : "border-zinc-800/80"
         }`}
       >
         <img 
-          src={photo.url} 
+          src={thumbUrl} 
           alt="Editorial Wedding Frame"
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
+          decoding="async"
+          fetchPriority="low"
         />
 
         {/* Top Left Badges: Key Moment & Member Selection attribution */}
@@ -811,7 +833,11 @@ const ClientGallery = () => {
 
           if (cluster.length < 4) {
             return (
-              <div key={`${sectionKey}-cluster-${cIdx}`} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
+              <div 
+                key={`${sectionKey}-cluster-${cIdx}`} 
+                style={{ contentVisibility: "auto", containIntrinsicSize: "0 340px" }}
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-5"
+              >
                 {cluster.map((p, idx) => (
                   <div key={p.id || idx} className="h-[280px] sm:h-[340px]">
                     {renderMosaicCard(p, "h-full", idx === 0, idx === 0 ? "Featured" : "")}
@@ -824,6 +850,7 @@ const ClientGallery = () => {
           return (
             <div 
               key={`${sectionKey}-bento-cluster-${cIdx}`} 
+              style={{ contentVisibility: "auto", containIntrinsicSize: "0 420px" }}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3.5 sm:gap-4 lg:gap-5 items-stretch"
             >
               {/* COLUMN 1: Large Featured Card (Top) + 2 Sub-Cards (Bottom) */}
@@ -1500,7 +1527,19 @@ const ClientGallery = () => {
                   <div style={{ backgroundColor: `${activeColor}80` }} className="w-12 h-[1px] mx-auto mt-4" />
                 </div>
 
-                {renderBentoClusters(guestTiers.restOfPhotos, "guest-tier-rest")}
+                {renderBentoClusters(guestTiers.restOfPhotos.slice(0, act3VisibleCount), "guest-tier-rest")}
+
+                {guestTiers.restOfPhotos.length > act3VisibleCount && (
+                  <div className="text-center pt-6">
+                    <button
+                      onClick={() => setAct3VisibleCount(prev => prev + 24)}
+                      className="px-6 py-3 bg-zinc-900/90 hover:bg-[#b4975a] hover:text-zinc-950 text-amber-300 border border-amber-500/40 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl transition-all cursor-pointer flex items-center gap-2 mx-auto active:scale-95"
+                    >
+                      <span>Explore More Moments ({guestTiers.restOfPhotos.length - act3VisibleCount} remaining)</span>
+                      <ChevronDown size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1689,67 +1728,84 @@ const ClientGallery = () => {
 
             {/* Archive Grid */}
             {displayedPhotos.length > 0 ? (
-              <div className={
-                gridCols === 2
-                  ? "grid grid-cols-1 sm:grid-cols-2 gap-6"
-                  : gridCols === 4
-                  ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-                  : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5"
-              }>
-                {displayedPhotos.map((photo, index) => {
-                  const usersWhoLiked = getUsersForPhoto(photo.id);
-                  const likedByMe = isLikedByMe(photo.id);
+              <div className="space-y-8">
+                <div className={
+                  gridCols === 2
+                    ? "grid grid-cols-1 sm:grid-cols-2 gap-6"
+                    : gridCols === 4
+                    ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+                    : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5"
+                }>
+                  {displayedPhotos.slice(0, archiveVisibleCount).map((photo, index) => {
+                    const usersWhoLiked = getUsersForPhoto(photo.id);
+                    const likedByMe = isLikedByMe(photo.id);
 
-                  return (
-                    <div 
-                      key={photo.id || index}
-                      className={`group relative bg-zinc-900 border rounded-2xl overflow-hidden cursor-pointer aspect-[4/5] shadow-lg transition-all duration-300 ${
-                        likedByMe ? "border-red-500/60 ring-1 ring-red-500/30" : "border-zinc-800/80 hover:border-[#b4975a]/50"
-                      }`}
-                      onClick={() => setActivePhoto(photo)}
-                    >
-                      <img 
-                        src={photo.url} 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                        loading="lazy"
-                        alt={`Archive photo ${index + 1}`}
-                      />
-
-                      {/* ❤️ Heart Favorite Button */}
-                      <button
-                        onClick={(e) => toggleHeartPhoto(photo.id, e)}
-                        className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
-                          likedByMe 
-                            ? "bg-red-500 text-white scale-110 shadow-red-500/50" 
-                            : "bg-black/60 backdrop-blur-md text-white/80 hover:text-red-400 border border-white/10"
+                    return (
+                      <div 
+                        key={photo.id || index}
+                        style={{ willChange: "transform" }}
+                        className={`group relative bg-zinc-900 border rounded-2xl overflow-hidden cursor-pointer aspect-[4/5] shadow-lg transition-all duration-300 ${
+                          likedByMe ? "border-red-500/60 ring-1 ring-red-500/30" : "border-zinc-800/80 hover:border-[#b4975a]/50"
                         }`}
+                        onClick={() => setActivePhoto(photo)}
                       >
-                        <Heart size={14} className={likedByMe ? "fill-white text-white" : "text-white"} />
-                      </button>
+                        <img 
+                          src={getOptimizedThumbnailUrl(photo.url, 600)} 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                          loading="lazy"
+                          decoding="async"
+                          fetchPriority="low"
+                          alt={`Archive photo ${index + 1}`}
+                        />
 
-                      {/* Member Pills */}
-                      {usersWhoLiked.length > 0 && (
-                        <div className="absolute top-3 left-3 flex flex-wrap gap-1 max-w-[70%] z-20 pointer-events-none">
-                          {usersWhoLiked.slice(0, 2).map((u, uIdx) => (
-                            <span 
-                              key={uIdx} 
-                              className="bg-black/80 backdrop-blur-md text-white text-[8px] font-bold px-2 py-0.5 rounded-full border border-white/15 shadow-sm"
-                            >
-                              {u.role === 'Bride' ? '👰' : (u.role === 'Groom' ? '🤵' : '❤️')} {u.name}
-                            </span>
-                          ))}
+                        {/* ❤️ Heart Favorite Button */}
+                        <button
+                          onClick={(e) => toggleHeartPhoto(photo.id, e)}
+                          className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-300 z-30 cursor-pointer shadow-xl ${
+                            likedByMe 
+                              ? "bg-red-500 text-white scale-110 shadow-red-500/50" 
+                              : "bg-black/60 backdrop-blur-md text-white/80 hover:text-red-400 border border-white/10"
+                          }`}
+                        >
+                          <Heart size={14} className={likedByMe ? "fill-white text-white" : "text-white"} />
+                        </button>
+
+                        {/* Member Pills */}
+                        {usersWhoLiked.length > 0 && (
+                          <div className="absolute top-3 left-3 flex flex-wrap gap-1 max-w-[70%] z-20 pointer-events-none">
+                            {usersWhoLiked.slice(0, 2).map((u, uIdx) => (
+                              <span 
+                                key={uIdx} 
+                                className="bg-black/80 backdrop-blur-md text-white text-[8px] font-bold px-2 py-0.5 rounded-full border border-white/15 shadow-sm"
+                              >
+                                {u.role === 'Bride' ? '👰' : (u.role === 'Groom' ? '🤵' : '❤️')} {u.name}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-3.5 pointer-events-none">
+                          <span className="text-[10px] text-zinc-300 font-light font-mono">#{index + 1}</span>
+                          <span className="text-[10px] text-zinc-400 font-light flex items-center gap-1">
+                            <ZoomIn size={12} /> View
+                          </span>
                         </div>
-                      )}
-
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-3.5 pointer-events-none">
-                        <span className="text-[10px] text-zinc-300 font-light font-mono">#{index + 1}</span>
-                        <span className="text-[10px] text-zinc-400 font-light flex items-center gap-1">
-                          <ZoomIn size={12} /> View
-                        </span>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+
+                {displayedPhotos.length > archiveVisibleCount && (
+                  <div className="text-center pt-6">
+                    <button
+                      onClick={() => setArchiveVisibleCount(prev => prev + 36)}
+                      className="px-6 py-3 bg-zinc-900/90 hover:bg-[#b4975a] hover:text-zinc-950 text-white border border-zinc-750 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl transition-all cursor-pointer flex items-center gap-2 mx-auto active:scale-95"
+                    >
+                      <span>Load More Photos ({displayedPhotos.length - archiveVisibleCount} remaining)</span>
+                      <ChevronDown size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-20 border border-zinc-800 rounded-3xl text-zinc-500 font-light text-sm">
@@ -1896,7 +1952,9 @@ const ClientGallery = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.96 }}
                 transition={{ duration: 0.2 }}
-                src={activePhoto.url} 
+                src={getOptimizedThumbnailUrl(activePhoto.url, 1600)} 
+                decoding="async"
+                fetchPriority="high"
                 className="max-h-[75vh] sm:max-h-[80vh] max-w-[92vw] object-contain rounded-2xl border border-zinc-800/80 shadow-2xl select-none z-10"
                 alt="Fullscreen Showcase"
               />
@@ -1947,7 +2005,13 @@ const ClientGallery = () => {
                           : "border-zinc-800 opacity-50 hover:opacity-100"
                       }`}
                     >
-                      <img src={p.url} alt={`Thumb ${pIdx + 1}`} className="w-full h-full object-cover" />
+                      <img 
+                        src={getOptimizedThumbnailUrl(p.url, 160)} 
+                        loading="lazy"
+                        decoding="async"
+                        alt={`Thumb ${pIdx + 1}`} 
+                        className="w-full h-full object-cover" 
+                      />
                       {pLiked && (
                         <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-1 ring-white" />
                       )}
