@@ -1004,39 +1004,62 @@ const ClientGallery = () => {
               </div>
             </div>
 
-            {/* If and ONLY IF Selection Code is typed, ask for Bride or Groom */}
+            {/* If Selection Code is detected or typed, ask who is selecting (Bride / Groom) */}
             {(passcode.trim().toLowerCase().includes("select") || 
-              (meta?.selectionCode && passcode.trim().toLowerCase() === meta.selectionCode.toLowerCase())) && (
+              (meta?.selectionCode && passcode.trim().toLowerCase() === String(meta.selectionCode).trim().toLowerCase()) ||
+              (meta?.brideCode && passcode.trim().toLowerCase() === String(meta.brideCode).trim().toLowerCase()) ||
+              (meta?.groomCode && passcode.trim().toLowerCase() === String(meta.groomCode).trim().toLowerCase())) && (
               <motion.div 
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-3.5 bg-gradient-to-br from-pink-950/30 via-zinc-900 to-sky-950/30 border border-pink-700/40 rounded-2xl space-y-2"
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="p-4 bg-gradient-to-br from-pink-950/40 via-zinc-900 to-sky-950/40 border border-amber-500/30 rounded-2xl space-y-3"
               >
-                <label className="text-[9px] uppercase font-bold text-pink-300 tracking-wider block text-center">
-                  💍 Album Selection Lounge &bull; Who is selecting?
-                </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="text-center space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-amber-300 tracking-wider flex items-center justify-center gap-1 font-mono">
+                    💍 Album Selection Lounge
+                  </span>
+                  <p className="text-xs text-zinc-200 font-semibold">
+                    Who is selecting photos today?
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setViewerRole("Bride")}
-                    className={`py-2.5 px-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    onClick={() => {
+                      setViewerRole("Bride");
+                      if (meta?.brideName) setViewerName(meta.brideName);
+                    }}
+                    className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
                       viewerRole === "Bride"
-                        ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white border-pink-400 shadow-md shadow-pink-600/30 scale-102"
-                        : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
+                        ? "bg-gradient-to-b from-pink-600 to-rose-700 text-white border-pink-400 shadow-lg shadow-pink-600/30 ring-2 ring-pink-400/60 scale-102"
+                        : "bg-zinc-900/90 border-zinc-800 text-zinc-400 hover:text-white hover:border-pink-500/40"
                     }`}
                   >
-                    <span>👰 Bride</span>
+                    <span className="text-2xl">👰</span>
+                    <strong className="text-xs font-bold block text-white">Bride</strong>
+                    <span className="text-[10px] opacity-80 truncate max-w-full">
+                      {meta?.brideName || "The Bride"}
+                    </span>
                   </button>
+
                   <button
                     type="button"
-                    onClick={() => setViewerRole("Groom")}
-                    className={`py-2.5 px-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    onClick={() => {
+                      setViewerRole("Groom");
+                      if (meta?.groomName) setViewerName(meta.groomName);
+                    }}
+                    className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
                       viewerRole === "Groom"
-                        ? "bg-gradient-to-r from-sky-600 to-blue-600 text-white border-sky-400 shadow-md shadow-sky-600/30 scale-102"
-                        : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
+                        ? "bg-gradient-to-b from-sky-600 to-blue-700 text-white border-sky-400 shadow-lg shadow-sky-600/30 ring-2 ring-sky-400/60 scale-102"
+                        : "bg-zinc-900/90 border-zinc-800 text-zinc-400 hover:text-white hover:border-sky-500/40"
                     }`}
                   >
-                    <span>🤵 Groom</span>
+                    <span className="text-2xl">🤵</span>
+                    <strong className="text-xs font-bold block text-white">Groom</strong>
+                    <span className="text-[10px] opacity-80 truncate max-w-full">
+                      {meta?.groomName || "The Groom"}
+                    </span>
                   </button>
                 </div>
               </motion.div>
@@ -1196,11 +1219,13 @@ const ClientGallery = () => {
                 </button>
                 <button
                   onClick={() => setActiveSectionView("archive")}
-                  className={`px-3.5 py-1 rounded-lg transition-all cursor-pointer font-bold ${
+                  className={`px-3.5 py-1 rounded-lg transition-all cursor-pointer font-bold flex items-center gap-1.5 ${
                     activeSectionView === "archive" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
                   }`}
                 >
-                  💍 Selection Lounge ({selectedPhotoIds.size})
+                  <Heart size={12} className={selectedPhotoIds.size > 0 ? "fill-red-500 text-red-500" : ""} />
+                  <span>Selection Lounge ({selectedPhotoIds.size})</span>
+                  <span className="text-[9px] opacity-75 font-mono">👰 {bridePicks.length} • 🤵 {groomPicks.length}</span>
                 </button>
               </>
             )}
@@ -1525,8 +1550,34 @@ const ClientGallery = () => {
                 Select Your <span style={{ color: activeColor }} className="italic font-serif">Album Picks</span>
               </h3>
               <p className="text-zinc-400 text-xs font-light">
-                Logged in as {currentUser?.role || "Couple"} &bull; Tap the heart on photos you want in your final wedding album.
+                Logged in as <strong>{currentUser?.role === 'Bride' ? (meta?.brideName || 'Bride') : (meta?.groomName || 'Groom')} ({currentUser?.role})</strong> &bull; Tap the heart on photos you want in your final wedding album.
               </p>
+            </div>
+
+            {/* KPI Live Selection Counters */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-4xl mx-auto">
+              <div className="bg-zinc-900/90 border border-zinc-800 p-3.5 rounded-2xl text-center space-y-1 shadow-lg">
+                <span className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider">Total Album Picks</span>
+                <div className="text-2xl sm:text-3xl font-bold text-white font-mono">{selectedPhotoIds.size}</div>
+                <span className="text-[10px] text-zinc-500 font-mono">Combined List</span>
+              </div>
+              <div className="bg-pink-950/20 border border-pink-800/40 p-3.5 rounded-2xl text-center space-y-1 shadow-lg">
+                <span className="text-[9px] uppercase font-bold text-pink-300 tracking-wider">👰 Bride's Picks</span>
+                <div className="text-2xl sm:text-3xl font-bold text-pink-400 font-mono">{bridePicks.length}</div>
+                <span className="text-[10px] text-pink-300/70 truncate block">{meta?.brideName || "Bride"}</span>
+              </div>
+              <div className="bg-sky-950/20 border border-sky-800/40 p-3.5 rounded-2xl text-center space-y-1 shadow-lg">
+                <span className="text-[9px] uppercase font-bold text-sky-300 tracking-wider">🤵 Groom's Picks</span>
+                <div className="text-2xl sm:text-3xl font-bold text-sky-400 font-mono">{groomPicks.length}</div>
+                <span className="text-[10px] text-sky-300/70 truncate block">{meta?.groomName || "Groom"}</span>
+              </div>
+              <div className="bg-amber-950/20 border border-amber-800/40 p-3.5 rounded-2xl text-center space-y-1 shadow-lg">
+                <span className="text-[9px] uppercase font-bold text-amber-300 tracking-wider">💖 Mutual Favorites</span>
+                <div className="text-2xl sm:text-3xl font-bold text-amber-400 font-mono">
+                  {allPhotos.filter(p => selectionsDetail.some(s => s.photoId === p.id && (s.user?.role === "Bride" || s.role === "Bride")) && selectionsDetail.some(s => s.photoId === p.id && (s.user?.role === "Groom" || s.role === "Groom"))).length}
+                </div>
+                <span className="text-[10px] text-amber-300/70">Selected by Both</span>
+              </div>
             </div>
 
             {/* Filter Pills & Grid Layout Controls */}
@@ -1697,20 +1748,35 @@ const ClientGallery = () => {
       </div>
 
       {/* Floating Status Pill - Active for Bride & Groom */}
-      {isCoupleSelectionMode && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-full px-5 py-3 shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex items-center gap-3 text-xs">
-          <span className="text-zinc-300 flex items-center gap-1.5">
-            <Heart size={14} className="fill-red-500 text-red-500" />
-            <strong>{myPicks.length}</strong> {currentUser?.role || "My"} picks &bull; <strong>{selectedPhotoIds.size}</strong> couple total
-          </span>
+      {isCoupleSelectionMode && selectedPhotoIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-950/95 backdrop-blur-xl border border-zinc-750/90 rounded-full px-4 sm:px-6 py-2.5 sm:py-3 shadow-[0_15px_50px_rgba(0,0,0,0.9)] flex items-center gap-3 text-xs max-w-[92vw]">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center shrink-0">
+              <Heart size={12} className="fill-red-500 text-red-500" />
+            </div>
+            <div className="text-zinc-200 text-xs font-medium flex items-center gap-1.5 font-mono">
+              <strong className="text-white">{selectedPhotoIds.size} Selected</strong>
+              <span className="text-zinc-600 hidden sm:inline">&bull;</span>
+              <span className="text-pink-400 font-bold hidden sm:inline">👰 Bride: {bridePicks.length}</span>
+              <span className="text-zinc-600 hidden sm:inline">&bull;</span>
+              <span className="text-sky-400 font-bold hidden sm:inline">🤵 Groom: {groomPicks.length}</span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setActiveSectionView("archive")}
+            className="px-3 py-1 bg-gradient-to-r from-[#b4975a] to-amber-500 hover:brightness-110 text-zinc-950 font-bold text-[10px] uppercase tracking-wider rounded-full shadow-md transition-all cursor-pointer shrink-0"
+          >
+            Lounge
+          </button>
 
           {saveStatus === "saving" && (
-            <span style={{ color: activeColor }} className="text-[10px] font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1">
+            <span style={{ color: activeColor }} className="text-[10px] font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1 shrink-0">
               <RefreshCw size={11} className="animate-spin" /> Syncing...
             </span>
           )}
           {saveStatus === "saved" && (
-            <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1">
+            <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider pl-2 border-l border-zinc-800 flex items-center gap-1 shrink-0">
               <Check size={11} /> Saved
             </span>
           )}

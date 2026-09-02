@@ -1219,6 +1219,12 @@ app.get('/api/public/galleries/:id', (req, res) => {
       coverTextAlign: gallery.coverTextAlign || "center",
       coverFont: gallery.coverFont || "cormorant",
       coverColor: gallery.coverColor || "#b4975a",
+      selectionCode: gallery.selectionCode || "",
+      guestCode: gallery.guestCode || gallery.accessCode || "",
+      accessCode: gallery.accessCode || "",
+      brideCode: gallery.brideCode || "",
+      groomCode: gallery.groomCode || "",
+      loginMode: gallery.loginMode || "two_code_mode",
       created_at: gallery.created_at
     });
   } catch (err) {
