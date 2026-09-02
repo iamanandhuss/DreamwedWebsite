@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import SEO from "../components/SEO";
 import { downloadPhotosAsZip } from "../utils/zipDownloader";
-import { curateWeddingStory } from "../utils/aiCurator";
+import { curateWeddingStory, curateGuestThreeTierSections } from "../utils/aiCurator";
 
 const FONT_MAP = {
   cormorant: "'Cormorant Garamond', serif",
@@ -503,6 +503,18 @@ const ClientGallery = () => {
         description: "A cinematic collection of cherished memories and timeless moments.",
         photos: allPhotos
       }] : []);
+
+  // 3-Tier AI Sections exclusively for Guest Mode
+  const guestTiers = React.useMemo(() => {
+    return curateGuestThreeTierSections(allPhotos, formatTitleCase(gallery?.name || meta?.name || "Wedding"));
+  }, [allPhotos, gallery?.name, meta?.name]);
+
+  const scrollToGuestAct = (actId) => {
+    const el = document.getElementById(actId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   const myPicks = allPhotos.filter(p => isLikedByMe(p.id));
   const bridePicks = allPhotos.filter(p => selectionsDetail.some(s => s.photoId === p.id && s.user?.role === "Bride"));
@@ -1003,23 +1015,53 @@ const ClientGallery = () => {
             >
               Cinematic Story
             </button>
-            <button
-              onClick={() => setActiveSectionView("highlights")}
-              className={`px-3.5 py-1 rounded-lg transition-all cursor-pointer font-bold ${
-                activeSectionView === "highlights" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Editorial Highlights ({highlights.length})
-            </button>
-            {isCoupleSelectionMode && (
-              <button
-                onClick={() => setActiveSectionView("archive")}
-                className={`px-3.5 py-1 rounded-lg transition-all cursor-pointer font-bold ${
-                  activeSectionView === "archive" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                💍 Selection Lounge ({selectedPhotoIds.size})
-              </button>
+
+            {isGuestMode ? (
+              <>
+                {guestTiers.couplePortraits.length > 0 && (
+                  <button
+                    onClick={() => { setActiveSectionView("story"); scrollToGuestAct("guest-act-1"); }}
+                    className="px-3 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
+                  >
+                    👑 Couple &amp; Solo ({guestTiers.couplePortraits.length})
+                  </button>
+                )}
+                {guestTiers.functionGroupPhotos.length > 0 && (
+                  <button
+                    onClick={() => { setActiveSectionView("story"); scrollToGuestAct("guest-act-2"); }}
+                    className="px-3 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
+                  >
+                    💍 Ceremony &amp; Groups ({guestTiers.functionGroupPhotos.length})
+                  </button>
+                )}
+                {guestTiers.restOfPhotos.length > 0 && (
+                  <button
+                    onClick={() => { setActiveSectionView("story"); scrollToGuestAct("guest-act-3"); }}
+                    className="px-3 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
+                  >
+                    📸 All Memories ({guestTiers.restOfPhotos.length})
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setActiveSectionView("highlights")}
+                  className={`px-3.5 py-1 rounded-lg transition-all cursor-pointer font-bold ${
+                    activeSectionView === "highlights" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  Editorial Highlights ({highlights.length})
+                </button>
+                <button
+                  onClick={() => setActiveSectionView("archive")}
+                  className={`px-3.5 py-1 rounded-lg transition-all cursor-pointer font-bold ${
+                    activeSectionView === "archive" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  💍 Selection Lounge ({selectedPhotoIds.size})
+                </button>
+              </>
             )}
           </div>
 
@@ -1209,50 +1251,123 @@ const ClientGallery = () => {
       </section>
 
       {/* ========================================================= */}
-      {/* 2.2. BEST MOMENTS (EDITORIAL HIGHLIGHTS) */}
+      {/* 2.2. MAIN STORY PRESENTATION                               */}
+      {/* GUEST MODE: 3 AI Curated Acts (10% Couple, Groups, Rest)   */}
+      {/* SELECTION MODE: Editorial Highlights + Chapters (Couple)  */}
       {/* ========================================================= */}
       <div ref={storyRef} className="max-w-7xl mx-auto px-4 sm:px-8 py-16 space-y-16">
-        <div className="text-center max-w-2xl mx-auto space-y-3">
-          <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.3em]">
-            Editorial Highlights
-          </span>
-          <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light">
-            Best <span style={{ color: activeColor }} className="italic font-serif">Moments</span>
-          </h2>
-          <p className="text-zinc-400 text-xs sm:text-sm font-light leading-relaxed">
-            A curated selection of the most meaningful, emotionally resonant frames from the entire celebration.
-          </p>
-          <div style={{ backgroundColor: `${activeColor}80` }} className="w-12 h-[1px] mx-auto mt-4" />
-        </div>
-
-        {/* Asymmetric Editorial Bento Highlights Mosaic */}
-        {renderBentoClusters(highlights, "highlights")}
-
-        {/* ========================================================= */}
-        {/* 2.3. CINEMATIC STORY CHAPTERS */}
-        {/* ========================================================= */}
-        {chapters.length > 0 && (
-          <div className="space-y-24 pt-10">
-            {chapters.map((chapter, cIdx) => (
-              <div key={chapter.id || cIdx} className="space-y-8">
-                {/* Chapter Heading & Narrative Quote */}
-                <div className="border-l-2 border-[#b4975a] pl-5 space-y-1.5 max-w-2xl">
-                  <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.25em] block">
-                    Chapter 0{cIdx + 1} &bull; {chapter.subtitle}
+        {isGuestMode ? (
+          /* ========================================================= */
+          /* GUEST MODE: 3 DEDICATED AI-CURATED SECTIONS              */
+          /* 1. ~10% Couple & Solo Portraits First (AI)               */
+          /* 2. Function & Ceremony + Group & Family Photos Next (AI)  */
+          /* 3. The Complete Celebration Canvas / Rest of Photos (AI)  */
+          /* ========================================================= */
+          <div className="space-y-28">
+            {/* TIER 1: Couple & Solo Portraits (~10% Top Moments) */}
+            {guestTiers.couplePortraits.length > 0 && (
+              <div id="guest-act-1" className="space-y-8 scroll-mt-24">
+                <div className="text-center max-w-2xl mx-auto space-y-3">
+                  <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center justify-center gap-1.5 font-mono">
+                    <Sparkles size={11} /> AI Curated &bull; Act I (Top Moments &bull; 10%)
                   </span>
-                  <h3 style={{ fontFamily: activeFontFamily }} className="text-2xl sm:text-4xl text-white font-light">
-                    {chapter.title}
-                  </h3>
-                  <p className="text-zinc-400 text-xs sm:text-sm font-light italic leading-relaxed pt-1">
-                    "{chapter.description}"
+                  <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light">
+                    The Couple &amp; <span style={{ color: activeColor }} className="italic font-serif">Solo Portraits</span>
+                  </h2>
+                  <p className="text-zinc-400 text-xs sm:text-sm font-light leading-relaxed">
+                    Breathtaking romantic couple frames and intimate solo bridal &amp; groom portraits chosen by AI for exquisite visual resonance.
                   </p>
+                  <div style={{ backgroundColor: `${activeColor}80` }} className="w-12 h-[1px] mx-auto mt-4" />
                 </div>
 
-                {/* Chapter Editorial Bento Mosaic Spread */}
-                {renderBentoClusters(chapter.photos, `chapter-${cIdx}`)}
+                {renderBentoClusters(guestTiers.couplePortraits, "guest-tier-couple")}
               </div>
-            ))}
+            )}
+
+            {/* TIER 2: Function, Ceremony, Stage & Group Photos */}
+            {guestTiers.functionGroupPhotos.length > 0 && (
+              <div id="guest-act-2" className="space-y-8 pt-12 border-t border-zinc-850/80 scroll-mt-24">
+                <div className="text-center max-w-2xl mx-auto space-y-3">
+                  <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center justify-center gap-1.5 font-mono">
+                    <Users size={12} /> AI Curated &bull; Act II (Ceremonies &amp; Groups)
+                  </span>
+                  <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light">
+                    Rituals, Stage &amp; <span style={{ color: activeColor }} className="italic font-serif">Group Memories</span>
+                  </h2>
+                  <p className="text-zinc-400 text-xs sm:text-sm font-light leading-relaxed">
+                    The sacred vows, arrival ceremonies, family blessings, and cherished group portraits with all honored guests.
+                  </p>
+                  <div style={{ backgroundColor: `${activeColor}80` }} className="w-12 h-[1px] mx-auto mt-4" />
+                </div>
+
+                {renderBentoClusters(guestTiers.functionGroupPhotos, "guest-tier-function")}
+              </div>
+            )}
+
+            {/* TIER 3: Rest of the Wedding Photos & Atmosphere */}
+            {guestTiers.restOfPhotos.length > 0 && (
+              <div id="guest-act-3" className="space-y-8 pt-12 border-t border-zinc-850/80 scroll-mt-24">
+                <div className="text-center max-w-2xl mx-auto space-y-3">
+                  <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center justify-center gap-1.5 font-mono">
+                    <Camera size={12} /> AI Curated &bull; Act III (Complete Story)
+                  </span>
+                  <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light">
+                    The Full <span style={{ color: activeColor }} className="italic font-serif">Celebration Canvas</span>
+                  </h2>
+                  <p className="text-zinc-400 text-xs sm:text-sm font-light leading-relaxed">
+                    Every joyful laugh, party celebration, candid expression, and timeless memory across the entire wedding journey.
+                  </p>
+                  <div style={{ backgroundColor: `${activeColor}80` }} className="w-12 h-[1px] mx-auto mt-4" />
+                </div>
+
+                {renderBentoClusters(guestTiers.restOfPhotos, "guest-tier-rest")}
+              </div>
+            )}
           </div>
+        ) : (
+          /* ========================================================= */
+          /* COUPLE SELECTION MODE: Highlights + Chapters (Unaffected) */
+          /* ========================================================= */
+          <>
+            <div className="text-center max-w-2xl mx-auto space-y-3">
+              <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.3em]">
+                Editorial Highlights
+              </span>
+              <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light">
+                Best <span style={{ color: activeColor }} className="italic font-serif">Moments</span>
+              </h2>
+              <p className="text-zinc-400 text-xs sm:text-sm font-light leading-relaxed">
+                A curated selection of the most meaningful, emotionally resonant frames from the entire celebration.
+              </p>
+              <div style={{ backgroundColor: `${activeColor}80` }} className="w-12 h-[1px] mx-auto mt-4" />
+            </div>
+
+            {/* Asymmetric Editorial Bento Highlights Mosaic */}
+            {renderBentoClusters(highlights, "highlights")}
+
+            {/* Cinematic Story Chapters */}
+            {chapters.length > 0 && (
+              <div className="space-y-24 pt-10">
+                {chapters.map((chapter, cIdx) => (
+                  <div key={chapter.id || cIdx} className="space-y-8">
+                    <div className="border-l-2 border-[#b4975a] pl-5 space-y-1.5 max-w-2xl">
+                      <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.25em] block">
+                        Chapter 0{cIdx + 1} &bull; {chapter.subtitle}
+                      </span>
+                      <h3 style={{ fontFamily: activeFontFamily }} className="text-2xl sm:text-4xl text-white font-light">
+                        {chapter.title}
+                      </h3>
+                      <p className="text-zinc-400 text-xs sm:text-sm font-light italic leading-relaxed pt-1">
+                        "{chapter.description}"
+                      </p>
+                    </div>
+
+                    {renderBentoClusters(chapter.photos, `chapter-${cIdx}`)}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         {/* ========================================================= */}

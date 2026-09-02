@@ -263,3 +263,58 @@ export const curateWeddingStory = ({
     }
   };
 };
+
+/**
+ * Partitions photos for Guest Viewing into 3 intelligent AI-curated sections:
+ * 1. Couple & Solo Portraits (~10% / Top 10-15 key couple & bridal/groom portraits)
+ * 2. Function, Ceremony & Group Photos (Next ~45-50% - stage, rituals, group portraits)
+ * 3. Rest of the Photos & Candids (Remaining ~40-45% - celebration, guests, atmosphere)
+ */
+export const curateGuestThreeTierSections = (photos = [], coupleTitle = "Couple") => {
+  if (!photos || photos.length === 0) {
+    return {
+      couplePortraits: [],
+      functionGroupPhotos: [],
+      restOfPhotos: []
+    };
+  }
+
+  const total = photos.length;
+  
+  // 1. Calculate AI attribute scores for each photo
+  const scored = photos.map((p, idx) => ({
+    ...p,
+    ...calculatePhotoScore(p, idx, total)
+  }));
+
+  // Determine size of Tier 1 (10% of total photos, minimum 7 photos if album is small, up to 21 for large albums)
+  let tier1Count = 7;
+  if (total <= 12) {
+    tier1Count = Math.min(total, 4);
+  } else if (total <= 50) {
+    tier1Count = Math.min(total, Math.max(6, Math.round(total * 0.12)));
+  } else {
+    tier1Count = Math.min(21, Math.max(10, Math.round(total * 0.10)));
+  }
+  
+  // Sort by aesthetic hero score to extract the strongest Couple & Solo Portraits
+  const sortedByHero = [...scored].sort((a, b) => b.heroScore - a.heroScore);
+  
+  const couplePortraits = sortedByHero.slice(0, tier1Count);
+  const tier1Ids = new Set(couplePortraits.map(p => p.id));
+  
+  // Remaining pool of photos (preserving natural chronological order)
+  const remaining = scored.filter(p => !tier1Ids.has(p.id));
+  
+  // Determine size of Tier 2: Function, Ceremony, Stage, Group photos (~50% of remaining)
+  const tier2Count = Math.round(remaining.length * 0.50);
+  
+  const functionGroupPhotos = remaining.slice(0, tier2Count);
+  const restOfPhotos = remaining.slice(tier2Count);
+
+  return {
+    couplePortraits: assignEditorialLayoutRoles(couplePortraits),
+    functionGroupPhotos: assignEditorialLayoutRoles(functionGroupPhotos),
+    restOfPhotos: assignEditorialLayoutRoles(restOfPhotos)
+  };
+};
