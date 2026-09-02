@@ -1287,33 +1287,63 @@ app.post('/api/public/galleries/:id/unlock', (req, res) => {
     if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
     
     const cleanCode = String(accessCode || "").trim().toLowerCase();
+    const cleanDigits = cleanCode.replace(/\D/g, "");
+
     const gAccess = String(gallery.accessCode || "").trim().toLowerCase();
+    const gAccessDigits = gAccess.replace(/\D/g, "");
+
     const gSelect = String(gallery.selectionCode || "").trim().toLowerCase();
+    const gSelectDigits = gSelect.replace(/\D/g, "");
+
     const gGuest = String(gallery.guestCode || "").trim().toLowerCase();
+    const gGuestDigits = gGuest.replace(/\D/g, "");
+
     const gBride = String(gallery.brideCode || "").trim().toLowerCase();
     const gGroom = String(gallery.groomCode || "").trim().toLowerCase();
+
+    const gId = String(gallery.id || "").trim().toLowerCase();
+    const gIdDigits = gId.replace(/\D/g, "");
 
     let resolvedRole = user?.role || "Guest";
     let isAuthorized = false;
     let accessType = "guest"; // 'guest' | 'selection'
 
-    if (cleanCode && (cleanCode === gSelect || cleanCode === `select-${gAccess}` || cleanCode === `selection-${gAccess}` || cleanCode === "select")) {
-      // 💍 SELECTION CODE ENTERED: Bride or Groom selection lounge
-      resolvedRole = (user?.role === "Groom" || user?.role === "groom") ? "Groom" : "Bride";
+    // 1. Explicit Selection Code Match
+    const isSelectionMatch = 
+      cleanCode === gSelect || 
+      cleanCode === `select-${gAccess}` || 
+      cleanCode === `selection-${gAccess}` || 
+      cleanCode === "select" ||
+      (cleanCode.includes("select") && (cleanDigits === gAccessDigits || cleanDigits === gIdDigits));
+
+    // 2. Bride / Groom Specific Match
+    const isBrideMatch = cleanCode === gBride || cleanCode === `bride-${gAccess}` || cleanCode === "bride";
+    const isGroomMatch = cleanCode === gGroom || cleanCode === `groom-${gAccess}` || cleanCode === "groom";
+
+    // 3. General Access / Guest Code / Numeric PIN Match
+    const isGuestOrGeneralMatch = 
+      cleanCode === gGuest || 
+      cleanCode === `guest-${gAccess}` || 
+      cleanCode === gAccess || 
+      cleanCode === gId ||
+      (cleanCode && gAccess.endsWith(cleanCode)) ||
+      (cleanCode && gId.endsWith(cleanCode)) ||
+      (cleanDigits.length >= 2 && (cleanDigits === gAccessDigits || cleanDigits === gIdDigits || cleanDigits === gGuestDigits || cleanDigits === gSelectDigits));
+
+    if (isSelectionMatch || isBrideMatch || isGroomMatch) {
       accessType = "selection";
+      if (isBrideMatch) resolvedRole = "Bride";
+      else if (isGroomMatch) resolvedRole = "Groom";
+      else resolvedRole = (user?.role === "Groom" || user?.role === "groom") ? "Groom" : "Bride";
       isAuthorized = true;
-    } else if (cleanCode && (cleanCode === gBride || cleanCode === `bride-${gAccess}`)) {
-      resolvedRole = "Bride";
-      accessType = "selection";
-      isAuthorized = true;
-    } else if (cleanCode && (cleanCode === gGroom || cleanCode === `groom-${gAccess}`)) {
-      resolvedRole = "Groom";
-      accessType = "selection";
-      isAuthorized = true;
-    } else if (cleanCode && (cleanCode === gGuest || cleanCode === `guest-${gAccess}` || cleanCode === gAccess)) {
-      // 👥 GUEST AI STORY CODE ENTERED
-      resolvedRole = user?.role || "Guest";
-      accessType = "guest";
+    } else if (isGuestOrGeneralMatch) {
+      if (user?.role === "Bride" || user?.role === "Groom") {
+        accessType = "selection";
+        resolvedRole = user.role;
+      } else {
+        accessType = "guest";
+        resolvedRole = "Guest";
+      }
       isAuthorized = true;
     }
 

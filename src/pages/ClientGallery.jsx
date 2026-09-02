@@ -290,15 +290,21 @@ const ClientGallery = () => {
     }
 
     const lowerCode = cleanCode.toLowerCase();
-    const isSelectionCode = lowerCode.includes("select") || (meta?.selectionCode && lowerCode === meta.selectionCode.toLowerCase());
+    const cleanDigits = lowerCode.replace(/\D/g, "");
+
+    const isSelectionCode = lowerCode.includes("select") || 
+      (meta?.selectionCode && lowerCode === String(meta.selectionCode).toLowerCase()) ||
+      (meta?.brideCode && lowerCode === String(meta.brideCode).toLowerCase()) ||
+      (meta?.groomCode && lowerCode === String(meta.groomCode).toLowerCase()) ||
+      viewerRole === "Bride" || viewerRole === "Groom";
 
     let targetRole = "Guest";
-    if (isSelectionCode) {
-      targetRole = viewerRole === "Groom" ? "Groom" : "Bride";
-    } else if (lowerCode.includes("bride")) {
-      targetRole = "Bride";
-    } else if (lowerCode.includes("groom")) {
+    if (lowerCode.includes("groom") || (isSelectionCode && viewerRole === "Groom")) {
       targetRole = "Groom";
+    } else if (lowerCode.includes("bride") || (isSelectionCode && viewerRole === "Bride")) {
+      targetRole = "Bride";
+    } else if (isSelectionCode) {
+      targetRole = viewerRole || "Bride";
     } else {
       targetRole = "Guest";
     }
@@ -327,15 +333,20 @@ const ClientGallery = () => {
     // Local check
     try {
       const localGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
-      const localMatch = localGals.find(g => 
-        (g.id === id || !id) && 
-        (String(g.accessCode).trim().toLowerCase() === lowerCode ||
-         String(g.selectionCode || "").trim().toLowerCase() === lowerCode ||
-         String(g.guestCode || "").trim().toLowerCase() === lowerCode ||
-         String(g.brideCode || "").trim().toLowerCase() === lowerCode ||
-         String(g.groomCode || "").trim().toLowerCase() === lowerCode ||
-         String(g.id).toLowerCase() === lowerCode)
-      );
+      const localMatch = localGals.find(g => {
+        const gAcc = String(g.accessCode || "").trim().toLowerCase();
+        const gAccDig = gAcc.replace(/\D/g, "");
+        const gIdDig = String(g.id || "").replace(/\D/g, "");
+        return (g.id === id || !id) && 
+          (gAcc === lowerCode ||
+           String(g.selectionCode || "").trim().toLowerCase() === lowerCode ||
+           String(g.guestCode || "").trim().toLowerCase() === lowerCode ||
+           String(g.brideCode || "").trim().toLowerCase() === lowerCode ||
+           String(g.groomCode || "").trim().toLowerCase() === lowerCode ||
+           String(g.id).toLowerCase() === lowerCode ||
+           (cleanDigits.length >= 2 && (cleanDigits === gAccDig || cleanDigits === gIdDig)) ||
+           gAcc.endsWith(lowerCode));
+      });
 
       if (localMatch) {
         setGallery(localMatch);
