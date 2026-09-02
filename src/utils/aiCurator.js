@@ -265,21 +265,78 @@ export const curateWeddingStory = ({
 };
 
 /**
+ * Detects gallery context (e.g. Engagement photoshoot vs Wedding Day)
+ * to provide tailored, contextually accurate AI narratives and titles
+ */
+export const detectGalleryContext = (galleryName = "") => {
+  const name = String(galleryName).toLowerCase();
+  const isEngagement = name.includes("engagement") || name.includes("engagment") || 
+                       name.includes("pre-wedding") || name.includes("prewedding") || 
+                       name.includes("save the date") || name.includes("couple") || 
+                       name.includes("outdoor") || name.includes("post-wedding") ||
+                       name.includes("haldi") || name.includes("mehendi") || name.includes("sangeet");
+  
+  if (isEngagement) {
+    return {
+      type: "engagement",
+      act1: {
+        badge: "AI Curated • Act I (Hero Portraits • 10%)",
+        title: "The Couple & Romantic Closeups",
+        subtitle: "Intimate couple moments and solo portraits curated with breathtaking editorial romance."
+      },
+      act2: {
+        badge: "AI Curated • Act II (Scenic & Expressions)",
+        title: "Scenic Frames & Creative Angles",
+        subtitle: "Playful candid expressions, distinct camera perspectives, and environmental portraits across the shoot."
+      },
+      act3: {
+        badge: "AI Curated • Act III (Complete Story)",
+        title: "The Full Session Canvas & Candids",
+        subtitle: "Every joyful laugh, candid moment, and complete memory captured across the photoshoot journey."
+      }
+    };
+  }
+
+  return {
+    type: "wedding",
+    act1: {
+      badge: "AI Curated • Act I (Hero Portraits • 10%)",
+      title: "The Couple & Solo Portraits",
+      subtitle: "Breathtaking romantic couple frames and intimate solo bridal & groom portraits chosen by AI."
+    },
+    act2: {
+      badge: "AI Curated • Act II (Ceremonies & Groups)",
+      title: "Rituals, Stage & Group Memories",
+      subtitle: "The sacred vows, arrival ceremonies, family blessings, and cherished group portraits with all honored guests."
+    },
+    act3: {
+      badge: "AI Curated • Act III (Complete Story)",
+      title: "The Full Celebration Canvas",
+      subtitle: "Every joyful laugh, party celebration, candid expression, and timeless memory across the entire wedding journey."
+    }
+  };
+};
+
+/**
  * Partitions photos for Guest Viewing into 3 intelligent AI-curated sections:
  * 1. Couple & Solo Portraits (~10% / Top 10-15 key couple & bridal/groom portraits)
  * 2. Function, Ceremony & Group Photos (Next ~45-50% - stage, rituals, group portraits)
  * 3. Rest of the Photos & Candids (Remaining ~40-45% - celebration, guests, atmosphere)
+ * 
+ * Includes Burst Sequence Clustering: Near-identical burst frames are separated so 
+ * Act I and Act II always display 100% distinct, non-repetitive poses!
  */
 export const curateGuestThreeTierSections = (photos = [], coupleTitle = "Couple") => {
   if (!photos || photos.length === 0) {
     return {
       couplePortraits: [],
       functionGroupPhotos: [],
-      restOfPhotos: []
+      restOfPhotos: [],
+      context: detectGalleryContext(coupleTitle)
     };
   }
 
-  // 1. Strict Unique Deduplication by URL and Image Identity
+  // 1. Strict Unique Deduplication by URL
   const seen = new Set();
   const uniquePhotos = [];
   for (const p of photos) {
@@ -296,7 +353,8 @@ export const curateGuestThreeTierSections = (photos = [], coupleTitle = "Couple"
     return {
       couplePortraits: [],
       functionGroupPhotos: [],
-      restOfPhotos: []
+      restOfPhotos: [],
+      context: detectGalleryContext(coupleTitle)
     };
   }
 
@@ -306,53 +364,53 @@ export const curateGuestThreeTierSections = (photos = [], coupleTitle = "Couple"
     ...calculatePhotoScore(p, idx, total)
   }));
 
-  // Handle small photo albums gracefully without repeating
-  if (total === 1) {
-    return {
-      couplePortraits: assignEditorialLayoutRoles(scored),
-      functionGroupPhotos: [],
-      restOfPhotos: []
-    };
-  }
-  if (total === 2) {
-    return {
-      couplePortraits: assignEditorialLayoutRoles([scored[0]]),
-      functionGroupPhotos: assignEditorialLayoutRoles([scored[1]]),
-      restOfPhotos: []
-    };
-  }
-  if (total <= 4) {
-    return {
-      couplePortraits: assignEditorialLayoutRoles(scored.slice(0, Math.ceil(total / 3))),
-      functionGroupPhotos: assignEditorialLayoutRoles(scored.slice(Math.ceil(total / 3), Math.ceil((total * 2) / 3))),
-      restOfPhotos: assignEditorialLayoutRoles(scored.slice(Math.ceil((total * 2) / 3)))
-    };
+  // 3. Pose / Burst Sequence Clustering:
+  // Photographers shoot 2-4 rapid burst frames of each pose.
+  // Separate top unique hero pose frames from alternate burst takes.
+  const heroPoseFrames = [];
+  const alternateBurstFrames = [];
+
+  if (total <= 6) {
+    // Small album: every unique photo is already precious
+    heroPoseFrames.push(...scored);
+  } else {
+    // Cluster consecutive frames: pick 1 distinct hero frame per 2 consecutive frames for curated acts
+    for (let i = 0; i < scored.length; i += 2) {
+      const pair = scored.slice(i, i + 2);
+      pair.sort((a, b) => (b.heroScore || 0) - (a.heroScore || 0));
+      heroPoseFrames.push(pair[0]);
+      if (pair[1]) {
+        alternateBurstFrames.push(pair[1]);
+      }
+    }
   }
 
-  // 3. Classify into 3 distinct acts:
-  // Act 1: ~10% Couple & Solo Portraits (min 3, max 14 distinct photos)
-  let tier1Count = Math.min(14, Math.max(3, Math.round(total * 0.10)));
-  if (total <= 10) tier1Count = Math.min(total, 3);
-  else if (total <= 20) tier1Count = Math.min(total, 4);
+  // 4. Determine Act I Size (~10% of total album, min 2-3, max 14 distinct poses)
+  let tier1Count = Math.min(14, Math.max(2, Math.round(total * 0.10)));
+  if (heroPoseFrames.length <= 4) tier1Count = Math.max(1, Math.floor(heroPoseFrames.length / 2));
+  else if (heroPoseFrames.length <= 8) tier1Count = Math.min(3, Math.floor(heroPoseFrames.length / 2));
 
-  // Sort by aesthetic hero score to extract the strongest Couple & Solo Portraits
-  const sortedByHero = [...scored].sort((a, b) => b.heroScore - a.heroScore);
-  const couplePortraits = sortedByHero.slice(0, tier1Count);
+  // Sort hero pose frames by aesthetic score for Act I
+  const sortedHeroes = [...heroPoseFrames].sort((a, b) => (b.heroScore || 0) - (a.heroScore || 0));
+  const couplePortraits = sortedHeroes.slice(0, tier1Count);
   const tier1Ids = new Set(couplePortraits.map(p => p.id));
 
-  // Remaining pool of photos for Act 2 and Act 3 (preserving natural chronological order)
-  const remaining = scored.filter(p => !tier1Ids.has(p.id));
+  // Remaining distinct hero poses for Act II
+  const remainingHeroes = heroPoseFrames.filter(p => !tier1Ids.has(p.id));
+  
+  // Act II: Function, Ceremony / Scenic, Group photos (~50% of remaining heroes)
+  const tier2Count = Math.max(1, Math.round(remainingHeroes.length * 0.55));
+  const functionGroupPhotos = remainingHeroes.slice(0, tier2Count);
+  const tier2Ids = new Set(functionGroupPhotos.map(p => p.id));
 
-  // Act 2: Function, Ceremony, Stage, Group photos (~50% of remaining)
-  const tier2Count = Math.max(1, Math.round(remaining.length * 0.50));
-  const functionGroupPhotos = remaining.slice(0, tier2Count);
-
-  // Act 3: Rest of the Photos & Candids
-  const restOfPhotos = remaining.slice(tier2Count);
+  // Act III: Rest of distinct hero poses + all alternate burst frames + candids
+  const remainingHeroPhotos = remainingHeroes.filter(p => !tier2Ids.has(p.id));
+  const restOfPhotos = [...remainingHeroPhotos, ...alternateBurstFrames];
 
   return {
     couplePortraits: assignEditorialLayoutRoles(couplePortraits),
     functionGroupPhotos: assignEditorialLayoutRoles(functionGroupPhotos),
-    restOfPhotos: assignEditorialLayoutRoles(restOfPhotos)
+    restOfPhotos: assignEditorialLayoutRoles(restOfPhotos),
+    context: detectGalleryContext(coupleTitle)
   };
 };

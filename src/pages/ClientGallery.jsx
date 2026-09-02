@@ -1365,13 +1365,13 @@ const ClientGallery = () => {
               <div id="guest-act-1" className="space-y-8 scroll-mt-24">
                 <div className="text-center max-w-2xl mx-auto space-y-3">
                   <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center justify-center gap-1.5 font-mono">
-                    <Sparkles size={11} /> AI Curated &bull; Act I (Top Moments &bull; 10%)
+                    <Sparkles size={11} /> {guestTiers.context?.act1?.badge || "AI Curated • Act I (Hero Portraits • 10%)"}
                   </span>
                   <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light">
-                    The Couple &amp; <span style={{ color: activeColor }} className="italic font-serif">Solo Portraits</span>
+                    {guestTiers.context?.act1?.title || "The Couple & Solo Portraits"}
                   </h2>
                   <p className="text-zinc-400 text-xs sm:text-sm font-light leading-relaxed">
-                    Breathtaking romantic couple frames and intimate solo bridal &amp; groom portraits chosen by AI for exquisite visual resonance.
+                    {guestTiers.context?.act1?.subtitle || "Breathtaking romantic couple frames and intimate solo bridal & groom portraits chosen by AI."}
                   </p>
                   <div style={{ backgroundColor: `${activeColor}80` }} className="w-12 h-[1px] mx-auto mt-4" />
                 </div>
@@ -1380,18 +1380,18 @@ const ClientGallery = () => {
               </div>
             )}
 
-            {/* TIER 2: Function, Ceremony, Stage & Group Photos */}
+            {/* TIER 2: Function, Ceremony / Scenic, Group Photos */}
             {guestTiers.functionGroupPhotos.length > 0 && (
               <div id="guest-act-2" className="space-y-8 pt-12 border-t border-zinc-850/80 scroll-mt-24">
                 <div className="text-center max-w-2xl mx-auto space-y-3">
                   <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center justify-center gap-1.5 font-mono">
-                    <Users size={12} /> AI Curated &bull; Act II (Ceremonies &amp; Groups)
+                    <Users size={12} /> {guestTiers.context?.act2?.badge || "AI Curated • Act II (Ceremonies & Groups)"}
                   </span>
                   <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light">
-                    Rituals, Stage &amp; <span style={{ color: activeColor }} className="italic font-serif">Group Memories</span>
+                    {guestTiers.context?.act2?.title || "Rituals, Stage & Group Memories"}
                   </h2>
                   <p className="text-zinc-400 text-xs sm:text-sm font-light leading-relaxed">
-                    The sacred vows, arrival ceremonies, family blessings, and cherished group portraits with all honored guests.
+                    {guestTiers.context?.act2?.subtitle || "The sacred vows, arrival ceremonies, family blessings, and cherished group portraits."}
                   </p>
                   <div style={{ backgroundColor: `${activeColor}80` }} className="w-12 h-[1px] mx-auto mt-4" />
                 </div>
@@ -1400,18 +1400,18 @@ const ClientGallery = () => {
               </div>
             )}
 
-            {/* TIER 3: Rest of the Wedding Photos & Atmosphere */}
+            {/* TIER 3: Rest of the Photos, Candids & Alternate Takes */}
             {guestTiers.restOfPhotos.length > 0 && (
               <div id="guest-act-3" className="space-y-8 pt-12 border-t border-zinc-850/80 scroll-mt-24">
                 <div className="text-center max-w-2xl mx-auto space-y-3">
                   <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center justify-center gap-1.5 font-mono">
-                    <Camera size={12} /> AI Curated &bull; Act III (Complete Story)
+                    <Camera size={12} /> {guestTiers.context?.act3?.badge || "AI Curated • Act III (Complete Story)"}
                   </span>
                   <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light">
-                    The Full <span style={{ color: activeColor }} className="italic font-serif">Celebration Canvas</span>
+                    {guestTiers.context?.act3?.title || "The Full Celebration Canvas"}
                   </h2>
                   <p className="text-zinc-400 text-xs sm:text-sm font-light leading-relaxed">
-                    Every joyful laugh, party celebration, candid expression, and timeless memory across the entire wedding journey.
+                    {guestTiers.context?.act3?.subtitle || "Every joyful laugh, party celebration, candid expression, and timeless memory across the photoshoot."}
                   </p>
                   <div style={{ backgroundColor: `${activeColor}80` }} className="w-12 h-[1px] mx-auto mt-4" />
                 </div>
