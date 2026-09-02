@@ -910,33 +910,25 @@ const Admin = () => {
   }, [chatProject, chatChannel]);
 
   const fetchGalleries = async () => {
-    let localGals = [];
-    try {
-      localGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
-      if (!Array.isArray(localGals)) localGals = [];
-    } catch (err) {
-      localGals = [];
-    }
-
     try {
       const res = await fetch(`${API_BASE}/api/galleries`);
       if (res.ok) {
         const remoteData = await res.json();
         if (Array.isArray(remoteData)) {
-          // Merge remote with any newly added local galleries so nothing is lost
-          const map = new Map();
-          remoteData.forEach(g => { if (g && g.id) map.set(g.id, g); });
-          localGals.forEach(g => { if (g && g.id && !map.has(g.id)) map.set(g.id, g); });
-          const merged = Array.from(map.values());
-          setAiGalleries(merged);
-          try { localStorage.setItem("dreamwed_galleries", JSON.stringify(merged)); } catch (e) {}
+          setAiGalleries(remoteData);
+          try { localStorage.setItem("dreamwed_galleries", JSON.stringify(remoteData)); } catch (e) {}
           return;
         }
       }
       throw new Error("Invalid response from server");
     } catch (e) {
       console.warn("Using local galleries fallback:", e);
-      setAiGalleries(localGals);
+      try {
+        const stored = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
+        setAiGalleries(Array.isArray(stored) ? stored : []);
+      } catch (err) {
+        setAiGalleries([]);
+      }
     }
   };
 
