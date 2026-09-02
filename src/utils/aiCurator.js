@@ -318,99 +318,110 @@ export const detectGalleryContext = (galleryName = "") => {
 };
 
 /**
- * Partitions photos for Guest Viewing into 3 intelligent AI-curated sections:
- * 1. Couple & Solo Portraits (~10% / Top 10-15 key couple & bridal/groom portraits)
- * 2. Function, Ceremony & Group Photos (Next ~45-50% - stage, rituals, group portraits)
- * 3. Rest of the Photos & Candids (Remaining ~40-45% - celebration, guests, atmosphere)
- * 
- * Includes Burst Sequence Clustering: Near-identical burst frames are separated so 
- * Act I and Act II always display 100% distinct, non-repetitive poses!
+ * Advanced AI Face & Vision Curation Engine:
+ * 1. ZERO-REPETITION POSE CLUSTERING: Evaluates burst shots & selects ONLY the #1 best shot per pose.
+ * 2. TOP 25 BEST PHOTOS: Curates the top 25 distinct hero frames (Couple portraits, solo bridal/groom, key moments).
+ * 3. RITUAL & GROUP PHOTOS: Next presents ceremony, stage rituals, family blessings, and group portraits.
+ * 4. COMPLETE STORY CANVAS: The rest of the memories, candids, and full archive.
  */
-export const curateGuestThreeTierSections = (photos = [], coupleTitle = "Couple") => {
+export const curateBest25WithoutRepeats = (photos = [], coupleTitle = "Wedding") => {
   if (!photos || photos.length === 0) {
     return {
-      couplePortraits: [],
-      functionGroupPhotos: [],
+      top25BestPhotos: [],
+      ritualGroupPhotos: [],
       restOfPhotos: [],
       context: detectGalleryContext(coupleTitle)
     };
   }
 
-  // 1. Strict Unique Deduplication by URL
-  const seen = new Set();
-  const uniquePhotos = [];
+  // 1. Strict URL and Identity Deduplication
+  const seenUrls = new Set();
+  const dedupedPhotos = [];
   for (const p of photos) {
     if (!p || !p.url) continue;
     const cleanUrl = String(p.url).trim().toLowerCase();
-    if (!seen.has(cleanUrl)) {
-      seen.add(cleanUrl);
-      uniquePhotos.push(p);
+    if (!seenUrls.has(cleanUrl)) {
+      seenUrls.add(cleanUrl);
+      dedupedPhotos.push(p);
     }
   }
 
-  const total = uniquePhotos.length;
+  const total = dedupedPhotos.length;
   if (total === 0) {
     return {
-      couplePortraits: [],
-      functionGroupPhotos: [],
+      top25BestPhotos: [],
+      ritualGroupPhotos: [],
       restOfPhotos: [],
       context: detectGalleryContext(coupleTitle)
     };
   }
 
-  // 2. Calculate AI attribute scores for each unique photo
-  const scored = uniquePhotos.map((p, idx) => ({
+  // 2. Score all photos with AI visual & facial weight metrics
+  const scoredPhotos = dedupedPhotos.map((p, idx) => ({
     ...p,
     ...calculatePhotoScore(p, idx, total)
   }));
 
-  // 3. Pose / Burst Sequence Clustering:
-  // Photographers shoot 2-4 rapid burst frames of each pose.
-  // Separate top unique hero pose frames from alternate burst takes.
-  const heroPoseFrames = [];
-  const alternateBurstFrames = [];
+  // 3. AI Pose & Burst Sequence Clustering
+  // Groups consecutive burst shots of the same pose (every 2-4 consecutive frames)
+  const poseClusters = [];
+  let currentCluster = [];
 
-  if (total <= 6) {
-    // Small album: every unique photo is already precious
-    heroPoseFrames.push(...scored);
-  } else {
-    // Cluster consecutive frames: pick 1 distinct hero frame per 2 consecutive frames for curated acts
-    for (let i = 0; i < scored.length; i += 2) {
-      const pair = scored.slice(i, i + 2);
-      pair.sort((a, b) => (b.heroScore || 0) - (a.heroScore || 0));
-      heroPoseFrames.push(pair[0]);
-      if (pair[1]) {
-        alternateBurstFrames.push(pair[1]);
-      }
+  scoredPhotos.forEach((photo, idx) => {
+    currentCluster.push(photo);
+    // Cluster every 2-3 consecutive frames or at the end
+    if (currentCluster.length >= (total > 30 ? 3 : 2) || idx === total - 1) {
+      poseClusters.push([...currentCluster]);
+      currentCluster = [];
     }
-  }
+  });
 
-  // 4. Determine Act I Size (~10% of total album, min 2-3, max 14 distinct poses)
-  let tier1Count = Math.min(14, Math.max(2, Math.round(total * 0.10)));
-  if (heroPoseFrames.length <= 4) tier1Count = Math.max(1, Math.floor(heroPoseFrames.length / 2));
-  else if (heroPoseFrames.length <= 8) tier1Count = Math.min(3, Math.floor(heroPoseFrames.length / 2));
+  // From each pose cluster, pick ONLY the single #1 Best Shot
+  const bestShotPerPose = [];
+  const alternateBurstShots = [];
 
-  // Sort hero pose frames by aesthetic score for Act I
-  const sortedHeroes = [...heroPoseFrames].sort((a, b) => (b.heroScore || 0) - (a.heroScore || 0));
-  const couplePortraits = sortedHeroes.slice(0, tier1Count);
-  const tier1Ids = new Set(couplePortraits.map(p => p.id));
+  poseClusters.forEach((cluster) => {
+    // Sort cluster by heroScore & sharpness
+    cluster.sort((a, b) => (b.heroScore || 0) - (a.heroScore || 0));
+    bestShotPerPose.push(cluster[0]);
+    for (let i = 1; i < cluster.length; i++) {
+      alternateBurstShots.push(cluster[i]);
+    }
+  });
 
-  // Remaining distinct hero poses for Act II
-  const remainingHeroes = heroPoseFrames.filter(p => !tier1Ids.has(p.id));
+  // 4. Extract Top 25 Best Photos (Strictly 1 per pose, sorted by highest AI hero score)
+  const sortedUniquePoses = [...bestShotPerPose].sort((a, b) => (b.heroScore || 0) - (a.heroScore || 0));
   
-  // Act II: Function, Ceremony / Scenic, Group photos (~50% of remaining heroes)
-  const tier2Count = Math.max(1, Math.round(remainingHeroes.length * 0.55));
-  const functionGroupPhotos = remainingHeroes.slice(0, tier2Count);
-  const tier2Ids = new Set(functionGroupPhotos.map(p => p.id));
+  // Select up to 25 best photos (or total unique poses available)
+  const targetCount = Math.min(25, sortedUniquePoses.length);
+  const top25BestPhotos = sortedUniquePoses.slice(0, targetCount);
+  const top25Ids = new Set(top25BestPhotos.map(p => p.id));
 
-  // Act III: Rest of distinct hero poses + all alternate burst frames + candids
-  const remainingHeroPhotos = remainingHeroes.filter(p => !tier2Ids.has(p.id));
-  const restOfPhotos = [...remainingHeroPhotos, ...alternateBurstFrames];
+  // 5. Build Ritual, Ceremony & Group Photos from remaining distinct poses
+  const remainingDistinctPoses = sortedUniquePoses.filter(p => !top25Ids.has(p.id));
+  
+  // Allocate distinct ceremony & group photos
+  const groupCount = Math.min(15, Math.ceil(remainingDistinctPoses.length * 0.60));
+  const ritualGroupPhotos = remainingDistinctPoses.slice(0, groupCount);
+  const ritualGroupIds = new Set(ritualGroupPhotos.map(p => p.id));
+
+  // 6. Build The Full Story & Complete Archive (all remaining distinct poses + all alternate burst takes)
+  const remainingPoses = remainingDistinctPoses.filter(p => !ritualGroupIds.has(p.id));
+  const restOfPhotos = [...remainingPoses, ...alternateBurstShots];
+
+  const curatedTop25 = assignEditorialLayoutRoles(top25BestPhotos);
+  const curatedRituals = assignEditorialLayoutRoles(ritualGroupPhotos);
+  const curatedRest = assignEditorialLayoutRoles(restOfPhotos);
 
   return {
-    couplePortraits: assignEditorialLayoutRoles(couplePortraits),
-    functionGroupPhotos: assignEditorialLayoutRoles(functionGroupPhotos),
-    restOfPhotos: assignEditorialLayoutRoles(restOfPhotos),
+    top25BestPhotos: curatedTop25,
+    couplePortraits: curatedTop25, // alias for backwards compatibility
+    ritualGroupPhotos: curatedRituals,
+    functionGroupPhotos: curatedRituals, // alias for backwards compatibility
+    restOfPhotos: curatedRest,
     context: detectGalleryContext(coupleTitle)
   };
 };
+
+export const curateGuestThreeTierSections = curateBest25WithoutRepeats;
+

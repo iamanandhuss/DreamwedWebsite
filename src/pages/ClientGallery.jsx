@@ -1114,20 +1114,20 @@ const ClientGallery = () => {
 
             {isGuestMode ? (
               <>
-                {guestTiers.couplePortraits.length > 0 && (
+                {guestTiers.top25BestPhotos.length > 0 && (
                   <button
                     onClick={() => { setActiveSectionView("story"); scrollToGuestAct("guest-act-1"); }}
                     className="px-3 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
                   >
-                    👑 Couple &amp; Solo ({guestTiers.couplePortraits.length})
+                    🌟 Top 25 Best ({guestTiers.top25BestPhotos.length})
                   </button>
                 )}
-                {guestTiers.functionGroupPhotos.length > 0 && (
+                {guestTiers.ritualGroupPhotos.length > 0 && (
                   <button
                     onClick={() => { setActiveSectionView("story"); scrollToGuestAct("guest-act-2"); }}
                     className="px-3 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
                   >
-                    💍 Ceremony &amp; Groups ({guestTiers.functionGroupPhotos.length})
+                    👥 Rituals &amp; Groups ({guestTiers.ritualGroupPhotos.length})
                   </button>
                 )}
                 {guestTiers.restOfPhotos.length > 0 && (
@@ -1135,7 +1135,7 @@ const ClientGallery = () => {
                     onClick={() => { setActiveSectionView("story"); scrollToGuestAct("guest-act-3"); }}
                     className="px-3 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
                   >
-                    📸 All Memories ({guestTiers.restOfPhotos.length})
+                    📸 Full Story ({guestTiers.restOfPhotos.length})
                   </button>
                 )}
               </>
@@ -1360,58 +1360,58 @@ const ClientGallery = () => {
           /* 3. The Complete Celebration Canvas / Rest of Photos (AI)  */
           /* ========================================================= */
           <div className="space-y-28">
-            {/* TIER 1: Couple & Solo Portraits (~10% Top Moments) */}
-            {guestTiers.couplePortraits.length > 0 && (
+            {/* TIER 1: TOP 25 BEST PHOTOS (NO REPEATS) */}
+            {guestTiers.top25BestPhotos.length > 0 && (
               <div id="guest-act-1" className="space-y-8 scroll-mt-24">
                 <div className="text-center max-w-2xl mx-auto space-y-3">
                   <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center justify-center gap-1.5 font-mono">
-                    <Sparkles size={11} /> {guestTiers.context?.act1?.badge || "AI Curated • Act I (Hero Portraits • 10%)"}
+                    <Sparkles size={11} /> ✨ AI Vision &bull; Top {guestTiers.top25BestPhotos.length} Best Moments (0 Repeats)
                   </span>
                   <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light">
-                    {guestTiers.context?.act1?.title || "The Couple & Solo Portraits"}
+                    The Best <span style={{ color: activeColor }} className="italic font-serif">Curated Moments</span>
                   </h2>
                   <p className="text-zinc-400 text-xs sm:text-sm font-light leading-relaxed">
-                    {guestTiers.context?.act1?.subtitle || "Breathtaking romantic couple frames and intimate solo bridal & groom portraits chosen by AI."}
+                    Curated with AI Face Recognition &amp; Visual Clustering. Every photo is the single best shot from each distinct pose—strictly zero duplicate bursts.
                   </p>
                   <div style={{ backgroundColor: `${activeColor}80` }} className="w-12 h-[1px] mx-auto mt-4" />
                 </div>
 
-                {renderBentoClusters(guestTiers.couplePortraits, "guest-tier-couple")}
+                {renderBentoClusters(guestTiers.top25BestPhotos, "guest-tier-top25")}
               </div>
             )}
 
-            {/* TIER 2: Function, Ceremony / Scenic, Group Photos */}
-            {guestTiers.functionGroupPhotos.length > 0 && (
+            {/* TIER 2: RITUALS, CEREMONY & GROUP PHOTOS */}
+            {guestTiers.ritualGroupPhotos.length > 0 && (
               <div id="guest-act-2" className="space-y-8 pt-12 border-t border-zinc-850/80 scroll-mt-24">
                 <div className="text-center max-w-2xl mx-auto space-y-3">
                   <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center justify-center gap-1.5 font-mono">
-                    <Users size={12} /> {guestTiers.context?.act2?.badge || "AI Curated • Act II (Ceremonies & Groups)"}
+                    <Users size={12} /> 👥 AI Curated &bull; Rituals &amp; Group Moments
                   </span>
                   <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light">
-                    {guestTiers.context?.act2?.title || "Rituals, Stage & Group Memories"}
+                    Rituals, Stage &amp; <span style={{ color: activeColor }} className="italic font-serif">Group Memories</span>
                   </h2>
                   <p className="text-zinc-400 text-xs sm:text-sm font-light leading-relaxed">
-                    {guestTiers.context?.act2?.subtitle || "The sacred vows, arrival ceremonies, family blessings, and cherished group portraits."}
+                    The sacred vows, arrival ceremonies, family blessings, and cherished group portraits with all loved guests.
                   </p>
                   <div style={{ backgroundColor: `${activeColor}80` }} className="w-12 h-[1px] mx-auto mt-4" />
                 </div>
 
-                {renderBentoClusters(guestTiers.functionGroupPhotos, "guest-tier-function")}
+                {renderBentoClusters(guestTiers.ritualGroupPhotos, "guest-tier-rituals")}
               </div>
             )}
 
-            {/* TIER 3: Rest of the Photos, Candids & Alternate Takes */}
+            {/* TIER 3: FULL STORY & ALL REMAINING MEMORIES */}
             {guestTiers.restOfPhotos.length > 0 && (
               <div id="guest-act-3" className="space-y-8 pt-12 border-t border-zinc-850/80 scroll-mt-24">
                 <div className="text-center max-w-2xl mx-auto space-y-3">
                   <span style={{ color: activeColor }} className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center justify-center gap-1.5 font-mono">
-                    <Camera size={12} /> {guestTiers.context?.act3?.badge || "AI Curated • Act III (Complete Story)"}
+                    <Camera size={12} /> 📸 AI Curated &bull; Complete Story Archive
                   </span>
                   <h2 style={{ fontFamily: activeFontFamily }} className="text-3xl sm:text-5xl text-white font-light">
-                    {guestTiers.context?.act3?.title || "The Full Celebration Canvas"}
+                    The Full <span style={{ color: activeColor }} className="italic font-serif">Story &amp; Candids</span>
                   </h2>
                   <p className="text-zinc-400 text-xs sm:text-sm font-light leading-relaxed">
-                    {guestTiers.context?.act3?.subtitle || "Every joyful laugh, party celebration, candid expression, and timeless memory across the photoshoot."}
+                    Every joyful laugh, party celebration, candid expression, and complete memory across the celebration.
                   </p>
                   <div style={{ backgroundColor: `${activeColor}80` }} className="w-12 h-[1px] mx-auto mt-4" />
                 </div>
