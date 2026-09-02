@@ -131,6 +131,11 @@ app.get('/packages.html', (req, res) => {
   }
 });
 
+function formatTitleCase(str) {
+  if (!str) return "";
+  return String(str).replace(/\b\w+/g, (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
+}
+
 if (fs.existsSync(websiteDist)) {
   console.log(`📦 Serving React website static assets from: ${websiteDist}`);
   app.use(express.static(websiteDist, {
@@ -145,6 +150,62 @@ if (fs.existsSync(websiteDist)) {
     }
   }));
   
+  // Dynamic Gallery OpenGraph Meta Tags for WhatsApp & Social Media Preview Cards
+  app.get('/gallery/:id', (req, res, next) => {
+    const galId = req.params.id;
+    const gallery = getGallery(galId);
+    const indexPath = path.join(websiteDist, 'index.html');
+
+    if (!fs.existsSync(indexPath)) {
+      return next();
+    }
+
+    try {
+      let html = fs.readFileSync(indexPath, 'utf8');
+
+      if (gallery) {
+        const groom = formatTitleCase(gallery.groomName || "");
+        const bride = formatTitleCase(gallery.brideName || "");
+        const coupleTitle = (groom && bride) ? `${groom} & ${bride}` : formatTitleCase(gallery.name || "Wedding Gallery");
+        const title = `${coupleTitle} | Dreamwed Stories`;
+        const desc = `View the exclusive cinematic wedding photography journey of ${coupleTitle}.`;
+        
+        let imageUrl = gallery.coverUrl || (gallery.photos && gallery.photos[0]?.url) || "https://dreamwedstories.co.in/assets/images/new_portrait_1.jpg";
+        if (imageUrl.startsWith("/")) {
+          imageUrl = `https://dreamwedstories.co.in${imageUrl}`;
+        }
+        // Upgrade Google Drive thumbnail to high resolution for WhatsApp card preview
+        if (imageUrl.includes("drive.google.com/thumbnail") || imageUrl.includes("googleusercontent.com")) {
+          imageUrl = imageUrl.replace(/sz=w\d+/i, 'sz=w1200');
+        }
+
+        const canonicalUrl = `https://dreamwedstories.co.in/gallery/${galId}`;
+
+        // Inject dynamic tags
+        html = html.replace(/<title>[^<]*<\/title>/i, `<title>${title}</title>`);
+        html = html.replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${canonicalUrl}" />`);
+        html = html.replace(/<meta property="og:title" content="[^"]*"\s*\/?>/gi, `<meta property="og:title" content="${title}" />`);
+        html = html.replace(/<meta property="og:description" content="[^"]*"\s*\/?>/gi, `<meta property="og:description" content="${desc}" />`);
+        html = html.replace(/<meta property="og:image" content="[^"]*"\s*\/?>/gi, `<meta property="og:image" content="${imageUrl}" /><meta property="og:image:secure_url" content="${imageUrl}" /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" />`);
+        html = html.replace(/<meta property="og:url" content="[^"]*"\s*\/?>/gi, `<meta property="og:url" content="${canonicalUrl}" />`);
+        html = html.replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/gi, `<meta name="twitter:title" content="${title}" />`);
+        html = html.replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/gi, `<meta name="twitter:description" content="${desc}" />`);
+        html = html.replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/gi, `<meta name="twitter:image" content="${imageUrl}" />`);
+      }
+
+      res.set({
+        'Content-Type': 'text/html',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      return res.send(html);
+    } catch (err) {
+      console.error('Error serving dynamic gallery preview:', err);
+      return next();
+    }
+  });
+
   // Support React Router client-side routing fallback (but exclude API / webhook / dashboard routes)
   app.get(/^\/(?!api|webhook|dashboard).*$/, (req, res) => {
     res.set({

@@ -114,7 +114,74 @@ const ClientGallery = () => {
       setLoading(true);
       setError("");
 
-      // Check local storage first
+      // Direct download link mode
+      if (isDirectDownloadMode) {
+        try {
+          const res = await fetch(`${API_BASE}/api/public/galleries/${id}/selected-photos`);
+          if (res.ok) {
+            const data = await res.json();
+            if (isMounted) {
+              setSelectedPhotosData(data);
+              setMeta(data);
+              setIsLocked(false);
+              setLoading(false);
+            }
+          }
+        } catch (e) {}
+        return;
+      }
+
+      // Check if there is a saved passcode to automatically unlock on refresh
+      let savedPasscode = "";
+      let savedUser = null;
+      try {
+        savedPasscode = localStorage.getItem(`dreamwed_passcode_${id}`) || "";
+        savedUser = JSON.parse(localStorage.getItem(`dreamwed_viewer_user_${id}`) || "null");
+      } catch (e) {}
+
+      // If saved passcode exists, attempt auto-unlock
+      if (savedPasscode) {
+        try {
+          const res = await fetch(`${API_BASE}/api/public/galleries/${id}/unlock`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              accessCode: savedPasscode,
+              user: savedUser || { name: "Guest", role: "Guest" }
+            })
+          });
+
+          if (res.ok) {
+            const galData = await res.json();
+            if (isMounted) {
+              setGallery(galData);
+              setMeta(galData);
+              setSelectedPhotoIds(new Set(galData.selectedPhotoIds || []));
+              setSelectionsDetail(galData.selectionsDetail || []);
+              if (galData.storyData) {
+                setStoryData(galData.storyData);
+              } else if (galData.photos && galData.photos.length > 0) {
+                const curated = curateWeddingStory({
+                  photos: galData.photos,
+                  groomName: galData.groomName,
+                  brideName: galData.brideName,
+                  galleryName: galData.name
+                });
+                setStoryData(curated);
+              }
+              const finalRole = galData.viewerRole || savedUser?.role || "Guest";
+              setCurrentUser(savedUser ? { ...savedUser, role: finalRole } : { name: "Guest", role: finalRole });
+              setIsLocked(false);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn("Auto-unlock failed on refresh, presenting passcode lock screen", e);
+        }
+      }
+
+      // Check local storage for offline / cached gallery
       let hadLocal = false;
       try {
         const localGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
@@ -123,14 +190,12 @@ const ClientGallery = () => {
           g.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id ||
           g.accessCode === id
         );
-        if (localMatch && isMounted) {
+        if (localMatch && isMounted && localMatch.photos && localMatch.photos.length > 0 && savedUser) {
           hadLocal = true;
           setMeta(localMatch);
           setGallery(localMatch);
           setSelectedPhotoIds(new Set(localMatch.selectedPhotoIds || []));
           setSelectionsDetail(localMatch.selectionsDetail || []);
-          
-          // Generate or load AI story data
           if (localMatch.storyData) {
             setStoryData(localMatch.storyData);
           } else if (localMatch.photos && localMatch.photos.length > 0) {
@@ -142,48 +207,20 @@ const ClientGallery = () => {
             });
             setStoryData(curated);
           }
+          setIsLocked(false);
           setLoading(false);
+          return;
         }
       } catch (e) {}
 
-      // Direct download link mode
-      if (isDirectDownloadMode) {
-        try {
-          const res = await fetch(`${API_BASE}/api/public/galleries/${id}/selected-photos`);
-          if (res.ok) {
-            const data = await res.json();
-            if (isMounted) {
-              setSelectedPhotosData(data);
-              setMeta(data);
-              setLoading(false);
-            }
-          }
-        } catch (e) {}
-        return;
-      }
-
-      // Fetch from API
+      // Fetch metadata from API (for the lock screen)
       try {
         const res = await fetch(`${API_BASE}/api/public/galleries/${id}`);
         if (res.ok) {
           const data = await res.json();
           if (isMounted) {
             setMeta(data);
-            setGallery(data);
-            setSelectedPhotoIds(new Set(data.selectedPhotoIds || []));
-            setSelectionsDetail(data.selectionsDetail || []);
-            
-            if (data.storyData) {
-              setStoryData(data.storyData);
-            } else if (data.photos && data.photos.length > 0) {
-              const curated = curateWeddingStory({
-                photos: data.photos,
-                groomName: data.groomName,
-                brideName: data.brideName,
-                galleryName: data.name
-              });
-              setStoryData(curated);
-            }
+            setIsLocked(true); // Locked until valid passcode is entered!
             setLoading(false);
           }
         }
@@ -352,6 +389,11 @@ const ClientGallery = () => {
         ...activeUserProfile,
         role: galData.viewerRole || targetRole
       };
+      if (id || galData.id) {
+        const targetKey = id || galData.id;
+        localStorage.setItem(`dreamwed_viewer_user_${targetKey}`, JSON.stringify(finalUser));
+        localStorage.setItem(`dreamwed_passcode_${targetKey}`, cleanCode);
+      }
       setCurrentUser(finalUser);
       setIsLocked(false);
       if (!id) navigate(`/gallery/${galData.id}`, { replace: true });
@@ -363,7 +405,10 @@ const ClientGallery = () => {
   };
 
   const handleSwitchPerson = () => {
-    if (id) localStorage.removeItem(`dreamwed_viewer_user_${id}`);
+    if (id) {
+      localStorage.removeItem(`dreamwed_viewer_user_${id}`);
+      localStorage.removeItem(`dreamwed_passcode_${id}`);
+    }
     setCurrentUser(null);
     setIsLocked(true);
     setPasscode("");
@@ -1171,10 +1216,11 @@ const ClientGallery = () => {
 
           <button
             onClick={handleSwitchPerson}
-            className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl border border-zinc-800 text-[10px] transition-all cursor-pointer shrink-0"
-            title="Switch User / Log Out"
+            className="px-2.5 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl border border-zinc-800 text-[10px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+            title="Re-enter passcode or switch viewer"
           >
-            <User size={13} />
+            <Lock size={12} className="text-[#b4975a]" />
+            <span className="hidden sm:inline">Re-enter Code</span>
           </button>
         </div>
       </header>
