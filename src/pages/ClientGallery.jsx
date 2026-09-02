@@ -345,8 +345,6 @@ const ClientGallery = () => {
     localStorage.setItem("dreamwed_viewer_role", targetRole);
     if (id) localStorage.setItem(`dreamwed_viewer_user_${id}`, JSON.stringify(activeUserProfile));
 
-    // Local check
-    try {
     // Backend unlock first (guarantees latest synced Drive photos)
     try {
       const targetId = id || cleanCode;
