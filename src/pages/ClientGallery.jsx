@@ -347,49 +347,7 @@ const ClientGallery = () => {
 
     // Local check
     try {
-      const localGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
-      const localMatch = localGals.find(g => {
-        const gAcc = String(g.accessCode || "").trim().toLowerCase();
-        const gAccDig = gAcc.replace(/\D/g, "");
-        const gIdDig = String(g.id || "").replace(/\D/g, "");
-        return (g.id === id || !id) && 
-          (gAcc === lowerCode ||
-           String(g.selectionCode || "").trim().toLowerCase() === lowerCode ||
-           String(g.guestCode || "").trim().toLowerCase() === lowerCode ||
-           String(g.brideCode || "").trim().toLowerCase() === lowerCode ||
-           String(g.groomCode || "").trim().toLowerCase() === lowerCode ||
-           String(g.id).toLowerCase() === lowerCode ||
-           (cleanDigits.length >= 2 && (cleanDigits === gAccDig || cleanDigits === gIdDig)) ||
-           gAcc.endsWith(lowerCode));
-      });
-
-      if (localMatch) {
-        setGallery(localMatch);
-        setMeta(localMatch);
-        setSelectedPhotoIds(new Set(localMatch.selectedPhotoIds || []));
-        setSelectionsDetail(localMatch.selectionsDetail || []);
-        
-        if (localMatch.storyData) {
-          setStoryData(localMatch.storyData);
-        } else if (localMatch.photos && localMatch.photos.length > 0) {
-          const curated = curateWeddingStory({
-            photos: localMatch.photos,
-            groomName: localMatch.groomName,
-            brideName: localMatch.brideName,
-            galleryName: localMatch.name
-          });
-          setStoryData(curated);
-        }
-
-        setCurrentUser(activeUserProfile);
-        setIsLocked(false);
-        setUnlocking(false);
-        if (!id) navigate(`/gallery/${localMatch.id}`, { replace: true });
-        return;
-      }
-    } catch (e) {}
-
-    // Backend unlock
+    // Backend unlock first (guarantees latest synced Drive photos)
     try {
       const targetId = id || cleanCode;
       const res = await fetch(`${API_BASE}/api/public/galleries/${targetId}/unlock`, {
@@ -401,43 +359,102 @@ const ClientGallery = () => {
         })
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Incorrect access passcode.");
-      }
+      if (res.ok) {
+        const galData = await res.json();
+        setGallery(galData);
+        setMeta(galData);
+        setSelectedPhotoIds(new Set(galData.selectedPhotoIds || []));
+        setSelectionsDetail(galData.selectionsDetail || []);
+        
+        if (galData.storyData) {
+          setStoryData(galData.storyData);
+        } else if (galData.photos && galData.photos.length > 0) {
+          const curated = curateWeddingStory({
+            photos: galData.photos,
+            groomName: galData.groomName,
+            brideName: galData.brideName,
+            galleryName: galData.name
+          });
+          setStoryData(curated);
+        }
 
-      const galData = await res.json();
-      setGallery(galData);
-      setMeta(galData);
-      setSelectedPhotoIds(new Set(galData.selectedPhotoIds || []));
-      setSelectionsDetail(galData.selectionsDetail || []);
+        const finalUser = {
+          ...activeUserProfile,
+          role: galData.viewerRole || targetRole
+        };
+        if (id || galData.id) {
+          const targetKey = id || galData.id;
+          localStorage.setItem(`dreamwed_viewer_user_${targetKey}`, JSON.stringify(finalUser));
+          localStorage.setItem(`dreamwed_passcode_${targetKey}`, cleanCode);
+        }
+
+        // Update local gallery cache with synced photos
+        try {
+          const localGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
+          const idx = localGals.findIndex(g => g.id === galData.id);
+          if (idx >= 0) {
+            localGals[idx] = { ...localGals[idx], ...galData };
+          } else {
+            localGals.push(galData);
+          }
+          localStorage.setItem("dreamwed_galleries", JSON.stringify(localGals));
+        } catch (e) {}
+
+        setCurrentUser(finalUser);
+        setIsLocked(false);
+        if (!id) navigate(`/gallery/${galData.id}`, { replace: true });
+        return;
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Incorrect access passcode.");
+      }
+    } catch (apiErr) {
+      console.warn("Backend unlock error, checking offline cache:", apiErr);
       
-      if (galData.storyData) {
-        setStoryData(galData.storyData);
-      } else if (galData.photos && galData.photos.length > 0) {
-        const curated = curateWeddingStory({
-          photos: galData.photos,
-          groomName: galData.groomName,
-          brideName: galData.brideName,
-          galleryName: galData.name
+      // Offline fallback only if local match actually has photos
+      try {
+        const localGals = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
+        const localMatch = localGals.find(g => {
+          const gAcc = String(g.accessCode || "").trim().toLowerCase();
+          const gAccDig = gAcc.replace(/\D/g, "");
+          const gIdDig = String(g.id || "").replace(/\D/g, "");
+          return (g.id === id || !id) && 
+            (gAcc === lowerCode ||
+             String(g.selectionCode || "").trim().toLowerCase() === lowerCode ||
+             String(g.guestCode || "").trim().toLowerCase() === lowerCode ||
+             String(g.brideCode || "").trim().toLowerCase() === lowerCode ||
+             String(g.groomCode || "").trim().toLowerCase() === lowerCode ||
+             String(g.id).toLowerCase() === lowerCode ||
+             (cleanDigits.length >= 2 && (cleanDigits === gAccDig || cleanDigits === gIdDig)) ||
+             gAcc.endsWith(lowerCode));
         });
-        setStoryData(curated);
-      }
 
-      const finalUser = {
-        ...activeUserProfile,
-        role: galData.viewerRole || targetRole
-      };
-      if (id || galData.id) {
-        const targetKey = id || galData.id;
-        localStorage.setItem(`dreamwed_viewer_user_${targetKey}`, JSON.stringify(finalUser));
-        localStorage.setItem(`dreamwed_passcode_${targetKey}`, cleanCode);
-      }
-      setCurrentUser(finalUser);
-      setIsLocked(false);
-      if (!id) navigate(`/gallery/${galData.id}`, { replace: true });
-    } catch (err) {
-      setError(err.message || "Failed to unlock gallery. Please verify your passcode.");
+        if (localMatch && localMatch.photos && localMatch.photos.length > 0) {
+          setGallery(localMatch);
+          setMeta(localMatch);
+          setSelectedPhotoIds(new Set(localMatch.selectedPhotoIds || []));
+          setSelectionsDetail(localMatch.selectionsDetail || []);
+          
+          if (localMatch.storyData) {
+            setStoryData(localMatch.storyData);
+          } else {
+            const curated = curateWeddingStory({
+              photos: localMatch.photos,
+              groomName: localMatch.groomName,
+              brideName: localMatch.brideName,
+              galleryName: localMatch.name
+            });
+            setStoryData(curated);
+          }
+
+          setCurrentUser(activeUserProfile);
+          setIsLocked(false);
+          if (!id) navigate(`/gallery/${localMatch.id}`, { replace: true });
+          return;
+        }
+      } catch (e) {}
+
+      setError(apiErr.message || "Failed to unlock gallery. Please verify your passcode.");
     } finally {
       setUnlocking(false);
     }
