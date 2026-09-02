@@ -1509,17 +1509,18 @@ const Admin = () => {
   const handleCopyWhatsAppInvite = (gallery) => {
     if (!gallery) return;
     const origin = typeof window !== "undefined" ? window.location.origin : "https://dreamwedstories.co.in";
-    const url = `${origin}/gallery/${gallery.id}`;
+    const guestUrl = `${origin}/gallery/${gallery.id}?view=guest`;
+    const selectionUrl = `${origin}/gallery/${gallery.id}?view=selection`;
     const groom = gallery.groomName || "";
     const bride = gallery.brideName || "";
     const couple = groom && bride ? `${groom} & ${bride}` : (gallery.name || "Wedding Gallery");
     const gCode = gallery.guestCode || (gallery.accessCode && !gallery.selectionCode ? gallery.accessCode : '1000');
     const sCode = gallery.selectionCode || (gallery.accessCode && gallery.accessCode !== gCode ? gallery.accessCode : '8000');
 
-    const message = `✨ *Private Wedding Gallery: ${couple}* ✨\n\n📸 *View the Cinematic Story (Guests):*\n🔗 ${url}\n👥 *Guest Passcode:* \`${gCode}\`\n\n💍 *Album Photo Selection (Bride & Groom):*\n🔗 ${url}\n👰🤵 *Selection Passcode:* \`${sCode}\` (Prompts for Bride or Groom)\n\n_Protected & Curated by Dreamwed Stories_`;
+    const message = `✨ *Private Wedding Gallery: ${couple}* ✨\n\n📸 *1. View the Cinematic Story (Guests):*\n🔗 ${guestUrl}\n👥 *Guest Passcode:* \`${gCode}\`\n\n💍 *2. Album Photo Selection (Bride & Groom):*\n🔗 ${selectionUrl}\n👰🤵 *Selection Passcode:* \`${sCode}\` (Prompts for Bride or Groom selection)\n\n_Protected & Curated by Dreamwed Stories_`;
 
     navigator.clipboard.writeText(message);
-    alert(`💬 WhatsApp Group Invitation Copied to Clipboard!\n\n${message}`);
+    alert(`💬 WhatsApp Group Invitation with 2 Dedicated Links Copied!\n\n${message}`);
   };
 
   const handleCreateAiGallery = async (e) => {
@@ -4232,19 +4233,32 @@ const Admin = () => {
                             <div className="space-y-1 min-w-0">
                               <h4 className="font-bold text-white text-sm truncate">{g?.name || "Dreamwed Wedding"}</h4>
                               
-                              {/* Gallery URL + Copy Button */}
-                              <div className="text-[10px] text-zinc-500 flex items-center gap-1.5">
-                                <span className="font-light truncate max-w-[180px] sm:max-w-xs">{galleryUrl}</span>
+                              {/* 2 Dedicated Links Copy Buttons */}
+                              <div className="flex flex-wrap items-center gap-2 pt-0.5">
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    navigator.clipboard.writeText(galleryUrl);
-                                    alert("🔗 Branded Gallery Link copied to clipboard!");
+                                    const link = `${galleryUrl}?view=guest`;
+                                    navigator.clipboard.writeText(link);
+                                    alert(`✨ Guest AI Story Link Copied!\n\n${link}\nPasscode: ${gCode}`);
                                   }}
-                                  className="text-zinc-400 hover:text-[#b4975a] transition-colors cursor-pointer p-0.5"
-                                  title="Copy Gallery Link"
+                                  className="px-2 py-1 bg-amber-500/10 hover:bg-amber-500 hover:text-zinc-950 text-amber-300 border border-amber-500/25 rounded-lg text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer"
+                                  title="Copy Guest Link (AI 3-Tier Story)"
                                 >
-                                  <Copy size={12} />
+                                  <Sparkles size={10} /> Copy Guest Link
+                                </button>
+
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const link = `${galleryUrl}?view=selection`;
+                                    navigator.clipboard.writeText(link);
+                                    alert(`💍 Couple Selection Link Copied!\n\n${link}\nPasscode: ${sCode}`);
+                                  }}
+                                  className="px-2 py-1 bg-pink-500/10 hover:bg-pink-500 hover:text-white text-pink-300 border border-pink-500/25 rounded-lg text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer"
+                                  title="Copy Couple Album Selection Link"
+                                >
+                                  <Heart size={10} /> Copy Selection Link
                                 </button>
                               </div>
                             </div>

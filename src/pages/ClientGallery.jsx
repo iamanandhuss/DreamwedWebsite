@@ -54,6 +54,14 @@ const ClientGallery = () => {
                                searchParams.get("download") === "selections" || 
                                searchParams.get("mode") === "favorites";
 
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [explicitViewOverride, setExplicitViewOverride] = useState(() => {
+    const p = searchParams.get("view") || searchParams.get("mode");
+    if (p === "guest" || searchParams.get("guest") === "true") return "guest";
+    if (p === "selection" || searchParams.get("selection") === "true") return "selection";
+    return null;
+  });
+
   // Viewer profile & session
   const [viewerName, setViewerName] = useState(() => {
     try { return localStorage.getItem("dreamwed_viewer_name") || ""; } catch (e) { return ""; }
@@ -71,6 +79,13 @@ const ClientGallery = () => {
       return null;
     }
   });
+
+  // Keep explicitViewOverride updated on URL change
+  useEffect(() => {
+    const p = searchParams.get("view") || searchParams.get("mode");
+    if (p === "guest" || searchParams.get("guest") === "true") setExplicitViewOverride("guest");
+    else if (p === "selection" || searchParams.get("selection") === "true") setExplicitViewOverride("selection");
+  }, [location.search]);
 
   const [isLocked, setIsLocked] = useState(!isDirectDownloadMode && !currentUser);
   const [passcode, setPasscode] = useState("");
@@ -249,7 +264,8 @@ const ClientGallery = () => {
   }, [id, API_BASE, isDirectDownloadMode]);
 
   // Role permissions check
-  const isCoupleSelectionMode = currentUser?.role === "Bride" || currentUser?.role === "Groom";
+  const isCoupleSelectionMode = explicitViewOverride === "selection" || 
+    (explicitViewOverride !== "guest" && (currentUser?.role === "Bride" || currentUser?.role === "Groom"));
   const isGuestMode = !isCoupleSelectionMode;
 
   const allPhotos = gallery?.photos || meta?.photos || [];
@@ -1219,14 +1235,51 @@ const ClientGallery = () => {
 
         {/* View Switcher Tabs & Actions */}
         <div className="flex items-center gap-2">
-          <div className="hidden md:flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-1 text-xs">
+          {/* Mode Switcher Pill (Guest AI vs Couple Selection) */}
+          <div className="flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-0.5 text-xs">
+            <button
+              onClick={() => {
+                setExplicitViewOverride("guest");
+                const url = new URL(window.location.href);
+                url.searchParams.set("view", "guest");
+                window.history.replaceState({}, "", url.toString());
+              }}
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 text-[11px] ${
+                isGuestMode
+                  ? "bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 shadow-md scale-102"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Sparkles size={11} className={isGuestMode ? "fill-zinc-950 text-zinc-950" : "text-amber-400"} />
+              <span>✨ Guest (AI Story)</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setExplicitViewOverride("selection");
+                const url = new URL(window.location.href);
+                url.searchParams.set("view", "selection");
+                window.history.replaceState({}, "", url.toString());
+              }}
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 text-[11px] ${
+                isCoupleSelectionMode
+                  ? "bg-gradient-to-r from-pink-500 to-rose-600 text-white shadow-md scale-102"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Heart size={11} className={isCoupleSelectionMode ? "fill-white text-white" : "text-pink-400"} />
+              <span>💍 Couple Selection ({selectedPhotoIds.size})</span>
+            </button>
+          </div>
+
+          <div className="hidden lg:flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-1 text-xs">
             <button
               onClick={() => { setActiveSectionView("story"); scrollToStory(); }}
-              className={`px-3.5 py-1 rounded-lg transition-all cursor-pointer font-bold ${
+              className={`px-3 py-1 rounded-lg transition-all cursor-pointer font-bold ${
                 activeSectionView === "story" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
               }`}
             >
-              Cinematic Story
+              Story Flow
             </button>
 
             {isGuestMode ? (
@@ -1234,25 +1287,25 @@ const ClientGallery = () => {
                 {guestTiers.top25BestPhotos.length > 0 && (
                   <button
                     onClick={() => { setActiveSectionView("story"); scrollToGuestAct("guest-act-1"); }}
-                    className="px-3 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
+                    className="px-2.5 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
                   >
-                    🌟 Top 25 Best ({guestTiers.top25BestPhotos.length})
+                    Top 25 ({guestTiers.top25BestPhotos.length})
                   </button>
                 )}
                 {guestTiers.ritualGroupPhotos.length > 0 && (
                   <button
                     onClick={() => { setActiveSectionView("story"); scrollToGuestAct("guest-act-2"); }}
-                    className="px-3 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
+                    className="px-2.5 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
                   >
-                    👥 Rituals &amp; Groups ({guestTiers.ritualGroupPhotos.length})
+                    Rituals ({guestTiers.ritualGroupPhotos.length})
                   </button>
                 )}
                 {guestTiers.restOfPhotos.length > 0 && (
                   <button
                     onClick={() => { setActiveSectionView("story"); scrollToGuestAct("guest-act-3"); }}
-                    className="px-3 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
+                    className="px-2.5 py-1 rounded-lg transition-all cursor-pointer font-bold text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/60"
                   >
-                    📸 Full Story ({guestTiers.restOfPhotos.length})
+                    Full Story ({guestTiers.restOfPhotos.length})
                   </button>
                 )}
               </>
@@ -1260,20 +1313,20 @@ const ClientGallery = () => {
               <>
                 <button
                   onClick={() => setActiveSectionView("highlights")}
-                  className={`px-3.5 py-1 rounded-lg transition-all cursor-pointer font-bold ${
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer font-bold ${
                     activeSectionView === "highlights" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
                   }`}
                 >
-                  Editorial Highlights ({highlights.length})
+                  Highlights ({highlights.length})
                 </button>
                 <button
                   onClick={() => setActiveSectionView("archive")}
-                  className={`px-3.5 py-1 rounded-lg transition-all cursor-pointer font-bold flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer font-bold flex items-center gap-1.5 ${
                     activeSectionView === "archive" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"
                   }`}
                 >
-                  <Heart size={12} className={selectedPhotoIds.size > 0 ? "fill-red-500 text-red-500" : ""} />
-                  <span>Selection Lounge ({selectedPhotoIds.size})</span>
+                  <Heart size={11} className={selectedPhotoIds.size > 0 ? "fill-red-500 text-red-500" : ""} />
+                  <span>Archive</span>
                   <span className="text-[9px] opacity-75 font-mono">👰 {bridePicks.length} • 🤵 {groomPicks.length}</span>
                 </button>
               </>
@@ -1281,11 +1334,11 @@ const ClientGallery = () => {
           </div>
 
           <button 
-            onClick={handleShareGallery}
-            className="px-3 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl border border-zinc-800 transition-all text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shrink-0"
-            title="Share gallery link"
+            onClick={() => setIsShareModalOpen(true)}
+            className="px-3 py-2 bg-gradient-to-r from-amber-500/20 to-[#b4975a]/20 hover:from-amber-500 hover:to-[#b4975a] text-amber-300 hover:text-zinc-950 rounded-xl border border-amber-500/30 transition-all text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shrink-0 shadow-sm"
+            title="Share 2 dedicated gallery links (Guest AI vs Couple Selection)"
           >
-            <Share2 size={12} /> <span className="hidden sm:inline">Invite</span>
+            <Share2 size={12} /> <span className="hidden sm:inline">Invite Links</span>
           </button>
 
           <button
@@ -2117,6 +2170,150 @@ const ClientGallery = () => {
                 <ChevronRight size={20} />
               </button>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================= */}
+      {/* 5. DEDICATED 2-LINK INVITE & SHARE MODAL                  */}
+      {/* ========================================================= */}
+      <AnimatePresence>
+        {isShareModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
+            onClick={() => setIsShareModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              className="bg-zinc-950 border border-zinc-800 max-w-lg w-full rounded-[32px] p-6 sm:p-8 space-y-6 text-zinc-300 relative shadow-2xl overflow-y-auto max-h-[90vh] text-left"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setIsShareModalOpen(false)}
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 hover:bg-white text-white hover:text-black border border-white/5 flex items-center justify-center transition-all cursor-pointer z-10"
+              >
+                <X size={15} />
+              </button>
+
+              <div className="space-y-1 border-b border-zinc-850 pb-4">
+                <span className="text-[#b4975a] font-bold text-[9px] tracking-[0.25em] uppercase flex items-center gap-1.5 font-mono">
+                  <Share2 size={12} /> Invite Links Studio
+                </span>
+                <h3 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-2xl sm:text-3xl text-white font-light">
+                  Share <span className="italic font-serif text-[#b4975a]">{gallery?.name || meta?.name || "Wedding Gallery"}</span>
+                </h3>
+                <p className="text-zinc-400 text-xs font-light">
+                  Use 2 separate dedicated links to deliver the exact experience for guests vs the couple.
+                </p>
+              </div>
+
+              {(() => {
+                const origin = typeof window !== "undefined" ? window.location.origin : "";
+                const galId = gallery?.id || id || "";
+                const guestLink = `${origin}/gallery/${galId}?view=guest`;
+                const selectionLink = `${origin}/gallery/${galId}?view=selection`;
+                const gCode = meta?.guestCode || meta?.accessCode || gallery?.guestCode || gallery?.accessCode || "Guest Code";
+                const sCode = meta?.selectionCode || gallery?.selectionCode || `SELECT-${gCode}`;
+                const title = gallery?.name || meta?.name || "Wedding";
+
+                return (
+                  <div className="space-y-4">
+                    {/* Link 1: Guest AI Story Link */}
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/30 to-zinc-900 border border-amber-500/30 space-y-3">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="space-y-0.5">
+                          <span className="text-amber-400 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
+                            <Sparkles size={11} /> 1. Guest Experience Link (AI Story)
+                          </span>
+                          <p className="text-[11px] text-zinc-300 font-light">
+                            Opens the 3-Tier AI story (Top 25 Portraits &bull; Rituals &bull; Full Story). Selection hearts are hidden.
+                          </p>
+                        </div>
+                        <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-lg text-[9px] font-mono font-bold shrink-0">
+                          Passcode: {gCode}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="text" 
+                          readOnly 
+                          value={guestLink} 
+                          className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-[10px] text-zinc-300 font-mono select-all focus:outline-none"
+                        />
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(guestLink);
+                            alert("✨ Guest AI Story Link copied to clipboard!");
+                          }}
+                          className="px-3 py-2 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-md shrink-0"
+                        >
+                          <Copy size={12} /> Copy
+                        </button>
+                        <a
+                          href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`✨ Experience the cinematic wedding story of *${title}* with AI Vision Curation:\n${guestLink}\n\n🔑 Passcode: *${gCode}*`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center justify-center transition-all cursor-pointer shadow-md shrink-0"
+                          title="Share on WhatsApp"
+                        >
+                          <Share2 size={13} />
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Link 2: Couple Album Selection Link */}
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-pink-950/30 to-zinc-900 border border-pink-500/30 space-y-3">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="space-y-0.5">
+                          <span className="text-pink-400 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
+                            <Heart size={11} className="fill-current" /> 2. Couple Selection Link (Album Pick)
+                          </span>
+                          <p className="text-[11px] text-zinc-300 font-light">
+                            Opens the Bride &amp; Groom Selection Lounge with heart pick tools and live counters.
+                          </p>
+                        </div>
+                        <span className="bg-pink-500/20 text-pink-300 border border-pink-500/30 px-2 py-0.5 rounded-lg text-[9px] font-mono font-bold shrink-0">
+                          Passcode: {sCode}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="text" 
+                          readOnly 
+                          value={selectionLink} 
+                          className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-[10px] text-zinc-300 font-mono select-all focus:outline-none"
+                        />
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(selectionLink);
+                            alert("💍 Couple Album Selection Link copied to clipboard!");
+                          }}
+                          className="px-3 py-2 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-md shrink-0"
+                        >
+                          <Copy size={12} /> Copy
+                        </button>
+                        <a
+                          href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`💍 Dear *${title}*, please pick your favorite photos for the wedding album here:\n${selectionLink}\n\n🔑 Selection Passcode: *${sCode}*`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center justify-center transition-all cursor-pointer shadow-md shrink-0"
+                          title="Share on WhatsApp"
+                        >
+                          <Share2 size={13} />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
