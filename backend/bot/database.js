@@ -1085,42 +1085,69 @@ function extractDriveIdsFromHtml(html) {
   return ids;
 }
 
-async function scrapeDriveLinkIds(driveLink, idSet) {
-  if (!driveLink) return;
+function extractSubfoldersFromHtml(html) {
+  const folders = new Set();
+  if (!html) return folders;
+  const m = html.matchAll(/drive\.google\.com\/drive\/folders\/([a-zA-Z0-9_-]{25,45})/g);
+  for (const match of m) if (match[1]) folders.add(match[1]);
+  const m2 = html.matchAll(/id="entry-([a-zA-Z0-9_-]{25,45})"/g);
+  for (const match of m2) if (match[1]) folders.add(match[1]);
+  return folders;
+}
+
+async function scrapeDriveLinkIds(driveLink, idSet, visitedFolders = new Set(), depth = 0) {
+  if (!driveLink || depth > 3) return;
   const folderMatch = driveLink.match(/folders\/([a-zA-Z0-9_-]+)/) || driveLink.match(/id=([a-zA-Z0-9_-]+)/);
   const folderId = folderMatch ? folderMatch[1] : null;
 
   if (folderId) {
-    // Embedded grid view
+    if (visitedFolders.has(folderId)) return;
+    visitedFolders.add(folderId);
+
+    const subfolderSet = new Set();
+
+    // 1. Grid view
     try {
       const gridHtml = await fetchDrivePage(`https://drive.google.com/embeddedfolderview?id=${folderId}#grid`);
-      const gridIds = extractDriveIdsFromHtml(gridHtml);
-      gridIds.forEach(fid => idSet.add(fid));
+      extractDriveIdsFromHtml(gridHtml).forEach(fid => idSet.add(fid));
+      extractSubfoldersFromHtml(gridHtml).forEach(subId => subfolderSet.add(subId));
     } catch (e) {
       console.warn(`[GDrive Grid Scrape] Warning: ${e.message}`);
     }
 
-    // Embedded list view
+    // 2. List view
     try {
       const listHtml = await fetchDrivePage(`https://drive.google.com/embeddedfolderview?id=${folderId}#list`);
-      const listIds = extractDriveIdsFromHtml(listHtml);
-      listIds.forEach(fid => idSet.add(fid));
+      extractDriveIdsFromHtml(listHtml).forEach(fid => idSet.add(fid));
+      extractSubfoldersFromHtml(listHtml).forEach(subId => subfolderSet.add(subId));
     } catch (e) {
       console.warn(`[GDrive List Scrape] Warning: ${e.message}`);
     }
-  }
 
-  // Standard URL
-  try {
-    const html = await fetchDrivePage(driveLink);
-    const standardIds = extractDriveIdsFromHtml(html);
-    standardIds.forEach(fid => idSet.add(fid));
-  } catch (e) {
-    console.warn(`[GDrive Standard Scrape] Warning: ${e.message}`);
-  }
+    // 3. Standard URL
+    try {
+      const html = await fetchDrivePage(`https://drive.google.com/drive/folders/${folderId}`);
+      extractDriveIdsFromHtml(html).forEach(fid => idSet.add(fid));
+      extractSubfoldersFromHtml(html).forEach(subId => subfolderSet.add(subId));
+    } catch (e) {
+      console.warn(`[GDrive Standard Scrape] Warning: ${e.message}`);
+    }
 
-  if (folderId) {
+    // Recursively crawl any subfolders found (e.g. CARD 1, 100MSDCF, DCIM, etc.)
+    for (const subId of subfolderSet) {
+      if (subId !== folderId && !visitedFolders.has(subId)) {
+        await scrapeDriveLinkIds(`https://drive.google.com/drive/folders/${subId}`, idSet, visitedFolders, depth + 1);
+      }
+    }
+
     idSet.delete(folderId);
+    subfolderSet.forEach(subId => idSet.delete(subId));
+  } else {
+    // Single link
+    try {
+      const html = await fetchDrivePage(driveLink);
+      extractDriveIdsFromHtml(html).forEach(fid => idSet.add(fid));
+    } catch (e) {}
   }
 }
 
