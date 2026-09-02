@@ -595,7 +595,7 @@ const ClientGallery = () => {
   const rawAlign = (isLocked ? meta?.coverAlign : (gallery?.coverAlign || meta?.coverAlign)) ?? "50%";
   const activePositionStyle = getObjectPositionStyle(rawAlign);
 
-  const heroImage = storyData?.heroImage || meta?.coverUrl || (allPhotos[0]?.url) || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600";
+  const heroImage = (gallery?.coverUrl || meta?.coverUrl) || storyData?.heroImage || (allPhotos[0]?.url) || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600";
   
   const highlights = React.useMemo(() => {
     return (storyData?.highlights && storyData.highlights.length > 0) 
