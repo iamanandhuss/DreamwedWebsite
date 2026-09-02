@@ -36,6 +36,11 @@ const getObjectPositionStyle = (val) => {
   return "center 50%";
 };
 
+const formatTitleCase = (str) => {
+  if (!str) return "";
+  return String(str).replace(/\b\w/g, char => char.toUpperCase());
+};
+
 const ClientGallery = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -198,6 +203,19 @@ const ClientGallery = () => {
   const isGuestMode = !isCoupleSelectionMode;
 
   const allPhotos = gallery?.photos || meta?.photos || [];
+
+  // Auto-curate story data if highlights is empty but photos are present
+  useEffect(() => {
+    if ((!storyData || !storyData.highlights || storyData.highlights.length === 0) && allPhotos.length > 0) {
+      const curated = curateWeddingStory({
+        photos: allPhotos,
+        groomName: gallery?.groomName || meta?.groomName || "",
+        brideName: gallery?.brideName || meta?.brideName || "",
+        galleryName: gallery?.name || meta?.name || "Wedding Gallery"
+      });
+      setStoryData(curated);
+    }
+  }, [allPhotos.length, gallery?.id]);
 
   // Slideshow auto-advance timer
   useEffect(() => {
@@ -473,8 +491,18 @@ const ClientGallery = () => {
   const activePositionStyle = getObjectPositionStyle(rawAlign);
 
   const heroImage = storyData?.heroImage || meta?.coverUrl || (allPhotos[0]?.url) || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600";
-  const highlights = storyData?.highlights || allPhotos.slice(0, 16);
-  const chapters = storyData?.chapters || [];
+  const highlights = (storyData?.highlights && storyData.highlights.length > 0) 
+    ? storyData.highlights 
+    : (allPhotos.length > 0 ? allPhotos.slice(0, Math.min(28, allPhotos.length)) : []);
+  const chapters = (storyData?.chapters && storyData.chapters.length > 0)
+    ? storyData.chapters
+    : (allPhotos.length > 0 ? [{
+        id: "chapter-all",
+        title: "The Wedding Story",
+        subtitle: `${formatTitleCase(gallery?.name || meta?.name || "Wedding Highlights")}`,
+        description: "A cinematic collection of cherished memories and timeless moments.",
+        photos: allPhotos
+      }] : []);
 
   const myPicks = allPhotos.filter(p => isLikedByMe(p.id));
   const bridePicks = allPhotos.filter(p => selectionsDetail.some(s => s.photoId === p.id && s.user?.role === "Bride"));
@@ -943,17 +971,21 @@ const ClientGallery = () => {
               className="text-lg sm:text-xl text-white font-medium leading-none truncate max-w-[180px] sm:max-w-md"
             >
               {gallery?.groomName && gallery?.brideName 
-                ? `${gallery.groomName} & ${gallery.brideName}` 
-                : (gallery?.name || "Wedding Gallery")}
+                ? `${formatTitleCase(gallery.groomName)} & ${formatTitleCase(gallery.brideName)}` 
+                : formatTitleCase(gallery?.name || "Wedding Gallery")}
             </h1>
             <div className="flex items-center gap-2 mt-1">
               <span style={{ color: activeColor }} className="text-[9px] font-bold uppercase tracking-wider">
                 Dreamwed Stories
               </span>
               {currentUser && (
-                <span className="text-[9px] bg-zinc-900 text-zinc-300 px-2 py-0.5 rounded-full border border-zinc-800 flex items-center gap-1">
+                <span className="text-[9px] bg-zinc-900 text-zinc-300 px-2.5 py-0.5 rounded-full border border-zinc-800 flex items-center gap-1 shadow-sm">
                   <span>{USER_ROLES.find(r => r.id === currentUser.role)?.icon || "👤"}</span>
-                  <strong className="text-white">{currentUser.name}</strong> ({currentUser.role})
+                  <strong className="text-white">
+                    {currentUser.name && currentUser.name.toLowerCase() !== currentUser.role?.toLowerCase() && currentUser.name.toLowerCase() !== "guest"
+                      ? `${currentUser.name} (${currentUser.role})`
+                      : currentUser.role || "Guest"}
+                  </strong>
                 </span>
               )}
             </div>
@@ -1114,16 +1146,16 @@ const ClientGallery = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             style={{ fontFamily: activeFontFamily }} 
-            className="text-4xl sm:text-7xl md:text-8xl text-white font-light tracking-wide leading-tight"
+            className="text-4xl sm:text-7xl md:text-8xl text-white font-light tracking-wide leading-tight capitalize"
           >
             {gallery?.groomName && gallery?.brideName ? (
               <>
-                <span>{gallery.groomName}</span>{" "}
+                <span>{formatTitleCase(gallery.groomName)}</span>{" "}
                 <span style={{ color: activeColor }} className="italic font-serif">&amp;</span>{" "}
-                <span>{gallery.brideName}</span>
+                <span>{formatTitleCase(gallery.brideName)}</span>
               </>
             ) : (
-              gallery?.name || "Dreamwed Stories"
+              formatTitleCase(gallery?.name || "Dreamwed Stories")
             )}
           </motion.h1>
 
