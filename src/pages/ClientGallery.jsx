@@ -311,18 +311,15 @@ const ClientGallery = () => {
     const cleanDigits = lowerCode.replace(/\D/g, "");
 
     const isSelectionCode = lowerCode.includes("select") || 
-      (meta?.selectionCode && lowerCode === String(meta.selectionCode).toLowerCase()) ||
-      (meta?.brideCode && lowerCode === String(meta.brideCode).toLowerCase()) ||
-      (meta?.groomCode && lowerCode === String(meta.groomCode).toLowerCase()) ||
-      viewerRole === "Bride" || viewerRole === "Groom";
+      (meta?.selectionCode && (lowerCode === String(meta.selectionCode).trim().toLowerCase() || (cleanDigits.length >= 2 && cleanDigits === String(meta.selectionCode).replace(/\D/g, "")))) ||
+      (meta?.brideCode && lowerCode === String(meta.brideCode).trim().toLowerCase()) ||
+      (meta?.groomCode && lowerCode === String(meta.groomCode).trim().toLowerCase());
 
     let targetRole = "Guest";
-    if (lowerCode.includes("groom") || (isSelectionCode && viewerRole === "Groom")) {
+    if (lowerCode.includes("groom") || (isSelectionCode && (viewerRole === "Groom" || lowerCode.includes("groom")))) {
       targetRole = "Groom";
-    } else if (lowerCode.includes("bride") || (isSelectionCode && viewerRole === "Bride")) {
-      targetRole = "Bride";
-    } else if (isSelectionCode) {
-      targetRole = viewerRole || "Bride";
+    } else if (lowerCode.includes("bride") || isSelectionCode) {
+      targetRole = viewerRole === "Groom" ? "Groom" : "Bride";
     } else {
       targetRole = "Guest";
     }
@@ -451,7 +448,13 @@ const ClientGallery = () => {
       localStorage.removeItem(`dreamwed_viewer_user_${id}`);
       localStorage.removeItem(`dreamwed_passcode_${id}`);
     }
+    localStorage.removeItem("dreamwed_viewer_role");
+    localStorage.removeItem("dreamwed_viewer_name");
+    localStorage.removeItem("dreamwed_viewer_email");
     setCurrentUser(null);
+    setViewerRole("Guest");
+    setViewerName("");
+    setExplicitViewOverride(null);
     setIsLocked(true);
     setPasscode("");
   };

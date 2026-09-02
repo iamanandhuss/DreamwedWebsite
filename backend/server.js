@@ -1317,6 +1317,7 @@ app.post(['/api/public/galleries/:id/unlock', '/api/public/galleries/unlock', '/
       cleanCode === `select-${gAccess}` || 
       cleanCode === `selection-${gAccess}` || 
       cleanCode === "select" ||
+      (cleanDigits.length >= 2 && cleanDigits === gSelectDigits) ||
       (cleanCode.includes("select") && (cleanDigits === gAccessDigits || cleanDigits === gIdDigits));
 
     // 2. Bride / Groom Specific Match
@@ -1331,7 +1332,7 @@ app.post(['/api/public/galleries/:id/unlock', '/api/public/galleries/unlock', '/
       cleanCode === gId ||
       (cleanCode && gAccess.endsWith(cleanCode)) ||
       (cleanCode && gId.endsWith(cleanCode)) ||
-      (cleanDigits.length >= 2 && (cleanDigits === gAccessDigits || cleanDigits === gIdDigits || cleanDigits === gGuestDigits || cleanDigits === gSelectDigits));
+      (cleanDigits.length >= 2 && (cleanDigits === gAccessDigits || cleanDigits === gIdDigits || cleanDigits === gGuestDigits));
 
     if (isSelectionMatch || isBrideMatch || isGroomMatch) {
       accessType = "selection";
@@ -1340,13 +1341,9 @@ app.post(['/api/public/galleries/:id/unlock', '/api/public/galleries/unlock', '/
       else resolvedRole = (user?.role === "Groom" || user?.role === "groom") ? "Groom" : "Bride";
       isAuthorized = true;
     } else if (isGuestOrGeneralMatch) {
-      if (user?.role === "Bride" || user?.role === "Groom") {
-        accessType = "selection";
-        resolvedRole = user.role;
-      } else {
-        accessType = "guest";
-        resolvedRole = "Guest";
-      }
+      // Guest passcode strictly forces Guest mode and role
+      accessType = "guest";
+      resolvedRole = "Guest";
       isAuthorized = true;
     }
 
