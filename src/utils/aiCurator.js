@@ -338,11 +338,11 @@ export const detectGalleryContext = (galleryName = "") => {
 };
 
 /**
- * Advanced AI Face & Vision Curation Engine with 3-Tier Categorization:
+ * Advanced AI Face & Vision Curation Engine with Multi-Timeline Scene Sampling:
  * 
- * 1. ACT I: ~10% (10-25) Single Best Couple & Solo Portraits (AI, Zero Duplicate Bursts)
- * 2. ACT II: Ceremony, Rituals, Stage & Group Photos (AI)
- * 3. ACT III: Complete Story Archive & Candids (AI)
+ * 1. ACT I: Top 10-25 Couple & Solo Portraits (Sampled strictly from Portrait Session, 1 shot per scene window)
+ * 2. ACT II: Ceremony, Stage, Rituals & Group Photos (Sampled strictly from Ceremony/Stage timeline, 1 shot per scene window)
+ * 3. ACT III: Complete Story Archive & Candids (All remaining celebration moments with progressive loading)
  */
 export const curateGuestThreeTierSections = (photos = [], coupleTitle = "Wedding") => {
   if (!photos || photos.length === 0) {
@@ -380,100 +380,97 @@ export const curateGuestThreeTierSections = (photos = [], coupleTitle = "Wedding
     };
   }
 
-  // 2. Score all photos with AI visual, composition & facial metrics
+  // 2. Score all photos with AI visual & facial weight metrics
   const scoredPhotos = dedupedPhotos.map((p, idx) => ({
     ...p,
     ...calculatePhotoScore(p, idx, total)
   }));
 
-  // 3. SEPARATE INTO CANDIDATE POOLS (Portrait/Couple vs Group/Ceremony)
-  const coupleSoloCandidates = [];
-  const groupRitualCandidates = [];
+  const selectedIds = new Set();
 
-  scoredPhotos.forEach((p, idx) => {
-    const aspect = (p.width && p.height) ? (p.width / p.height) : 0.8;
-    const isPortrait = aspect <= 1.15;
-    const isEarlySession = idx < Math.max(12, total * 0.45);
-    const hasHighHeroScore = (p.heroScore || 0) >= 0.88;
+  // =========================================================================
+  // ACT I: TOP 10-25 COUPLE & SOLO PORTRAITS (1 Shot Per Scene Window)
+  // =========================================================================
+  // Couple & solo portraits are captured in the dedicated portrait session (first ~35% of shoot or high-hero portrait tags)
+  const portraitSplitIndex = Math.max(12, Math.floor(total * 0.35));
+  const portraitPool = scoredPhotos.slice(0, portraitSplitIndex);
 
-    if (isPortrait || isEarlySession || hasHighHeroScore) {
-      coupleSoloCandidates.push(p);
-    } else {
-      groupRitualCandidates.push(p);
-    }
-  });
-
-  // 4. ACT I: TOP 10-25 COUPLE & SOLO PORTRAITS (No repeats)
-  const targetTop25Count = Math.min(25, Math.max(8, Math.ceil(total * 0.25)));
+  const targetTop25Count = Math.min(25, Math.max(8, Math.floor(portraitPool.length > 0 ? portraitPool.length * 0.40 : total * 0.25)));
   const selectedTop25 = [];
-  const selectedTop25Ids = new Set();
 
-  // Sort couple candidates by heroScore
-  const sortedCouple = [...coupleSoloCandidates].sort((a, b) => (b.heroScore || 0) - (a.heroScore || 0));
-
-  for (const p of sortedCouple) {
-    if (selectedTop25.length >= targetTop25Count) break;
-    // Check for near-burst duplicate in the original timeline
-    const isBurstNeighbor = selectedTop25.some(existing => {
-      const idxA = scoredPhotos.findIndex(x => x.id === p.id);
-      const idxB = scoredPhotos.findIndex(x => x.id === existing.id);
-      return Math.abs(idxA - idxB) <= 1;
+  if (portraitPool.length <= targetTop25Count) {
+    // If small pool, take highest scored unique frames
+    portraitPool.forEach(p => {
+      selectedTop25.push(p);
+      selectedIds.add(p.id);
     });
+  } else {
+    // Divide the portrait timeline into N distinct scene windows
+    const windowSize = portraitPool.length / targetTop25Count;
+    for (let i = 0; i < targetTop25Count; i++) {
+      const startIdx = Math.floor(i * windowSize);
+      const endIdx = Math.min(portraitPool.length, Math.floor((i + 1) * windowSize));
+      const windowPhotos = portraitPool.slice(startIdx, endIdx);
 
-    if (!isBurstNeighbor || selectedTop25.length < 6) {
-      if (!selectedTop25Ids.has(p.id)) {
-        selectedTop25.push(p);
-        selectedTop25Ids.add(p.id);
+      if (windowPhotos.length > 0) {
+        // Pick strictly the #1 best photo in this scene frame, then jump to next scene
+        const bestInFrame = [...windowPhotos].sort((a, b) => (b.heroScore || 0) - (a.heroScore || 0))[0];
+        if (bestInFrame && !selectedIds.has(bestInFrame.id)) {
+          selectedTop25.push(bestInFrame);
+          selectedIds.add(bestInFrame.id);
+        }
       }
     }
   }
 
-  // Fallback if couple pool was small
-  if (selectedTop25.length < Math.min(10, total)) {
-    for (const p of scoredPhotos) {
-      if (selectedTop25.length >= Math.min(25, total)) break;
-      if (!selectedTop25Ids.has(p.id)) {
-        selectedTop25.push(p);
-        selectedTop25Ids.add(p.id);
+  // =========================================================================
+  // ACT II: RITUALS, CEREMONY, STAGE & GROUP PHOTOS (1 Shot Per Scene Window)
+  // =========================================================================
+  // Sampled strictly from the Ceremony, Stage, Ritual, and Family timeline (from portraitSplitIndex onwards)
+  const ceremonyGroupPool = scoredPhotos.slice(portraitSplitIndex);
+  const selectedRituals = [];
+
+  const targetRitualCount = Math.min(25, Math.max(6, Math.floor(ceremonyGroupPool.length > 0 ? ceremonyGroupPool.length * 0.35 : 15)));
+
+  if (ceremonyGroupPool.length <= targetRitualCount) {
+    ceremonyGroupPool.forEach(p => {
+      if (!selectedIds.has(p.id)) {
+        selectedRituals.push(p);
+        selectedIds.add(p.id);
       }
-    }
-  }
-
-  // 5. ACT II: RITUALS, CEREMONY, STAGE & GROUP PHOTOS
-  const remainingAfterAct1 = scoredPhotos.filter(p => !selectedTop25Ids.has(p.id));
-  const ritualGroupPhotos = [];
-  const ritualGroupIds = new Set();
-
-  const targetGroupCount = Math.min(30, Math.max(6, Math.ceil(remainingAfterAct1.length * 0.40)));
-
-  // Prioritize landscape orientation, ceremony frames, group poses
-  const sortedGroup = [...remainingAfterAct1].sort((a, b) => {
-    const aAspect = (a.width && a.height) ? (a.width / a.height) : 1;
-    const bAspect = (b.width && b.height) ? (b.width / b.height) : 1;
-    return bAspect - aAspect || (b.emotionScore || 0) - (a.emotionScore || 0);
-  });
-
-  for (const p of sortedGroup) {
-    if (ritualGroupPhotos.length >= targetGroupCount) break;
-    const isBurstNeighbor = ritualGroupPhotos.some(existing => {
-      const idxA = scoredPhotos.findIndex(x => x.id === p.id);
-      const idxB = scoredPhotos.findIndex(x => x.id === existing.id);
-      return Math.abs(idxA - idxB) <= 1;
     });
+  } else {
+    // Divide ceremony timeline into M distinct scene windows
+    const groupWindowSize = ceremonyGroupPool.length / targetRitualCount;
+    for (let i = 0; i < targetRitualCount; i++) {
+      const startIdx = Math.floor(i * groupWindowSize);
+      const endIdx = Math.min(ceremonyGroupPool.length, Math.floor((i + 1) * groupWindowSize));
+      const windowPhotos = ceremonyGroupPool.slice(startIdx, endIdx);
 
-    if (!isBurstNeighbor || ritualGroupPhotos.length < 6) {
-      if (!ritualGroupIds.has(p.id)) {
-        ritualGroupPhotos.push(p);
-        ritualGroupIds.add(p.id);
+      if (windowPhotos.length > 0) {
+        // Prioritize wide landscape / ritual / group frames with high emotional clarity
+        const sorted = [...windowPhotos].sort((a, b) => {
+          const aAspect = (a.width && a.height) ? (a.width / a.height) : 1;
+          const bAspect = (b.width && b.height) ? (b.width / b.height) : 1;
+          return (bAspect - aAspect) * 2 + ((b.emotionScore || 0) - (a.emotionScore || 0));
+        });
+        const bestGroupInFrame = sorted[0];
+        if (bestGroupInFrame && !selectedIds.has(bestGroupInFrame.id)) {
+          selectedRituals.push(bestGroupInFrame);
+          selectedIds.add(bestGroupInFrame.id);
+        }
       }
     }
   }
 
-  // 6. ACT III: THE FULL STORY CANVAS & CANDIDS ARCHIVE
-  const restOfPhotos = remainingAfterAct1.filter(p => !ritualGroupIds.has(p.id));
+  // =========================================================================
+  // ACT III: FULL STORY CANVAS & COMPLETE CANDIDS ARCHIVE
+  // =========================================================================
+  // Contains all remaining photos across the entire photoshoot journey
+  const restOfPhotos = scoredPhotos.filter(p => !selectedIds.has(p.id));
 
   const curatedTop25 = assignEditorialLayoutRoles(selectedTop25);
-  const curatedRituals = assignEditorialLayoutRoles(ritualGroupPhotos);
+  const curatedRituals = assignEditorialLayoutRoles(selectedRituals);
   const curatedRest = assignEditorialLayoutRoles(restOfPhotos);
 
   return {
