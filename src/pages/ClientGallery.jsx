@@ -545,14 +545,30 @@ const ClientGallery = () => {
           loading="lazy"
         />
 
-        {/* Key Moment badge for hero frames */}
-        {(isFocalHero || badgeText) && (
-          <div className="absolute top-3 left-3 z-20 pointer-events-none">
+        {/* Top Left Badges: Key Moment & Member Selection attribution */}
+        <div className="absolute top-3 left-3 flex flex-wrap gap-1 items-center z-20 pointer-events-none max-w-[75%]">
+          {(isFocalHero || badgeText) && (
             <span className="bg-black/80 backdrop-blur-md text-amber-300 border border-amber-500/30 text-[8px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1 font-mono">
               <Sparkles size={9} /> {badgeText || "Featured"}
             </span>
-          </div>
-        )}
+          )}
+
+          {/* Member Selection Pills (Bride / Groom) */}
+          {isCoupleSelectionMode && getUsersForPhoto(photo.id).length > 0 && (
+            getUsersForPhoto(photo.id).map((u, uIdx) => (
+              <span 
+                key={uIdx}
+                className={`text-[8px] font-bold px-2 py-0.5 rounded-full shadow-md flex items-center gap-1 border ${
+                  u.role === 'Bride' ? 'bg-pink-600/95 text-white border-pink-400/50 shadow-pink-600/30' : 
+                  u.role === 'Groom' ? 'bg-sky-600/95 text-white border-sky-400/50 shadow-sky-600/30' : 
+                  'bg-red-600 text-white border-red-400/50'
+                }`}
+              >
+                {u.role === 'Bride' ? '👰' : u.role === 'Groom' ? '🤵' : '❤️'} {u.name}
+              </span>
+            ))
+          )}
+        </div>
 
         {/* Heart Selection Button - Exclusive to Bride & Groom */}
         {isCoupleSelectionMode && (
