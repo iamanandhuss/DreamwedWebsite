@@ -142,10 +142,10 @@ const Admin = () => {
   const [newWeddingLocation, setNewWeddingLocation] = useState("");
   const [newLoginMode, setNewLoginMode] = useState("two_code_mode");
   const [newSelectionCode, setNewSelectionCode] = useState(() => {
-    return String(Math.floor(1000 + Math.random() * 9000));
+    return String(Math.floor(5000 + Math.random() * 4000));
   });
   const [newGuestCode, setNewGuestCode] = useState(() => {
-    return String(Math.floor(1000 + Math.random() * 9000));
+    return String(Math.floor(1000 + Math.random() * 4000));
   });
   const [newBrideCode, setNewBrideCode] = useState("");
   const [newGroomCode, setNewGroomCode] = useState("");
@@ -1500,8 +1500,8 @@ const Admin = () => {
   };
 
   const handleRegenerateRandomCodes = () => {
-    const gCode = String(Math.floor(1000 + Math.random() * 9000));
-    const sCode = String(Math.floor(1000 + Math.random() * 9000));
+    const gCode = String(Math.floor(1000 + Math.random() * 4000));
+    const sCode = String(Math.floor(5000 + Math.random() * 4000));
     setNewGuestCode(gCode);
     setNewSelectionCode(sCode);
   };
@@ -1513,10 +1513,10 @@ const Admin = () => {
     const groom = gallery.groomName || "";
     const bride = gallery.brideName || "";
     const couple = groom && bride ? `${groom} & ${bride}` : (gallery.name || "Wedding Gallery");
-    const selectCode = gallery.selectionCode || gallery.accessCode || '2000';
-    const guestCode = gallery.guestCode || gallery.accessCode || '1000';
+    const gCode = gallery.guestCode || (gallery.accessCode && !gallery.selectionCode ? gallery.accessCode : '1000');
+    const sCode = gallery.selectionCode || (gallery.accessCode && gallery.accessCode !== gCode ? gallery.accessCode : '8000');
 
-    const message = `✨ *Private Wedding Gallery: ${couple}* ✨\n\n📸 *View the Cinematic Story (Guests):*\n🔗 ${url}\n👥 *Guest Passcode:* \`${guestCode}\`\n\n💍 *Album Photo Selection (Bride & Groom):*\n🔗 ${url}\n👰🤵 *Selection Passcode:* \`${selectCode}\` (Prompts for Bride or Groom)\n\n_Protected & Curated by Dreamwed Stories_`;
+    const message = `✨ *Private Wedding Gallery: ${couple}* ✨\n\n📸 *View the Cinematic Story (Guests):*\n🔗 ${url}\n👥 *Guest Passcode:* \`${gCode}\`\n\n💍 *Album Photo Selection (Bride & Groom):*\n🔗 ${url}\n👰🤵 *Selection Passcode:* \`${sCode}\` (Prompts for Bride or Groom)\n\n_Protected & Curated by Dreamwed Stories_`;
 
     navigator.clipboard.writeText(message);
     alert(`💬 WhatsApp Group Invitation Copied to Clipboard!\n\n${message}`);
@@ -1534,10 +1534,13 @@ const Admin = () => {
       return;
     }
     
-    const randomGuestCode = String(Math.floor(1000 + Math.random() * 9000));
-    const randomSelectCode = String(Math.floor(1000 + Math.random() * 9000));
+    const randomGuestCode = String(Math.floor(1000 + Math.random() * 4000));
+    const randomSelectCode = String(Math.floor(5000 + Math.random() * 4000));
     const finalGuestCode = newGuestCode.trim() || randomGuestCode;
-    const finalSelectCode = newSelectionCode.trim() || randomSelectCode;
+    let finalSelectCode = newSelectionCode.trim() || randomSelectCode;
+    if (finalGuestCode === finalSelectCode) {
+      finalSelectCode = String(Math.floor(5000 + Math.random() * 4000));
+    }
     const generatedId = `gallery-${finalName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Math.floor(100 + Math.random() * 900)}`;
 
     const newGal = {
@@ -1593,8 +1596,8 @@ const Admin = () => {
       console.warn("Backend save failed, saved locally in dreamwed_galleries fallback:", err);
     }
 
-    const nextGCode = String(Math.floor(1000 + Math.random() * 9000));
-    const nextSCode = String(Math.floor(1000 + Math.random() * 9000));
+    const nextGCode = String(Math.floor(1000 + Math.random() * 4000));
+    const nextSCode = String(Math.floor(5000 + Math.random() * 4000));
     setNewGroomName("");
     setNewBrideName("");
     setNewGalName("");
@@ -4209,130 +4212,159 @@ const Admin = () => {
                 <div className="text-center py-16 text-zinc-600 text-xs font-light">No active Dreamwed galleries found.</div>
               ) : (
                 <div className="space-y-3.5">
-                  {aiGalleries.map((g) => (
-                    <div key={g?.id || Math.random()} className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                      <div className="flex items-center gap-3 w-full md:w-auto">
-                        <img src={g?.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800"} className="w-14 h-14 rounded-lg object-cover border border-zinc-750 shrink-0" alt="Wedding Cover" />
-                        <div className="space-y-1">
-                          <span className="font-bold text-white text-sm block">{g?.name || "Dreamwed Wedding"}</span>
-                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                            <span className="text-[9px] text-amber-400 font-bold bg-amber-950/40 px-2 py-0.5 border border-amber-800/40 rounded flex items-center gap-1">
-                              👥 Guest Code: <strong className="text-white font-mono">{g?.guestCode || g?.accessCode || "1000"}</strong>
+                  {aiGalleries.map((g) => {
+                    const gCode = g?.guestCode || (g?.accessCode && !g?.selectionCode ? g.accessCode : "1000");
+                    const sCode = g?.selectionCode || (g?.accessCode && g?.accessCode !== gCode ? g.accessCode : "8000");
+                    const selectedCount = (g?.selectedCount || (Array.isArray(g?.selectedPhotoIds) ? g.selectedPhotoIds.length : 0)) || 0;
+                    const photosCount = (g?.photosCount || (Array.isArray(g?.photos) ? g.photos.length : 0)) || 0;
+                    const galleryUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/gallery/${g?.id || ""}`;
+
+                    return (
+                      <div key={g?.id || Math.random()} className="p-4 sm:p-5 rounded-2xl bg-zinc-900/90 border border-zinc-800 space-y-4 shadow-lg hover:border-zinc-700/80 transition-all">
+                        {/* 1. Header: Thumbnail, Name, Passcodes & Link */}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 w-full sm:w-auto">
+                            <img 
+                              src={g?.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800"} 
+                              className="w-14 h-14 rounded-xl object-cover border border-zinc-750 shrink-0 shadow-md" 
+                              alt="Wedding Cover" 
+                            />
+                            <div className="space-y-1 min-w-0">
+                              <h4 className="font-bold text-white text-sm truncate">{g?.name || "Dreamwed Wedding"}</h4>
+                              
+                              {/* Gallery URL + Copy Button */}
+                              <div className="text-[10px] text-zinc-500 flex items-center gap-1.5">
+                                <span className="font-light truncate max-w-[180px] sm:max-w-xs">{galleryUrl}</span>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigator.clipboard.writeText(galleryUrl);
+                                    alert("🔗 Branded Gallery Link copied to clipboard!");
+                                  }}
+                                  className="text-zinc-400 hover:text-[#b4975a] transition-colors cursor-pointer p-0.5"
+                                  title="Copy Gallery Link"
+                                >
+                                  <Copy size={12} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Passcode Badges */}
+                          <div className="flex flex-wrap items-center gap-2 pt-1 sm:pt-0">
+                            <span className="text-[10px] text-amber-400 font-bold bg-amber-950/40 px-2.5 py-1 border border-amber-800/40 rounded-lg flex items-center gap-1.5 shadow-sm">
+                              👥 Guest: <strong className="text-white font-mono tracking-wider">{gCode}</strong>
                             </span>
-                            <span className="text-[9px] text-pink-400 font-bold bg-pink-950/40 px-2 py-0.5 border border-pink-800/40 rounded flex items-center gap-1">
-                              💍 Selection Code: <strong className="text-white font-mono">{g?.selectionCode || g?.accessCode || "2000"}</strong>
-                            </span>
-                            <span className="text-[9px] text-red-400 font-bold bg-red-950/40 px-2 py-0.5 border border-red-800/40 rounded-full flex items-center gap-1">
-                              <Heart size={10} className="fill-current text-red-400" />
-                              {(g?.selectedCount || (Array.isArray(g?.selectedPhotoIds) ? g.selectedPhotoIds.length : 0)) || 0} Selected
+                            <span className="text-[10px] text-pink-400 font-bold bg-pink-950/40 px-2.5 py-1 border border-pink-800/40 rounded-lg flex items-center gap-1.5 shadow-sm">
+                              💍 Selection: <strong className="text-white font-mono tracking-wider">{sCode}</strong>
                             </span>
                           </div>
-                          <div className="text-[10px] text-zinc-500 flex items-center gap-1.5 mt-0.5">
-                            <span className="font-light truncate max-w-[200px] sm:max-w-xs">{typeof window !== "undefined" ? window.location.origin : ""}/gallery/{g?.id}</span>
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const link = (typeof window !== "undefined" ? window.location.origin : "") + "/gallery/" + (g?.id || "");
-                                navigator.clipboard.writeText(link);
-                                alert("🔗 Branded Gallery Link copied to clipboard!");
-                              }}
-                              className="text-zinc-500 hover:text-[#b4975a] transition-colors cursor-pointer"
-                              title="Copy Gallery Link"
+                        </div>
+
+                        {/* 2. Action Toolbar: Clean, fully visible, non-overflowing buttons */}
+                        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-zinc-800/70">
+                          {/* Left Action Group (Sharing & Selections) */}
+                          <div className="flex flex-wrap items-center gap-2">
+                            {/* 💬 WhatsApp Invite Button */}
+                            <button
+                              onClick={() => handleCopyWhatsAppInvite(g)}
+                              className="px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500 hover:text-white text-emerald-400 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
+                              title="Copy WhatsApp Group Invite Message"
                             >
-                              <Copy size={11} />
+                              <Share2 size={12} />
+                              <span>Invite Group</span>
+                            </button>
+
+                            {/* 📥 View & Download Selected Photos */}
+                            <button 
+                              onClick={() => handleOpenSelectedPhotos(g?.id)}
+                              className={`px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 ${
+                                selectedCount > 0 
+                                  ? "bg-red-500/20 text-red-300 border-red-500/40 hover:bg-red-600 hover:text-white" 
+                                  : "bg-zinc-800/80 text-zinc-400 border-zinc-750 hover:text-white"
+                              }`}
+                              title="View & Download Selected Photos in 1 Click"
+                            >
+                              <Heart size={12} className={selectedCount > 0 ? "fill-red-400 text-red-400" : ""} />
+                              <span>Selected ({selectedCount})</span>
+                            </button>
+
+                            {/* Shareable Download Link */}
+                            <button 
+                              onClick={() => handleCopyShareDownloadLink(g?.id)}
+                              className="p-2 rounded-xl bg-[#b4975a]/10 hover:bg-[#b4975a] hover:text-zinc-950 text-[#b4975a] border border-[#b4975a]/30 transition-all flex items-center justify-center cursor-pointer shadow-sm active:scale-95"
+                              title="Copy Shareable Selections Download Link"
+                            >
+                              <Share2 size={13} />
+                            </button>
+                          </div>
+
+                          {/* Right Action Group (Sync, Drive, Cover, Delete) */}
+                          <div className="flex flex-wrap items-center gap-2">
+                            {/* 🔄 Sync Photos from Drive */}
+                            <button 
+                              onClick={() => handleSyncDrivePhotos(g?.id)}
+                              disabled={syncingGalId === g?.id}
+                              className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-[#b4975a] hover:text-zinc-950 text-white text-[10px] font-bold uppercase tracking-wider border border-zinc-750 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95"
+                            >
+                              {syncingGalId === g?.id ? (
+                                <>
+                                  <RefreshCw size={12} className="animate-spin" />
+                                  <span>Syncing...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <RefreshCw size={12} />
+                                  <span>Sync ({photosCount})</span>
+                                </>
+                              )}
+                            </button>
+                            
+                            {/* Drive Links */}
+                            {g?.gdriveLink && (
+                              <a 
+                                href={g.gdriveLink} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="px-2.5 py-2 rounded-xl bg-zinc-800/80 hover:bg-zinc-700 text-[#b4975a] border border-zinc-750 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer shrink-0"
+                                title="Open Google Drive Folder"
+                              >
+                                <span>Drive ↗</span>
+                              </a>
+                            )}
+
+                            {/* 🎨 Edit Cover Button */}
+                            <button
+                              onClick={() => {
+                                setEditingCoverGallery(g);
+                                setEditCoverValue(g?.coverUrl || "");
+                                setEditCoverAlign(g?.coverAlign || "center");
+                                setEditCoverTextAlign(g?.coverTextAlign || "center");
+                                setEditCoverFont(g?.coverFont || "cormorant");
+                                setEditCoverColor(g?.coverColor || "#b4975a");
+                                setEditCoverMode("upload");
+                              }}
+                              className="px-2.5 py-2 rounded-xl bg-zinc-800 hover:bg-[#b4975a] hover:text-zinc-950 text-zinc-300 text-[10px] font-bold uppercase tracking-wider border border-zinc-750 transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+                              title="Change Cover Photo & Styling"
+                            >
+                              <ImageIcon size={11} />
+                              <span>Cover</span>
+                            </button>
+
+                            {/* 🗑️ Delete Gallery Button */}
+                            <button 
+                              onClick={() => handleDeleteAiGallery(g?.id, g?.name)}
+                              className="px-3 py-2 rounded-xl bg-red-950/40 hover:bg-red-600 text-red-400 hover:text-white border border-red-800/60 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 shrink-0"
+                              title={`Permanently Delete "${g?.name || 'this gallery'}"`}
+                            >
+                              <Trash2 size={12} />
+                              <span>Delete</span>
                             </button>
                           </div>
                         </div>
                       </div>
-                      
-                      <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full md:w-auto justify-end border-t border-zinc-800/40 md:border-t-0 pt-3 md:pt-0">
-                        {/* 💬 WhatsApp Invite Button */}
-                        <button
-                          onClick={() => handleCopyWhatsAppInvite(g)}
-                          className="px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500 hover:text-white text-emerald-400 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-                          title="Copy Ready-to-Send WhatsApp Group Invite Message"
-                        >
-                          <Share2 size={12} /> Invite Group
-                        </button>
-
-                        {/* 📥 1-Click Download Selected Photos */}
-                        <button 
-                          onClick={() => handleOpenSelectedPhotos(g?.id)}
-                          className="px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500 hover:text-white text-red-400 text-[10px] font-bold uppercase tracking-wider border border-red-500/30 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-                          title="View & Download Selected Photos in 1 Click"
-                        >
-                          <Heart size={12} className="fill-current" />
-                          Selected ({(g?.selectedCount || (Array.isArray(g?.selectedPhotoIds) ? g.selectedPhotoIds.length : 0)) || 0})
-                        </button>
-
-                        <button 
-                          onClick={() => handleCopyShareDownloadLink(g?.id)}
-                          className="p-2 rounded-xl bg-[#b4975a]/10 hover:bg-[#b4975a] hover:text-zinc-950 text-[#b4975a] border border-[#b4975a]/30 transition-all flex items-center justify-center cursor-pointer shadow-sm"
-                          title="Copy Shareable Selections Download Link"
-                        >
-                          <Share2 size={13} />
-                        </button>
-
-                        <button 
-                          onClick={() => handleSyncDrivePhotos(g?.id)}
-                          disabled={syncingGalId === g?.id}
-                          className="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-[#b4975a] hover:text-zinc-950 text-white text-[10px] font-bold uppercase tracking-wider border border-zinc-750 transition-all flex items-center gap-1 cursor-pointer disabled:bg-zinc-900 disabled:text-zinc-650 disabled:cursor-not-allowed"
-                        >
-                          {syncingGalId === g?.id ? (
-                            <>
-                              <RefreshCw size={12} className="animate-spin" /> Syncing...
-                            </>
-                          ) : (
-                            <>
-                              <RefreshCw size={12} /> Sync ({(g?.photosCount || (Array.isArray(g?.photos) ? g.photos.length : 0)) || 0})
-                            </>
-                          )}
-                        </button>
-                        
-                        {g?.gdriveLink && (
-                          <div className="flex items-center gap-1.5">
-                            <a href={g.gdriveLink} target="_blank" rel="noopener noreferrer"
-                              className="text-[10px] text-[#b4975a] font-bold uppercase tracking-wider hover:underline shrink-0">
-                              {g.extraDriveLink ? "Drive 1 ↗" : "Drive ↗"}
-                            </a>
-                            {g.extraDriveLink && (
-                              <a href={g.extraDriveLink} target="_blank" rel="noopener noreferrer"
-                                className="text-[10px] text-amber-400/90 font-bold uppercase tracking-wider hover:underline shrink-0">
-                                Drive 2 ↗
-                              </a>
-                            )}
-                          </div>
-                        )}
-
-                        {/* 🎨 Edit Cover Button */}
-                        <button
-                          onClick={() => {
-                            setEditingCoverGallery(g);
-                            setEditCoverValue(g?.coverUrl || "");
-                            setEditCoverAlign(g?.coverAlign || "center");
-                            setEditCoverTextAlign(g?.coverTextAlign || "center");
-                            setEditCoverFont(g?.coverFont || "cormorant");
-                            setEditCoverColor(g?.coverColor || "#b4975a");
-                            setEditCoverMode("upload");
-                          }}
-                          className="px-2.5 py-2 rounded-xl bg-zinc-800 hover:bg-[#b4975a] hover:text-zinc-950 text-zinc-300 text-[10px] font-bold uppercase tracking-wider border border-zinc-750 transition-all flex items-center gap-1 cursor-pointer"
-                          title="Change / Redesign Cover Photo"
-                        >
-                          <ImageIcon size={11} /> Cover
-                        </button>
-
-                        {/* 🗑️ Delete Gallery Button */}
-                        <button 
-                          onClick={() => handleDeleteAiGallery(g?.id, g?.name)}
-                          className="px-3 py-2 rounded-xl bg-red-950/40 hover:bg-red-600 text-red-400 hover:text-white border border-red-800/60 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 shrink-0"
-                          title={`Permanently Delete "${g?.name || 'this gallery'}"`}
-                        >
-                          <Trash2 size={12} />
-                          <span>Delete</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
