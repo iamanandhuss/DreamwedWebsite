@@ -880,13 +880,31 @@ function getGallery(id) {
   if (!id) return null;
   data.galleries = data.galleries || [];
   const cleanId = String(id).trim().toLowerCase();
-  return data.galleries.find(g => 
-    String(g.id).toLowerCase() === cleanId ||
-    String(g.name || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, '-') === cleanId ||
-    String(g.accessCode || "").toLowerCase().trim() === cleanId ||
-    String(g.guestCode || "").toLowerCase().trim() === cleanId ||
-    String(g.selectionCode || "").toLowerCase().trim() === cleanId
-  ) || null;
+  const cleanDigits = cleanId.replace(/\D/g, "");
+
+  return data.galleries.find(g => {
+    const gId = String(g.id || "").toLowerCase().trim();
+    const gName = String(g.name || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
+    const gAccess = String(g.accessCode || "").toLowerCase().trim();
+    const gGuest = String(g.guestCode || "").toLowerCase().trim();
+    const gSelect = String(g.selectionCode || "").toLowerCase().trim();
+    const gBride = String(g.brideCode || "").toLowerCase().trim();
+    const gGroom = String(g.groomCode || "").toLowerCase().trim();
+
+    const gAccDigits = gAccess.replace(/\D/g, "");
+    const gIdDigits = gId.replace(/\D/g, "");
+
+    return gId === cleanId ||
+      gName === cleanId ||
+      gAccess === cleanId ||
+      gGuest === cleanId ||
+      gSelect === cleanId ||
+      gBride === cleanId ||
+      gGroom === cleanId ||
+      (cleanId && gAccess.endsWith(cleanId)) ||
+      (cleanId && gId.endsWith(cleanId)) ||
+      (cleanDigits.length >= 2 && (cleanDigits === gAccDigits || cleanDigits === gIdDigits));
+  }) || null;
 }
 
 function saveGallery(gallery) {

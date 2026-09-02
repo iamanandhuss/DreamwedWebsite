@@ -1280,11 +1280,14 @@ app.post('/api/public/galleries/:id/selections', (req, res) => {
 });
 
 // POST Unlock public gallery using 2 Passcodes (Guest AI Story Code vs Couple Selection Code)
-app.post('/api/public/galleries/:id/unlock', (req, res) => {
+app.post(['/api/public/galleries/:id/unlock', '/api/public/galleries/unlock', '/api/public/unlock'], (req, res) => {
   try {
     const { accessCode, user } = req.body;
-    const gallery = getGallery(req.params.id);
-    if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
+    let gallery = req.params.id ? getGallery(req.params.id) : null;
+    if (!gallery && accessCode) {
+      gallery = getGallery(accessCode);
+    }
+    if (!gallery) return res.status(404).json({ error: 'Gallery not found. Please check your access passcode.' });
     
     const cleanCode = String(accessCode || "").trim().toLowerCase();
     const cleanDigits = cleanCode.replace(/\D/g, "");
