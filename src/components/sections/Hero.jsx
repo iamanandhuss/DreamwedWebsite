@@ -2,12 +2,15 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "../ui/Button";
 import { FaArrowRight, FaPlay, FaXmark } from "react-icons/fa6";
-import RED from "../../assets/images/RED.jpg"
+import RED from "../../assets/images/RED.jpg";
+import { getMediaUrl } from "../../data/websiteMedia";
 
 const Hero = () => {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const heroBg = getMediaUrl('hero.backgroundImage', RED);
 
   useEffect(() => {
     const handleResize = () => {
@@ -28,7 +31,7 @@ const Hero = () => {
         className={`absolute inset-0 bg-cover bg-center bg-no-repeat z-0 transition-opacity duration-1000 ${
           isVideoLoaded ? "md:opacity-0" : "opacity-100"
         }`}
-        style={{ backgroundImage: `url(${RED})` }}
+        style={{ backgroundImage: `url(${heroBg})` }}
       />
 
       {/* 2. Cinematic Looping Background Video (Only mounted on desktop for data/battery optimization) */}

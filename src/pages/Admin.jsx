@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import SEO from "../components/SEO";
 import { downloadPhotosAsZip } from "../utils/zipDownloader";
+import WebsiteMediaManager from "../components/admin/WebsiteMediaManager";
 
 const ADMIN_PASS = "dreamwed2026";
 const API_BASE = typeof window !== "undefined"
@@ -1901,7 +1902,8 @@ const Admin = () => {
               {id: "ai-galleries", label: "💍 Dreamwed Galleries", icon: <Camera size={16} />},
               {id: "ai-orders", label: "🧾 Print Orders", icon: <FileText size={16} />},
               { id: "budget-tracker", label: "💰 Budget Tracker", icon: <Package size={16} /> },
-              { id: "invoice-studio", label: "🧾 Invoice Studio", icon: <FileText size={16} /> }
+              { id: "invoice-studio", label: "🧾 Invoice Studio", icon: <FileText size={16} /> },
+              { id: "website-media", label: "🖼 Website Media", icon: <ImageIcon size={16} /> }
             ].map((item) => (
               <button
                 key={item.id}
@@ -1991,10 +1993,9 @@ const Admin = () => {
                     { id: "clients", label: "👑 Client Portal", icon: <ShieldCheck size={16} /> },
                     { id: "staff", label: "👥 Staff Accounts", icon: <Users size={16} /> },
                     {id: "chats", label: "💬 Chat Room", icon: <MessageSquare size={16} />},
-                    {id: "ai-galleries", label: "💍 Dreamwed Galleries", icon: <Camera size={16} />},
-                    {id: "ai-orders", label: "🧾 Print Orders", icon: <FileText size={16} />},
                     { id: "budget-tracker", label: "💰 Budget Tracker", icon: <Package size={16} /> },
-                    { id: "invoice-studio", label: "🧾 Invoice Studio", icon: <FileText size={16} /> }
+                    { id: "invoice-studio", label: "🧾 Invoice Studio", icon: <FileText size={16} /> },
+                    { id: "website-media", label: "🖼 Website Media", icon: <ImageIcon size={16} /> }
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -2014,7 +2015,7 @@ const Admin = () => {
                       </div>
                       {item.badge > 0 && (
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${
-                          activeTab === item.id ? "bg-zinc-950 text-[#d4af37]" : "bg-red-500 text-white"
+                          activeTab === item.id ? "bg-zinc-950 text-[#d4af37]" : "bg-red-500 text-white animate-pulse"
                         }`}>
                           {item.badge}
                         </span>
@@ -2024,21 +2025,13 @@ const Admin = () => {
                 </nav>
               </div>
 
-              <div className="pt-4 border-t border-zinc-800/40 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#d4af37]/10 border border-[#d4af37]/20 flex items-center justify-center">
-                    <ShieldCheck size={18} className="text-[#d4af37]" />
-                  </div>
-                  <div className="text-left">
-                    <span className="text-white text-xs font-bold block">Administrator</span>
-                    <span className="text-zinc-500 text-[10px] block">Connected</span>
-                  </div>
-                </div>
+              <div className="pt-4 border-t border-zinc-800/40">
                 <button 
                   onClick={handleLogout}
-                  className="p-2 bg-zinc-850 hover:bg-red-500/10 hover:text-red-400 text-zinc-400 rounded-xl transition-all cursor-pointer"
+                  className="w-full py-3 bg-zinc-850 hover:bg-red-500/10 hover:text-red-400 text-zinc-400 rounded-xl transition-all flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider cursor-pointer"
                 >
                   <LogOut size={16} />
+                  <span>Log Out</span>
                 </button>
               </div>
             </motion.aside>
@@ -2068,6 +2061,7 @@ const Admin = () => {
               {activeTab === "ai-orders" && "Print Frame Orders"}
               {activeTab === "budget-tracker" && "Budget Planner & Settings"}
               {activeTab === "invoice-studio" && "Tax Invoice Studio"}
+              {activeTab === "website-media" && "Website Media & Cloudinary CDN"}
             </h2>
           </div>
 
@@ -5862,6 +5856,10 @@ const Admin = () => {
               </div>
             )}
           </div>
+        )}
+
+        {activeTab === "website-media" && (
+          <WebsiteMediaManager />
         )}
 
 

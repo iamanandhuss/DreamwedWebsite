@@ -8,6 +8,7 @@ import capure3 from "../../assets/images/capture3.png";
 import capure4 from "../../assets/images/capture4.png";
 import capure5 from "../../assets/images/capture5.png";
 import capure6 from "../../assets/images/capture6.png";
+import { getMediaUrl } from "../../data/websiteMedia";
 
 const AnimatedCounter = ({ value, duration = 2 }) => {
   const [count, setCount] = useState(0);
@@ -74,10 +75,10 @@ const ExperienceBento = () => {
             >
               <h2 className="text-[36px] sm:text-[48px] md:text-[72px] leading-[1.1] md:leading-[1] tracking-[-0.04em] text-black font-normal flex flex-col md:flex-row items-center flex-wrap justify-center gap-4">
                 Get Your
-                <div className="flex -space-x-4 my-2 md:my-0">
-                  <img src={capure1} className="w-12 h-12 md:w-16 md:h-16 rounded-full border-4 border-white object-cover" alt="User 1" />
-                  <img src={capure2} className="w-12 h-12 md:w-16 md:h-16 rounded-full border-4 border-white object-cover" alt="User 2" />
-                  <img src={capure3} className="w-12 h-12 md:w-16 md:h-16 rounded-full border-4 border-white object-cover" alt="User 3" />
+                <div className="inline-flex items-center -space-x-4 md:-space-x-6 mr-3 md:mr-6 align-middle">
+                  <img src={getMediaUrl('experienceBento.card2', capure1)} className="w-12 h-12 md:w-16 md:h-16 rounded-full border-4 border-white object-cover" alt="User 1" />
+                  <img src={getMediaUrl('experienceBento.card3', capure2)} className="w-12 h-12 md:w-16 md:h-16 rounded-full border-4 border-white object-cover" alt="User 2" />
+                  <img src={getMediaUrl('experienceBento.card4', capure3)} className="w-12 h-12 md:w-16 md:h-16 rounded-full border-4 border-white object-cover" alt="User 3" />
                 </div>
                 Dream Picture
               </h2>
@@ -159,7 +160,7 @@ const ExperienceBento = () => {
                 className="mt-8 md:mt-10 overflow-hidden rounded-[20px] md:rounded-[24px] aspect-[4/3] transition-transform duration-1000 group-hover:scale-105 shadow-lg"
               >
                 <img 
-                  src={EXPERIENCE_BENTO1}
+                  src={getMediaUrl('experienceBento.card1', EXPERIENCE_BENTO1)}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
                   alt="Wedding Moment" 
                 />

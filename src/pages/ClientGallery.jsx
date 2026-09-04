@@ -11,6 +11,7 @@ import {
 import SEO from "../components/SEO";
 import { downloadPhotosAsZip } from "../utils/zipDownloader";
 import { curateWeddingStory, curateGuestThreeTierSections, getOptimizedThumbnailUrl } from "../utils/aiCurator";
+import { findEmbeddedGallery, EMBEDDED_GALLERIES } from "../data/embeddedGalleries";
 
 const FONT_MAP = {
   cormorant: "'Cormorant Garamond', serif",

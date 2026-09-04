@@ -3,16 +3,16 @@ import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from
 import { Maximize2, X, ChevronLeft, ChevronRight, Sparkles, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// Import the new high-res assets
 import portrait1 from "../../assets/images/new_portrait_1.jpg";
 import portrait2 from "../../assets/images/new_portrait_2.jpg";
 import portrait3 from "../../assets/images/new_portrait_3.jpg";
 import portrait4 from "../../assets/images/new_portrait_4.jpg";
+import { getMediaUrl } from "../../data/websiteMedia";
 
-const galleryImages = [
+const getGalleryImages = () => [
   {
     id: 1,
-    src: portrait1,
+    src: getMediaUrl('portraits.portrait1', portrait1),
     title: "The Regal Bride",
     style: "Traditional & Portraiture",
     desc: "A breathtaking high-fidelity capture detailing the intricate gold temple jewelry and the rich textures of a heritage red wedding saree.",
@@ -20,7 +20,7 @@ const galleryImages = [
   },
   {
     id: 2,
-    src: portrait2,
+    src: getMediaUrl('portraits.portrait2', portrait2),
     title: "Eternal Journey",
     style: "Candid Walkway",
     desc: "Capturing a cinematic, slow-paced candid moment as the couple strolls down a timeless street, showcasing emotion in motion.",
@@ -28,7 +28,7 @@ const galleryImages = [
   },
   {
     id: 3,
-    src: portrait3,
+    src: getMediaUrl('portraits.portrait3', portrait3),
     title: "Whispered Promises",
     style: "Minimalist Cinematic",
     desc: "A warm, candid embrace set against a traditional Kerala heritage home, celebrating authentic love and natural smiles in a lush garden.",
@@ -36,7 +36,7 @@ const galleryImages = [
   },
   {
     id: 4,
-    src: portrait4,
+    src: getMediaUrl('portraits.portrait4', portrait4),
     title: "Garden Rhapsody",
     style: "Fine Art Dance",
     desc: "An enchanting, dreamlike dance in a lush emerald garden, perfectly capturing the elegance of green traditional attire against nature.",
@@ -185,6 +185,7 @@ const PortraitShowcase = () => {
   const [hoveredId, setHoveredId] = useState(null);
   const [activeLightboxId, setActiveLightboxId] = useState(null);
   const navigate = useNavigate();
+  const galleryImages = getGalleryImages();
 
   // Handle escape key to close lightbox
   useEffect(() => {
