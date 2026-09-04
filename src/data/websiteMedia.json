@@ -9,6 +9,12 @@
       "backgroundImage": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533025/dreamwed_website/red.jpg",
       "videoUrl": "https://www.youtube.com/embed/jnSAu-C6OmQ"
     },
+    "portraits": {
+      "portrait1": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533011/dreamwed_website/new_portrait_1.jpg",
+      "portrait2": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533012/dreamwed_website/new_portrait_2.jpg",
+      "portrait3": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533013/dreamwed_website/new_portrait_3.jpg",
+      "portrait4": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533014/dreamwed_website/new_portrait_4.jpg"
+    },
     "experienceBento": {
       "card1": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788532987/dreamwed_website/experience_bento1.png",
       "card2": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788532981/dreamwed_website/capture1.png",
@@ -18,23 +24,34 @@
       "card6": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788532985/dreamwed_website/capture5.png",
       "card7": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788532986/dreamwed_website/capture6.png"
     },
-    "portraits": {
-      "portrait1": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533011/dreamwed_website/new_portrait_1.jpg",
-      "portrait2": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533012/dreamwed_website/new_portrait_2.jpg",
-      "portrait3": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533013/dreamwed_website/new_portrait_3.jpg",
-      "portrait4": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533014/dreamwed_website/new_portrait_4.jpg"
-    },
     "scrollShowcase": {
       "scroll1": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533026/dreamwed_website/scroll1.png",
       "scroll2": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533028/dreamwed_website/scroll2.png",
       "scroll3": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533029/dreamwed_website/scroll3.png"
+    },
+    "about": {
+      "founderImage": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533012/dreamwed_website/new_portrait_2.jpg",
+      "storyImage": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533011/dreamwed_website/new_portrait_1.jpg"
     },
     "services": {
       "pic1": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533015/dreamwed_website/pic1.jpg",
       "pic2": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533016/dreamwed_website/pic2.jpg",
       "pic3": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533018/dreamwed_website/pic3.jpg",
       "pic4": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533019/dreamwed_website/pic4.jpg",
-      "fin": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533146/dreamwed_website/fin.jpg"
+      "fin": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533146/dreamwed_website/fin.jpg",
+      "customServiceImg": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533013/dreamwed_website/new_portrait_3.jpg"
+    },
+    "blog": {
+      "post1": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533015/dreamwed_website/pic1.jpg",
+      "post2": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533016/dreamwed_website/pic2.jpg",
+      "post3": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533018/dreamwed_website/pic3.jpg",
+      "post4": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533019/dreamwed_website/pic4.jpg"
+    },
+    "offer": {
+      "pic1": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533015/dreamwed_website/pic1.jpg",
+      "pic2": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533016/dreamwed_website/pic2.jpg",
+      "pic3": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533018/dreamwed_website/pic3.jpg",
+      "pic4": "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533019/dreamwed_website/pic4.jpg"
     }
   },
   "mediaMap": {

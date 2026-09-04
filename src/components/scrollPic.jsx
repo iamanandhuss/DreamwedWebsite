@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, X, ArrowRight, Search, Heart, Camera, Clock } from "lucide-react";
 import Footer from "./layout/Footer";
-import detailImg from "../assets/images/new_portrait_4.jpg";
+import detailImgFallback from "../assets/images/new_portrait_4.jpg";
+import { getMediaUrl } from "../data/websiteMedia";
 
 export const ScrollPic = ({ 
   allServices = [], 
   currentIndex = 0 
 }) => {
+  const detailImg = getMediaUrl('portraits.portrait4', detailImgFallback);
   const [isOpen, setIsOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(currentIndex);
   

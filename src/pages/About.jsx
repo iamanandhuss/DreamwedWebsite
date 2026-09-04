@@ -4,8 +4,10 @@ import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
 import SEO from '../components/SEO';
 import ABOUT_IMAGE from '../assets/images/new_portrait_2.jpg';
+import { getMediaUrl } from '../data/websiteMedia';
 
 const About = () => {
+  const founderImg = getMediaUrl('about.founderImage', ABOUT_IMAGE);
 
 
   return (
@@ -28,7 +30,7 @@ const About = () => {
               viewport={{ once: true }}
               className="rounded-3xl overflow-hidden shadow-2xl"
             >
-              <img src={ABOUT_IMAGE} alt="Founder" className="w-full h-full object-cover" />
+              <img src={founderImg} alt="Founder" className="w-full h-full object-cover" />
             </motion.div>
 
             <motion.div

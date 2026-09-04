@@ -4,7 +4,10 @@ import { Camera, Video, BookOpen, Clock, Users, Heart, X, Check, Gift, Sparkles,
 import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
 import SEO from '../components/SEO';
-import customServiceImg from '../assets/images/new_portrait_3.jpg';
+import customServiceImgFallback from '../assets/images/new_portrait_3.jpg';
+import { getMediaUrl } from '../data/websiteMedia';
+
+const customServiceImg = getMediaUrl('services.customServiceImg', customServiceImgFallback);
 
 const weddingPlans = [
   {
