@@ -12,7 +12,7 @@ const SEO = ({ title, description, keywords, ogImage, ogUrl }) => {
 
     // 2. Update Meta Description
     const metaDescription = document.querySelector('meta[name="description"]');
-    const defaultDesc = "Dreamwed Stories is the premier wedding photography and cinematic wedding films studio in Trivandrum, Kerala. Preserving your special moments with artistic candids, elegant traditionals, and epic drone coverages.";
+    const defaultDesc = "Capture your special day with the best wedding photography in Trivandrum. Candid moments, cinematic films & pre-wedding shoots by Dreamwed Stories.";
     if (metaDescription) {
       metaDescription.setAttribute("content", description || defaultDesc);
     } else {
@@ -24,7 +24,7 @@ const SEO = ({ title, description, keywords, ogImage, ogUrl }) => {
 
     // 3. Update Meta Keywords
     const metaKeywords = document.querySelector('meta[name="keywords"]');
-    const defaultKeywords = "wedding photography Trivandrum, Kerala wedding photographer, candid wedding photography Kerala, cinematic wedding films Trivandrum, pre-wedding shoot Kerala, professional photographers Trivandrum, temple wedding photoshoot Kerala, premium wedding albums";
+    const defaultKeywords = "best wedding photography in trivandrum, wedding photography Trivandrum, Kerala wedding photographer, candid wedding photography Kerala, cinematic wedding films Trivandrum, pre-wedding shoot Kerala, professional photographers Trivandrum";
     if (metaKeywords) {
       metaKeywords.setAttribute("content", keywords || defaultKeywords);
     } else {

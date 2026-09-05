@@ -13,40 +13,41 @@ import pic4 from '../assets/images/pic4.jpeg';
 const Blog = () => {
   const posts = [
     {
-      title: "Top 10 Wedding Trends for 2026",
-      category: "Planning Tips",
-      date: "May 15, 2026",
+      title: "Top 7 Pre-Wedding Shoot Locations in Trivandrum (2026 Guide)",
+      category: "Location Guides",
+      date: "September 2026",
       image: pic1,
-      excerpt: "From minimalist ceremonies to high-tech guest experiences, discover what's shaping the future of weddings."
+      excerpt: "Discover the most romantic backdrops in Trivandrum for pre-wedding photography, from Kovalam Lighthouse and Varkala Cliff to Ponmudi Hills."
     },
     {
-      title: "Sarah & Leo's Coastal Romance",
-      category: "Real Couple Stories",
-      date: "June 2, 2026",
+      title: "Traditional Kerala Wedding Photography: Rituals & Candid Moments",
+      category: "Wedding Traditions",
+      date: "August 2026",
       image: pic2,
-      excerpt: "A look inside their intimate beach wedding that focused on sunset vows and candlelight dinner."
+      excerpt: "Capturing the sacred beauty of Kerala Hindu, Christian, and Muslim wedding ceremonies in Trivandrum with timeless candid elegance."
     },
     {
-      title: "How to Choose Your Perfect Venue",
+      title: "How to Choose the Best Wedding Photographer in Trivandrum",
       category: "Planning Tips",
-      date: "April 20, 2026",
+      date: "August 2026",
       image: pic3,
-      excerpt: "Your venue sets the stage for your entire story. Here are the key factors to consider before booking."
+      excerpt: "Everything you need to know about wedding photography packages, candid styles, drone coverage, and pricing in Trivandrum."
     },
     {
-      title: "The Magic of Golden Hour Photos",
-      category: "Photography Tips",
-      date: "March 10, 2026",
+      title: "Grand Wedding Venues in Trivandrum & Photography Ideas",
+      category: "Venue Inspiration",
+      date: "July 2026",
       image: pic4,
-      excerpt: "Why the hour before sunset is the most critical time for capturing dreamy, romantic wedding portraits."
+      excerpt: "A photographer’s perspective on top wedding convention centers in Trivandrum including Al Saj, Girideepam, and beach resorts in Kovalam."
     }
   ];
 
   return (
     <div className="pt-24 bg-[var(--color-bg-light)]">
       <SEO 
-        title="The Journal" 
-        description="Read our latest stories, tips, and wedding photography inspiration from Dreamwed Stories Trivandrum."
+        title="Wedding Journal & Trivandrum Photography Guides" 
+        description="Expert wedding planning tips, top pre-wedding shoot locations in Trivandrum, and real love stories by Dreamwed Stories."
+        keywords="wedding photography Trivandrum blog, pre-wedding shoot locations Trivandrum, best wedding photographers in Trivandrum, Kovalam wedding shoot"
       />
       <section>
         <div className="container">

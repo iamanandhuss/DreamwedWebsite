@@ -18,7 +18,7 @@ const Home = () => {
     <div className="relative w-full ">
       <SEO 
         title="Home"
-        description="Capture your timeless love story with Dreamwed Stories, the premier wedding photography and cinematic wedding films studio in Trivandrum, Kerala. Browse premium packages and book professional shoots today."
+        description="Capture your special day with the best wedding photography in Trivandrum. Candid moments, cinematic films & pre-wedding shoots by Dreamwed Stories."
       />
       {/* 1. Hero Section */}
       <Hero />
