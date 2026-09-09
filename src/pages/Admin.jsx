@@ -403,13 +403,25 @@ const Admin = () => {
       netProfit = packagePrice - totalExpense;
     }
     
-    const marginPercent = packagePrice > 0 ? Math.round((netProfit / packagePrice) * 100) : 0;
+    let marginPercent = 0;
+    if (packagePrice > 0) {
+      if (netProfit >= 0) {
+        marginPercent = Math.round((netProfit / packagePrice) * 100);
+      } else {
+        marginPercent = totalExpense > 0 
+          ? -Math.min(100, Math.round((Math.abs(netProfit) / totalExpense) * 100))
+          : -100;
+      }
+    } else if (totalExpense > 0) {
+      marginPercent = -100;
+    }
     
     const myPhotoFees = (b.photographers || []).reduce((sum, p) => sum + (p.isMe ? (Number(p.charge) || 0) : 0), 0);
     const myVideoFees = (b.videographers || []).reduce((sum, v) => sum + (v.isMe ? (Number(v.charge) || 0) : 0), 0);
     const myStdPhotoFees = b.stdPhotoIsMe ? stdPhotoCharge : 0;
     const myStdVideoFees = b.stdVideoIsMe ? stdVideoCharge : 0;
-    const myTotalEarnings = netProfit + myPhotoFees + myVideoFees + myStdPhotoFees + myStdVideoFees;
+    const myPersonalFees = myPhotoFees + myVideoFees + myStdPhotoFees + myStdVideoFees;
+    const myTotalEarnings = netProfit + myPersonalFees;
     
     return {
       packagePrice,
@@ -423,6 +435,7 @@ const Admin = () => {
       totalExpense,
       netProfit,
       marginPercent,
+      myPersonalFees,
       myTotalEarnings
     };
   };
@@ -5333,19 +5346,26 @@ const Admin = () => {
 
                           <div className="flex justify-between items-center border-t border-zinc-900 pt-3 font-bold text-sm select-all">
                             <span className="text-zinc-400">Net Studio Profit</span>
-                            <span className="text-green-400 font-bold">₹ {formatCurrency(fin.netProfit)} ({fin.marginPercent}%)</span>
+                            <span className={`${fin.netProfit >= 0 ? "text-green-400" : "text-red-400"} font-bold`}>
+                              ₹ {formatCurrency(fin.netProfit)} ({fin.marginPercent}%)
+                            </span>
                           </div>
 
                           {/* My Personal Crew Earnings highlight */}
-                          <div className="bg-[#b4975a]/5 border border-[#b4975a]/15 p-4 rounded-2xl flex flex-col gap-1 mt-4">
+                          <div className={`${fin.myTotalEarnings >= 0 ? "bg-[#b4975a]/5 border-[#b4975a]/15" : "bg-red-500/5 border-red-500/20"} border p-4 rounded-2xl flex flex-col gap-1 mt-4`}>
                             <span className="text-zinc-400 text-[10px] uppercase font-black tracking-wider flex items-center gap-1">
-                              <Coins size={12} className="text-[#b4975a]" /> My Personal Earnings
+                              <Coins size={12} className={fin.myTotalEarnings >= 0 ? "text-[#b4975a]" : "text-red-400"} /> 
+                              {fin.myTotalEarnings >= 0 ? "My Personal Earnings" : "Net Out-of-Pocket (Deficit)"}
                             </span>
-                            <h4 style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-xl text-[#b4975a] font-bold">
+                            <h4 style={{ fontFamily: "'Cormorant Garamond', serif" }} className={`text-xl font-bold ${fin.myTotalEarnings >= 0 ? "text-[#b4975a]" : "text-red-400"}`}>
                               ₹ {formatCurrency(fin.myTotalEarnings)}
                             </h4>
                             <p className="text-zinc-500 text-[9px] font-medium leading-relaxed">
-                              Includes Net Profit + all allocated crew fees where you checked "I did it".
+                              {fin.myTotalEarnings >= 0 
+                                ? "Includes Net Profit + all allocated crew fees where you checked \"I did it\"."
+                                : fin.myPersonalFees > 0
+                                  ? `Labor fee earned: +₹${formatCurrency(fin.myPersonalFees)}, but studio loss is -₹${formatCurrency(Math.abs(fin.netProfit))}.`
+                                  : `Studio loss is -₹${formatCurrency(Math.abs(fin.netProfit))}.`}
                             </p>
                           </div>
                         </div>

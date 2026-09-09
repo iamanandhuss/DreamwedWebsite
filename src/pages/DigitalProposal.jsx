@@ -486,6 +486,10 @@ export default function DigitalProposal() {
   
   const [prewedPhoto, setPrewedPhoto] = useState(1);
   const [prewedVideo, setPrewedVideo] = useState(1);
+  
+  const [stdPhoto, setStdPhoto] = useState(0);
+  const [stdVideo, setStdVideo] = useState(0);
+  const [stdQty, setStdQty] = useState(0);
 
   // Add-on states
   const [hasDrone, setHasDrone] = useState(false);
@@ -625,6 +629,10 @@ export default function DigitalProposal() {
     if (params.get("pp")) setPrewedPhoto(parseInt(params.get("pp")) || 0);
     if (params.get("pv")) setPrewedVideo(parseInt(params.get("pv")) || 0);
     
+    if (params.get("stdp")) setStdPhoto(parseInt(params.get("stdp")) || 0);
+    if (params.get("stdv")) setStdVideo(parseInt(params.get("stdv")) || 0);
+    if (params.get("stdq")) setStdQty(parseInt(params.get("stdq")) || 0);
+    
     if (params.get("drone")) setHasDrone(params.get("drone") === "true");
     if (params.get("led")) setHasLedWall(params.get("led") === "true");
     if (params.get("previd")) setHasPreweddingVideo(params.get("previd") === "true");
@@ -743,6 +751,8 @@ export default function DigitalProposal() {
         let ev = 0;  // reception video
         let pp = 0;  // pre-wedding photo
         let pv = 0;  // pre-wedding video
+        let sp = 0;  // save the date / 4th event photo
+        let sv = 0;  // save the date / 4th event video
 
         const currentEvents = payload.eventsList || [];
 
@@ -763,6 +773,8 @@ export default function DigitalProposal() {
                 ep++;
               } else if (idx === 2) {
                 pp++;
+              } else if (idx === 3) {
+                sp++;
               }
             } else {
               // Backward compatible text fallback
@@ -801,6 +813,8 @@ export default function DigitalProposal() {
                 ev++;
               } else if (idx === 2) {
                 pv++;
+              } else if (idx === 3) {
+                sv++;
               }
             } else {
               // Backward compatible text fallback
@@ -838,7 +852,15 @@ export default function DigitalProposal() {
         const newDeliverables = [];
         
         // Save the Date Shoot inclusion
+        if (sp > 0) setStdPhoto(sp);
+        else if (payload.stdPhotoCharge > 0 || payload.stdPerPhotoCharge > 0 || payload.stdPhotoQty > 0) setStdPhoto(1);
+        
+        if (sv > 0) setStdVideo(sv);
+        else if (payload.stdVideoCharge > 0 || payload.stdEditingCharge > 0) setStdVideo(1);
+        
         if (payload.stdPhotoQty > 0 || payload.stdPhotoCharge > 0 || payload.stdVideoCharge > 0 || payload.stdEditingCharge > 0 || payload.stdPerPhotoCharge > 0) {
+          if (payload.stdPhotoQty > 0) setStdQty(payload.stdPhotoQty);
+
           const stdTypes = [];
           if (payload.stdPhotoCharge > 0 || payload.stdPhotoQty > 0 || payload.stdPerPhotoCharge > 0) stdTypes.push("Photo");
           if (payload.stdVideoCharge > 0 || payload.stdEditingCharge > 0) stdTypes.push("Video");
@@ -1023,6 +1045,9 @@ export default function DigitalProposal() {
       eveVideo,
       prewedPhoto,
       prewedVideo,
+      stdPhoto,
+      stdVideo,
+      stdQty,
       hasDrone,
       hasLedWall,
       hasPreweddingVideo,
@@ -1064,6 +1089,9 @@ export default function DigitalProposal() {
     eveVideo,
     prewedPhoto,
     prewedVideo,
+    stdPhoto,
+    stdVideo,
+    stdQty,
     hasDrone,
     hasLedWall,
     hasPreweddingVideo,
@@ -1146,6 +1174,7 @@ export default function DigitalProposal() {
         philosophyPositionX, philosophyPositionY, philosophyScale,
         weddingCandidPhoto, weddingTradPhoto, weddingCandidVideo, weddingTradVideo,
         evePhoto, eveVideo, prewedPhoto, prewedVideo,
+        stdPhoto, stdVideo, stdQty,
         hasDrone, hasLedWall, hasPreweddingVideo, hasHaldi,
         customAddons, deliverables, complimentary
       }
@@ -1211,6 +1240,10 @@ export default function DigitalProposal() {
       
       if (data.prewedPhoto !== undefined) setPrewedPhoto(data.prewedPhoto);
       if (data.prewedVideo !== undefined) setPrewedVideo(data.prewedVideo);
+      
+      if (data.stdPhoto !== undefined) setStdPhoto(data.stdPhoto);
+      if (data.stdVideo !== undefined) setStdVideo(data.stdVideo);
+      if (data.stdQty !== undefined) setStdQty(data.stdQty);
       
       if (data.hasDrone !== undefined) setHasDrone(data.hasDrone);
       if (data.hasLedWall !== undefined) setHasLedWall(data.hasLedWall);
@@ -1281,6 +1314,9 @@ export default function DigitalProposal() {
     setEveVideo(1);
     setPrewedPhoto(1);
     setPrewedVideo(1);
+    setStdPhoto(0);
+    setStdVideo(0);
+    setStdQty(0);
     setHasDrone(false);
     setHasLedWall(false);
     setHasPreweddingVideo(false);
@@ -1325,6 +1361,10 @@ export default function DigitalProposal() {
     
     params.set("pp", prewedPhoto);
     params.set("pv", prewedVideo);
+    
+    params.set("stdp", stdPhoto);
+    params.set("stdv", stdVideo);
+    params.set("stdq", stdQty);
     
     params.set("drone", hasDrone);
     params.set("led", hasLedWall);
@@ -1428,22 +1468,28 @@ export default function DigitalProposal() {
     if (weddingCandidVideo > 0) weddingDetails.push(`${weddingCandidVideo} Candid Video${weddingCandidVideo > 1 ? 's' : ''}`);
     if (weddingTradVideo > 0) weddingDetails.push(`${weddingTradVideo} Trad Video${weddingTradVideo > 1 ? 's' : ''}`);
     
-    const receptionDetails = [];
-    if (evePhoto > 0) receptionDetails.push(`${evePhoto} Photographer${evePhoto > 1 ? 's' : ''}`);
-    if (eveVideo > 0) receptionDetails.push(`${eveVideo} Videographer${eveVideo > 1 ? 's' : ''}`);
+    const eveDetails = [];
+    if (evePhoto > 0) eveDetails.push(`${evePhoto} Photographer${evePhoto > 1 ? 's' : ''}`);
+    if (eveVideo > 0) eveDetails.push(`${eveVideo} Videographer${eveVideo > 1 ? 's' : ''}`);
     
     const prewedDetails = [];
     if (prewedPhoto > 0) prewedDetails.push(`${prewedPhoto} Photographer${prewedPhoto > 1 ? 's' : ''}`);
     if (prewedVideo > 0) prewedDetails.push(`${prewedVideo} Videographer${prewedVideo > 1 ? 's' : ''}`);
+
+    const stdDetailsArr = [];
+    if (stdPhoto > 0) stdDetailsArr.push(`${stdPhoto} Photographer${stdPhoto > 1 ? 's' : ''}`);
+    if (stdVideo > 0) stdDetailsArr.push(`${stdVideo} Videographer${stdVideo > 1 ? 's' : ''}`);
+    if (stdQty > 0) stdDetailsArr.push(`${stdQty} Edited Photos`);
     
     const label0 = eventsList[0] ? `${eventsList[0].name} Coverage` : "Wedding Coverage";
     const label1 = eventsList[1] ? `${eventsList[1].name} Coverage` : "Reception Coverage";
     const label2 = eventsList[2] ? `${eventsList[2].name} Coverage` : "Pre-Wedding Coverage";
 
     let detailsText = "";
-    if (weddingDetails.length > 0) detailsText += `\n- ${label0}: ${weddingDetails.join(', ')}`;
-    if (receptionDetails.length > 0) detailsText += `\n- ${label1}: ${receptionDetails.join(', ')}`;
-    if (prewedDetails.length > 0) detailsText += `\n- ${label2}: ${prewedDetails.join(', ')}`;
+    if (weddingDetails.length > 0) detailsText += `\n- ${label0}: ${weddingDetails.join(", ")}`;
+    if (eveDetails.length > 0) detailsText += `\n- ${label1}: ${eveDetails.join(", ")}`;
+    if (prewedDetails.length > 0) detailsText += `\n- ${label2}: ${prewedDetails.join(", ")}`;
+    if (stdDetailsArr.length > 0) detailsText += `\n- Save the Date: ${stdDetailsArr.join(", ")}`;
 
     const clientText = brideName ? `${groomName} & ${brideName}` : groomName;
     const message = `Hello Dreamwed Stories! I have reviewed and approved our Digital Proposal (${proposalId}) for our wedding event(s) on ${getFormattedEventDates()}. \n\nClient: ${clientText}\nLocation: ${weddingLocation}\n\nSelected Package Details:${detailsText}${addonText}\n- Total Price: ₹${price} INR${packagesText}\n\nLooking forward to capturing our big day!`;
@@ -1453,7 +1499,8 @@ export default function DigitalProposal() {
   const showWeddingCol = (weddingCandidPhoto > 0 || weddingTradPhoto > 0 || weddingCandidVideo > 0 || weddingTradVideo > 0);
   const showReceptionCol = (evePhoto > 0 || eveVideo > 0);
   const showPrewedCol = (prewedPhoto > 0 || prewedVideo > 0);
-  const visibleColsCount = (showWeddingCol ? 1 : 0) + (showReceptionCol ? 1 : 0) + (showPrewedCol ? 1 : 0);
+  const showStdCol = (stdPhoto > 0 || stdVideo > 0 || stdQty > 0);
+  const visibleColsCount = (showWeddingCol ? 1 : 0) + (showReceptionCol ? 1 : 0) + (showPrewedCol ? 1 : 0) + (showStdCol ? 1 : 0);
   const isMobilePrintMode = false;
 
   return (
@@ -1834,6 +1881,7 @@ export default function DigitalProposal() {
               {/* Event columns */}
               {visibleColsCount > 0 && (
                 <div className={`grid grid-cols-1 gap-6 md:gap-8 ${
+                  visibleColsCount === 4 ? "md:grid-cols-4" :
                   visibleColsCount === 3 ? "md:grid-cols-3" :
                   visibleColsCount === 2 ? "md:grid-cols-2 max-w-4xl mx-auto" :
                   "max-w-md mx-auto"
@@ -1927,6 +1975,38 @@ export default function DigitalProposal() {
                           <li className="flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
                             <span>{prewedVideo} VIDEOGRAPHER{prewedVideo > 1 ? 'S' : ''}</span>
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* COLUMN 4: PRE-WEDDING */}
+                  {showStdCol && (
+                    <div className="space-y-4">
+                      <h3 className="text-xs tracking-[0.2em] font-semibold text-zinc-500 uppercase border-b border-zinc-200 pb-1 truncate">
+                        {eventsList[3] ? `${eventsList[3].name.toUpperCase()} COVERAGE` : "PRE-WEDDING COVERAGE"}
+                      </h3>
+                      <p className="text-[10px] font-mono text-zinc-400">
+                        {eventsList[3] ? formatEventDate(eventsList[3].date) : "PRE-WEDDING SHOOT"}
+                      </p>
+                      <ul className="space-y-3 text-xs md:text-sm font-light text-zinc-800">
+                        {stdPhoto > 0 && (
+                          <li className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
+                            <span>{stdPhoto} PHOTOGRAPHER{stdPhoto > 1 ? 'S' : ''}</span>
+                          </li>
+                        )}
+                        {stdVideo > 0 && (
+                          <li className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
+                            <span>{stdVideo} VIDEOGRAPHER{stdVideo > 1 ? 'S' : ''}</span>
+                          </li>
+                        )}
+                        {stdQty > 0 && (
+                          <li className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
+                            <span>{stdQty} EDITED PHOTOS</span>
                           </li>
                         )}
                       </ul>
@@ -2525,6 +2605,42 @@ export default function DigitalProposal() {
                             <button onClick={() => setPrewedVideo(Math.max(0, prewedVideo - 1))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
                             <span className="w-5 text-center font-mono font-bold text-white">{prewedVideo}</span>
                             <button onClick={() => setPrewedVideo(prewedVideo + 1)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* SAVE THE DATE STAFF */}
+                    <div className="space-y-4 pt-2">
+                      <span className="text-[10.5px] font-mono text-[#d1a852] font-semibold uppercase block tracking-wider">
+                        {eventsList[3] ? `${eventsList[3].name} Staff` : "Save the Date Staff"}
+                      </span>
+                      
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
+                          <span className="text-zinc-400 font-mono">Photographer</span>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => setStdPhoto(Math.max(0, stdPhoto - 1))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
+                            <span className="w-5 text-center font-mono font-bold text-white">{stdPhoto}</span>
+                            <button onClick={() => setStdPhoto(stdPhoto + 1)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
+                          <span className="text-zinc-400 font-mono">Videographer</span>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => setStdVideo(Math.max(0, stdVideo - 1))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
+                            <span className="w-5 text-center font-mono font-bold text-white">{stdVideo}</span>
+                            <button onClick={() => setStdVideo(stdVideo + 1)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
+                          <span className="text-zinc-400 font-mono">Edited Photos (Qty)</span>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => setStdQty(Math.max(0, stdQty - 10))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
+                            <span className="w-8 text-center font-mono font-bold text-white">{stdQty}</span>
+                            <button onClick={() => setStdQty(stdQty + 10)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
                           </div>
                         </div>
                       </div>
