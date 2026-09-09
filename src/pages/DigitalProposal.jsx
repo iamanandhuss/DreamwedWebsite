@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Camera, Check, CheckCircle, ChevronRight, Download, Edit2, FileCheck, FileText,
   Heart, Image as ImageIcon, Info, Menu, Phone, Printer, Send, Share2, Star, Trash2, X, Plus, Minus,
-  Sparkles, Sliders, Smartphone, Laptop, Lock, ShieldCheck, GripVertical, Home, Save
+  Sparkles, Sliders, Smartphone, Laptop, Lock, ShieldCheck, GripVertical, Home, Save,
+  Upload, Loader2
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
+import { uploadImageToCloudinary } from "../utils/cloudinaryUploader";
 
 // Available images in project for customizer selection
 const AVAILABLE_IMAGES = [
@@ -584,6 +586,80 @@ export default function DigitalProposal() {
   const [coverImage, setCoverImage] = useState("/couple_traditional_red.jpg");
   const [packageImage, setPackageImage] = useState("/uploaded_bride_yellow.jpg");
   const [philosophyImage, setPhilosophyImage] = useState("/uploaded_couple_blackwhite.jpg");
+  const [customImages, setCustomImages] = useState(() => {
+    try {
+      const saved = localStorage.getItem("dreamwed_proposal_custom_images");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [uploadingTarget, setUploadingTarget] = useState(null); // "cover" | "package" | "philosophy" | null
+
+  const handleUploadPhoto = async (e, target) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    // Reset value so re-uploading same file triggers event
+    e.target.value = "";
+    setUploadingTarget(target);
+
+    // Read local data URL for instant feedback
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const localDataUrl = event.target.result;
+      
+      // Set preview immediately
+      if (target === "cover") setCoverImage(localDataUrl);
+      else if (target === "package") setPackageImage(localDataUrl);
+      else if (target === "philosophy") setPhilosophyImage(localDataUrl);
+
+      let finalUrl = localDataUrl;
+      try {
+        const res = await uploadImageToCloudinary(file);
+        if (res && res.url) {
+          finalUrl = res.url;
+          if (target === "cover") setCoverImage(finalUrl);
+          else if (target === "package") setPackageImage(finalUrl);
+          else if (target === "philosophy") setPhilosophyImage(finalUrl);
+        }
+      } catch (err) {
+        console.warn("Cloudinary upload failed, using local data URL fallback:", err);
+      } finally {
+        setUploadingTarget(null);
+      }
+
+      setCustomImages((prev) => {
+        const item = {
+          url: finalUrl,
+          label: file.name ? file.name.replace(/\.[^/.]+$/, "") : "Custom Upload",
+          isCustom: true
+        };
+        const updated = [item, ...prev.filter((p) => p.url !== finalUrl && p.url !== localDataUrl)];
+        try {
+          localStorage.setItem("dreamwed_proposal_custom_images", JSON.stringify(updated.slice(0, 30)));
+        } catch (storageErr) {
+          console.warn("Failed caching images to localStorage:", storageErr);
+        }
+        return updated;
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeCustomImage = (e, urlToRemove) => {
+    e.stopPropagation();
+    setCustomImages((prev) => {
+      const updated = prev.filter((img) => img.url !== urlToRemove);
+      try {
+        localStorage.setItem("dreamwed_proposal_custom_images", JSON.stringify(updated));
+      } catch (err) {}
+      return updated;
+    });
+    if (coverImage === urlToRemove) setCoverImage(AVAILABLE_IMAGES[0].url);
+    if (packageImage === urlToRemove) setPackageImage(AVAILABLE_IMAGES[5].url);
+    if (philosophyImage === urlToRemove) setPhilosophyImage(AVAILABLE_IMAGES[1].url);
+  };
 
   // UI States
   const [customizerOpen, setCustomizerOpen] = useState(false);
@@ -2887,15 +2963,45 @@ export default function DigitalProposal() {
                   <div className="space-y-6">
                     {/* Cover photo selection */}
                     <div className="space-y-3">
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Cover Image</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Cover Image</span>
+                        <label className="flex items-center gap-1.5 text-[10px] font-mono text-[#d1a852] hover:text-[#e5c479] cursor-pointer bg-zinc-900 hover:bg-zinc-850 border border-[#d1a852]/30 px-2 py-0.5 rounded transition-all">
+                          {uploadingTarget === "cover" ? <Loader2 size={11} className="animate-spin text-[#d1a852]" /> : <Upload size={11} />}
+                          <span>{uploadingTarget === "cover" ? "Uploading..." : "Upload Photo"}</span>
+                          <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "cover"} onChange={(e) => handleUploadPhoto(e, "cover")} />
+                        </label>
+                      </div>
+
                       <div className="grid grid-cols-2 gap-2">
-                        {AVAILABLE_IMAGES.map((img) => (
+                        {/* Upload tile */}
+                        <label className="relative rounded-lg overflow-hidden border-2 border-dashed border-zinc-700 hover:border-[#d1a852] h-14 bg-zinc-900/40 hover:bg-zinc-900 transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer text-zinc-400 hover:text-[#d1a852]">
+                          {uploadingTarget === "cover" ? <Loader2 size={13} className="animate-spin text-[#d1a852]" /> : <Plus size={13} />}
+                          <span className="text-[8.5px] font-mono uppercase tracking-wider">{uploadingTarget === "cover" ? "Uploading..." : "+ Upload"}</span>
+                          <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "cover"} onChange={(e) => handleUploadPhoto(e, "cover")} />
+                        </label>
+
+                        {[...customImages, ...AVAILABLE_IMAGES].map((img) => (
                           <button
                             key={img.url}
+                            type="button"
                             onClick={() => setCoverImage(img.url)}
-                            className={`relative rounded-lg overflow-hidden border-2 h-14 bg-zinc-900 transition-colors ${coverImage === img.url ? "border-[#d1a852]" : "border-white/5 hover:border-white/20"}`}
+                            className={`group relative rounded-lg overflow-hidden border-2 h-14 bg-zinc-900 transition-colors ${coverImage === img.url ? "border-[#d1a852]" : "border-white/5 hover:border-white/20"}`}
                           >
                             <img src={resolveAssetPath(img.url)} alt={img.label} className="w-full h-full object-cover" />
+                            {img.isCustom && (
+                              <span className="absolute bottom-1 left-1 bg-black/80 backdrop-blur-xs text-[7.5px] font-mono text-[#d1a852] px-1 py-0.5 rounded">
+                                Custom
+                              </span>
+                            )}
+                            {img.isCustom && (
+                              <div
+                                onClick={(e) => removeCustomImage(e, img.url)}
+                                className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 bg-red-600/90 hover:bg-red-600 text-white p-0.5 rounded cursor-pointer transition-opacity"
+                                title="Delete uploaded image"
+                              >
+                                <X size={9} />
+                              </div>
+                            )}
                             {coverImage === img.url && (
                               <div className="absolute top-1 right-1 bg-[#d1a852] text-black p-0.5 rounded-full"><Check size={8} /></div>
                             )}
@@ -2952,15 +3058,45 @@ export default function DigitalProposal() {
 
                     {/* Package photo selection */}
                     <div className="space-y-3 pt-3 border-t border-white/5">
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Package Image</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Package Image</span>
+                        <label className="flex items-center gap-1.5 text-[10px] font-mono text-[#d1a852] hover:text-[#e5c479] cursor-pointer bg-zinc-900 hover:bg-zinc-850 border border-[#d1a852]/30 px-2 py-0.5 rounded transition-all">
+                          {uploadingTarget === "package" ? <Loader2 size={11} className="animate-spin text-[#d1a852]" /> : <Upload size={11} />}
+                          <span>{uploadingTarget === "package" ? "Uploading..." : "Upload Photo"}</span>
+                          <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "package"} onChange={(e) => handleUploadPhoto(e, "package")} />
+                        </label>
+                      </div>
+
                       <div className="grid grid-cols-2 gap-2">
-                        {AVAILABLE_IMAGES.map((img) => (
+                        {/* Upload tile */}
+                        <label className="relative rounded-lg overflow-hidden border-2 border-dashed border-zinc-700 hover:border-[#d1a852] h-14 bg-zinc-900/40 hover:bg-zinc-900 transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer text-zinc-400 hover:text-[#d1a852]">
+                          {uploadingTarget === "package" ? <Loader2 size={13} className="animate-spin text-[#d1a852]" /> : <Plus size={13} />}
+                          <span className="text-[8.5px] font-mono uppercase tracking-wider">{uploadingTarget === "package" ? "Uploading..." : "+ Upload"}</span>
+                          <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "package"} onChange={(e) => handleUploadPhoto(e, "package")} />
+                        </label>
+
+                        {[...customImages, ...AVAILABLE_IMAGES].map((img) => (
                           <button
                             key={img.url}
+                            type="button"
                             onClick={() => setPackageImage(img.url)}
-                            className={`relative rounded-lg overflow-hidden border-2 h-14 bg-zinc-900 transition-colors ${packageImage === img.url ? "border-[#d1a852]" : "border-white/5 hover:border-white/20"}`}
+                            className={`group relative rounded-lg overflow-hidden border-2 h-14 bg-zinc-900 transition-colors ${packageImage === img.url ? "border-[#d1a852]" : "border-white/5 hover:border-white/20"}`}
                           >
                             <img src={resolveAssetPath(img.url)} alt={img.label} className="w-full h-full object-cover" />
+                            {img.isCustom && (
+                              <span className="absolute bottom-1 left-1 bg-black/80 backdrop-blur-xs text-[7.5px] font-mono text-[#d1a852] px-1 py-0.5 rounded">
+                                Custom
+                              </span>
+                            )}
+                            {img.isCustom && (
+                              <div
+                                onClick={(e) => removeCustomImage(e, img.url)}
+                                className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 bg-red-600/90 hover:bg-red-600 text-white p-0.5 rounded cursor-pointer transition-opacity"
+                                title="Delete uploaded image"
+                              >
+                                <X size={9} />
+                              </div>
+                            )}
                             {packageImage === img.url && (
                               <div className="absolute top-1 right-1 bg-[#d1a852] text-black p-0.5 rounded-full"><Check size={8} /></div>
                             )}
@@ -3017,15 +3153,45 @@ export default function DigitalProposal() {
 
                     {/* Secondary photo selection */}
                     <div className="space-y-3 pt-3 border-t border-white/5">
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Philosophy Image</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Philosophy Image</span>
+                        <label className="flex items-center gap-1.5 text-[10px] font-mono text-[#d1a852] hover:text-[#e5c479] cursor-pointer bg-zinc-900 hover:bg-zinc-850 border border-[#d1a852]/30 px-2 py-0.5 rounded transition-all">
+                          {uploadingTarget === "philosophy" ? <Loader2 size={11} className="animate-spin text-[#d1a852]" /> : <Upload size={11} />}
+                          <span>{uploadingTarget === "philosophy" ? "Uploading..." : "Upload Photo"}</span>
+                          <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "philosophy"} onChange={(e) => handleUploadPhoto(e, "philosophy")} />
+                        </label>
+                      </div>
+
                       <div className="grid grid-cols-2 gap-2">
-                        {AVAILABLE_IMAGES.map((img) => (
+                        {/* Upload tile */}
+                        <label className="relative rounded-lg overflow-hidden border-2 border-dashed border-zinc-700 hover:border-[#d1a852] h-14 bg-zinc-900/40 hover:bg-zinc-900 transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer text-zinc-400 hover:text-[#d1a852]">
+                          {uploadingTarget === "philosophy" ? <Loader2 size={13} className="animate-spin text-[#d1a852]" /> : <Plus size={13} />}
+                          <span className="text-[8.5px] font-mono uppercase tracking-wider">{uploadingTarget === "philosophy" ? "Uploading..." : "+ Upload"}</span>
+                          <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "philosophy"} onChange={(e) => handleUploadPhoto(e, "philosophy")} />
+                        </label>
+
+                        {[...customImages, ...AVAILABLE_IMAGES].map((img) => (
                           <button
                             key={img.url}
+                            type="button"
                             onClick={() => setPhilosophyImage(img.url)}
-                            className={`relative rounded-lg overflow-hidden border-2 h-14 bg-zinc-900 transition-colors ${philosophyImage === img.url ? "border-[#d1a852]" : "border-white/5 hover:border-white/20"}`}
+                            className={`group relative rounded-lg overflow-hidden border-2 h-14 bg-zinc-900 transition-colors ${philosophyImage === img.url ? "border-[#d1a852]" : "border-white/5 hover:border-white/20"}`}
                           >
                             <img src={resolveAssetPath(img.url)} alt={img.label} className="w-full h-full object-cover filter grayscale" />
+                            {img.isCustom && (
+                              <span className="absolute bottom-1 left-1 bg-black/80 backdrop-blur-xs text-[7.5px] font-mono text-[#d1a852] px-1 py-0.5 rounded">
+                                Custom
+                              </span>
+                            )}
+                            {img.isCustom && (
+                              <div
+                                onClick={(e) => removeCustomImage(e, img.url)}
+                                className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 bg-red-600/90 hover:bg-red-600 text-white p-0.5 rounded cursor-pointer transition-opacity"
+                                title="Delete uploaded image"
+                              >
+                                <X size={9} />
+                              </div>
+                            )}
                             {philosophyImage === img.url && (
                               <div className="absolute top-1 right-1 bg-[#d1a852] text-black p-0.5 rounded-full"><Check size={8} /></div>
                             )}
