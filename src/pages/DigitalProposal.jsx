@@ -12,9 +12,19 @@ import { uploadImageToCloudinary } from "../utils/cloudinaryUploader";
 
 // Available images in project for customizer selection
 const AVAILABLE_IMAGES = [
+  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533025/dreamwed_website/red.jpg", label: "Signature Red Hero" },
+  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533011/dreamwed_website/new_portrait_1.jpg", label: "Kerala Bride Portrait" },
+  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533012/dreamwed_website/new_portrait_2.jpg", label: "Candid Couple Smile" },
+  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533013/dreamwed_website/new_portrait_3.jpg", label: "Golden Hour Portrait" },
+  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533014/dreamwed_website/new_portrait_4.jpg", label: "Outdoor Couple Shoot" },
+  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533015/dreamwed_website/pic1.jpg", label: "Engagement Candid" },
+  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533016/dreamwed_website/pic2.jpg", label: "Wedding Ceremony" },
+  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533018/dreamwed_website/pic3.jpg", label: "Reception Glamour" },
+  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533019/dreamwed_website/pic4.jpg", label: "Haldi Celebration" },
   { url: "/couple_traditional_red.jpg", label: "Traditional Red Couple" },
   { url: "/uploaded_couple_blackwhite.jpg", label: "B&W Editorial Couple" },
   { url: "/couple_fun_glasses.jpg", label: "Fun Sunglasses Couple" },
+  { url: "/bride_christian_white.jpg", label: "Christian Bride White" },
   { url: "/uploaded_bride_traditional.jpg", label: "Kerala Bride Traditional" },
   { url: "/uploaded_bride_gold.jpg", label: "Gold Jewelry Bride" },
   { url: "/uploaded_bride_yellow.jpg", label: "Yellow Beetle Wedding Party" },
