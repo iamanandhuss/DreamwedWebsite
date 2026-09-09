@@ -2975,21 +2975,40 @@ export default function DigitalProposal() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Cover Image</span>
-                        <label className="flex items-center gap-1.5 text-[10px] font-mono text-[#d1a852] hover:text-[#e5c479] cursor-pointer bg-zinc-900 hover:bg-zinc-850 border border-[#d1a852]/30 px-2 py-0.5 rounded transition-all">
-                          {uploadingTarget === "cover" ? <Loader2 size={11} className="animate-spin text-[#d1a852]" /> : <Upload size={11} />}
-                          <span>{uploadingTarget === "cover" ? "Uploading..." : "Upload Photo"}</span>
-                          <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "cover"} onChange={(e) => handleUploadPhoto(e, "cover")} />
-                        </label>
+                        <span className="text-[9px] font-mono text-zinc-600">Page 1 Hero</span>
+                      </div>
+
+                      {/* Dedicated Upload Space for Cover */}
+                      <label className="relative flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-[#d1a852]/40 hover:border-[#d1a852] bg-zinc-900/50 hover:bg-zinc-900/90 rounded-xl cursor-pointer transition-all group shadow-sm">
+                        {uploadingTarget === "cover" ? (
+                          <div className="flex items-center gap-2 py-1">
+                            <Loader2 size={16} className="animate-spin text-[#d1a852]" />
+                            <span className="text-[11px] font-mono text-[#d1a852] font-semibold">Uploading photo...</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-[#d1a852]/10 border border-[#d1a852]/30 flex items-center justify-center text-[#d1a852] group-hover:scale-105 transition-transform shrink-0">
+                              <Upload size={14} />
+                            </div>
+                            <div className="text-left">
+                              <div className="text-[11px] font-semibold text-zinc-200 group-hover:text-white flex items-center gap-1.5">
+                                <span>Upload Cover Photo</span>
+                                <span className="text-[9px] bg-[#d1a852]/20 text-[#d1a852] px-1.5 py-0.2 rounded font-mono font-normal">JPG/PNG</span>
+                              </div>
+                              <p className="text-[9.5px] text-zinc-500 font-mono mt-0.5">Click or drag & drop custom photo</p>
+                            </div>
+                          </div>
+                        )}
+                        <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "cover"} onChange={(e) => handleUploadPhoto(e, "cover")} />
+                      </label>
+
+                      <div className="flex items-center gap-2 pt-1 pb-0.5">
+                        <div className="h-px bg-white/5 flex-1" />
+                        <span className="text-[8.5px] font-mono text-zinc-600 uppercase tracking-widest">or pick preset photo</span>
+                        <div className="h-px bg-white/5 flex-1" />
                       </div>
 
                       <div className="grid grid-cols-2 gap-2">
-                        {/* Upload tile */}
-                        <label className="relative rounded-lg overflow-hidden border-2 border-dashed border-zinc-700 hover:border-[#d1a852] h-14 bg-zinc-900/40 hover:bg-zinc-900 transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer text-zinc-400 hover:text-[#d1a852]">
-                          {uploadingTarget === "cover" ? <Loader2 size={13} className="animate-spin text-[#d1a852]" /> : <Plus size={13} />}
-                          <span className="text-[8.5px] font-mono uppercase tracking-wider">{uploadingTarget === "cover" ? "Uploading..." : "+ Upload"}</span>
-                          <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "cover"} onChange={(e) => handleUploadPhoto(e, "cover")} />
-                        </label>
-
                         {[...customImages, ...AVAILABLE_IMAGES].map((img) => (
                           <button
                             key={img.url}
@@ -3070,21 +3089,40 @@ export default function DigitalProposal() {
                     <div className="space-y-3 pt-3 border-t border-white/5">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Package Image</span>
-                        <label className="flex items-center gap-1.5 text-[10px] font-mono text-[#d1a852] hover:text-[#e5c479] cursor-pointer bg-zinc-900 hover:bg-zinc-850 border border-[#d1a852]/30 px-2 py-0.5 rounded transition-all">
-                          {uploadingTarget === "package" ? <Loader2 size={11} className="animate-spin text-[#d1a852]" /> : <Upload size={11} />}
-                          <span>{uploadingTarget === "package" ? "Uploading..." : "Upload Photo"}</span>
-                          <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "package"} onChange={(e) => handleUploadPhoto(e, "package")} />
-                        </label>
+                        <span className="text-[9px] font-mono text-zinc-600">Page 3 Header</span>
+                      </div>
+
+                      {/* Dedicated Upload Space for Package */}
+                      <label className="relative flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-[#d1a852]/40 hover:border-[#d1a852] bg-zinc-900/50 hover:bg-zinc-900/90 rounded-xl cursor-pointer transition-all group shadow-sm">
+                        {uploadingTarget === "package" ? (
+                          <div className="flex items-center gap-2 py-1">
+                            <Loader2 size={16} className="animate-spin text-[#d1a852]" />
+                            <span className="text-[11px] font-mono text-[#d1a852] font-semibold">Uploading photo...</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-[#d1a852]/10 border border-[#d1a852]/30 flex items-center justify-center text-[#d1a852] group-hover:scale-105 transition-transform shrink-0">
+                              <Upload size={14} />
+                            </div>
+                            <div className="text-left">
+                              <div className="text-[11px] font-semibold text-zinc-200 group-hover:text-white flex items-center gap-1.5">
+                                <span>Upload Package Photo</span>
+                                <span className="text-[9px] bg-[#d1a852]/20 text-[#d1a852] px-1.5 py-0.2 rounded font-mono font-normal">JPG/PNG</span>
+                              </div>
+                              <p className="text-[9.5px] text-zinc-500 font-mono mt-0.5">Click or drag & drop custom photo</p>
+                            </div>
+                          </div>
+                        )}
+                        <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "package"} onChange={(e) => handleUploadPhoto(e, "package")} />
+                      </label>
+
+                      <div className="flex items-center gap-2 pt-1 pb-0.5">
+                        <div className="h-px bg-white/5 flex-1" />
+                        <span className="text-[8.5px] font-mono text-zinc-600 uppercase tracking-widest">or pick preset photo</span>
+                        <div className="h-px bg-white/5 flex-1" />
                       </div>
 
                       <div className="grid grid-cols-2 gap-2">
-                        {/* Upload tile */}
-                        <label className="relative rounded-lg overflow-hidden border-2 border-dashed border-zinc-700 hover:border-[#d1a852] h-14 bg-zinc-900/40 hover:bg-zinc-900 transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer text-zinc-400 hover:text-[#d1a852]">
-                          {uploadingTarget === "package" ? <Loader2 size={13} className="animate-spin text-[#d1a852]" /> : <Plus size={13} />}
-                          <span className="text-[8.5px] font-mono uppercase tracking-wider">{uploadingTarget === "package" ? "Uploading..." : "+ Upload"}</span>
-                          <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "package"} onChange={(e) => handleUploadPhoto(e, "package")} />
-                        </label>
-
                         {[...customImages, ...AVAILABLE_IMAGES].map((img) => (
                           <button
                             key={img.url}
@@ -3165,21 +3203,40 @@ export default function DigitalProposal() {
                     <div className="space-y-3 pt-3 border-t border-white/5">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Philosophy Image</span>
-                        <label className="flex items-center gap-1.5 text-[10px] font-mono text-[#d1a852] hover:text-[#e5c479] cursor-pointer bg-zinc-900 hover:bg-zinc-850 border border-[#d1a852]/30 px-2 py-0.5 rounded transition-all">
-                          {uploadingTarget === "philosophy" ? <Loader2 size={11} className="animate-spin text-[#d1a852]" /> : <Upload size={11} />}
-                          <span>{uploadingTarget === "philosophy" ? "Uploading..." : "Upload Photo"}</span>
-                          <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "philosophy"} onChange={(e) => handleUploadPhoto(e, "philosophy")} />
-                        </label>
+                        <span className="text-[9px] font-mono text-zinc-600">Page 5 Quote</span>
+                      </div>
+
+                      {/* Dedicated Upload Space for Philosophy */}
+                      <label className="relative flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-[#d1a852]/40 hover:border-[#d1a852] bg-zinc-900/50 hover:bg-zinc-900/90 rounded-xl cursor-pointer transition-all group shadow-sm">
+                        {uploadingTarget === "philosophy" ? (
+                          <div className="flex items-center gap-2 py-1">
+                            <Loader2 size={16} className="animate-spin text-[#d1a852]" />
+                            <span className="text-[11px] font-mono text-[#d1a852] font-semibold">Uploading photo...</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-[#d1a852]/10 border border-[#d1a852]/30 flex items-center justify-center text-[#d1a852] group-hover:scale-105 transition-transform shrink-0">
+                              <Upload size={14} />
+                            </div>
+                            <div className="text-left">
+                              <div className="text-[11px] font-semibold text-zinc-200 group-hover:text-white flex items-center gap-1.5">
+                                <span>Upload Philosophy Photo</span>
+                                <span className="text-[9px] bg-[#d1a852]/20 text-[#d1a852] px-1.5 py-0.2 rounded font-mono font-normal">JPG/PNG</span>
+                              </div>
+                              <p className="text-[9.5px] text-zinc-500 font-mono mt-0.5">Click or drag & drop custom photo</p>
+                            </div>
+                          </div>
+                        )}
+                        <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "philosophy"} onChange={(e) => handleUploadPhoto(e, "philosophy")} />
+                      </label>
+
+                      <div className="flex items-center gap-2 pt-1 pb-0.5">
+                        <div className="h-px bg-white/5 flex-1" />
+                        <span className="text-[8.5px] font-mono text-zinc-600 uppercase tracking-widest">or pick preset photo</span>
+                        <div className="h-px bg-white/5 flex-1" />
                       </div>
 
                       <div className="grid grid-cols-2 gap-2">
-                        {/* Upload tile */}
-                        <label className="relative rounded-lg overflow-hidden border-2 border-dashed border-zinc-700 hover:border-[#d1a852] h-14 bg-zinc-900/40 hover:bg-zinc-900 transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer text-zinc-400 hover:text-[#d1a852]">
-                          {uploadingTarget === "philosophy" ? <Loader2 size={13} className="animate-spin text-[#d1a852]" /> : <Plus size={13} />}
-                          <span className="text-[8.5px] font-mono uppercase tracking-wider">{uploadingTarget === "philosophy" ? "Uploading..." : "+ Upload"}</span>
-                          <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "philosophy"} onChange={(e) => handleUploadPhoto(e, "philosophy")} />
-                        </label>
-
                         {[...customImages, ...AVAILABLE_IMAGES].map((img) => (
                           <button
                             key={img.url}
