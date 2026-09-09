@@ -10,6 +10,7 @@ import {
 import SEO from "../components/SEO";
 import { downloadPhotosAsZip } from "../utils/zipDownloader";
 import WebsiteMediaManager from "../components/admin/WebsiteMediaManager";
+import defaultOfficeBudgets from "../data/defaultOfficeBudgets.json";
 
 const ADMIN_PASS = "dreamwed2026";
 const API_BASE = typeof window !== "undefined"
@@ -182,7 +183,7 @@ const Admin = () => {
   const [zippingState, setZippingState] = useState(null);
 
   // Dreamwed Office states
-  const [officeBudgets, setOfficeBudgets] = useState([]);
+  const [officeBudgets, setOfficeBudgets] = useState(defaultOfficeBudgets || []);
   const [officeInvoices, setOfficeInvoices] = useState([]);
   const [officeSettings, setOfficeSettings] = useState({
     photoCharge: 15000,
@@ -215,7 +216,13 @@ const Admin = () => {
         fetch(`${API_BASE}/api/office/invoices`),
         fetch(`${API_BASE}/api/office/settings`)
       ]);
-      if (budgetsRes.ok) setOfficeBudgets(await budgetsRes.ok ? await budgetsRes.json() : []);
+      if (budgetsRes.ok) {
+        const data = await budgetsRes.json();
+        setOfficeBudgets(Array.isArray(data) && data.length > 0 ? data : defaultOfficeBudgets);
+      } else {
+        const local = JSON.parse(localStorage.getItem("vows_and_values_events") || "[]");
+        setOfficeBudgets(Array.isArray(local) && local.length > 0 ? local : defaultOfficeBudgets);
+      }
       if (invoicesRes.ok) setOfficeInvoices(await invoicesRes.ok ? await invoicesRes.json() : []);
       if (settingsRes.ok) setOfficeSettings(await settingsRes.ok ? await settingsRes.json() : {
         photoCharge: 15000,
@@ -228,7 +235,8 @@ const Admin = () => {
       });
     } catch (e) {
       console.error("Error fetching office data, loading from localStorage:", e);
-      setOfficeBudgets(JSON.parse(localStorage.getItem("vows_and_values_events") || "[]"));
+      const local = JSON.parse(localStorage.getItem("vows_and_values_events") || "[]");
+      setOfficeBudgets(Array.isArray(local) && local.length > 0 ? local : defaultOfficeBudgets);
       setOfficeInvoices(JSON.parse(localStorage.getItem("dreamwed_saved_invoices") || "[]"));
       setOfficeSettings(JSON.parse(localStorage.getItem("vows_and_values_default_rates") || JSON.stringify({
         photoCharge: 15000,
