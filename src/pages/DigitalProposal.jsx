@@ -1,3514 +1,1953 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams, useParams, Link } from "react-router-dom";
 import {
-  Camera, Check, CheckCircle, ChevronRight, Download, Edit2, FileCheck, FileText,
-  Heart, Image as ImageIcon, Info, Menu, Phone, Printer, Send, Share2, Star, Trash2, X, Plus, Minus,
-  Sparkles, Sliders, Smartphone, Laptop, Lock, ShieldCheck, GripVertical, Home, Save,
-  Upload, Loader2
+  Camera, CheckCircle, Check, Gift, Film, Sparkles,
+  ArrowLeft, Upload, Image as ImageIcon, Edit2, Share2,
+  Printer, Send, ShieldCheck, Star, Lock, Save, X, Plus, Trash2,
+  Move, ZoomIn, Sliders, ChevronDown, FolderOpen
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
-import { uploadImageToCloudinary } from "../utils/cloudinaryUploader";
+import {
+  PARVATHY_SAMPLE_PROPOSAL,
+  AVAILABLE_STOCK_PHOTOS,
+  DEFAULT_PHOTOS,
+  parseProposalWithAI
+} from "../utils/pdfProposalParser";
 
-// Available images in project for customizer selection
-const AVAILABLE_IMAGES = [
-  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533025/dreamwed_website/red.jpg", label: "Signature Red Hero" },
-  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533011/dreamwed_website/new_portrait_1.jpg", label: "Kerala Bride Portrait" },
-  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533012/dreamwed_website/new_portrait_2.jpg", label: "Candid Couple Smile" },
-  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533013/dreamwed_website/new_portrait_3.jpg", label: "Golden Hour Portrait" },
-  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533014/dreamwed_website/new_portrait_4.jpg", label: "Outdoor Couple Shoot" },
-  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533015/dreamwed_website/pic1.jpg", label: "Engagement Candid" },
-  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533016/dreamwed_website/pic2.jpg", label: "Wedding Ceremony" },
-  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533018/dreamwed_website/pic3.jpg", label: "Reception Glamour" },
-  { url: "https://res.cloudinary.com/jisf5zce/image/upload/f_auto,q_auto/v1788533019/dreamwed_website/pic4.jpg", label: "Haldi Celebration" },
-  { url: "/couple_traditional_red.jpg", label: "Traditional Red Couple" },
-  { url: "/uploaded_couple_blackwhite.jpg", label: "B&W Editorial Couple" },
-  { url: "/couple_fun_glasses.jpg", label: "Fun Sunglasses Couple" },
-  { url: "/bride_christian_white.jpg", label: "Christian Bride White" },
-  { url: "/uploaded_bride_traditional.jpg", label: "Kerala Bride Traditional" },
-  { url: "/uploaded_bride_gold.jpg", label: "Gold Jewelry Bride" },
-  { url: "/uploaded_bride_yellow.jpg", label: "Yellow Beetle Wedding Party" },
-  { url: "/kochi_couple.jpg", label: "Kochi Couple Portrait" },
-  { url: "/kochi_couple_carry.jpg", label: "Kochi Groom Carrying Bride" }
-];
+// Helper to construct events list from Budget Tracker payload
+function buildEventsFromTrackerData(temp) {
+  let events = [];
+  const eventsList = temp.eventsList || [];
+  const photographers = temp.photographers || [];
+  const videographers = temp.videographers || [];
 
-const resolveAssetPath = (path) => {
-  if (!path) return "";
-  if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) {
-    return path;
+  const hasStdPhotos = (temp.stdPhotoCharge > 0) || (temp.stdPhotoQty > 0) || (temp.stdPerPhotoCharge > 0);
+  const hasStdVideos = (temp.stdVideoCharge > 0) || (temp.stdEditingCharge > 0);
+  const hasPrewedIndicators = hasStdPhotos || hasStdVideos ||
+    photographers.some(p => {
+      const n = (p.name || "").toLowerCase();
+      return n.includes("prewed") || n.includes("pre-wedding") || n.includes("outdoor") || n.includes("save the date") || n.includes("save-the-date");
+    }) ||
+    videographers.some(v => {
+      const n = (v.name || "").toLowerCase();
+      return n.includes("prewed") || n.includes("pre-wedding") || n.includes("outdoor") || n.includes("save the date") || n.includes("save-the-date");
+    }) ||
+    eventsList.some(ev => {
+      const n = (ev.name || "").toLowerCase();
+      return n.includes("prewed") || n.includes("pre-wedding") || n.includes("outdoor") || n.includes("save the date") || n.includes("save-the-date");
+    });
+
+  // 1. If eventsList has items, map them
+  if (eventsList.length > 0) {
+    events = eventsList.map((ev) => {
+      const evPhotos = photographers.filter(p => p.eventId === ev.id);
+      const evVideos = videographers.filter(v => v.eventId === ev.id);
+      
+      const crew = [];
+      evPhotos.forEach(p => {
+        crew.push(p.name ? p.name.toUpperCase() : "1 PHOTOGRAPHER");
+      });
+      evVideos.forEach(v => {
+        crew.push(v.name ? v.name.toUpperCase() : "1 VIDEOGRAPHER");
+      });
+
+      // Default fallback if no specific crew attached
+      if (crew.length === 0) {
+        if (ev.name.toLowerCase().includes("reception")) {
+          crew.push("1 PHOTOGRAPHER", "1 VIDEOGRAPHER");
+        } else if (ev.name.toLowerCase().includes("prewed") || ev.name.toLowerCase().includes("pre-wedding")) {
+          crew.push("1 PHOTOGRAPHER", "1 VIDEOGRAPHER", "20 EDITED MASTER PHOTOS");
+        } else {
+          crew.push("1 TRADITIONAL PHOTOGRAPHER", "1 TRADITIONAL VIDEOGRAPHER");
+        }
+      }
+
+      return {
+        eventTag: ev.name.toUpperCase(),
+        title: ev.name.toUpperCase().includes("COVERAGE") ? ev.name.toUpperCase() : `${ev.name.toUpperCase()} COVERAGE`,
+        subhead: ev.date || temp.date || "",
+        crew: crew,
+        description: ev.description || ""
+      };
+    });
   }
-  // Strip leading slash if running under file protocol, or inside a subdirectory (e.g. Live Server)
-  const isLocalFile = window.location.protocol === "file:";
-  const isSubdirectory = window.location.pathname !== "/" && !window.location.pathname.startsWith("/proposal");
-  
-  if (isLocalFile || isSubdirectory) {
-    return path.startsWith("/") ? path.substring(1) : path;
+
+  // 2. Check if Pre-Wedding is already in events
+  const hasPrewedEvent = events.some(e => 
+    e.title.toLowerCase().includes("pre-wedding") || 
+    e.title.toLowerCase().includes("prewedding") || 
+    e.title.toLowerCase().includes("save the date")
+  );
+
+  // If Pre-Wedding indicators exist and not already in events, add it
+  if (hasPrewedIndicators && !hasPrewedEvent) {
+    const prewedCrew = [];
+    if (hasStdPhotos) prewedCrew.push("1 CANDID PHOTOGRAPHER");
+    if (hasStdVideos) prewedCrew.push("1 CINEMATIC VIDEOGRAPHER");
+    if (temp.stdPhotoQty > 0) {
+      prewedCrew.push(`${temp.stdPhotoQty} EDITED MASTER PHOTOS`);
+    } else {
+      prewedCrew.push("20 EDITED MASTER PHOTOS");
+    }
+
+    events.unshift({
+      eventTag: "PRE-WEDDING",
+      title: "PRE-WEDDING COVERAGE",
+      subhead: "Pre-Wedding Shoot & Save The Date",
+      crew: prewedCrew.length > 0 ? prewedCrew : ["1 PHOTOGRAPHER", "1 VIDEOGRAPHER", "20 EDITED MASTER PHOTOS"],
+      description: "Outdoor couple portrait & cinematic video session capturing candid storytelling."
+    });
   }
-  return path;
+
+  // 3. Fallback if events is empty
+  if (events.length === 0) {
+    events = [
+      {
+        eventTag: "WEDDING",
+        title: "WEDDING COVERAGE",
+        subhead: temp.date || "December 3, 2026",
+        crew: ["1 TRADITIONAL PHOTOGRAPHER", "1 TRADITIONAL VIDEOGRAPHER"]
+      },
+      {
+        eventTag: "RECEPTION",
+        title: "RECEPTION COVERAGE",
+        subhead: "Reception Celebration",
+        crew: ["1 PHOTOGRAPHER", "1 VIDEOGRAPHER"]
+      }
+    ];
+  }
+
+  return events;
+}
+
+export const SREENIDHI_SAMPLE_PROPOSAL = {
+  id: "proposal_sreenidhi",
+  proposalNo: "DW-SREENIDHI-2026",
+  clientName: "Sreenidhi",
+  eventDate: "October 2, 2026 & October 5, 2026",
+  venue: "Guruvayoor",
+  price: "94,999",
+  packageTitle: "Bespoke Two-Day Wedding & Intimate Celebration",
+  packageSubtitle: "Fine Art Photography & Master 4K Cinematic Films",
+  phone: "9995412955",
+  photos: {
+    ...DEFAULT_PHOTOS,
+    coverAlign: { x: 50, y: 50, scale: 100 },
+    bannerAlign: { x: 50, y: 30, scale: 100 },
+    philosophyAlign: { x: 50, y: 50, scale: 100 }
+  },
+  addons: ["Lead Photographer (Me)", "Traditional Wedding & Intimate Coverage", "40 Leaf Archival Layflat Album"],
+  events: [
+    {
+      eventTag: "WEDDING",
+      title: "WEDDING CEREMONY COVERAGE",
+      subhead: "October 2, 2026",
+      crew: ["1 LEAD PHOTOGRAPHER", "1 VIDEOGRAPHER"],
+      description: "Full traditional ceremony, sacred rituals, and family storytelling portraiture."
+    },
+    {
+      eventTag: "INTIMATE WEDDING",
+      title: "INTIMATE WEDDING COVERAGE",
+      subhead: "October 5, 2026",
+      crew: ["1 LEAD PHOTOGRAPHER", "1 VIDEOGRAPHER"],
+      description: "Intimate gathering, couple fine art portraits, and heartfelt celebratory moments."
+    }
+  ],
+  deliverables: {
+    albums: [
+      { tag: "INCLUDED", title: "1 x Premium Layflat Main Album (40 Leafs / 80 Pages)", desc: "Archival matte paper, custom embossed presentation box" },
+      { tag: "INCLUDED", title: "Miniature Companion Copy for Parents", desc: "80 Pages companion replica album" }
+    ],
+    films: [
+      { tag: "INCLUDED", title: "4K/HD Cinematic Highlights Video Film", desc: "5-7 mins narrative video film" },
+      { tag: "INCLUDED", title: "Full HD Wedding Video Film (Traditional Document)", desc: "Complete ceremony document" },
+      { tag: "INCLUDED", title: "All Raw & High-Resolution Edited Images", desc: "Digital Master Collection" },
+      { tag: "INCLUDED", title: "High-Speed USB Pen Drive + Online Digital Link", desc: "Direct Cloud Gallery" }
+    ],
+    complimentary: [
+      { tag: "GIFT", title: "2 x Premium Wall Frames (12x18 inches)", desc: "Silk matte wooden finish" },
+      { tag: "GIFT", title: "2 x Cinematic Reels (Instagram-Ready)", desc: "Vertical reels format" },
+      { tag: "GIFT", title: "Pre-Wedding Consultation & Planning Session", desc: "1-on-1 creative session" }
+    ]
+  },
+  testimonials: PARVATHY_SAMPLE_PROPOSAL.testimonials,
+  directorNote: PARVATHY_SAMPLE_PROPOSAL.directorNote,
+  studioInfo: PARVATHY_SAMPLE_PROPOSAL.studioInfo
 };
 
-// Website Packages
-const WEBSITE_PACKAGES = [
-  {
-    name: "Wedding Photography (₹44,999)",
-    price: "44,999",
-    weddingCandidPhoto: 0,
-    weddingTradPhoto: 1,
-    weddingCandidVideo: 0,
-    weddingTradVideo: 1,
-    evePhoto: 0,
-    eveVideo: 0,
-    prewedPhoto: 0,
-    prewedVideo: 0,
-    hasDrone: false,
-    hasPreweddingVideo: false,
-    hasLedWall: false,
-    hasHaldi: false,
-    deliverables: [
-      "One 70 Pages Premium Album (12x18 inches)",
-      "Highlights Video Film",
-      "Full HD Wedding Video Film",
-      "Wedding Reel",
-      "All Raw & High-Resolution Edited Images",
-      "High-Speed USB Pen Drive + Digital Link"
-    ],
-    complimentary: [
-      "1 x Customized Photo Calendar",
-      "2 x Premium Wall Frames",
-      "Free Pre-Wedding Photo (Worth ₹12,000)"
-    ]
-  },
-  {
-    name: "Wedding Photo & Pre-Wedding (₹54,999)",
-    price: "54,999",
-    weddingCandidPhoto: 0,
-    weddingTradPhoto: 1,
-    weddingCandidVideo: 0,
-    weddingTradVideo: 1,
-    evePhoto: 0,
-    eveVideo: 0,
-    prewedPhoto: 1,
-    prewedVideo: 1,
-    hasDrone: false,
-    hasPreweddingVideo: true,
-    hasLedWall: false,
-    hasHaldi: false,
-    deliverables: [
-      "One 80 Pages Premium Album (12x18 inches)",
-      "80 Pages Miniature Album for Parents",
-      "Highlights Video Film",
-      "Full HD Wedding Video Film",
-      "Wedding Reel",
-      "All Raw & High-Resolution Edited Images",
-      "High-Speed USB Pen Drive + Digital Link"
-    ],
-    complimentary: [
-      "1 x Customized Photo Calendar",
-      "2 x Premium Wall Frames",
-      "Free Pre-Wedding Photo & Video (Worth ₹15,000)"
-    ]
-  },
-  {
-    name: "Candid Photo & Videography (₹69,999)",
-    price: "69,999",
-    weddingCandidPhoto: 1,
-    weddingTradPhoto: 1,
-    weddingCandidVideo: 0,
-    weddingTradVideo: 1,
-    evePhoto: 0,
-    eveVideo: 0,
-    prewedPhoto: 1,
-    prewedVideo: 1,
-    hasDrone: false,
-    hasPreweddingVideo: true,
-    hasLedWall: false,
-    hasHaldi: false,
-    deliverables: [
-      "One 80 Pages Premium Album (12x18 inches)",
-      "80 Pages Miniature Album for Parents",
-      "Highlights Video Film",
-      "Full HD Wedding Video Film",
-      "Wedding Reel",
-      "All Raw & High-Resolution Edited Images",
-      "High-Speed USB Pen Drive + Digital Link"
-    ],
-    complimentary: [
-      "1 x Customized Photo Calendar",
-      "2 x Premium Wall Frames"
-    ]
-  },
-  {
-    name: "Premium Candid Package (₹79,999)",
-    price: "79,999",
-    weddingCandidPhoto: 1,
-    weddingTradPhoto: 1,
-    weddingCandidVideo: 1,
-    weddingTradVideo: 1,
-    evePhoto: 1,
-    eveVideo: 1,
-    prewedPhoto: 1,
-    prewedVideo: 1,
-    hasDrone: true,
-    hasPreweddingVideo: true,
-    hasLedWall: false,
-    hasHaldi: false,
-    deliverables: [
-      "One 100-Pages Premium layflat Album",
-      "Highlights Video Film",
-      "Full HD Wedding Video Film",
-      "Engagement & Wedding Reels",
-      "All Raw & High-Resolution Edited Images",
-      "High-Speed USB Pen Drive + Digital Link"
-    ],
-    complimentary: [
-      "1 x Customized Photo Calendar",
-      "2 x Premium Wall Frames",
-      "Free Drone Aerial Coverage"
-    ]
-  },
-  {
-    name: "Bride & Groom Luxury Package (₹1,10,000)",
-    price: "1,10,000",
-    weddingCandidPhoto: 2,
-    weddingTradPhoto: 1,
-    weddingCandidVideo: 1,
-    weddingTradVideo: 1,
-    evePhoto: 1,
-    eveVideo: 1,
-    prewedPhoto: 1,
-    prewedVideo: 1,
-    hasDrone: true,
-    hasPreweddingVideo: true,
-    hasLedWall: false,
-    hasHaldi: false,
-    deliverables: [
-      "One 80-Pages Premium Album with Handcrafted Album Box",
-      "One 80-Pages Miniature Album for Parents",
-      "Cinematic Highlights Film & Instagram Reels",
-      "Full HD Wedding Video Film",
-      "All Raw & High-Resolution Edited Images",
-      "High-Speed USB Pen Drive + Digital Link"
-    ],
-    complimentary: [
-      "2 x Premium Wall Frames",
-      "1 x Customized Photo Calendar",
-      "Free Drone Aerial Coverage & Premium Custom Album Box"
-    ]
-  },
-  {
-    name: "Standalone Wedding Day (₹44,999)",
-    price: "44,999",
-    weddingCandidPhoto: 0,
-    weddingTradPhoto: 1,
-    weddingCandidVideo: 0,
-    weddingTradVideo: 1,
-    evePhoto: 0,
-    eveVideo: 0,
-    prewedPhoto: 0,
-    prewedVideo: 0,
-    hasDrone: false,
-    hasPreweddingVideo: false,
-    hasLedWall: false,
-    hasHaldi: false,
-    deliverables: [
-      "Premium 70-Page Layflat Album",
-      "Full HD Video Film + Reels",
-      "Edited Photos & High-speed Pendrive"
-    ],
-    complimentary: [
-      "Free Desktop Calendar"
-    ]
-  },
-  {
-    name: "Standalone Reception (₹19,999)",
-    price: "19,999",
-    weddingCandidPhoto: 0,
-    weddingTradPhoto: 1,
-    weddingCandidVideo: 0,
-    weddingTradVideo: 1,
-    evePhoto: 0,
-    eveVideo: 0,
-    prewedPhoto: 0,
-    prewedVideo: 0,
-    hasDrone: false,
-    hasPreweddingVideo: false,
-    hasLedWall: false,
-    hasHaldi: false,
-    deliverables: [
-      "Premium 50-Page Layflat Album",
-      "Full HD Video Film + Highlights",
-      "Edited Photos & High-speed Pendrive"
-    ],
-    complimentary: [
-      "Free Desktop Calendar"
-    ]
-  },
-  {
-    name: "Engagement Photography (₹12,000)",
-    price: "12,000",
-    weddingCandidPhoto: 0,
-    weddingTradPhoto: 0,
-    weddingCandidVideo: 0,
-    weddingTradVideo: 0,
-    evePhoto: 1,
-    eveVideo: 0,
-    prewedPhoto: 0,
-    prewedVideo: 0,
-    hasDrone: false,
-    hasPreweddingVideo: false,
-    hasLedWall: false,
-    hasHaldi: false,
-    deliverables: [
-      "Photos in Google Drive"
-    ],
-    complimentary: [
-      "Free High-Res Digital Album Access"
-    ]
-  },
-  {
-    name: "Bride or Groom Engagement Package (₹28,999)",
-    price: "28,999",
-    weddingCandidPhoto: 0,
-    weddingTradPhoto: 0,
-    weddingCandidVideo: 0,
-    weddingTradVideo: 0,
-    evePhoto: 1,
-    eveVideo: 1,
-    prewedPhoto: 0,
-    prewedVideo: 0,
-    hasDrone: false,
-    hasPreweddingVideo: false,
-    hasLedWall: false,
-    hasHaldi: false,
-    deliverables: [
-      "Edited High-Res Photos",
-      "Premium Layflat Panoramic Album (50 Pages)",
-      "Cinematic Engagement Reel",
-      "Engagement Full HD Video",
-      "1 High-Speed USB Pen Drive"
-    ],
-    complimentary: [
-      "1 x Tabletop Calendar",
-      "2 x Premium Photo Frames"
-    ]
-  },
-  {
-    name: "Haldi Photography (Only) (₹10,000)",
-    price: "10,000",
-    weddingCandidPhoto: 0,
-    weddingTradPhoto: 0,
-    weddingCandidVideo: 0,
-    weddingTradVideo: 0,
-    evePhoto: 0,
-    eveVideo: 0,
-    prewedPhoto: 0,
-    prewedVideo: 0,
-    hasDrone: false,
-    hasPreweddingVideo: false,
-    hasLedWall: false,
-    hasHaldi: true,
-    deliverables: [
-      "Edited High-Res Photos"
-    ],
-    complimentary: [
-      "Free High-Res Digital Access"
-    ]
-  },
-  {
-    name: "Haldi Photography with Album (₹15,000)",
-    price: "15,000",
-    weddingCandidPhoto: 0,
-    weddingTradPhoto: 0,
-    weddingCandidVideo: 0,
-    weddingTradVideo: 0,
-    evePhoto: 0,
-    eveVideo: 0,
-    prewedPhoto: 0,
-    prewedVideo: 0,
-    hasDrone: false,
-    hasPreweddingVideo: false,
-    hasLedWall: false,
-    hasHaldi: true,
-    deliverables: [
-      "Edited High-Res Photos",
-      "Custom Layflat Panoramic Album (30 Pages)"
-    ],
-    complimentary: [
-      "Free Complimentary Wall Frame"
-    ]
-  },
-  {
-    name: "Haldi Photo & Videography (₹28,000)",
-    price: "28,000",
-    weddingCandidPhoto: 0,
-    weddingTradPhoto: 0,
-    weddingCandidVideo: 0,
-    weddingTradVideo: 0,
-    evePhoto: 0,
-    eveVideo: 0,
-    prewedPhoto: 0,
-    prewedVideo: 0,
-    hasDrone: false,
-    hasPreweddingVideo: false,
-    hasLedWall: false,
-    hasHaldi: true,
-    deliverables: [
-      "Edited High-Res Photos",
-      "Cinematic Haldi Highlight Reel",
-      "Full HD Event Video Film"
-    ],
-    complimentary: [
-      "Free Haldi Teaser Highlight Reel"
-    ]
-  }
-];
-
 export default function DigitalProposal() {
-  // Page Configuration State (Customizable in real-time)
-  const [brideName, setBrideName] = useState("ANJANA");
-  const [groomName, setGroomName] = useState("ASWIN");
-  const [proposalId, setProposalId] = useState("DW-2026-843");
-  const [proposalDate, setProposalDate] = useState("June 21, 2026");
-  const [weddingDate, setWeddingDate] = useState("September 15, 2026");
-  const [weddingLocation, setWeddingLocation] = useState("Trivandrum, Kerala");
-  const [price, setPrice] = useState("1,10,000");
-  const [leadPhotographer, setLeadPhotographer] = useState("Unni Krishnan");
-  const [selectedPackageIndex, setSelectedPackageIndex] = useState("");
-  const [eventsList, setEventsList] = useState([]);
-  const [themeColor, setThemeColor] = useState("#b4975a");
+  const [searchParams] = useSearchParams();
+  const { id: paramId } = useParams();
 
-  // Drag and Drop & In-place Edit States & Handlers for Deliverables and Complimentary lists
-  const [draggedIndex, setDraggedIndex] = useState(null);
-  const [dragSource, setDragSource] = useState(null); // 'deliverables' or 'complimentary'
-  const [draggableItem, setDraggableItem] = useState(null); // { index, source }
+  // Proposal State
+  const [proposal, setProposal] = useState(PARVATHY_SAMPLE_PROPOSAL);
+  const [editMode, setEditMode] = useState(false);
+  const [photoPickerOpen, setPhotoPickerOpen] = useState(false);
+  const [activePhotoSlot, setActivePhotoSlot] = useState(null);
+  const [alignModalOpen, setAlignModalOpen] = useState(false);
+  const [activeAlignSlot, setActiveAlignSlot] = useState("coverAlign");
+  const [savedProposalsModalOpen, setSavedProposalsModalOpen] = useState(false);
+  const [savedProposalsList, setSavedProposalsList] = useState([]);
+  const [toastMessage, setToastMessage] = useState("");
+  const [isAiProcessing, setIsAiProcessing] = useState(false);
 
-  const handleDragStart = (e, index, source) => {
-    setDraggedIndex(index);
-    setDragSource(source);
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleDragOver = (e, index, source) => {
-    e.preventDefault();
-    if (draggedIndex === null || dragSource !== source || draggedIndex === index) return;
-    
-    const list = source === 'deliverables' ? deliverables : complimentary;
-    const setList = source === 'deliverables' ? setDeliverables : setComplimentary;
-    
-    const newList = [...list];
-    const draggedItemVal = newList[draggedIndex];
-    newList.splice(draggedIndex, 1);
-    newList.splice(index, 0, draggedItemVal);
-    
-    setDraggedIndex(index);
-    setList(newList);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedIndex(null);
-    setDragSource(null);
-  };
-
-  const handleEditItem = (index, value, source) => {
-    if (source === 'deliverables') {
-      const newList = [...deliverables];
-      newList[index] = value;
-      setDeliverables(newList);
-    } else if (source === 'complimentary') {
-      const newList = [...complimentary];
-      newList[index] = value;
-      setComplimentary(newList);
-    }
-  };
-
-  const formatEventDate = (dateVal) => {
-    if (!dateVal) return '';
-    const parts = dateVal.split('-');
-    if (parts.length === 3) {
-      const year = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1;
-      const day = parseInt(parts[2], 10);
-      const dateObj = new Date(year, month, day);
-      return dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    }
-    const d = new Date(dateVal);
-    if (isNaN(d.getTime())) return dateVal;
-    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  };
-
-  const getFormattedEventDates = () => {
-    if (eventsList && eventsList.length > 0) {
-      const dates = eventsList
-        .map(ev => formatEventDate(ev.date))
-        .filter(d => d !== '');
-      const uniqueDates = [...new Set(dates)];
-      if (uniqueDates.length > 0) {
-        if (uniqueDates.length === 2) {
-          return `${uniqueDates[0]} & ${uniqueDates[1]}`;
-        }
-        return uniqueDates.join(" & ");
-      }
-    }
-    return weddingDate;
-  };
-
-  const handleSelectPackageTemplate = (index) => {
-    setSelectedPackageIndex(index);
-    const pkg = WEBSITE_PACKAGES[index];
-    if (!pkg) return;
-    
-    setPrice(pkg.price);
-    setWeddingCandidPhoto(pkg.weddingCandidPhoto);
-    setWeddingTradPhoto(pkg.weddingTradPhoto);
-    setWeddingCandidVideo(pkg.weddingCandidVideo);
-    setWeddingTradVideo(pkg.weddingTradVideo);
-    setEvePhoto(pkg.evePhoto);
-    setEveVideo(pkg.eveVideo);
-    setPrewedPhoto(pkg.prewedPhoto);
-    setPrewedVideo(pkg.prewedVideo);
-    setHasDrone(pkg.hasDrone);
-    setHasPreweddingVideo(pkg.hasPreweddingVideo);
-    setHasLedWall(pkg.hasLedWall);
-    setHasHaldi(pkg.hasHaldi);
-    setDeliverables([...pkg.deliverables]);
-    setComplimentary([...pkg.complimentary]);
-  };
-  
-  // Image Crop & Alignment Positions & Zoom
-  const [coverPositionX, setCoverPositionX] = useState(50);
-  const [coverPositionY, setCoverPositionY] = useState(50);
-  const [coverScale, setCoverScale] = useState(100);
-  
-  const [packagePositionX, setPackagePositionX] = useState(50);
-  const [packagePositionY, setPackagePositionY] = useState(50);
-  const [packageScale, setPackageScale] = useState(100);
-  
-  const [philosophyPositionX, setPhilosophyPositionX] = useState(50);
-  const [philosophyPositionY, setPhilosophyPositionY] = useState(50);
-  const [philosophyScale, setPhilosophyScale] = useState(100);
-  
-  // Package staff counts
-  const [weddingCandidPhoto, setWeddingCandidPhoto] = useState(1);
-  const [weddingTradPhoto, setWeddingTradPhoto] = useState(1);
-  const [weddingCandidVideo, setWeddingCandidVideo] = useState(1);
-  const [weddingTradVideo, setWeddingTradVideo] = useState(1);
-  
-  const [evePhoto, setEvePhoto] = useState(1);
-  const [eveVideo, setEveVideo] = useState(1);
-  
-  const [prewedPhoto, setPrewedPhoto] = useState(1);
-  const [prewedVideo, setPrewedVideo] = useState(1);
-  
-  const [stdPhoto, setStdPhoto] = useState(0);
-  const [stdVideo, setStdVideo] = useState(0);
-  const [stdQty, setStdQty] = useState(0);
-
-  // Add-on states
-  const [hasDrone, setHasDrone] = useState(false);
-  const [hasLedWall, setHasLedWall] = useState(false);
-  const [hasPreweddingVideo, setHasPreweddingVideo] = useState(false);
-  const [hasHaldi, setHasHaldi] = useState(false);
-  const [customAddons, setCustomAddons] = useState([]);
-  const [newCustomAddonName, setNewCustomAddonName] = useState("");
-  const [includePackages, setIncludePackages] = useState(false);
-  const [packagesLink, setPackagesLink] = useState(`${window.location.origin}/packages`);
-
-  const addCustomAddon = () => {
-    if (newCustomAddonName.trim()) {
-      const newAddon = {
-        id: Date.now().toString(),
-        name: newCustomAddonName.trim(),
-        enabled: true
-      };
-      setCustomAddons([...customAddons, newAddon]);
-      setNewCustomAddonName("");
-    }
-  };
-
-  const removeCustomAddon = (id) => {
-    setCustomAddons(customAddons.filter((addon) => addon.id !== id));
-  };
-
-  const toggleCustomAddon = (id) => {
-    setCustomAddons(
-      customAddons.map((addon) =>
-        addon.id === id ? { ...addon, enabled: !addon.enabled } : addon
-      )
-    );
-  };
-
-  // Compile active addons list
-  const activeAddons = [];
-  if (hasDrone) activeAddons.push("Aerial Drone (Helicam) Coverage");
-  if (hasLedWall) activeAddons.push("LED Wall Setup");
-  if (hasPreweddingVideo) activeAddons.push("Pre-Wedding Video / Film");
-  if (hasHaldi) activeAddons.push("Haldi Ceremony Coverage");
-  customAddons.forEach(addon => {
-    if (addon.enabled) activeAddons.push(addon.name);
-  });
-
-  const hasAddons = activeAddons.length > 0;
-
-  // Lists
-  const [deliverables, setDeliverables] = useState([
-    "50 Page Premium Layflat Main Album (12x18 inches)",
-    "Miniature Copy of the Main Album for Parents",
-    "25 Leaf (50 Pages) Fine-Art Imported Matte Paper",
-    "All Raw & High-Resolution Edited Images",
-    "Pen Drive for Edited Full Videos + Digital Link"
-  ]);
-  
-  const [complimentary, setComplimentary] = useState([
-    "2 x Table Top Miniature Calendars",
-    "2 x Cinematic Reels (Instagram-Ready)",
-    "Pre-Wedding Consultation Session",
-    "Save The Date Photoshoot"
-  ]);
-
-  const [testimonials, setTestimonials] = useState([
-    {
-      name: "Dr. Athulraj",
-      type: "Wedding Photos",
-      initials: "DA",
-      review: "The photos came out much better than expected, especially the low-light shots! You didn't miss a single moment of the wedding, and I don't think anyone else can provide such incredible quality in this budget. Thank you so much guys ❤️"
-    },
-    {
-      name: "Chindu",
-      type: "Cinematic Video",
-      initials: "C",
-      review: "What you did is one of the best I have seen so far. I've been searching for 7 months... the cinematic video you guys did is one of the best! All my friends and office colleagues are showering with praises."
-    },
-    {
-      name: "Anandha Lekshmi",
-      type: "Wedding Ceremony",
-      initials: "AL",
-      review: "Thank you so much to the whole team for the beautiful photo frame and for capturing our big day perfectly! ❤️❤️"
-    },
-    {
-      name: "Deepak Kollam",
-      type: "Candid Portraits",
-      initials: "DK",
-      review: "Superb work bro! We had a great experience with the team. I am someone who doesn't pose for photos at all, but you guys managed to capture such incredible shots and made me feel so comfortable."
-    }
-  ]);
-
-  // Styling
-  const [coverImage, setCoverImage] = useState("/couple_traditional_red.jpg");
-  const [packageImage, setPackageImage] = useState("/uploaded_bride_yellow.jpg");
-  const [philosophyImage, setPhilosophyImage] = useState("/uploaded_couple_blackwhite.jpg");
-  const [customImages, setCustomImages] = useState(() => {
-    try {
-      const saved = localStorage.getItem("dreamwed_proposal_custom_images");
-      return saved ? JSON.parse(saved) : [];
-    } catch (e) {
-      return [];
-    }
-  });
-  const [uploadingTarget, setUploadingTarget] = useState(null); // "cover" | "package" | "philosophy" | null
-
-  const handleUploadPhoto = async (e, target) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-
-    // Reset value so re-uploading same file triggers event
-    e.target.value = "";
-    setUploadingTarget(target);
-
-    // Read local data URL for instant feedback
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const localDataUrl = event.target.result;
-      
-      // Set preview immediately
-      if (target === "cover") setCoverImage(localDataUrl);
-      else if (target === "package") setPackageImage(localDataUrl);
-      else if (target === "philosophy") setPhilosophyImage(localDataUrl);
-
-      let finalUrl = localDataUrl;
+  // Load proposal from localStorage or URL
+  useEffect(() => {
+    async function loadProposal() {
       try {
-        const res = await uploadImageToCloudinary(file);
-        if (res && res.url) {
-          finalUrl = res.url;
-          if (target === "cover") setCoverImage(finalUrl);
-          else if (target === "package") setPackageImage(finalUrl);
-          else if (target === "philosophy") setPhilosophyImage(finalUrl);
-        }
-      } catch (err) {
-        console.warn("Cloudinary upload failed, using local data URL fallback:", err);
-      } finally {
-        setUploadingTarget(null);
-      }
+        const targetId = paramId || searchParams.get("id");
+        const clientQuery = searchParams.get("client") || searchParams.get("groom");
+        const priceParam = searchParams.get("price");
+        const locParam = searchParams.get("loc");
+        const wdateParam = searchParams.get("wdate");
+        const isFromTracker = searchParams.get("from_ipc") === "true" || searchParams.get("from_storage") === "true";
 
-      setCustomImages((prev) => {
-        const item = {
-          url: finalUrl,
-          label: file.name ? file.name.replace(/\.[^/.]+$/, "") : "Custom Upload",
-          isCustom: true
+        // Check budget tracker transfer data (localStorage or Electron IPC)
+        let tempJson = localStorage.getItem("temp_proposal_data");
+        if (window.electronAPI && typeof window.electronAPI.getTempProposal === "function") {
+          try {
+            const ipcData = await window.electronAPI.getTempProposal();
+            if (ipcData) tempJson = ipcData;
+          } catch (e) {
+            console.warn("Could not get IPC temp proposal:", e);
+          }
+        }
+
+        let tempProposal = null;
+        if (tempJson) {
+          try {
+            const temp = typeof tempJson === "string" 
+              ? JSON.parse(tempJson.replace(/"\/images\//g, '"./images/').replace(/"\/videos\//g, '"./videos/'))
+              : tempJson;
+
+            if (temp.clientName || clientQuery) {
+              const mappedEvents = buildEventsFromTrackerData(temp);
+
+              const hasPrewed = (temp.stdPhotoCharge > 0) || (temp.stdVideoCharge > 0) || (temp.stdPhotoQty > 0) ||
+                mappedEvents.some(e => e.title.toLowerCase().includes("pre-wedding") || e.title.toLowerCase().includes("prewedding") || e.title.toLowerCase().includes("save the date"));
+
+              const albumsList = [
+                { tag: "INCLUDED", title: `${temp.albumQty || 1} x Premium Layflat Main Album (${temp.albumLeafs || 40} Leafs / ${(temp.albumLeafs || 40) * 2} Pages)`, desc: "Archival matte paper, custom embossed presentation box" },
+                { tag: "INCLUDED", title: "Miniature Copy of Main Album for Parents", desc: "80 Pages companion replica album" }
+              ];
+
+              if (hasPrewed) {
+                albumsList.push({
+                  tag: "INCLUDED",
+                  title: "Pre-Wedding Save the Date Shoot (Photo & Video)",
+                  desc: "High-resolution edited master photographs & cinematic video session"
+                });
+              }
+
+              tempProposal = {
+                ...PARVATHY_SAMPLE_PROPOSAL,
+                id: temp.id || targetId || "proposal_custom",
+                clientName: temp.clientName || clientQuery || "Dr. Sreehari .B",
+                eventDate: temp.date || wdateParam || "December 3, 2026 & December 5, 2026",
+                venue: temp.location || locParam || "Kottarakara",
+                price: temp.packagePrice ? Number(temp.packagePrice).toLocaleString("en-IN") : (priceParam || "64,999"),
+                addons: temp.droneCharge > 0 ? ["Aerial Drone (Helicam) Coverage"] : ["Standard Package"],
+                events: mappedEvents,
+                deliverables: {
+                  albums: albumsList,
+                  films: [
+                    { tag: "INCLUDED", title: "4K/HD Cinematic Highlights Video Film", desc: "5-7 mins narrative video film" },
+                    { tag: "INCLUDED", title: "Full HD Wedding Video Film (Traditional Document)", desc: "Complete ceremony document" },
+                    { tag: "INCLUDED", title: "All Raw & High-Resolution Edited Images", desc: "Digital Master Collection" },
+                    { tag: "INCLUDED", title: "High-Speed USB Pen Drive + Online Digital Link", desc: "Direct Cloud Gallery" }
+                  ],
+                  complimentary: [
+                    { tag: "GIFT", title: "2 x Premium Wall Frames (12x18 inches)", desc: "Silk matte wooden finish" },
+                    { tag: "GIFT", title: "2 x Cinematic Reels (Instagram-Ready)", desc: "Vertical reels format" },
+                    { tag: "GIFT", title: "Pre-Wedding Consultation & Planning Session", desc: "1-on-1 creative session" }
+                  ]
+                }
+              };
+            }
+          } catch (e) {
+            console.warn("Could not parse temp_proposal_data:", e);
+          }
+        }
+
+        let savedList = JSON.parse(
+          (localStorage.getItem("dreamwed_vip_proposals_list") || "[]")
+            .replace(/"\/images\//g, '"./images/')
+            .replace(/"\/videos\//g, '"./videos/')
+        );
+
+        // Ensure Sreenidhi is always available in savedList
+        if (!savedList.some(p => p.id === "proposal_sreenidhi" || p.clientName?.toLowerCase().includes("sreenidhi"))) {
+          savedList = [SREENIDHI_SAMPLE_PROPOSAL, ...savedList];
+          try {
+            localStorage.setItem("dreamwed_vip_proposals_list", JSON.stringify(savedList));
+          } catch(e){}
+        }
+
+        let matched = null;
+
+        // If coming directly from budget tracker, prioritize tempProposal with latest events and pricing
+        if (isFromTracker && tempProposal) {
+          const existing = savedList.find(
+            (p) => p.id === tempProposal.id || p.clientName?.toLowerCase() === tempProposal.clientName?.toLowerCase()
+          );
+          if (existing && existing.photos) {
+            tempProposal.photos = { ...DEFAULT_PHOTOS, ...existing.photos };
+          }
+          matched = tempProposal;
+        } else {
+          if (targetId) {
+            matched = savedList.find((p) => p.id === targetId);
+          } else if (clientQuery) {
+            matched = savedList.find(
+              (p) => p.clientName?.toLowerCase() === clientQuery.toLowerCase()
+            );
+          }
+
+          if (!matched && tempProposal) {
+            matched = tempProposal;
+          }
+        }
+
+        if (!matched) {
+          const activeSaved = localStorage.getItem("active_vip_proposal");
+          if (activeSaved) {
+            matched = JSON.parse(
+              activeSaved.replace(/"\/images\//g, '"./images/').replace(/"\/videos\//g, '"./videos/')
+            );
+          }
+        }
+
+        // Fallback to Sreenidhi if requested or default
+        if (!matched && (targetId === "proposal_sreenidhi" || (clientQuery && clientQuery.toLowerCase().includes("sreenidhi")))) {
+          matched = SREENIDHI_SAMPLE_PROPOSAL;
+        }
+
+      if (matched) {
+        const photos = {
+          ...DEFAULT_PHOTOS,
+          ...(matched.photos || {}),
+          coverAlign: matched.photos?.coverAlign || { x: 50, y: 50, scale: 100 },
+          bannerAlign: matched.photos?.bannerAlign || { x: 50, y: 30, scale: 100 },
+          philosophyAlign: matched.photos?.philosophyAlign || { x: 50, y: 50, scale: 100 }
         };
-        const updated = [item, ...prev.filter((p) => p.url !== finalUrl && p.url !== localDataUrl)];
-        try {
-          localStorage.setItem("dreamwed_proposal_custom_images", JSON.stringify(updated.slice(0, 30)));
-        } catch (storageErr) {
-          console.warn("Failed caching images to localStorage:", storageErr);
-        }
-        return updated;
-      });
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const removeCustomImage = (e, urlToRemove) => {
-    e.stopPropagation();
-    setCustomImages((prev) => {
-      const updated = prev.filter((img) => img.url !== urlToRemove);
-      try {
-        localStorage.setItem("dreamwed_proposal_custom_images", JSON.stringify(updated));
-      } catch (err) {}
-      return updated;
-    });
-    if (coverImage === urlToRemove) setCoverImage(AVAILABLE_IMAGES[0].url);
-    if (packageImage === urlToRemove) setPackageImage(AVAILABLE_IMAGES[5].url);
-    if (philosophyImage === urlToRemove) setPhilosophyImage(AVAILABLE_IMAGES[1].url);
-  };
-
-  // UI States
-  const [customizerOpen, setCustomizerOpen] = useState(false);
-  const [previewMode, setPreviewMode] = useState("desktop"); // "desktop" | "mobile"
-  const [activeTab, setActiveTab] = useState("details"); // customizer tabs: "details" | "package" | "deliverables" | "design"
-  
-  // URL Share & Client View states
-  const [isClientView, setIsClientView] = useState(false);
-  const [copiedClient, setCopiedClient] = useState(false);
-  const [copiedEdit, setCopiedEdit] = useState(false);
-  const [isUrlParsed, setIsUrlParsed] = useState(false);
-  const [isRestored, setIsRestored] = useState(false);
-
-  useEffect(() => {
-    let search = window.location.search;
-    if (!search && window.location.hash.includes('?')) {
-      search = window.location.hash.substring(window.location.hash.indexOf('?'));
-    }
-    const params = new URLSearchParams(search);
-    setIsClientView(params.get("client") === "true");
-    if (params.get("theme")) {
-      setThemeColor(params.get("theme"));
-    }
-    
-    // Load individual parameters first as default/fallback
-    if (params.get("bride")) setBrideName(params.get("bride"));
-    if (params.get("groom")) setGroomName(params.get("groom"));
-    if (params.get("id")) setProposalId(params.get("id"));
-    if (params.get("pdate")) setProposalDate(params.get("pdate"));
-    if (params.get("wdate")) setWeddingDate(params.get("wdate"));
-    if (params.get("loc")) setWeddingLocation(params.get("loc"));
-    if (params.get("price")) setPrice(params.get("price"));
-    if (params.get("lead")) setLeadPhotographer(params.get("lead"));
-    
-    if (params.get("wcp")) setWeddingCandidPhoto(parseInt(params.get("wcp")) || 0);
-    if (params.get("wtp")) setWeddingTradPhoto(parseInt(params.get("wtp")) || 0);
-    if (params.get("wcv")) setWeddingCandidVideo(parseInt(params.get("wcv")) || 0);
-    if (params.get("wtv")) setWeddingTradVideo(parseInt(params.get("wtv")) || 0);
-    
-    if (params.get("ep")) setEvePhoto(parseInt(params.get("ep")) || 0);
-    if (params.get("ev")) setEveVideo(parseInt(params.get("ev")) || 0);
-    
-    if (params.get("pp")) setPrewedPhoto(parseInt(params.get("pp")) || 0);
-    if (params.get("pv")) setPrewedVideo(parseInt(params.get("pv")) || 0);
-    
-    if (params.get("stdp")) setStdPhoto(parseInt(params.get("stdp")) || 0);
-    if (params.get("stdv")) setStdVideo(parseInt(params.get("stdv")) || 0);
-    if (params.get("stdq")) setStdQty(parseInt(params.get("stdq")) || 0);
-    
-    if (params.get("drone")) setHasDrone(params.get("drone") === "true");
-    if (params.get("led")) setHasLedWall(params.get("led") === "true");
-    if (params.get("previd")) setHasPreweddingVideo(params.get("previd") === "true");
-    if (params.get("haldi")) setHasHaldi(params.get("haldi") === "true");
-    
-    if (params.get("caddons")) {
-      const addonNames = params.get("caddons").split(",");
-      const addons = addonNames.map((name, i) => ({
-        id: `url-${i}`,
-        name: name,
-        enabled: true
-      }));
-      setCustomAddons(addons);
-    }
-    
-    if (params.get("incpkg")) setIncludePackages(params.get("incpkg") === "true");
-    if (params.get("pkglnk")) setPackagesLink(params.get("pkglnk"));
-    
-    if (params.get("cimg")) setCoverImage(params.get("cimg"));
-    if (params.get("cpx")) setCoverPositionX(parseInt(params.get("cpx")) || 50);
-    if (params.get("cpy")) setCoverPositionY(parseInt(params.get("cpy")) || 50);
-    if (params.get("cs")) setCoverScale(parseInt(params.get("cs")) || 100);
-    
-    if (params.get("pimg")) setPackageImage(params.get("pimg"));
-    if (params.get("ppx")) setPackagePositionX(parseInt(params.get("ppx")) || 50);
-    if (params.get("ppy")) setPackagePositionY(parseInt(params.get("ppy")) || 50);
-    if (params.get("ps")) setPackageScale(parseInt(params.get("ps")) || 100);
-    
-    if (params.get("phimg")) setPhilosophyImage(params.get("phimg"));
-    if (params.get("phpx")) setPhilosophyPositionX(parseInt(params.get("phpx")) || 50);
-    if (params.get("phpy")) setPhilosophyPositionY(parseInt(params.get("phpy")) || 50);
-    if (params.get("phs")) setPhilosophyScale(parseInt(params.get("phs")) || 100);
-    
-    if (params.get("deliv")) {
-      try {
-        setDeliverables(JSON.parse(params.get("deliv")));
-      } catch (e) {
-        console.error("Failed to parse deliverables from URL parameter", e);
-      }
-    }
-    if (params.get("compl")) {
-      try {
-        setComplimentary(JSON.parse(params.get("compl")));
-      } catch (e) {
-        console.error("Failed to parse complimentary list from URL parameter", e);
-      }
-    }
-
-    // Load and override from JSON payload if 'data' is present or 'from_storage' flag is set
-    const loadProposalData = async () => {
-      let dataParam = params.get("data");
-      
-      if (params.get("from_ipc") === "true" && window.electronAPI && typeof window.electronAPI.getTempProposal === 'function') {
-        dataParam = await window.electronAPI.getTempProposal();
-      } else if (params.get("from_storage") === "true") {
-        dataParam = localStorage.getItem('temp_proposal_data');
-      }
-      
-      if (dataParam) {
-        try {
-          const payload = JSON.parse(dataParam);
-        
-        // 1. clientName (split into groomName and brideName)
-        const name = payload.clientName || 'Wedding Couple';
-        let groom = '';
-        let bride = '';
-        if (name.includes('&')) {
-          const parts = name.split('&');
-          groom = parts[0].trim();
-          bride = parts[1].trim();
-        } else if (name.toLowerCase().includes(' and ')) {
-          const parts = name.split(/ and /i);
-          groom = parts[0].trim();
-          bride = parts[1].trim();
-        } else {
-          groom = name;
-          bride = '';
-        }
-        setGroomName(groom.toUpperCase());
-        setBrideName(bride.toUpperCase());
-
-        // 2. id / proposalId
-        if (payload.id) {
-          setProposalId(payload.id);
-        } else {
-          setProposalId("DW-" + new Date().getFullYear() + "-" + Math.floor(100 + Math.random() * 900));
-        }
-
-        // 2b. eventsList
-        if (payload.eventsList && Array.isArray(payload.eventsList)) {
-          setEventsList(payload.eventsList);
-        }
-        
-        // 3. date / weddingDate
-        if (payload.date) {
-          setWeddingDate(formatEventDate(payload.date));
-        }
-        
-        // 4. location / weddingLocation
-        if (payload.location) {
-          setWeddingLocation(payload.location);
-        }
-        
-        // 5. price
-        if (payload.packagePrice !== undefined) {
-          const priceNum = Number(payload.packagePrice);
-          setPrice(isNaN(priceNum) ? payload.packagePrice : priceNum.toLocaleString('en-IN'));
-        }
-
-        // 6. photographers & videographers count mapping
-        let wcp = 0; // wedding candid photo
-        let wtp = 0; // wedding traditional photo
-        let wcv = 0; // wedding candid video
-        let wtv = 0; // wedding traditional video
-        let ep = 0;  // reception photo
-        let ev = 0;  // reception video
-        let pp = 0;  // pre-wedding photo
-        let pv = 0;  // pre-wedding video
-        let sp = 0;  // save the date / 4th event photo
-        let sv = 0;  // save the date / 4th event video
-
-        const currentEvents = payload.eventsList || [];
-
-        if (Array.isArray(payload.photographers)) {
-          payload.photographers.forEach(p => {
-            const nameLower = (p.name || '').toLowerCase();
-            
-            // If eventId exists and is in currentEvents, map by event ID index
-            if (p.eventId && currentEvents.some(ev => ev.id === p.eventId)) {
-              const idx = currentEvents.findIndex(ev => ev.id === p.eventId);
-              if (idx === 0) {
-                if (nameLower.includes('candid')) {
-                  wcp++;
-                } else {
-                  wtp++;
-                }
-              } else if (idx === 1) {
-                ep++;
-              } else if (idx === 2) {
-                pp++;
-              } else if (idx === 3) {
-                sp++;
-              }
-            } else {
-              // Backward compatible text fallback
-              const isPrewed = nameLower.includes('pre-wedding') || nameLower.includes('prewed') || nameLower.includes('outdoor');
-              const isReception = nameLower.includes('reception') || nameLower.includes('engagement') || nameLower.includes('eve');
-
-              if (isPrewed) {
-                pp++;
-              } else if (isReception) {
-                ep++;
-              } else {
-                if (nameLower.includes('candid')) {
-                  wcp++;
-                } else {
-                  wtp++;
-                }
-              }
-            }
-          });
-        }
-
-        if (Array.isArray(payload.videographers)) {
-          payload.videographers.forEach(v => {
-            const nameLower = (v.name || '').toLowerCase();
-            
-            // If eventId exists and is in currentEvents, map by event ID index
-            if (v.eventId && currentEvents.some(ev => ev.id === v.eventId)) {
-              const idx = currentEvents.findIndex(ev => ev.id === v.eventId);
-              if (idx === 0) {
-                if (nameLower.includes('candid') || nameLower.includes('cinematic')) {
-                  wcv++;
-                } else {
-                  wtv++;
-                }
-              } else if (idx === 1) {
-                ev++;
-              } else if (idx === 2) {
-                pv++;
-              } else if (idx === 3) {
-                sv++;
-              }
-            } else {
-              // Backward compatible text fallback
-              const isPrewed = nameLower.includes('pre-wedding') || nameLower.includes('prewed') || nameLower.includes('outdoor');
-              const isReception = nameLower.includes('reception') || nameLower.includes('engagement') || nameLower.includes('eve');
-
-              if (isPrewed) {
-                pv++;
-              } else if (isReception) {
-                ev++;
-              } else {
-                if (nameLower.includes('candid') || nameLower.includes('cinematic')) {
-                  wcv++;
-                } else {
-                  wtv++;
-                }
-              }
-            }
-          });
-        }
-
-        setWeddingCandidPhoto(wcp);
-        setWeddingTradPhoto(wtp);
-        setWeddingCandidVideo(wcv);
-        setWeddingTradVideo(wtv);
-        setEvePhoto(ep);
-        setEveVideo(ev);
-        setPrewedPhoto(pp);
-        setPrewedVideo(pv);
-
-        // 7. Drone
-        setHasDrone(payload.droneCharge > 0);
-
-        // 8. Deliverables & Complimentary
-        const newDeliverables = [];
-        
-        // Save the Date Shoot inclusion
-        if (sp > 0) setStdPhoto(sp);
-        else if (payload.stdPhotoCharge > 0 || payload.stdPerPhotoCharge > 0 || payload.stdPhotoQty > 0) setStdPhoto(1);
-        
-        if (sv > 0) setStdVideo(sv);
-        else if (payload.stdVideoCharge > 0 || payload.stdEditingCharge > 0) setStdVideo(1);
-        
-        if (payload.stdPhotoQty > 0 || payload.stdPhotoCharge > 0 || payload.stdVideoCharge > 0 || payload.stdEditingCharge > 0 || payload.stdPerPhotoCharge > 0) {
-          if (payload.stdPhotoQty > 0) setStdQty(payload.stdPhotoQty);
-
-          const stdTypes = [];
-          if (payload.stdPhotoCharge > 0 || payload.stdPhotoQty > 0 || payload.stdPerPhotoCharge > 0) stdTypes.push("Photo");
-          if (payload.stdVideoCharge > 0 || payload.stdEditingCharge > 0) stdTypes.push("Video");
-          
-          let stdDetail = `Pre-Wedding Save the Date Shoot (${stdTypes.join(" & ") || "Photo & Video"})`;
-          if (payload.stdPhotoQty > 0) {
-            stdDetail += ` with ${payload.stdPhotoQty} Edited Photos`;
-          }
-          newDeliverables.push(stdDetail);
-        }
-
-        if (payload.albumQty > 0) {
-          const leafsText = payload.albumLeafs ? ` (${payload.albumLeafs} Leafs / ${payload.albumLeafs * 2} Pages)` : '';
-          newDeliverables.push(`${payload.albumQty} x Premium Layflat Main Album${leafsText}`);
-          if (payload.albumQty > 1) {
-            newDeliverables.push(`Miniature Copy of the Main Album for Parents`);
-          }
-        }
-        if (payload.includeHdHighlight !== false) {
-          newDeliverables.push("4K/HD Cinematic Highlights Video Film");
-        }
-        if (payload.includeFullHd !== false) {
-          newDeliverables.push("Full HD Wedding Video Film (Traditional Document)");
-        }
-        newDeliverables.push("All Raw & High-Resolution Edited Images");
-        if (payload.pendriveCharge > 0 || payload.includeFullHd !== false) {
-          newDeliverables.push("High-Speed USB Pen Drive + Online Digital Link");
-        } else {
-          newDeliverables.push("Online Digital Gallery Access Link");
-        }
-        setDeliverables(newDeliverables);
-
-        const newComplimentary = [];
-        if (payload.include2Frames !== false) {
-          newComplimentary.push("2 x Premium Wall Frames (12x18 inches)");
-        }
-        if (payload.includeReel !== false) {
-          newComplimentary.push("2 x Cinematic Reels (Instagram-Ready)");
-        }
-        newComplimentary.push("Pre-Wedding Consultation & Planning Session");
-        setComplimentary(newComplimentary);
-
-        // 9. Addons
-        const addons = [];
-        if (Array.isArray(payload.frames) && payload.frames.length > 0) {
-          payload.frames.forEach(f => {
-            if (f.qty > 0) {
-              addons.push({
-                id: f.id || `frame-${f.size}`,
-                name: `${f.qty} x Custom Wall Frame (${f.size} inches)`,
-                enabled: true
-              });
-            }
-          });
-        }
-        if (Array.isArray(payload.customExpenses)) {
-          payload.customExpenses.forEach(exp => {
-            if (exp.name) {
-              addons.push({
-                id: exp.id || `custom-${exp.name}`,
-                name: exp.name,
-                enabled: true
-              });
-            }
-          });
-        }
-        setCustomAddons(addons);
-
-      } catch (err) {
-        console.error("Failed to parse data parameter", err);
-      }
-    }
-    setIsUrlParsed(true);
-  };
-  
-  loadProposalData();
-}, []);
-
-  // Auto-load saved customizations from localStorage after URL parsing is complete
-  useEffect(() => {
-    if (!isUrlParsed || !proposalId) return;
-    let saved = localStorage.getItem(`proposal_customizer_${proposalId}`);
-    if (!saved) {
-      const lastSavedId = localStorage.getItem('proposal_customizer_last_saved');
-      if (lastSavedId) {
-        saved = localStorage.getItem(`proposal_customizer_${lastSavedId}`);
-        console.log("Restoring customizations from last saved ID:", lastSavedId);
-      }
-    }
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        
-        // If this is a fresh launch from the tracker, DO NOT overwrite core details with old saved drafts
-        const searchOrHash = window.location.search || window.location.hash;
-        const isFreshLaunch = searchOrHash.includes("from_ipc=true") || searchOrHash.includes("from_storage=true");
-        
-        if (!isFreshLaunch) {
-          if (data.brideName) setBrideName(data.brideName);
-          if (data.groomName) setGroomName(data.groomName);
-          if (data.proposalDate) setProposalDate(data.proposalDate);
-          if (data.weddingDate) setWeddingDate(data.weddingDate);
-          if (data.weddingLocation) setWeddingLocation(data.weddingLocation);
-          if (data.price) setPrice(data.price);
-        }
-        
-        if (data.leadPhotographer) setLeadPhotographer(data.leadPhotographer);
-        if (data.themeColor) setThemeColor(data.themeColor);
-        if (data.coverImage) setCoverImage(data.coverImage);
-        if (data.packageImage) setPackageImage(data.packageImage);
-        if (data.philosophyImage) setPhilosophyImage(data.philosophyImage);
-        
-        if (data.coverPositionX !== undefined) setCoverPositionX(data.coverPositionX);
-        if (data.coverPositionY !== undefined) setCoverPositionY(data.coverPositionY);
-        if (data.coverScale !== undefined) setCoverScale(data.coverScale);
-        
-        if (data.packagePositionX !== undefined) setPackagePositionX(data.packagePositionX);
-        if (data.packagePositionY !== undefined) setPackagePositionY(data.packagePositionY);
-        if (data.packageScale !== undefined) setPackageScale(data.packageScale);
-        
-        if (data.philosophyPositionX !== undefined) setPhilosophyPositionX(data.philosophyPositionX);
-        if (data.philosophyPositionY !== undefined) setPhilosophyPositionY(data.philosophyPositionY);
-        if (data.philosophyScale !== undefined) setPhilosophyScale(data.philosophyScale);
-        
-        if (!isFreshLaunch) {
-          if (data.weddingCandidPhoto !== undefined) setWeddingCandidPhoto(data.weddingCandidPhoto);
-          if (data.weddingTradPhoto !== undefined) setWeddingTradPhoto(data.weddingTradPhoto);
-          if (data.weddingCandidVideo !== undefined) setWeddingCandidVideo(data.weddingCandidVideo);
-          if (data.weddingTradVideo !== undefined) setWeddingTradVideo(data.weddingTradVideo);
-          
-          if (data.evePhoto !== undefined) setEvePhoto(data.evePhoto);
-          if (data.eveVideo !== undefined) setEveVideo(data.eveVideo);
-          
-          if (data.prewedPhoto !== undefined) setPrewedPhoto(data.prewedPhoto);
-          if (data.prewedVideo !== undefined) setPrewedVideo(data.prewedVideo);
-          
-          if (data.hasDrone !== undefined) setHasDrone(data.hasDrone);
-          if (data.hasLedWall !== undefined) setHasLedWall(data.hasLedWall);
-          if (data.hasPreweddingVideo !== undefined) setHasPreweddingVideo(data.hasPreweddingVideo);
-          if (data.hasHaldi !== undefined) setHasHaldi(data.hasHaldi);
-          
-          if (data.customAddons !== undefined) setCustomAddons(data.customAddons);
-          if (data.deliverables !== undefined) setDeliverables(data.deliverables);
-          if (data.complimentary !== undefined) setComplimentary(data.complimentary);
-        }
-      } catch (e) {
-        console.error("Failed to parse saved customizations from localStorage", e);
-      }
-    }
-    setIsRestored(true);
-  }, [proposalId, isUrlParsed]);
-
-  // Auto-save customizations to localStorage when any state changes (only after restoring)
-  useEffect(() => {
-    if (!isRestored || !proposalId) return;
-    const dataToSave = {
-      brideName,
-      groomName,
-      proposalDate,
-      weddingDate,
-      weddingLocation,
-      price,
-      leadPhotographer,
-      themeColor,
-      coverImage,
-      packageImage,
-      philosophyImage,
-      coverPositionX,
-      coverPositionY,
-      coverScale,
-      packagePositionX,
-      packagePositionY,
-      packageScale,
-      philosophyPositionX,
-      philosophyPositionY,
-      philosophyScale,
-      weddingCandidPhoto,
-      weddingTradPhoto,
-      weddingCandidVideo,
-      weddingTradVideo,
-      evePhoto,
-      eveVideo,
-      prewedPhoto,
-      prewedVideo,
-      stdPhoto,
-      stdVideo,
-      stdQty,
-      hasDrone,
-      hasLedWall,
-      hasPreweddingVideo,
-      hasHaldi,
-      customAddons,
-      deliverables,
-      complimentary
-    };
-    localStorage.setItem(`proposal_customizer_${proposalId}`, JSON.stringify(dataToSave));
-    localStorage.setItem('proposal_customizer_last_saved', proposalId);
-  }, [
-    isRestored,
-    proposalId,
-    brideName,
-    groomName,
-    proposalDate,
-    weddingDate,
-    weddingLocation,
-    price,
-    leadPhotographer,
-    themeColor,
-    coverImage,
-    packageImage,
-    philosophyImage,
-    coverPositionX,
-    coverPositionY,
-    coverScale,
-    packagePositionX,
-    packagePositionY,
-    packageScale,
-    philosophyPositionX,
-    philosophyPositionY,
-    philosophyScale,
-    weddingCandidPhoto,
-    weddingTradPhoto,
-    weddingCandidVideo,
-    weddingTradVideo,
-    evePhoto,
-    eveVideo,
-    prewedPhoto,
-    prewedVideo,
-    stdPhoto,
-    stdVideo,
-    stdQty,
-    hasDrone,
-    hasLedWall,
-    hasPreweddingVideo,
-    hasHaldi,
-    customAddons,
-    deliverables,
-    complimentary
-  ]);
-
-  const [proposalLibrary, setProposalLibrary] = useState([]);
-  const [currentDraftId, setCurrentDraftId] = useState(null);
-  const [currentDraftTitle, setCurrentDraftTitle] = useState("");
-  
-  const loadProposalLibrary = () => {
-    const listStr = localStorage.getItem('proposal_library_index') || '[]';
-    try {
-      const list = JSON.parse(listStr);
-      const currentVersion = localStorage.getItem('proposal_library_recovered_version') || '0';
-      const targetVersion = '4'; // Force update to load new Anju Bala details
-      
-      if ((list.length === 0 || currentVersion !== targetVersion) && window.electronAPI && typeof window.electronAPI.getRecoveredProposals === 'function') {
-        window.electronAPI.getRecoveredProposals().then(recovered => {
-          if (recovered && Array.isArray(recovered) && recovered.length > 0) {
-            console.log("Successfully fetched recovered proposals via IPC:", recovered);
-            // Remove any old recovered entries to prevent duplicates
-            let currentList = list.filter(item => !item.id.startsWith('draft_recovered_'));
-            
-            recovered.forEach(draft => {
-              // Save each draft to localStorage
-              localStorage.setItem(`proposal_library_${draft.id}`, JSON.stringify(draft));
-              // Push to index list
-              currentList.push({ id: draft.id, title: draft.title, savedAt: draft.savedAt });
-            });
-            
-            localStorage.setItem('proposal_library_index', JSON.stringify(currentList));
-            localStorage.setItem('proposal_library_recovered_version', targetVersion);
-            setProposalLibrary(currentList);
-            console.log("Successfully migrated/updated recovered proposals in Library!");
-          } else {
-            setProposalLibrary(list);
-          }
-        }).catch(err => {
-          console.error("Failed to fetch recovered proposals:", err);
-          setProposalLibrary(list);
-        });
+        matched.photos = photos;
+        setProposal(matched);
       } else {
-        setProposalLibrary(list);
+        const defaultProp = {
+          ...PARVATHY_SAMPLE_PROPOSAL,
+          photos: {
+            ...DEFAULT_PHOTOS,
+            coverAlign: { x: 50, y: 50, scale: 100 },
+            bannerAlign: { x: 50, y: 30, scale: 100 },
+            philosophyAlign: { x: 50, y: 50, scale: 100 }
+          }
+        };
+        setProposal(defaultProp);
       }
-    } catch(e) {
-      setProposalLibrary([]);
-    }
-  };
-
-  useEffect(() => {
-    loadProposalLibrary();
-  }, []);
-
-  const saveProposalToLibrary = (overwriteId = null) => {
-    let targetId = overwriteId || currentDraftId;
-    let title = currentDraftTitle;
-    
-    if (!targetId) {
-      const defaultTitle = `${groomName} & ${brideName} (${proposalDate})`;
-      title = prompt("Enter a name for this proposal draft:", defaultTitle);
-      if (!title) return;
-      targetId = `draft_${Date.now()}`;
-    } else {
-      if (!confirm(`Save changes to draft "${title}"?`)) return;
-    }
-    
-    const draftData = {
-      id: targetId,
-      title: title,
-      savedAt: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
-      data: {
-        brideName, groomName, proposalId, proposalDate, weddingDate, weddingLocation,
-        price, leadPhotographer, themeColor, coverImage, packageImage, philosophyImage,
-        coverPositionX, coverPositionY, coverScale,
-        packagePositionX, packagePositionY, packageScale,
-        philosophyPositionX, philosophyPositionY, philosophyScale,
-        weddingCandidPhoto, weddingTradPhoto, weddingCandidVideo, weddingTradVideo,
-        evePhoto, eveVideo, prewedPhoto, prewedVideo,
-        stdPhoto, stdVideo, stdQty,
-        hasDrone, hasLedWall, hasPreweddingVideo, hasHaldi,
-        customAddons, deliverables, complimentary
-      }
-    };
-    
-    localStorage.setItem(`proposal_library_${targetId}`, JSON.stringify(draftData));
-    
-    const currentListStr = localStorage.getItem('proposal_library_index') || '[]';
-    let currentList = [];
-    try {
-      currentList = JSON.parse(currentListStr);
-    } catch(e) {}
-    
-    currentList = currentList.filter(item => item.id !== targetId);
-    currentList.push({ id: targetId, title: title, savedAt: draftData.savedAt });
-    localStorage.setItem('proposal_library_index', JSON.stringify(currentList));
-    
-    setCurrentDraftId(targetId);
-    setCurrentDraftTitle(title);
-    loadProposalLibrary();
-    alert(overwriteId || currentDraftId ? "Draft changes saved successfully!" : "Proposal saved to drafts library successfully!");
-  };
-
-  const loadProposalFromLibrary = (draftId) => {
-    const saved = localStorage.getItem(`proposal_library_${draftId}`);
-    if (!saved) return;
-    try {
-      const draft = JSON.parse(saved);
-      const data = draft.data || draft;
-      
-      if (data.brideName !== undefined) setBrideName(data.brideName);
-      if (data.groomName !== undefined) setGroomName(data.groomName);
-      if (data.proposalId !== undefined) setProposalId(data.proposalId);
-      if (data.proposalDate !== undefined) setProposalDate(data.proposalDate);
-      if (data.weddingDate !== undefined) setWeddingDate(data.weddingDate);
-      if (data.weddingLocation !== undefined) setWeddingLocation(data.weddingLocation);
-      if (data.price !== undefined) setPrice(data.price);
-      if (data.leadPhotographer !== undefined) setLeadPhotographer(data.leadPhotographer);
-      if (data.themeColor !== undefined) setThemeColor(data.themeColor);
-      if (data.coverImage !== undefined) setCoverImage(data.coverImage);
-      if (data.packageImage !== undefined) setPackageImage(data.packageImage);
-      if (data.philosophyImage !== undefined) setPhilosophyImage(data.philosophyImage);
-      
-      if (data.coverPositionX !== undefined) setCoverPositionX(data.coverPositionX);
-      if (data.coverPositionY !== undefined) setCoverPositionY(data.coverPositionY);
-      if (data.coverScale !== undefined) setCoverScale(data.coverScale);
-      
-      if (data.packagePositionX !== undefined) setPackagePositionX(data.packagePositionX);
-      if (data.packagePositionY !== undefined) setPackagePositionY(data.packagePositionY);
-      if (data.packageScale !== undefined) setPackageScale(data.packageScale);
-      
-      if (data.philosophyPositionX !== undefined) setPhilosophyPositionX(data.philosophyPositionX);
-      if (data.philosophyPositionY !== undefined) setPhilosophyPositionY(data.philosophyPositionY);
-      if (data.philosophyScale !== undefined) setPhilosophyScale(data.philosophyScale);
-      
-      if (data.weddingCandidPhoto !== undefined) setWeddingCandidPhoto(data.weddingCandidPhoto);
-      if (data.weddingTradPhoto !== undefined) setWeddingTradPhoto(data.weddingTradPhoto);
-      if (data.weddingCandidVideo !== undefined) setWeddingCandidVideo(data.weddingCandidVideo);
-      if (data.weddingTradVideo !== undefined) setWeddingTradVideo(data.weddingTradVideo);
-      
-      if (data.evePhoto !== undefined) setEvePhoto(data.evePhoto);
-      if (data.eveVideo !== undefined) setEveVideo(data.eveVideo);
-      
-      if (data.prewedPhoto !== undefined) setPrewedPhoto(data.prewedPhoto);
-      if (data.prewedVideo !== undefined) setPrewedVideo(data.prewedVideo);
-      
-      if (data.stdPhoto !== undefined) setStdPhoto(data.stdPhoto);
-      if (data.stdVideo !== undefined) setStdVideo(data.stdVideo);
-      if (data.stdQty !== undefined) setStdQty(data.stdQty);
-      
-      if (data.hasDrone !== undefined) setHasDrone(data.hasDrone);
-      if (data.hasLedWall !== undefined) setHasLedWall(data.hasLedWall);
-      if (data.hasPreweddingVideo !== undefined) setHasPreweddingVideo(data.hasPreweddingVideo);
-      if (data.hasHaldi !== undefined) setHasHaldi(data.hasHaldi);
-      
-      if (data.customAddons !== undefined) setCustomAddons(data.customAddons);
-      if (data.deliverables !== undefined) setDeliverables(data.deliverables);
-      if (data.complimentary !== undefined) setComplimentary(data.complimentary);
-      
-      setCurrentDraftId(draftId);
-      setCurrentDraftTitle(draft.title || "");
-      alert(`Loaded draft: ${draft.title}`);
     } catch (e) {
-      console.error("Failed to load proposal draft", e);
+      console.warn("Could not load stored proposal, using default:", e);
+      setProposal(PARVATHY_SAMPLE_PROPOSAL);
     }
+    }
+
+    loadProposal();
+  }, [paramId, searchParams]);
+
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(""), 3500);
   };
 
-  const deleteProposalFromLibrary = (draftId) => {
-    if (!confirm("Are you sure you want to delete this proposal draft?")) return;
-    localStorage.removeItem(`proposal_library_${draftId}`);
-    
-    const currentListStr = localStorage.getItem('proposal_library_index') || '[]';
-    let currentList = [];
+  const handleSaveProposal = () => {
+    localStorage.setItem("active_vip_proposal", JSON.stringify(proposal));
+    const savedList = JSON.parse(localStorage.getItem("dreamwed_vip_proposals_list") || "[]");
+    const updatedList = [proposal, ...savedList.filter((p) => p.id !== proposal.id && p.clientName?.toLowerCase() !== proposal.clientName?.toLowerCase())];
+    localStorage.setItem("dreamwed_vip_proposals_list", JSON.stringify(updatedList));
+
+    // CRITICAL BIDIRECTIONAL SYNC: Automatically write back to vows_and_values_events in Dreamwed Office
     try {
-      currentList = JSON.parse(currentListStr);
-    } catch(e) {}
-    const updatedList = currentList.filter(item => item.id !== draftId);
-    localStorage.setItem('proposal_library_index', JSON.stringify(updatedList));
-    
-    if (currentDraftId === draftId) {
-      setCurrentDraftId(null);
-      setCurrentDraftTitle("");
+      const storedEvents = JSON.parse(localStorage.getItem("vows_and_values_events") || "[]");
+      const numPrice = parseFloat(String(proposal.price || "0").replace(/[^0-9.]/g, "")) || 65000;
+      
+      const existingIdx = storedEvents.findIndex(
+        (e) => (e.id && proposal.id && e.id === proposal.id) ||
+               (e.clientName && proposal.clientName && e.clientName.toLowerCase() === proposal.clientName.toLowerCase())
+      );
+
+      const mappedEvent = {
+        id: proposal.id || ("proposal_" + (proposal.clientName || "client").replace(/\s+/g, "_")),
+        clientName: proposal.clientName || "Client",
+        location: proposal.venue || "Wedding Venue",
+        date: proposal.eventDate || "",
+        packagePrice: numPrice,
+        travelCharge: existingIdx !== -1 ? (storedEvents[existingIdx].travelCharge || 2000) : 2000,
+        travelPaidByCustomer: false,
+        stayExpense: existingIdx !== -1 ? (storedEvents[existingIdx].stayExpense || 0) : 0,
+        foodExpense: existingIdx !== -1 ? (storedEvents[existingIdx].foodExpense || 0) : 0,
+        budgetMode: "standard",
+        targetProfit: 0,
+        droneCharge: (proposal.addons || []).some(a => (a || "").toLowerCase().includes("drone")) ? 5000 : 0,
+        stdPhotoCharge: 0,
+        stdPhotoIsMe: false,
+        stdVideoCharge: 0,
+        stdVideoIsMe: false,
+        stdPerPhotoCharge: 0,
+        stdPhotoQty: 0,
+        stdEditingCharge: 0,
+        albumQty: 1,
+        albumCoverCharge: 2500,
+        albumLeafs: 40,
+        albumLeafCharge: 75,
+        albumDesigningCharge: 100,
+        videoEditingCharge: 8000,
+        pendriveCharge: 500,
+        includeHdHighlight: true,
+        includeReel: true,
+        includeFullHd: true,
+        include2Frames: true,
+        eventsList: (proposal.events || []).map((ev, idx) => ({
+          id: "_prop_ev_" + idx,
+          name: ev.eventTag || ev.title || `Event #${idx + 1}`,
+          date: ev.subhead || proposal.eventDate || ""
+        })),
+        photographers: existingIdx !== -1 ? (storedEvents[existingIdx].photographers || []) : [],
+        videographers: existingIdx !== -1 ? (storedEvents[existingIdx].videographers || []) : [],
+        frames: [{ id: "_prop_f1", size: "12*18", qty: 2, charge: 350 }],
+        customExpenses: [],
+        createdAt: existingIdx !== -1 ? (storedEvents[existingIdx].createdAt || new Date().toISOString()) : new Date().toISOString()
+      };
+
+      if (existingIdx !== -1) {
+        storedEvents[existingIdx] = { ...storedEvents[existingIdx], ...mappedEvent };
+      } else {
+        storedEvents.unshift(mappedEvent);
+      }
+
+      localStorage.setItem("vows_and_values_events", JSON.stringify(storedEvents));
+      
+      // Also sync temp_proposal_data
+      localStorage.setItem("temp_proposal_data", JSON.stringify({
+        ...mappedEvent,
+        events: proposal.events,
+        price: proposal.price
+      }));
+    } catch (e) {
+      console.warn("Could not sync proposal to vows_and_values_events:", e);
     }
-    
-    loadProposalLibrary();
+
+    showToast("💾 Proposal & Dreamwed Office synced successfully!");
   };
 
-  const startNewProposal = () => {
-    if (!confirm("Are you sure you want to start a new proposal? This will reset all customize fields to default templates.")) return;
-    setBrideName("ANJANA");
-    setGroomName("ASWIN");
-    setProposalId(`DW-2026-${Math.floor(100 + Math.random() * 900)}`);
-    setProposalDate(new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
-    setWeddingDate("September 15, 2026");
-    setWeddingLocation("Trivandrum, Kerala");
-    setPrice("1,10,000");
-    setLeadPhotographer("Unni Krishnan");
-    setSelectedPackageIndex("");
-    setThemeColor("#b4975a");
-    setCoverImage("/couple_traditional_red.jpg");
-    setPackageImage("/uploaded_bride_yellow.jpg");
-    setPhilosophyImage("/uploaded_couple_blackwhite.jpg");
-    setCoverPositionX(50);
-    setCoverPositionY(50);
-    setCoverScale(100);
-    setPackagePositionX(50);
-    setPackagePositionY(50);
-    setPackageScale(100);
-    setPhilosophyPositionX(50);
-    setPhilosophyPositionY(50);
-    setPhilosophyScale(100);
-    setWeddingCandidPhoto(1);
-    setWeddingTradPhoto(1);
-    setWeddingCandidVideo(1);
-    setWeddingTradVideo(1);
-    setEvePhoto(1);
-    setEveVideo(1);
-    setPrewedPhoto(1);
-    setPrewedVideo(1);
-    setStdPhoto(0);
-    setStdVideo(0);
-    setStdQty(0);
-    setHasDrone(false);
-    setHasLedWall(false);
-    setHasPreweddingVideo(false);
-    setHasHaldi(false);
-    setCustomAddons([]);
-    setDeliverables([
-      "50 Page Premium Layflat Main Album (12x18 inches)",
-      "Miniature Copy of the Main Album for Parents",
-      "25 Leaf (50 Pages) Fine-Art Imported Matte Paper",
-      "All Raw & High-Resolution Edited Images",
-      "Pen Drive for Edited Full Videos + Digital Link"
-    ]);
-    setComplimentary([
-      "2 x Table Top Miniature Calendars",
-      "2 x Cinematic Reels (Instagram-Ready)",
-      "Pre-Wedding Consultation Session",
-      "Save The Date Photoshoot"
-    ]);
-    setCurrentDraftId(null);
-    setCurrentDraftTitle("");
-    alert("Reset customizer fields to default.");
+  const copyClientLink = () => {
+    const url = window.location.origin + "/proposal?id=" + proposal.id;
+    navigator.clipboard.writeText(url);
+    showToast("✨ Client Proposal link copied to clipboard!");
   };
 
-  const generateShareableLink = (isClient) => {
-    const params = new URLSearchParams();
-    params.set("bride", brideName);
-    params.set("groom", groomName);
-    params.set("id", proposalId);
-    params.set("pdate", proposalDate);
-    params.set("wdate", weddingDate);
-    params.set("loc", weddingLocation);
-    params.set("price", price);
-    params.set("lead", leadPhotographer);
-    
-    params.set("wcp", weddingCandidPhoto);
-    params.set("wtp", weddingTradPhoto);
-    params.set("wcv", weddingCandidVideo);
-    params.set("wtv", weddingTradVideo);
-    
-    params.set("ep", evePhoto);
-    params.set("ev", eveVideo);
-    
-    params.set("pp", prewedPhoto);
-    params.set("pv", prewedVideo);
-    
-    params.set("stdp", stdPhoto);
-    params.set("stdv", stdVideo);
-    params.set("stdq", stdQty);
-    
-    params.set("drone", hasDrone);
-    params.set("led", hasLedWall);
-    params.set("previd", hasPreweddingVideo);
-    params.set("haldi", hasHaldi);
-    
-    const enabledCustomAddons = customAddons.filter(a => a.enabled).map(a => a.name);
-    if (enabledCustomAddons.length > 0) {
-      params.set("caddons", enabledCustomAddons.join(","));
-    }
-    
-    params.set("incpkg", includePackages);
-    params.set("pkglnk", packagesLink);
-    
-    params.set("cimg", coverImage);
-    params.set("cpx", coverPositionX);
-    params.set("cpy", coverPositionY);
-    params.set("cs", coverScale);
-    
-    params.set("pimg", packageImage);
-    params.set("ppx", packagePositionX);
-    params.set("ppy", packagePositionY);
-    params.set("ps", packageScale);
-    
-    params.set("phimg", philosophyImage);
-    params.set("phpx", philosophyPositionX);
-    params.set("phpy", philosophyPositionY);
-    params.set("phs", philosophyScale);
-    
-    params.set("deliv", JSON.stringify(deliverables));
-    params.set("compl", JSON.stringify(complimentary));
-    params.set("theme", themeColor);
-    
-    if (isClient) {
-      params.set("client", "true");
-    }
-    
-    const shareableUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-    navigator.clipboard.writeText(shareableUrl);
-    if (isClient) {
-      setCopiedClient(true);
-      setTimeout(() => setCopiedClient(false), 2000);
-    } else {
-      setCopiedEdit(true);
-      setTimeout(() => setCopiedEdit(false), 2000);
-    }
-  };
-  
-
-
-  // New list inputs
-  const [newDeliverable, setNewDeliverable] = useState("");
-  const [newComplimentary, setNewComplimentary] = useState("");
-
-
-
-  // Add items
-  const addDeliverable = () => {
-    if (newDeliverable.trim()) {
-      setDeliverables([...deliverables, newDeliverable.trim()]);
-      setNewDeliverable("");
-    }
-  };
-
-  const addComplimentary = () => {
-    if (newComplimentary.trim()) {
-      setComplimentary([...complimentary, newComplimentary.trim()]);
-      setNewComplimentary("");
-    }
-  };
-
-  // Remove items
-  const removeDeliverable = (index) => {
-    setDeliverables(deliverables.filter((_, i) => i !== index));
-  };
-
-  const removeComplimentary = (index) => {
-    setComplimentary(complimentary.filter((_, i) => i !== index));
-  };
-
-  // Handle PDF Export
   const handlePrint = () => {
-    if (window.electronAPI && typeof window.electronAPI.exportToPDF === 'function') {
+    // Guarantees proposal is saved into Dreamwed Office before printing/saving PDF
+    handleSaveProposal();
+
+    if (window.electronAPI && typeof window.electronAPI.exportToPDF === "function") {
       window.electronAPI.exportToPDF({
         landscape: false,
-        defaultName: `Wedding_Proposal_${groomName || 'Client'}.pdf`
+        pageSize: "A4",
+        printBackground: true,
+        defaultName: `Wedding_Proposal_${(proposal.clientName || "Client").replace(/\s+/g, "_")}.pdf`
       });
     } else {
       window.print();
     }
   };
 
-  // Generate prefilled WhatsApp Link
-  const getWhatsAppLink = () => {
-    const addonText = activeAddons.length > 0 ? `\n- Add-ons: ${activeAddons.join(', ')}` : '';
-    const packagesText = includePackages ? `\n\nYou can also check our website packages here: ${packagesLink}` : '';
-    
-    const weddingDetails = [];
-    if (weddingCandidPhoto > 0) weddingDetails.push(`${weddingCandidPhoto} Candid Photo${weddingCandidPhoto > 1 ? 's' : ''}`);
-    if (weddingTradPhoto > 0) weddingDetails.push(`${weddingTradPhoto} Trad Photo${weddingTradPhoto > 1 ? 's' : ''}`);
-    if (weddingCandidVideo > 0) weddingDetails.push(`${weddingCandidVideo} Candid Video${weddingCandidVideo > 1 ? 's' : ''}`);
-    if (weddingTradVideo > 0) weddingDetails.push(`${weddingTradVideo} Trad Video${weddingTradVideo > 1 ? 's' : ''}`);
-    
-    const eveDetails = [];
-    if (evePhoto > 0) eveDetails.push(`${evePhoto} Photographer${evePhoto > 1 ? 's' : ''}`);
-    if (eveVideo > 0) eveDetails.push(`${eveVideo} Videographer${eveVideo > 1 ? 's' : ''}`);
-    
-    const prewedDetails = [];
-    if (prewedPhoto > 0) prewedDetails.push(`${prewedPhoto} Photographer${prewedPhoto > 1 ? 's' : ''}`);
-    if (prewedVideo > 0) prewedDetails.push(`${prewedVideo} Videographer${prewedVideo > 1 ? 's' : ''}`);
-
-    const stdDetailsArr = [];
-    if (stdPhoto > 0) stdDetailsArr.push(`${stdPhoto} Photographer${stdPhoto > 1 ? 's' : ''}`);
-    if (stdVideo > 0) stdDetailsArr.push(`${stdVideo} Videographer${stdVideo > 1 ? 's' : ''}`);
-    if (stdQty > 0) stdDetailsArr.push(`${stdQty} Edited Photos`);
-    
-    const label0 = eventsList[0] ? `${eventsList[0].name} Coverage` : "Wedding Coverage";
-    const label1 = eventsList[1] ? `${eventsList[1].name} Coverage` : "Reception Coverage";
-    const label2 = eventsList[2] ? `${eventsList[2].name} Coverage` : "Pre-Wedding Coverage";
-
-    let detailsText = "";
-    if (weddingDetails.length > 0) detailsText += `\n- ${label0}: ${weddingDetails.join(", ")}`;
-    if (eveDetails.length > 0) detailsText += `\n- ${label1}: ${eveDetails.join(", ")}`;
-    if (prewedDetails.length > 0) detailsText += `\n- ${label2}: ${prewedDetails.join(", ")}`;
-    if (stdDetailsArr.length > 0) detailsText += `\n- Save the Date: ${stdDetailsArr.join(", ")}`;
-
-    const clientText = brideName ? `${groomName} & ${brideName}` : groomName;
-    const message = `Hello Dreamwed Stories! I have reviewed and approved our Digital Proposal (${proposalId}) for our wedding event(s) on ${getFormattedEventDates()}. \n\nClient: ${clientText}\nLocation: ${weddingLocation}\n\nSelected Package Details:${detailsText}${addonText}\n- Total Price: ₹${price} INR${packagesText}\n\nLooking forward to capturing our big day!`;
-    return `https://wa.me/919995412955?text=${encodeURIComponent(message)}`;
+  // Photo Swapping
+  const openPhotoPickerFor = (slotKey) => {
+    setActivePhotoSlot(slotKey);
+    setPhotoPickerOpen(true);
   };
 
-  const showWeddingCol = (weddingCandidPhoto > 0 || weddingTradPhoto > 0 || weddingCandidVideo > 0 || weddingTradVideo > 0);
-  const showReceptionCol = (evePhoto > 0 || eveVideo > 0);
-  const showPrewedCol = (prewedPhoto > 0 || prewedVideo > 0);
-  const showStdCol = (stdPhoto > 0 || stdVideo > 0 || stdQty > 0);
-  const visibleColsCount = (showWeddingCol ? 1 : 0) + (showReceptionCol ? 1 : 0) + (showPrewedCol ? 1 : 0) + (showStdCol ? 1 : 0);
-  const isMobilePrintMode = false;
+  const handleSelectPhoto = (photoUrl) => {
+    if (!activePhotoSlot) return;
+    const updatedProposal = { ...proposal };
+    const photos = { ...updatedProposal.photos };
+
+    if (activePhotoSlot === "coverPhoto") {
+      photos.coverPhoto = photoUrl;
+    } else if (activePhotoSlot === "packageBanner") {
+      photos.packageBannerPhoto = photoUrl;
+    } else if (activePhotoSlot === "philosophy") {
+      photos.philosophyPhoto = photoUrl;
+    } else {
+      photos[activePhotoSlot] = photoUrl;
+    }
+
+    updatedProposal.photos = photos;
+    setProposal(updatedProposal);
+    localStorage.setItem("active_vip_proposal", JSON.stringify(updatedProposal));
+    setPhotoPickerOpen(false);
+    showToast("🖼️ Photo updated successfully!");
+  };
+
+  const handleCustomUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      handleSelectPhoto(evt.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Photo Alignment Controls
+  const openAlignModalFor = (slotKey) => {
+    setActiveAlignSlot(slotKey);
+    setAlignModalOpen(true);
+  };
+
+  const updateAlignment = (slotKey, axis, value) => {
+    setProposal((prev) => {
+      const photos = { ...prev.photos };
+      const currentAlign = photos[slotKey] || { x: 50, y: 50, scale: 100 };
+      photos[slotKey] = { ...currentAlign, [axis]: Number(value) };
+      return { ...prev, photos };
+    });
+  };
+
+  const setAlignPreset = (slotKey, x, y) => {
+    setProposal((prev) => {
+      const photos = { ...prev.photos };
+      const currentAlign = photos[slotKey] || { x: 50, y: 50, scale: 100 };
+      photos[slotKey] = { ...currentAlign, x, y };
+      return { ...prev, photos };
+    });
+  };
+
+  const handlePdfUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsAiProcessing(true);
+    showToast("🤖 AI reading proposal PDF with Gemini 2.5 Flash...");
+    try {
+      const parsed = await parseProposalWithAI(file, file.name);
+      setProposal(parsed);
+      localStorage.setItem("active_vip_proposal", JSON.stringify(parsed));
+      const savedList = JSON.parse(localStorage.getItem("dreamwed_vip_proposals_list") || "[]");
+      const updatedList = [parsed, ...savedList.filter((p) => p.id !== parsed.id)];
+      localStorage.setItem("dreamwed_vip_proposals_list", JSON.stringify(updatedList));
+      showToast("🎉 AI successfully built proposal for " + parsed.clientName + "!");
+    } catch (err) {
+      console.error(err);
+      alert("Error parsing PDF: " + err.message);
+    } finally {
+      setIsAiProcessing(false);
+    }
+  };
+
+  const updateField = (field, value) => {
+    setProposal((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const updateEventField = (evIdx, field, value) => {
+    setProposal((prev) => {
+      const newEvents = [...(prev.events || [])];
+      newEvents[evIdx] = { ...newEvents[evIdx], [field]: value };
+      return { ...prev, events: newEvents };
+    });
+  };
+
+  const updateCrewMember = (evIdx, cIdx, value) => {
+    setProposal((prev) => {
+      const newEvents = [...(prev.events || [])];
+      const newCrew = [...(newEvents[evIdx].crew || [])];
+      newCrew[cIdx] = value;
+      newEvents[evIdx] = { ...newEvents[evIdx], crew: newCrew };
+      return { ...prev, events: newEvents };
+    });
+  };
+
+  const addCrewMember = (evIdx) => {
+    setProposal((prev) => {
+      const newEvents = [...(prev.events || [])];
+      newEvents[evIdx] = {
+        ...newEvents[evIdx],
+        crew: [...(newEvents[evIdx].crew || []), "1 NEW CREW MEMBER"]
+      };
+      return { ...prev, events: newEvents };
+    });
+  };
+
+  const removeCrewMember = (evIdx, cIdx) => {
+    setProposal((prev) => {
+      const newEvents = [...(prev.events || [])];
+      const newCrew = [...(newEvents[evIdx].crew || [])];
+      newCrew.splice(cIdx, 1);
+      newEvents[evIdx] = { ...newEvents[evIdx], crew: newCrew };
+      return { ...prev, events: newEvents };
+    });
+  };
+
+  const addPreWeddingEvent = () => {
+    setProposal((prev) => {
+      const events = [...(prev.events || [])];
+      const alreadyHas = events.some(e => e.title.toLowerCase().includes("pre-wedding") || e.title.toLowerCase().includes("prewedding"));
+      if (alreadyHas) {
+        showToast("Pre-Wedding coverage is already in the list!");
+        return prev;
+      }
+      events.unshift({
+        eventTag: "PRE-WEDDING",
+        title: "PRE-WEDDING COVERAGE",
+        subhead: "Pre-Wedding Shoot & Save The Date",
+        crew: ["1 CANDID PHOTOGRAPHER", "1 CINEMATIC VIDEOGRAPHER", "20 EDITED MASTER PHOTOS"],
+        description: "Outdoor couple portrait & video session capturing authentic storytelling."
+      });
+      showToast("✨ Added Pre-Wedding Coverage column!");
+      return { ...prev, events };
+    });
+  };
+
+  const addCustomEvent = () => {
+    setProposal((prev) => {
+      const events = [...(prev.events || [])];
+      events.push({
+        eventTag: "EVENT",
+        title: "NEW EVENT COVERAGE",
+        subhead: proposal.eventDate || "Event Date",
+        crew: ["1 PHOTOGRAPHER", "1 VIDEOGRAPHER"],
+        description: "Coverage for additional wedding ceremony event."
+      });
+      return { ...prev, events };
+    });
+  };
+
+  const removeEvent = (evIdx) => {
+    setProposal((prev) => {
+      const events = [...(prev.events || [])];
+      events.splice(evIdx, 1);
+      return { ...prev, events };
+    });
+  };
+
+  const updateDeliverableItem = (category, idx, value) => {
+    setProposal((prev) => {
+      const newDeliv = { ...(prev.deliverables || {}) };
+      const list = [...(newDeliv[category] || [])];
+      if (typeof list[idx] === "string") {
+        list[idx] = value;
+      } else {
+        list[idx] = { ...list[idx], title: value };
+      }
+      newDeliv[category] = list;
+      return { ...prev, deliverables: newDeliv };
+    });
+  };
+
+  const addDeliverableItem = (category) => {
+    setProposal((prev) => {
+      const newDeliv = { ...(prev.deliverables || {}) };
+      const list = [...(newDeliv[category] || [])];
+      list.push({ tag: "INCLUDED", title: "New Deliverable Item", desc: "" });
+      newDeliv[category] = list;
+      return { ...prev, deliverables: newDeliv };
+    });
+  };
+
+  const removeDeliverableItem = (category, idx) => {
+    setProposal((prev) => {
+      const newDeliv = { ...(prev.deliverables || {}) };
+      const list = [...(newDeliv[category] || [])];
+      list.splice(idx, 1);
+      newDeliv[category] = list;
+      return { ...prev, deliverables: newDeliv };
+    });
+  };
+
+  const getWhatsAppLink = () => {
+    const phone = proposal.phone || "9995412955";
+    const text = encodeURIComponent(
+      `Hello Unni Krishnan & Dreamwed Stories Team,\n\nI have reviewed the personalized wedding proposal for ${proposal.clientName} (${proposal.packageTitle || "Photography & Cinematography Package"}, ₹${proposal.price} INR).\n\nWe would like to confirm our wedding date (${proposal.eventDate} at ${proposal.venue}) and proceed with the 10% token advance.\n\nProposal Link: ${window.location.origin}/proposal?id=${proposal.id}`
+    );
+    return `https://wa.me/${phone.replace(/[^0-9]/g, "")}?text=${text}`;
+  };
+
+  const normalizeItem = (item) => {
+    if (typeof item === "string") return { title: item, desc: "" };
+    return { title: item.title || item.desc || "", desc: item.desc || "" };
+  };
+
+  // Alignments
+  const coverAlign = proposal.photos?.coverAlign || { x: 50, y: 50, scale: 100 };
+  const bannerAlign = proposal.photos?.bannerAlign || { x: 50, y: 30, scale: 100 };
+  const philosophyAlign = proposal.photos?.philosophyAlign || { x: 50, y: 50, scale: 100 };
 
   return (
-    <div className="bg-[#0e0e11] text-white min-h-screen font-sans selection:bg-[#d1a852] selection:text-black proposal-root-container">
-      <style dangerouslySetInnerHTML={{ __html: `
-        /* Theme Accent Color Overrides */
-        .text-\\[\\#b4975a\\] { color: ${themeColor} !important; }
-        .text-\\[\\#967d45\\] { color: ${themeColor}dd !important; }
-        .bg-\\[\\#b4975a\\] { background-color: ${themeColor} !important; }
-        .hover\\:bg-\\[\\#967d45\\]:hover { background-color: ${themeColor}cc !important; }
-        .bg-\\[\\#b4975a\\]\\/10 { background-color: ${themeColor}1a !important; }
-        .bg-\\[\\#b4975a\\]\\/5 { background-color: ${themeColor}0d !important; }
-        .border-\\[\\#b4975a\\]\\/20 { border-color: ${themeColor}33 !important; }
-        .border-\\[\\#b4975a\\]\\/10 { border-color: ${themeColor}1a !important; }
-        .border-\\[\\#b4975a\\]\\/30 { border-color: ${themeColor}4d !important; }
-        .fill-\\[\\#b4975a\\]\\/20 { fill: ${themeColor}33 !important; }
-        .stroke-\\[\\#b4975a\\] { stroke: ${themeColor} !important; }
-        .fill-\\[\\#b4975a\\] { fill: ${themeColor} !important; }
-        
-        /* Customizer UI Accent Overrides */
-        .text-\\[\\#d1a852\\] { color: ${themeColor} !important; }
-        .border-\\[\\#d1a852\\] { border-color: ${themeColor} !important; }
-        .bg-\\[\\#d1a852\\] { background-color: ${themeColor} !important; }
-        .hover\\:bg-\\[\\#b08d41\\]:hover { background-color: ${themeColor}dd !important; }
-        .accent-\\[\\#d1a852\\] { accent-color: ${themeColor} !important; }
-        .focus\\:border-\\[\\#d1a852\\]:focus { border-color: ${themeColor} !important; }
-        
-        /* SVG Icons Attribute Fallbacks */
-        svg[fill="#b4975a"] { fill: ${themeColor} !important; }
-        svg[stroke="#b4975a"] { stroke: ${themeColor} !important; }
-
-        @media print {
-          @page {
-            size: A4 portrait !important;
-            margin: 0 !important;
-          }
-          
-          /* Normalize/neutralize container layouts for printing */
-          html, body, #root, #root > div, .proposal-root-container, .proposal-main-wrapper {
-            position: static !important;
-            overflow: visible !important;
-            height: auto !important;
-            min-height: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border: none !important;
-            box-shadow: none !important;
-            transform: none !important;
-            background: #ffffff !important;
-          }
-
-          .proposal-print-container {
-            width: 210mm !important;
-            margin: 0 auto !important;
-            padding: 0 !important;
-            box-shadow: none !important;
-            background: #ffffff !important;
-          }
-
-          /* Force each slide to exactly A4 portrait dimensions */
-          .proposal-page {
-            width: 210mm !important;
-            height: 297mm !important;
-            page-break-after: always !important;
-            break-after: page !important;
-            box-sizing: border-box !important;
-            margin: 0 !important;
-            padding: 20mm 15mm !important; /* Clean margins inside page bounds */
-            position: relative !important;
-            overflow: hidden !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: space-between !important;
-            background: #ffffff !important;
-            border: none !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-
-          /* Cover page has full-bleed background images */
-          .proposal-page:first-of-type {
-            padding: 0 !important;
-          }
-
-          /* Stacking grids for portrait presentation */
-          .proposal-page .grid {
-            grid-template-columns: 1fr !important;
-            gap: 15px !important;
-          }
-
-          /* Keep testimonials simple and vertically stacked */
-          .proposal-page .grid-cols-1.md\:grid-cols-2 {
-            grid-template-columns: 1fr !important;
-            gap: 15px !important;
-          }
-
-          /* Keep deliverables column layout stacked */
-          .proposal-page .grid-cols-1.md\:grid-cols-2.gap-8 {
-            grid-template-columns: 1fr !important;
-            gap: 15px !important;
-          }
-
-          /* Stack welcome letter layout vertically in portrait print */
-          .proposal-page .grid-cols-1.md\:grid-cols-12 {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 15px !important;
-          }
-          .proposal-page .md\:col-span-7 {
-            width: 100% !important;
-          }
-          .proposal-page .md\:col-span-5 {
-            width: 100% !important;
-          }
-
-          /* Shrink header images on page 3 (Package details) so columns fit nicely */
-          .proposal-page .h-\\[200px\\] {
-            height: 220px !important;
-          }
-
-          /* Shrink secondary philosophy image on page 5 so letter fits nicely */
-          .proposal-page img[alt="Couple Portrait"] {
-            height: 220px !important;
-          }
-
-          /* General styling adjustments for print legibility */
-          .proposal-page h2 {
-            margin-top: 0 !important;
-          }
-          
-          /* Hide interactive/non-print buttons or customized panels */
-          .no-print {
-            display: none !important;
-          }
-        }
-      ` }} />
+    <div className="min-h-screen bg-[#EDE8E1] text-stone-900 font-sans antialiased selection:bg-[#c5a880]/30 selection:text-[#8c6a23]">
       <SEO
-        title={`Digital Proposal: ${groomName}${brideName ? ` & ${brideName}` : ""} | Dreamwed PDF Generator`}
-        description={`Customized wedding photography and cinematography proposal for ${groomName}${brideName ? ` & ${brideName}` : ""} by Dreamwed PDF Generator.`}
+        title={`${proposal.clientName} — Luxury Wedding Photography Proposal | Dreamwed Stories`}
+        description={`Bespoke wedding photography and cinematic film proposal for ${proposal.clientName} by Dreamwed Stories.`}
       />
 
-      {/* FIXED WORKSPACE BAR (Hidden in print) */}
-      <div className="no-print sticky top-0 left-0 right-0 z-40 bg-[#121216]/90 backdrop-blur-md border-b border-white/10 px-4 py-3 md:px-6 flex items-center justify-between shadow-lg">
+      {/* ================= TOP TOOLBAR (NO-PRINT) ================= */}
+      <header className="w-full bg-[#161B22] text-white sticky top-0 z-50 px-4 py-2.5 flex items-center justify-between shadow-xl border-b border-white/10 no-print">
         <div className="flex items-center gap-3">
-          {window.location.protocol === 'file:' ? (
-            <a href="../landing.html" className="flex items-center gap-2 text-zinc-300 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 text-xs font-semibold mr-2">
-              <Home size={14} className="text-[#d1a852]" />
-              <span>Hub Menu</span>
-            </a>
-          ) : (
-            <Link to="/" className="flex items-center gap-2">
-              <Heart className="h-5 w-5 text-[#d1a852] fill-[#d1a852]/20" />
-              <span className="font-serif tracking-widest text-sm font-bold bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent uppercase">
-                Dreamwed PDF Generator
-              </span>
-            </Link>
-          )}
-          <span className="hidden md:inline text-[11px] text-zinc-500 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full font-mono">
-            {proposalId}
-          </span>
+          <Link
+            to="/admin"
+            className="flex items-center gap-1.5 text-xs font-semibold text-stone-300 hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Admin</span>
+          </Link>
+          <div className="h-4 w-[1px] bg-white/20 hidden sm:block" />
+          <div className="hidden sm:flex items-center gap-2">
+            <img src="./images/dreamwed_logo.png" alt="Logo" className="w-5 h-5 object-contain" />
+            <span className="text-xs tracking-wider uppercase font-semibold text-stone-200">
+              Dreamwed Stories • Editorial Proposal
+            </span>
+          </div>
         </div>
 
-        {/* Dynamic header info */}
-        <div className="hidden lg:flex items-center gap-1.5 text-xs text-zinc-400 bg-zinc-900/60 py-1 px-3 rounded-full border border-white/5 font-light">
-          <span className="text-[#d1a852]">Presented For:</span>
-          <span className="font-semibold uppercase tracking-wider">{groomName}{brideName ? ` & ${brideName}` : ""}</span>
-        </div>
-
-        {/* Actions */}
         <div className="flex items-center gap-2">
-          {/* View Mode Toggle */}
-          <div className="hidden sm:flex bg-zinc-900 border border-white/5 p-0.5 rounded-lg mr-2">
+          {/* Edit Mode Toggle */}
+          <button
+            onClick={() => setEditMode(!editMode)}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs ${
+              editMode
+                ? "bg-amber-500 text-stone-950 border-amber-400 font-bold"
+                : "bg-white/10 border-white/15 text-stone-200 hover:bg-white/20"
+            }`}
+          >
+            <Edit2 className="w-3.5 h-3.5" />
+            <span>{editMode ? "Edit Mode: ON" : "Edit Proposal"}</span>
+          </button>
+
+          {/* Dedicated Photo Alignment Button */}
+          <button
+            onClick={() => {
+              setActiveAlignSlot("coverAlign");
+              setAlignModalOpen(true);
+            }}
+            className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-stone-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+            title="Adjust photo focal point alignment & zoom"
+          >
+            <Sliders className="w-3.5 h-3.5 text-amber-400" />
+            <span>Align Photos</span>
+          </button>
+
+          {/* Quick Pre-Wedding Add Button */}
+          <button
+            onClick={addPreWeddingEvent}
+            className="px-3 py-1.5 rounded-xl border border-amber-400/40 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+            title="Add Pre-Wedding Coverage column"
+          >
+            <Plus className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">+ Pre-Wedding</span>
+          </button>
+
+          {/* Upload PDF */}
+          <label className="cursor-pointer px-3 py-1.5 rounded-xl border border-white/15 bg-white/10 hover:bg-white/20 text-stone-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs">
+            <Upload className="w-3.5 h-3.5 text-amber-300" />
+            <span className="hidden sm:inline">
+              {isAiProcessing ? "AI Reading..." : "Upload PDF"}
+            </span>
+            <input type="file" accept=".pdf" className="hidden" onChange={handlePdfUpload} />
+          </label>
+
+          {/* Saved Proposals Modal Toggle */}
+          <button
+            onClick={() => {
+              const saved = JSON.parse(localStorage.getItem("dreamwed_vip_proposals_list") || "[]");
+              setSavedProposalsList(saved);
+              setSavedProposalsModalOpen(true);
+            }}
+            className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-stone-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+            title="Browse all saved proposals"
+          >
+            <FolderOpen className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden md:inline">Proposals</span>
+          </button>
+
+          {/* Save Proposal Button */}
+          <button
+            onClick={handleSaveProposal}
+            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+          >
+            <Save className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Save</span>
+          </button>
+
+          {/* Print / Export PDF */}
+          <button
+            onClick={handlePrint}
+            className="px-3.5 py-1.5 rounded-xl bg-[#D1A852] hover:bg-[#b8913e] text-stone-950 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>Print PDF</span>
+          </button>
+
+          {/* Share Link */}
+          <button
+            onClick={copyClientLink}
+            className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-stone-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+            title="Copy proposal link"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </header>
+
+      {/* Toast Alert */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-stone-900 text-amber-200 border border-amber-400/40 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 text-xs font-bold no-print">
+          <Sparkles className="w-4 h-4 text-amber-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 6-PAGE EDITORIAL PROPOSAL                                                */}
+      {/* ========================================================================= */}
+      <div className="py-10 px-2 sm:px-6 flex flex-col items-center print:p-0 print:m-0 print:bg-white">
+
+        {/* --------------------------------------------------------------------- */}
+        {/* PAGE 1: COVER (FULL-BLEED REAL <img> + SIGNATURE GLASS CARD)          */}
+        {/* --------------------------------------------------------------------- */}
+        <section
+          id="page-1-cover"
+          className="proposal-page relative w-full max-w-[850px] min-h-[1130px] rounded-sm overflow-hidden shadow-2xl flex flex-col justify-between p-10 sm:p-14 select-none mb-12 print:mb-0 print:shadow-none print:min-h-screen print:h-screen print:p-12 print:rounded-none bg-[#FAF8F5]"
+        >
+          {/* Real foreground <img> element: 100% UNTOUCHED ORIGINAL COLOR GRADING */}
+          <img
+            src={proposal.photos?.coverPhoto || "./images/parvathy_cloudinary_cover.jpg"}
+            alt="Cover"
+            className="cover-img-tag absolute inset-0 w-full h-full object-cover pointer-events-none z-0"
+            style={{
+              objectPosition: `${coverAlign.x}% ${coverAlign.y}%`,
+              transform: `scale(${coverAlign.scale / 100})`,
+              transformOrigin: `${coverAlign.x}% ${coverAlign.y}%`
+            }}
+          />
+
+          {/* Photo Customization Controls (Upload + Alignment) */}
+          <div className="absolute top-6 right-6 z-30 flex items-center gap-2 no-print">
             <button
-              onClick={() => setPreviewMode("desktop")}
-              className={`p-1.5 rounded-md transition-colors ${previewMode === "desktop" ? "bg-[#d1a852]/20 text-[#d1a852]" : "text-zinc-500 hover:text-zinc-300"}`}
-              title="Desktop Presentation Mode"
+              onClick={() => openAlignModalFor("coverAlign")}
+              className="px-3.5 py-2 rounded-full bg-black/70 hover:bg-[#D1A852] hover:text-stone-950 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-all flex items-center gap-1.5 shadow-lg cursor-pointer"
+              title="Adjust photo focal point & zoom"
             >
-              <Laptop size={15} />
+              <Sliders className="w-3.5 h-3.5 text-amber-400" />
+              <span>Align Photo</span>
             </button>
             <button
-              onClick={() => setPreviewMode("mobile")}
-              className={`p-1.5 rounded-md transition-colors ${previewMode === "mobile" ? "bg-[#d1a852]/20 text-[#d1a852]" : "text-zinc-500 hover:text-zinc-300"}`}
-              title="Instagram/Mobile Mock Mode"
+              onClick={() => openPhotoPickerFor("coverPhoto")}
+              className="px-3.5 py-2 rounded-full bg-black/70 hover:bg-[#D1A852] hover:text-stone-950 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-all flex items-center gap-1.5 shadow-lg cursor-pointer"
             >
-              <Smartphone size={15} />
+              <Camera className="w-3.5 h-3.5 text-amber-400" />
+              <span>Change Cover Photo</span>
             </button>
           </div>
 
-          {!isClientView && (
-            <button
-              onClick={() => setCustomizerOpen(true)}
-              className="flex items-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 border border-white/10 text-zinc-300 text-xs px-3 py-2 rounded-lg transition-colors font-medium"
-            >
-              <Sliders size={14} className="text-[#d1a852]" />
-              <span className="hidden sm:inline">Customize</span>
-            </button>
+          {/* Top Header Branding in elegant frosted glass pill */}
+          <div className="relative z-20 flex items-start justify-between w-full">
+            <div className="px-5 py-3 rounded-2xl bg-black/40 backdrop-blur-md border border-white/20 shadow-lg">
+              <span className="text-[10.5px] font-mono font-bold tracking-[0.35em] text-[#D1A852] uppercase block">
+                F I N E &nbsp; A R T &nbsp; & &nbsp; C I N E M A T I C &nbsp; F I L M S
+              </span>
+              <h2 className="text-xl sm:text-2xl font-serif tracking-[0.25em] font-light text-white uppercase mt-0.5">
+                DREAMWED STORIES
+              </h2>
+            </div>
+            <div className="hidden sm:block">
+              <span className="px-4 py-2 rounded-2xl bg-black/40 backdrop-blur-md border border-white/20 text-white/90 text-[10px] font-mono tracking-widest uppercase shadow-lg inline-block">
+                PROPOSAL NO: {proposal.proposalNo || proposal.id || "proposal_default"}
+              </span>
+            </div>
+          </div>
+
+          {/* Signature Elevated White Presented For Card */}
+          <div className="relative z-20 w-full max-w-xl mx-auto">
+            <div className="bg-white/95 backdrop-blur-md rounded-[28px] p-7 sm:p-9 shadow-2xl border border-stone-200/80 text-center space-y-3">
+              <span className="text-[10.5px] uppercase tracking-[0.3em] font-bold text-stone-500 font-mono block">
+                P R E S E N T E D &nbsp; F O R
+              </span>
+
+              <div className="w-16 h-[1px] bg-[#B4975A]/50 mx-auto" />
+
+              {editMode ? (
+                <input
+                  type="text"
+                  value={proposal.clientName}
+                  onChange={(e) => updateField("clientName", e.target.value)}
+                  className="w-full text-center text-3xl sm:text-4xl font-serif tracking-widest font-light uppercase text-stone-900 bg-amber-50/50 border-b-2 border-[#D1A852] outline-none"
+                />
+              ) : (
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif tracking-widest font-light uppercase text-stone-900 my-2 leading-none">
+                  {proposal.clientName}
+                </h1>
+              )}
+
+              <div className="w-16 h-[1px] bg-[#B4975A]/50 mx-auto" />
+
+              {editMode ? (
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-1 text-xs font-mono text-stone-700">
+                  <input
+                    type="text"
+                    value={proposal.eventDate}
+                    onChange={(e) => updateField("eventDate", e.target.value)}
+                    placeholder="Event Dates"
+                    className="text-center bg-amber-50/50 border border-stone-300 rounded px-2 py-0.5 outline-none"
+                  />
+                  <span>•</span>
+                  <input
+                    type="text"
+                    value={proposal.venue}
+                    onChange={(e) => updateField("venue", e.target.value)}
+                    placeholder="Venue / Location"
+                    className="text-center bg-amber-50/50 border border-stone-300 rounded px-2 py-0.5 outline-none"
+                  />
+                </div>
+              ) : (
+                <p className="text-[11px] sm:text-xs font-mono tracking-widest uppercase text-stone-600 pt-1 font-medium">
+                  {proposal.eventDate} • {proposal.venue}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* --------------------------------------------------------------------- */}
+        {/* PAGE 2: TESTIMONIALS (CLIENT LOVE 2x2 GRID)                          */}
+        {/* --------------------------------------------------------------------- */}
+        <section
+          id="page-2-testimonials"
+          className="proposal-page relative w-full max-w-[850px] min-h-[1130px] bg-[#FAF8F5] rounded-sm shadow-2xl flex flex-col justify-between p-10 sm:p-14 mb-12 print:mb-0 print:shadow-none print:min-h-screen print:h-screen print:p-12 print:rounded-none"
+        >
+          {/* Top Testimonials Header */}
+          <div className="text-center space-y-2 pt-4">
+            <span className="inline-block px-4 py-1 rounded-full border border-[#B4975A]/50 bg-[#B4975A]/10 text-[#8C6A23] text-[10px] tracking-[0.3em] uppercase font-bold font-mono">
+              T E S T I M O N I A L S
+            </span>
+            <h2 className="text-4xl sm:text-5xl font-serif font-light tracking-wide text-stone-900 mt-2">
+              Client <span className="italic font-normal text-[#B4975A]">Love</span>
+            </h2>
+            <div className="w-12 h-[1px] bg-[#B4975A]/40 mx-auto mt-2" />
+          </div>
+
+          {/* 4 Review Cards (2x2 Grid) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-7 my-auto py-6">
+            {(proposal.testimonials || [
+              {
+                initials: "DA",
+                name: "Dr. Athulraj",
+                event: "Wedding Photos",
+                text: "The photos came out much better than expected, especially the low-light shots! You didn't miss a single moment of the wedding, and I don't think anyone else can provide such incredible quality in this budget. Thank you so much guys ❤️"
+              },
+              {
+                initials: "C",
+                name: "Chindu",
+                event: "Cinematic Video",
+                text: "What you did is one of the best I have seen so far. I've been searching for 7 months... the cinematic video you guys did is one of the best! All my friends and office colleagues are showering with praises."
+              },
+              {
+                initials: "AL",
+                name: "Anandha Lekshmi",
+                event: "Wedding Ceremony",
+                text: "Thank you so much to the whole team for the beautiful photo frame and for capturing our big day perfectly! ❤️❤️"
+              },
+              {
+                initials: "DK",
+                name: "Deepak Kollam",
+                event: "Candid Portraits",
+                text: "Superb work bro! We had a great experience with the team. I am someone who doesn't pose for photos at all, but you guys managed to capture such incredible shots and made me feel so comfortable."
+              }
+            ]).map((t, idx) => (
+              <div
+                key={idx}
+                className="bg-white rounded-[22px] p-6 sm:p-7 border border-stone-200/90 shadow-sm flex flex-col justify-between space-y-4 hover:border-[#D1A852]/60 hover:shadow-md transition-all"
+              >
+                <div className="space-y-3">
+                  <div className="flex gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-[#D1A852] text-[#D1A852]" />
+                    ))}
+                  </div>
+                  <p className="text-xs sm:text-[13px] italic font-serif text-stone-700 leading-relaxed">
+                    "{t.text}"
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 pt-3 border-t border-stone-100">
+                  <div className="w-9 h-9 rounded-full bg-[#FAF8F5] border border-stone-200 text-[#8C6A23] font-serif text-xs font-bold flex items-center justify-center shrink-0">
+                    {t.initials || (t.name ? t.name.charAt(0) : "C")}
+                  </div>
+                  <div>
+                    <h5 className="text-xs sm:text-[13px] font-bold text-stone-900 leading-none">
+                      {t.name}
+                    </h5>
+                    <span className="text-[10px] text-stone-400 font-mono mt-0.5 block">
+                      {t.event}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Footer */}
+          <div className="pt-4 text-center font-mono text-[10px] text-stone-400 tracking-widest">
+            PAGE 2 OF 6 • DREAMWED STORIES
+          </div>
+        </section>
+
+        {/* --------------------------------------------------------------------- */}
+        {/* PAGE 3: PACKAGE INCLUDES (BANNER + PRE-WEDDING & WEDDING COLUMNS)    */}
+        {/* --------------------------------------------------------------------- */}
+        <section
+          id="page-3-package"
+          className="proposal-page relative w-full max-w-[850px] min-h-[1130px] bg-[#FAF8F5] rounded-sm shadow-2xl flex flex-col justify-between p-10 sm:p-14 mb-12 print:mb-0 print:shadow-none print:min-h-screen print:h-screen print:p-12 print:rounded-none"
+        >
+          {/* Panoramic Couple Banner Photo with Overlay Typography & Real Foreground <img> (ORIGINAL COLORS 100% PRESERVED) */}
+          <div className="relative w-full h-72 sm:h-80 rounded-[24px] overflow-hidden shadow-lg group bg-stone-100">
+            <img
+              src={proposal.photos?.packageBannerPhoto || proposal.photos?.event1Photo || "./images/parvathy_cloudinary_package.jpg"}
+              alt="Package Header"
+              className="w-full h-full object-cover pointer-events-none"
+              style={{
+                objectPosition: `${bannerAlign.x}% ${bannerAlign.y}%`,
+                transform: `scale(${bannerAlign.scale / 100})`,
+                transformOrigin: `${bannerAlign.x}% ${bannerAlign.y}%`
+              }}
+            />
+            {/* Subtle bottom-only gradient behind typography - couples faces and colors are 100% untouched */}
+            <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
+
+            {/* Banner Photo Controls */}
+            <div className="absolute top-4 right-4 z-30 flex items-center gap-2 no-print">
+              <button
+                onClick={() => openAlignModalFor("bannerAlign")}
+                className="px-3 py-1.5 rounded-full bg-black/60 hover:bg-[#D1A852] hover:text-stone-950 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-all flex items-center gap-1 shadow-md cursor-pointer"
+              >
+                <Sliders className="w-3.5 h-3.5 text-amber-400" />
+                <span>Align Banner</span>
+              </button>
+              <button
+                onClick={() => openPhotoPickerFor("packageBanner")}
+                className="px-3 py-1.5 rounded-full bg-black/60 hover:bg-[#D1A852] hover:text-stone-950 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-all flex items-center gap-1 shadow-md cursor-pointer"
+              >
+                <Camera className="w-3.5 h-3.5 text-amber-400" />
+                <span>Change Banner</span>
+              </button>
+            </div>
+
+            <div className="absolute bottom-6 left-8 right-8 text-white drop-shadow-md">
+              <span className="text-[11px] font-mono tracking-[0.3em] uppercase font-bold text-[#D1A852] block drop-shadow-sm">
+                Curated Coverage Blueprint
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-serif font-light uppercase tracking-wider leading-none mt-1">
+                PACKAGE <span className="italic text-[#D1A852] font-normal">INCLUDES</span>
+              </h2>
+            </div>
+          </div>
+
+          {/* Event Columns Header Actions in Edit Mode */}
+          {editMode && (
+            <div className="flex flex-wrap items-center justify-end gap-2 pt-4 no-print">
+              <button
+                onClick={addPreWeddingEvent}
+                className="px-3 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-[#8C6A23] border border-[#B4975A]/40 text-xs font-bold flex items-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Pre-Wedding Event</span>
+              </button>
+              <button
+                onClick={addCustomEvent}
+                className="px-3 py-1 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-bold flex items-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Event Column</span>
+              </button>
+            </div>
           )}
 
-          <button
-            onClick={handlePrint}
-            className="flex items-center gap-1.5 bg-[#d1a852] hover:bg-[#b08d41] text-black text-xs px-3.5 py-2 rounded-lg font-semibold shadow-md shadow-[#d1a852]/10 transition-all active:scale-95"
-          >
-            <Printer size={14} />
-            <span className="hidden sm:inline">Export PDF</span>
-          </button>
-        </div>
-      </div>
+          {/* Clean Event Columns matching PDF Page 3 */}
+          <div className="my-auto py-8">
+            <div className={`grid grid-cols-1 ${
+              (proposal.events || []).length > 2 ? "sm:grid-cols-3" : "sm:grid-cols-2"
+            } gap-8 sm:gap-10`}>
+              {(proposal.events || []).map((ev, evIdx) => (
+                <div key={evIdx} className="space-y-4 relative group/col">
+                  {editMode && (
+                    <button
+                      onClick={() => removeEvent(evIdx)}
+                      className="absolute -top-3 right-0 text-red-500 hover:text-red-700 p-1 text-xs font-bold flex items-center gap-1 no-print"
+                      title="Delete event column"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Remove
+                    </button>
+                  )}
 
-      {/* MAIN CONTAINER */}
-      <div className={`proposal-main-wrapper mx-auto transition-all duration-500 ${
-        previewMode === "mobile" 
-          ? "md:max-w-[430px] md:my-6 md:border-[8px] md:border-zinc-800 md:rounded-[45px] md:shadow-2xl md:overflow-hidden md:bg-black w-full" 
-          : "md:max-w-[850px] md:my-8 md:shadow-2xl md:border md:border-zinc-200/50 md:rounded-2xl w-full"
-      }`}>
-        <div className="proposal-print-container bg-[#ffffff]">
-          
-          {/* ======================================================== */}
-          {/* PAGE 1: COVER SLIDE */}
-          {/* ======================================================== */}
-          {!isMobilePrintMode && (
-          <section className="proposal-page relative w-full min-h-[90vh] flex flex-col justify-between overflow-hidden bg-[#ffffff]">
-            {/* Background image */}
-            <div className="absolute inset-0 z-0">
+                  <div className="border-b border-stone-200 pb-2">
+                    {editMode ? (
+                      <input
+                        type="text"
+                        value={ev.title}
+                        onChange={(e) => updateEventField(evIdx, "title", e.target.value)}
+                        className="text-xs sm:text-sm tracking-[0.2em] font-bold uppercase font-serif text-stone-900 bg-amber-50/50 border border-stone-300 rounded px-2 py-0.5 w-full outline-none"
+                      />
+                    ) : (
+                      <h3 className="text-xs sm:text-sm tracking-[0.2em] font-bold uppercase font-serif text-stone-900">
+                        {ev.title}
+                      </h3>
+                    )}
+
+                    {editMode ? (
+                      <input
+                        type="text"
+                        value={ev.subhead || ev.date || ""}
+                        onChange={(e) => updateEventField(evIdx, "subhead", e.target.value)}
+                        placeholder="Event Date / Subtitle"
+                        className="text-[11px] font-mono uppercase tracking-wider text-stone-500 bg-amber-50/50 border border-stone-300 rounded px-2 py-0.5 w-full mt-1 outline-none"
+                      />
+                    ) : (
+                      <p className="text-[11px] font-mono uppercase tracking-wider text-stone-500 mt-1">
+                        {ev.subhead || ev.date || ev.eventTag || proposal.eventDate}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Crew Bullets */}
+                  <ul className="space-y-2.5 pt-1">
+                    {(ev.crew || []).map((cr, cIdx) => (
+                      <li key={cIdx} className="flex items-center justify-between text-xs sm:text-[13px] font-light">
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#B4975A] shrink-0" />
+                          {editMode ? (
+                            <input
+                              type="text"
+                              value={cr}
+                              onChange={(e) => updateCrewMember(evIdx, cIdx, e.target.value)}
+                              className="text-xs font-mono uppercase tracking-wider text-stone-800 bg-amber-50/50 border border-stone-300 rounded px-1.5 py-0.5 outline-none"
+                            />
+                          ) : (
+                            <span className="font-mono uppercase tracking-wider text-stone-800 font-medium">
+                              {cr}
+                            </span>
+                          )}
+                        </div>
+                        {editMode && (
+                          <button
+                            onClick={() => removeCrewMember(evIdx, cIdx)}
+                            className="text-red-400 hover:text-red-600 p-0.5 no-print"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {editMode && (
+                    <button
+                      onClick={() => addCrewMember(evIdx)}
+                      className="text-[10px] text-[#B4975A] hover:underline font-mono uppercase font-bold flex items-center gap-1 pt-1 no-print"
+                    >
+                      <Plus className="w-3 h-3" /> Add Crew Member
+                    </button>
+                  )}
+
+                  {ev.description && (
+                    <p className="text-xs text-stone-600 leading-relaxed pt-2">
+                      {ev.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="pt-4 text-center font-mono text-[10px] text-stone-400 tracking-widest">
+            PAGE 3 OF 6 • DREAMWED STORIES
+          </div>
+        </section>
+
+        {/* --------------------------------------------------------------------- */}
+        {/* PAGE 4: DELIVERABLES & INVESTMENT (TWO COLUMNS + GOLD VALUE CARD)    */}
+        {/* --------------------------------------------------------------------- */}
+        <section
+          id="page-4-deliverables"
+          className="proposal-page relative w-full max-w-[850px] min-h-[1130px] bg-[#FAF8F5] rounded-sm shadow-2xl flex flex-col justify-between p-10 sm:p-14 mb-12 print:mb-0 print:shadow-none print:min-h-screen print:h-screen print:p-12 print:rounded-none"
+        >
+          {/* Top Header */}
+          <div className="space-y-1 pt-2">
+            <span className="text-[10.5px] tracking-[0.35em] uppercase font-bold text-stone-400 block font-mono">
+              D R E A M W E D &nbsp; S T O R I E S
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-serif tracking-tight text-stone-900 font-light">
+              Deliverables & Investment
+            </h2>
+            <div className="w-14 h-0.5 bg-[#B4975A] mt-2" />
+          </div>
+
+          {/* Two-Column Deliverables List */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-12 my-auto py-6">
+            {/* Column 1: Physical & Digital Assets */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-stone-200">
+                <span className="text-[11px] tracking-[0.2em] font-mono uppercase font-bold text-stone-500">
+                  P H Y S I C A L &nbsp; & &nbsp; D I G I T A L &nbsp; A S S E T S
+                </span>
+                {editMode && (
+                  <button
+                    onClick={() => addDeliverableItem("albums")}
+                    className="text-[10px] text-[#8C6A23] hover:underline font-bold flex items-center gap-0.5 no-print"
+                  >
+                    <Plus className="w-3 h-3" /> Add
+                  </button>
+                )}
+              </div>
+
+              <ul className="space-y-3.5 text-xs sm:text-[13px] font-light">
+                {(proposal.deliverables?.albums || []).map((alb, i) => {
+                  const norm = normalizeItem(alb);
+                  return (
+                    <li key={`alb-${i}`} className="flex items-start gap-3">
+                      <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        {editMode ? (
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              value={norm.title}
+                              onChange={(e) => updateDeliverableItem("albums", i, e.target.value)}
+                              className="text-xs font-medium text-stone-800 bg-amber-50/50 border border-stone-300 rounded px-1.5 py-0.5 w-full outline-none"
+                            />
+                            <button
+                              onClick={() => removeDeliverableItem("albums", i)}
+                              className="text-red-400 hover:text-red-600 p-0.5 no-print"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="font-medium text-stone-800 leading-snug">{norm.title}</span>
+                        )}
+                        {norm.desc && <p className="text-[11px] text-stone-500 mt-0.5">{norm.desc}</p>}
+                      </div>
+                    </li>
+                  );
+                })}
+                {(proposal.deliverables?.films || []).map((film, i) => {
+                  const norm = normalizeItem(film);
+                  return (
+                    <li key={`film-${i}`} className="flex items-start gap-3">
+                      <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        {editMode ? (
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              value={norm.title}
+                              onChange={(e) => updateDeliverableItem("films", i, e.target.value)}
+                              className="text-xs font-medium text-stone-800 bg-amber-50/50 border border-stone-300 rounded px-1.5 py-0.5 w-full outline-none"
+                            />
+                            <button
+                              onClick={() => removeDeliverableItem("films", i)}
+                              className="text-red-400 hover:text-red-600 p-0.5 no-print"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="font-medium text-stone-800 leading-snug">{norm.title}</span>
+                        )}
+                        {norm.desc && <p className="text-[11px] text-stone-500 mt-0.5">{norm.desc}</p>}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            {/* Column 2: Complimentary Items */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-stone-200">
+                <span className="text-[11px] tracking-[0.2em] font-mono uppercase font-bold text-[#8C6A23]">
+                  C O M P L I M E N T A R Y &nbsp; I T E M S
+                </span>
+                {editMode && (
+                  <button
+                    onClick={() => addDeliverableItem("complimentary")}
+                    className="text-[10px] text-[#8C6A23] hover:underline font-bold flex items-center gap-0.5 no-print"
+                  >
+                    <Plus className="w-3 h-3" /> Add
+                  </button>
+                )}
+              </div>
+
+              <ul className="space-y-3.5 text-xs sm:text-[13px] font-light">
+                {(proposal.deliverables?.complimentary || []).map((comp, i) => {
+                  const norm = normalizeItem(comp);
+                  return (
+                    <li key={`comp-${i}`} className="flex items-start gap-3">
+                      <Sparkles className="w-4 h-4 text-[#D1A852] shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        {editMode ? (
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              value={norm.title}
+                              onChange={(e) => updateDeliverableItem("complimentary", i, e.target.value)}
+                              className="text-xs font-medium text-stone-800 bg-amber-50/50 border border-stone-300 rounded px-1.5 py-0.5 w-full outline-none"
+                            />
+                            <button
+                              onClick={() => removeDeliverableItem("complimentary", i)}
+                              className="text-red-400 hover:text-red-600 p-0.5 no-print"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="font-medium text-stone-800 leading-snug">{norm.title}</span>
+                        )}
+                        {norm.desc && <p className="text-[11px] text-stone-500 mt-0.5">{norm.desc}</p>}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Card: Investment Details Box */}
+          <div className="rounded-[20px] border border-[#D1A852]/60 bg-amber-50/40 p-6 sm:p-7 shadow-xs space-y-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <p className="text-[10.5px] font-mono tracking-widest text-[#8C6A23] uppercase font-bold">
+                  INVESTMENT DETAILS
+                </p>
+                <p className="text-xs text-stone-600 mt-0.5">
+                  Package price (excludes travel & accommodation)
+                </p>
+              </div>
+              <div className="text-left sm:text-right">
+                <span className="text-[10px] font-mono tracking-wider uppercase text-stone-400 block">
+                  TOTAL ESTIMATED VALUE
+                </span>
+                {editMode ? (
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-2xl font-serif text-[#B4975A]">₹</span>
+                    <input
+                      type="text"
+                      value={proposal.price}
+                      onChange={(e) => updateField("price", e.target.value)}
+                      className="text-2xl sm:text-3xl font-serif font-bold text-[#B4975A] bg-white border border-stone-300 rounded px-2 py-0.5 w-36 outline-none"
+                    />
+                    <span className="text-xs font-mono text-stone-500">INR</span>
+                  </div>
+                ) : (
+                  <p className="text-3xl sm:text-4xl font-serif text-[#B4975A] font-bold tracking-wide leading-none mt-1">
+                    ₹{proposal.price} <span className="text-xs font-sans font-normal text-stone-500">INR</span>
+                  </p>
+                )}
+              </div>
+            </div>
+            <p className="text-[10px] italic text-stone-500 pt-2 border-t border-[#D1A852]/20">
+              * Note: Travel & accommodation charges for the crew are excluded and will be extra.
+            </p>
+          </div>
+
+          {/* Footer */}
+          <div className="pt-4 text-center font-mono text-[10px] text-stone-400 tracking-widest">
+            PAGE 4 OF 6 • DREAMWED STORIES
+          </div>
+        </section>
+
+        {/* --------------------------------------------------------------------- */}
+        {/* PAGE 5: OUR PHILOSOPHY (LETTER + B&W EDITORIAL PORTRAIT)              */}
+        {/* --------------------------------------------------------------------- */}
+        <section
+          id="page-5-philosophy"
+          className="proposal-page relative w-full max-w-[850px] min-h-[1130px] bg-[#FAF8F5] rounded-sm shadow-2xl flex flex-col justify-between p-10 sm:p-14 mb-12 print:mb-0 print:shadow-none print:min-h-screen print:h-screen print:p-12 print:rounded-none"
+        >
+          {/* Top Header */}
+          <div className="space-y-2 pt-2">
+            <span className="inline-block px-4 py-1 rounded-full border border-[#B4975A]/50 bg-[#B4975A]/10 text-[#8C6A23] text-[10px] tracking-[0.3em] uppercase font-bold font-mono">
+              O U R &nbsp; P H I L O S O P H Y
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-serif font-light tracking-wide text-stone-900">
+              Capturing the Poetry of <span className="italic font-normal text-[#B4975A]">Your Love Story</span>
+            </h2>
+            <div className="w-12 h-[1px] bg-[#B4975A]/40 mt-2" />
+          </div>
+
+          {/* Two-Column Grid matching PDF Page 5 */}
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-8 items-center my-auto py-6">
+            {/* Left Column: Personal Note */}
+            <div className="sm:col-span-7 space-y-4 text-xs sm:text-sm font-light text-stone-700 leading-relaxed">
+              <p className="font-serif font-semibold text-base text-[#8C6A23]">
+                Dear {proposal.clientName},
+              </p>
+              <p>
+                {proposal.directorNote?.p1 ||
+                  "Your wedding day is not just a schedule of events; it is a tapestry of quiet glances, unchoreographed laughter, and raw emotions. At Dreamwed Stories, we dedicate our lenses to documenting your legacy with a mixture of fine-art photography and cinematic storytelling."}
+              </p>
+              <p>
+                {proposal.directorNote?.p2 ||
+                  "We believe in an unobtrusive approach. We blend into your celebrations, allowing you to live fully in the moment while we capture the fleeting details that standard photography often misses. This digital proposal outlines a tailored collection built specifically for your milestones."}
+              </p>
+
+              {/* Signature Block */}
+              <div className="pt-4 flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-full bg-[#B4975A]/15 text-[#8C6A23] font-serif text-sm font-bold flex items-center justify-center shrink-0 border border-[#B4975A]/30">
+                  U
+                </div>
+                <div>
+                  <p className="font-serif font-semibold text-xs text-stone-900 leading-none">
+                    {proposal.directorNote?.sign || "Unni Krishnan & Team"}
+                  </p>
+                  <p className="text-stone-400 text-[10px] mt-1 font-mono">
+                    {proposal.directorNote?.role || "Lead Photographer & Director, Dreamwed Stories"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Editorial Couple Portrait */}
+            <div className="sm:col-span-5 relative rounded-[22px] overflow-hidden shadow-xl border border-stone-200 group bg-stone-100">
               <img
-                src={resolveAssetPath(coverImage)}
-                alt="Timeless Wedding Moment"
-                className="w-full h-full object-cover opacity-75"
+                src={proposal.photos?.philosophyPhoto || "./images/uploaded_couple_blackwhite.jpg"}
+                alt="Philosophy"
+                className="w-full h-80 sm:h-96 object-cover"
                 style={{
-                  objectPosition: `${coverPositionX}% ${coverPositionY}%`,
-                  transform: `scale(${coverScale / 100})`,
+                  objectPosition: `${philosophyAlign.x}% ${philosophyAlign.y}%`,
+                  transform: `scale(${philosophyAlign.scale / 100})`,
+                  transformOrigin: `${philosophyAlign.x}% ${philosophyAlign.y}%`
                 }}
               />
-              {/* Luxury dark/light gradient overlays */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#ffffff] via-transparent to-black/20" />
-              <div className="absolute inset-0 bg-black/10" />
-            </div>
+              <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-black/50 via-black/20 to-transparent pointer-events-none" />
 
-            {/* Top Logo Block */}
-            <div className="relative z-10 p-6 md:p-12 flex justify-between items-start">
-              <div>
-                <span className="text-[10px] md:text-[11px] tracking-[0.4em] uppercase font-bold text-[#d1a852] block mb-2 font-mono">
-                  Fine Art & Cinematic Films
-                </span>
-                <h2 className="font-serif tracking-[0.2em] text-lg md:text-xl font-light uppercase text-white">
-                  DREAMWED STORIES
-                </h2>
-              </div>
-              <div className="text-right font-mono text-[9px] md:text-[10px] text-zinc-400/80 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full border border-white/5">
-                PROPOSAL NO: {proposalId}
-              </div>
-            </div>
-
-            {/* Bottom Glassmorphic Label (AS IN SCREENSHOT 1) */}
-            <div className="relative z-10 p-6 md:p-12 mb-6">
-              <motion.div 
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                className="rounded-2xl md:rounded-[24px] border border-white/40 p-6 md:p-8 max-w-xl mx-auto shadow-2xl relative overflow-hidden backdrop-blur-lg bg-white/85"
-              >
-                <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#b4975a]/10 rounded-full blur-xl pointer-events-none" />
-                <div className="text-center space-y-3">
-                  <span className="text-[10px] md:text-[11px] tracking-[0.3em] uppercase font-bold text-zinc-500 block">
-                    Presented For
-                  </span>
-                  
-                  {/* Elegant double line separator */}
-                  <div className="w-12 h-[1px] bg-[#b4975a]/30 mx-auto" />
-                  
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl leading-none font-serif tracking-widest text-zinc-900 font-light uppercase my-4">
-                    {groomName} {brideName && <><span className="italic text-[#b4975a] font-normal">&</span> {brideName}</>}
-                  </h1>
-                  
-                  <div className="w-12 h-[1px] bg-[#b4975a]/30 mx-auto" />
-
-                  <p className="text-[10px] md:text-[11px] text-zinc-500 font-mono tracking-widest uppercase pt-2">
-                    {getFormattedEventDates()} &bull; {weddingLocation}
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-          </section>
-          )}
-
-          {/* ======================================================== */}
-          {/* PAGE 2: CLIENT LOVE (AS IN SCREENSHOT 1) */}
-          {/* ======================================================== */}
-          <section className="proposal-page proposal-text-page relative w-full min-h-screen py-12 md:py-24 px-4 md:px-16 flex flex-col justify-between bg-[#f9f9fb] border-t border-zinc-100">
-            
-            <div className="max-w-5xl mx-auto w-full space-y-12 my-auto">
-              
-              <div className="text-center space-y-3">
-                <span className="inline-block px-4 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-600 text-[10px] tracking-[0.3em] uppercase font-bold font-mono">
-                  Testimonials
-                </span>
-                <h2 className="text-4xl md:text-5xl font-serif font-light text-zinc-900 tracking-wide">
-                  Client <span className="italic text-[#b4975a] font-normal font-serif">Love</span>
-                </h2>
-                <div className="w-12 h-[1px] bg-[#b4975a]/30 mx-auto mt-4" />
-              </div>
-
-              {/* Dynamic client love testimonials grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
-                {testimonials.map((item, idx) => (
-                  <div key={idx} className="bg-white border border-zinc-100 rounded-[24px] md:rounded-[32px] p-6 md:p-8 flex flex-col justify-between min-h-[260px] shadow-xl shadow-zinc-200/40 hover:border-[#b4975a]/30 transition-all duration-300">
-                    <div className="space-y-4">
-                      {/* Stars */}
-                      <div className="flex gap-1">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} size={13} fill="#b4975a" stroke="#b4975a" />
-                        ))}
-                      </div>
-                      <p className="text-zinc-600 text-xs md:text-sm font-light leading-relaxed italic">
-                        "{item.review}"
-                      </p>
-                    </div>
-                    
-                    <div className="flex items-center gap-3.5 mt-6 pt-4 border-t border-zinc-100">
-                      <div className="w-9 h-9 rounded-full bg-zinc-50 border border-[#b4975a]/20 flex items-center justify-center font-serif text-sm font-semibold text-[#b4975a]">
-                        {item.initials}
-                      </div>
-                      <div>
-                        <h4 className="text-zinc-900 text-xs md:text-sm font-semibold">{item.name}</h4>
-                        <p className="text-zinc-400 text-[10px] md:text-[11px] mt-0.5">{item.type}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-            </div>
-
-            {/* Bottom Page Indicator */}
-            <div className="text-center font-mono text-[10px] text-zinc-400 mt-8">
-              PAGE 2 OF 5 &bull; DREAMWED STORIES
-            </div>
-          </section>
-
-          {/* ======================================================== */}
-          {/* PAGE 3: PACKAGE INCLUDES (AS IN SCREENSHOT 2/3) */}
-          {/* ======================================================== */}
-          {/* ======================================================== */}
-          {/* PAGE 3: PACKAGE INCLUDES (AS IN SCREENSHOT 2/3) */}
-          {/* ======================================================== */}
-          <section className="proposal-page relative w-full min-h-screen bg-[#ffffff] border-t border-zinc-100 flex flex-col justify-between">
-            {/* Header Image with stacked big bold title */}
-            <div className="relative h-[200px] md:h-[280px] overflow-hidden flex items-end shrink-0">
-              <div className="absolute inset-0 z-0">
-                <img
-                  src={resolveAssetPath(packageImage)}
-                  alt="Wedding Party Yellow Beetle"
-                  className="w-full h-full object-cover"
-                  style={{
-                    objectPosition: `${packagePositionX}% ${packagePositionY}%`,
-                    transform: `scale(${packageScale / 100})`,
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#ffffff] via-black/20 to-transparent" />
-                <div className="absolute inset-0 bg-black/10" />
-              </div>
-              
-              <div className="relative z-10 w-full px-6 md:px-12 pb-4 md:pb-6 max-w-6xl mx-auto">
-                <motion.h2 
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="text-4xl sm:text-5xl md:text-6xl font-sans font-black tracking-tighter text-white leading-none uppercase"
+              {/* Philosophy Photo Controls */}
+              <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 no-print">
+                <button
+                  onClick={() => openAlignModalFor("philosophyAlign")}
+                  className="px-2.5 py-1.5 rounded-full bg-black/60 hover:bg-[#D1A852] hover:text-stone-950 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-all flex items-center gap-1 shadow-md cursor-pointer"
                 >
-                  PACKAGE <br />
-                  <span className="text-[#d1a852]">INCLUDES</span>
-                </motion.h2>
-              </div>
-            </div>
-
-            {/* Coverage details grid */}
-            <div className="max-w-6xl mx-auto w-full px-4 md:px-12 py-6 md:py-8 space-y-6 md:space-y-8 flex-grow flex flex-col justify-center">
-              
-              {/* Event columns */}
-              {visibleColsCount > 0 && (
-                <div className={`grid grid-cols-1 gap-6 md:gap-8 ${
-                  visibleColsCount === 4 ? "md:grid-cols-4" :
-                  visibleColsCount === 3 ? "md:grid-cols-3" :
-                  visibleColsCount === 2 ? "md:grid-cols-2 max-w-4xl mx-auto" :
-                  "max-w-md mx-auto"
-                }`}>
-                  
-                  {/* COLUMN 1: WEDDING */}
-                  {showWeddingCol && (
-                    <div className="space-y-4">
-                      <h3 className="text-xs tracking-[0.2em] font-semibold text-zinc-500 uppercase border-b border-zinc-200 pb-1 truncate">
-                        {eventsList[0] ? `${eventsList[0].name.toUpperCase()} COVERAGE` : "WEDDING COVERAGE"}
-                      </h3>
-                      <p className="text-[10px] font-mono text-zinc-400">
-                        {eventsList[0] ? formatEventDate(eventsList[0].date) : weddingDate}
-                      </p>
-                      <ul className="space-y-3 text-xs md:text-sm font-light text-zinc-800">
-                        {weddingCandidPhoto > 0 && (
-                          <li className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
-                            <span>{weddingCandidPhoto} CANDID PHOTOGRAPHER{weddingCandidPhoto > 1 ? 'S' : ''}</span>
-                          </li>
-                        )}
-                        {weddingTradPhoto > 0 && (
-                          <li className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
-                            <span>{weddingTradPhoto} TRADITIONAL PHOTOGRAPHER{weddingTradPhoto > 1 ? 'S' : ''}</span>
-                          </li>
-                        )}
-                        {weddingCandidVideo > 0 && (
-                          <li className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
-                            <span>{weddingCandidVideo} CANDID VIDEOGRAPHER{weddingCandidVideo > 1 ? 'S' : ''}</span>
-                          </li>
-                        )}
-                        {weddingTradVideo > 0 && (
-                          <li className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
-                            <span>{weddingTradVideo} TRADITIONAL VIDEOGRAPHER{weddingTradVideo > 1 ? 'S' : ''}</span>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* COLUMN 2: RECEPTION */}
-                  {showReceptionCol && (
-                    <div className="space-y-4">
-                      <h3 className="text-xs tracking-[0.2em] font-semibold text-zinc-500 uppercase border-b border-zinc-200 pb-1 truncate">
-                        {eventsList[1] ? `${eventsList[1].name.toUpperCase()} COVERAGE` : "RECEPTION COVERAGE"}
-                      </h3>
-                      {(eventsList[1] && eventsList[1].date) && (
-                        <p className="text-[10px] font-mono text-zinc-400">
-                          {formatEventDate(eventsList[1].date)}
-                        </p>
-                      )}
-                      <ul className="space-y-3 text-xs md:text-sm font-light text-zinc-800">
-                        {evePhoto > 0 && (
-                          <li className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
-                            <span>{evePhoto} PHOTOGRAPHER{evePhoto > 1 ? 'S' : ''}</span>
-                          </li>
-                        )}
-                        {eveVideo > 0 && (
-                          <li className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
-                            <span>{eveVideo} VIDEOGRAPHER{eveVideo > 1 ? 'S' : ''}</span>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* COLUMN 3: PRE-WEDDING */}
-                  {showPrewedCol && (
-                    <div className="space-y-4">
-                      <h3 className="text-xs tracking-[0.2em] font-semibold text-zinc-500 uppercase border-b border-zinc-200 pb-1 truncate">
-                        {eventsList[2] ? `${eventsList[2].name.toUpperCase()} COVERAGE` : "PRE-WEDDING COVERAGE"}
-                      </h3>
-                      {(eventsList[2] && eventsList[2].date) && (
-                        <p className="text-[10px] font-mono text-zinc-400">
-                          {formatEventDate(eventsList[2].date)}
-                        </p>
-                      )}
-                      <ul className="space-y-3 text-xs md:text-sm font-light text-zinc-800">
-                        {prewedPhoto > 0 && (
-                          <li className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
-                            <span>{prewedPhoto} PHOTOGRAPHER{prewedPhoto > 1 ? 'S' : ''}</span>
-                          </li>
-                        )}
-                        {prewedVideo > 0 && (
-                          <li className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
-                            <span>{prewedVideo} VIDEOGRAPHER{prewedVideo > 1 ? 'S' : ''}</span>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* COLUMN 4: PRE-WEDDING */}
-                  {showStdCol && (
-                    <div className="space-y-4">
-                      <h3 className="text-xs tracking-[0.2em] font-semibold text-zinc-500 uppercase border-b border-zinc-200 pb-1 truncate">
-                        {eventsList[3] ? `${eventsList[3].name.toUpperCase()} COVERAGE` : "PRE-WEDDING COVERAGE"}
-                      </h3>
-                      <p className="text-[10px] font-mono text-zinc-400">
-                        {eventsList[3] ? formatEventDate(eventsList[3].date) : "PRE-WEDDING SHOOT"}
-                      </p>
-                      <ul className="space-y-3 text-xs md:text-sm font-light text-zinc-800">
-                        {stdPhoto > 0 && (
-                          <li className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
-                            <span>{stdPhoto} PHOTOGRAPHER{stdPhoto > 1 ? 'S' : ''}</span>
-                          </li>
-                        )}
-                        {stdVideo > 0 && (
-                          <li className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
-                            <span>{stdVideo} VIDEOGRAPHER{stdVideo > 1 ? 'S' : ''}</span>
-                          </li>
-                        )}
-                        {stdQty > 0 && (
-                          <li className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
-                            <span>{stdQty} EDITED PHOTOS</span>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* ADDITIONAL SERVICES & ADD-ONS */}
-              {hasAddons && (
-                <div className="border-t border-zinc-200 pt-6">
-                  <h3 className="text-xs tracking-[0.25em] font-semibold text-zinc-500 uppercase border-b border-zinc-200 pb-2 mb-3">
-                    ADDITIONAL SERVICES & ADD-ONS
-                  </h3>
-                  <div className="flex flex-wrap gap-2.5">
-                    {activeAddons.map((addon, index) => (
-                      <div key={index} className="flex items-center gap-2 bg-[#b4975a]/10 border border-[#b4975a]/20 text-[#b4975a] text-xs px-3 py-1.5 rounded-full font-medium">
-                        <CheckCircle className="h-3.5 w-3.5 shrink-0" size={13} />
-                        <span>{addon}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Bottom Page Indicator */}
-            <div className="text-center font-mono text-[10px] text-zinc-400 pb-6">
-              PAGE 3 OF 6 &bull; DREAMWED STORIES
-            </div>
-          </section>
-
-          {/* ======================================================== */}
-          {/* PAGE 4: DELIVERABLES & INVESTMENT (NEW PAGE) */}
-          {/* ======================================================== */}
-          <section className="proposal-page relative w-full min-h-screen bg-[#ffffff] border-t border-zinc-100 flex flex-col justify-between">
-            {/* Top Branding/Header */}
-            <div className="max-w-6xl mx-auto w-full px-6 md:px-12 pt-8 md:pt-12 shrink-0">
-              <span className="text-[10px] md:text-[11px] tracking-[0.4em] uppercase font-bold text-[#b4975a] block mb-2 font-mono">
-                Dreamwed Stories
-              </span>
-              <h2 className="font-serif tracking-tight text-3xl md:text-4xl text-zinc-900 leading-tight">
-                Deliverables & Investment
-              </h2>
-              <div className="w-12 h-0.5 bg-[#b4975a] mt-4" />
-            </div>
-
-            {/* Content Container */}
-            <div className="max-w-6xl mx-auto w-full px-6 md:px-12 py-6 md:py-8 flex-grow flex flex-col justify-center space-y-8">
-              
-              {/* DELIVERABLES & COMPLIMENTARY ROWS */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
-                
-                {/* Deliverables Column */}
-                <div className="space-y-4">
-                  <span className="text-[10px] tracking-widest font-mono text-zinc-400 block uppercase">
-                    Physical & Digital Assets
-                  </span>
-                  <ul className="space-y-3">
-                    {deliverables.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-zinc-600 font-light">
-                        <Check className="h-4.5 w-4.5 text-[#b4975a] mt-0.5 shrink-0" size={14} />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Complimentary Column */}
-                <div className="space-y-4">
-                  <span className="text-[10px] tracking-widest font-mono text-[#b4975a] block uppercase font-bold font-semibold">
-                    Complimentary Items
-                  </span>
-                  <ul className="space-y-3">
-                    {complimentary.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-zinc-600 font-light">
-                        <Sparkles className="h-4.5 w-4.5 text-[#b4975a] mt-0.5 shrink-0" size={14} />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
+                  <Sliders className="w-3 h-3 text-amber-400" />
+                </button>
+                <button
+                  onClick={() => openPhotoPickerFor("philosophy")}
+                  className="px-3 py-1.5 rounded-full bg-black/60 hover:bg-[#D1A852] hover:text-stone-950 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-all flex items-center gap-1 shadow-md cursor-pointer"
+                >
+                  <Camera className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Change</span>
+                </button>
               </div>
 
-              {/* Pricing banner */}
-              <div className="space-y-3">
-                <div className="bg-zinc-50 border border-zinc-100 rounded-2xl p-6 md:p-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-                  <div>
-                    <p className="text-[10px] font-mono tracking-widest text-zinc-400 uppercase">Investment Details</p>
-                    <p className="text-zinc-600 text-xs mt-1">Package price (excludes travel & accommodation)</p>
-                  </div>
-                  <div className="text-center sm:text-right">
-                    <span className="text-zinc-400 text-xs font-mono">TOTAL ESTIMATED VALUE</span>
-                    <p className="text-2xl md:text-3xl font-serif text-[#b4975a] font-semibold tracking-wide">
-                      ₹{price} <span className="text-xs font-sans text-zinc-500 font-normal">INR</span>
-                    </p>
-                  </div>
-                </div>
-                <p className="text-[10px] text-zinc-400/80 text-right italic font-light px-2">
-                  * Note: Travel & accommodation charges for the crew are excluded and will be extra.
+              <div className="absolute bottom-4 left-4 right-4 text-white">
+                <span className="text-[9px] font-mono tracking-widest text-[#D1A852] uppercase block font-bold">
+                  DW CAPTURE
+                </span>
+                <p className="font-serif italic text-xs text-stone-200 mt-0.5">
+                  "Timeless, honest, fine-art"
                 </p>
               </div>
-
             </div>
+          </div>
 
-            {/* Bottom Page Indicator */}
-            <div className="text-center font-mono text-[10px] text-zinc-400 pb-6">
-              PAGE 4 OF 6 &bull; DREAMWED STORIES
-            </div>
-          </section>
+          {/* Footer */}
+          <div className="pt-4 text-center font-mono text-[10px] text-stone-400 tracking-widest">
+            PAGE 5 OF 6 • DREAMWED STORIES
+          </div>
+        </section>
 
-          {/* ======================================================== */}
-          {/* PAGE 4: WELCOME LETTER */}
-          {/* ======================================================== */}
-          <section className="proposal-page proposal-text-page relative w-full min-h-screen py-12 md:py-24 px-4 md:px-16 flex flex-col justify-between bg-[#f9f9fb] border-t border-zinc-100">
-            <div className="max-w-4xl mx-auto flex flex-col justify-center h-full space-y-12">
-              <div className="space-y-4">
-                <span className="inline-block px-4 py-1 rounded-full bg-[#b4975a]/5 border border-[#b4975a]/10 text-[#b4975a] text-[10px] tracking-[0.3em] uppercase font-bold">
-                  Our Philosophy
-                </span>
-                <h2 className="text-4xl md:text-5xl font-serif font-light tracking-tight text-zinc-900 leading-tight">
-                  Capturing the Poetry of <br />
-                  <span className="italic text-[#b4975a] font-normal font-serif font-light">Your Love Story</span>
-                </h2>
-              </div>
+        {/* --------------------------------------------------------------------- */}
+        {/* PAGE 6: LOCK IN YOUR DATE (SECURE BOOKING STEPS + WHATSAPP CONFIRM)   */}
+        {/* --------------------------------------------------------------------- */}
+        <section
+          id="page-6-lock-date"
+          className="proposal-page relative w-full max-w-[850px] min-h-[1130px] bg-[#FAF8F5] rounded-sm shadow-2xl flex flex-col justify-between p-10 sm:p-14 mb-12 print:mb-0 print:shadow-none print:min-h-screen print:h-screen print:p-12 print:rounded-none"
+        >
+          {/* Top Header */}
+          <div className="text-center space-y-2 pt-4">
+            <span className="inline-block px-4 py-1 rounded-full border border-stone-300 bg-white text-stone-600 text-[10px] tracking-[0.3em] uppercase font-bold font-mono">
+              F I N A L &nbsp; S T E P
+            </span>
+            <h2 className="text-4xl sm:text-5xl font-serif font-light tracking-wide text-stone-900 mt-2">
+              Lock in <span className="italic font-normal text-[#B4975A]">Your Date</span>
+            </h2>
+            <p className="text-xs sm:text-sm font-light text-stone-600 max-w-md mx-auto mt-2">
+              To approve this proposal, review the details and click the WhatsApp booking button below to lock your draft.
+            </p>
+          </div>
 
-              {/* Grid with letter and secondary black/white photo */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center">
-                <div className="md:col-span-7 space-y-6 text-zinc-600 text-sm md:text-base font-light leading-relaxed">
-                  <p>
-                    Dear {groomName}{brideName ? ` & ${brideName}` : ""},
+          {/* Secure Booking Steps Card */}
+          <div className="bg-white rounded-[24px] border border-amber-200/80 p-7 sm:p-9 shadow-sm space-y-6 max-w-xl mx-auto my-auto w-full">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#8C6A23] flex items-center gap-2 font-mono">
+              <Lock className="w-3.5 h-3.5 text-[#B4975A]" />
+              <span>SECURE BOOKING STEPS</span>
+            </h4>
+
+            <div className="space-y-4 text-xs">
+              <div className="flex gap-3.5">
+                <div className="w-6 h-6 rounded-full bg-stone-100 border border-stone-200 text-[#8C6A23] flex items-center justify-center font-mono text-[11px] font-bold shrink-0">
+                  1
+                </div>
+                <div>
+                  <p className="font-bold text-stone-900">Verify Configuration</p>
+                  <p className="text-[11px] text-stone-500 mt-0.5">
+                    Ensure pricing, coverage staff, and deliverables are correct.
                   </p>
-                  <p>
-                    Your wedding day is not just a schedule of events; it is a tapestry of quiet glances, unchoreographed laughter, and raw emotions. At <strong className="text-zinc-950 font-semibold">Dreamwed Stories</strong>, we dedicate our lenses to documenting your legacy with a mixture of fine-art photography and cinematic storytelling.
+                </div>
+              </div>
+
+              <div className="flex gap-3.5">
+                <div className="w-6 h-6 rounded-full bg-stone-100 border border-stone-200 text-[#8C6A23] flex items-center justify-center font-mono text-[11px] font-bold shrink-0">
+                  2
+                </div>
+                <div>
+                  <p className="font-bold text-stone-900">Draft Advance Payment</p>
+                  <p className="text-[11px] text-stone-500 mt-0.5">
+                    Transfer 10% booking advance to:{" "}
+                    <strong className="text-[#8C6A23] font-mono">
+                      {proposal.upiId || "dreamwedstories@okaxis"}
+                    </strong>
                   </p>
-                  <p>
-                    We believe in an unobtrusive approach. We blend into your celebrations, allowing you to live fully in the moment while we capture the fleeting details that standard photography often misses. This digital proposal outlines a tailored collection built specifically for your milestones.
+                </div>
+              </div>
+
+              <div className="flex gap-3.5">
+                <div className="w-6 h-6 rounded-full bg-stone-100 border border-stone-200 text-[#8C6A23] flex items-center justify-center font-mono text-[11px] font-bold shrink-0">
+                  3
+                </div>
+                <div>
+                  <p className="font-bold text-stone-900">Send WhatsApp Confirmation</p>
+                  <p className="text-[11px] text-stone-500 mt-0.5">
+                    Click approval button to send booking parameters to our team.
                   </p>
-                  <div className="pt-4 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-[#b4975a]/10 flex items-center justify-center font-serif text-lg text-[#b4975a] font-semibold">
-                      {leadPhotographer ? leadPhotographer.charAt(0).toUpperCase() : 'U'}
-                    </div>
-                    <div>
-                      <p className="text-zinc-900 font-serif font-medium text-sm leading-none">{leadPhotographer} & Team</p>
-                      <p className="text-zinc-400 text-[11px] mt-1">Lead Photographer & Director, Dreamwed Stories</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Secondary Image Card */}
-                <div className="md:col-span-5 relative group rounded-2xl overflow-hidden border border-zinc-100 shadow-2xl">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent z-10" />
-                  <img
-                    src={resolveAssetPath(philosophyImage)}
-                    alt="Couple Portrait"
-                    className="w-full h-[280px] md:h-[350px] object-cover filter grayscale transition-transform duration-300"
-                    style={{
-                      objectPosition: `${philosophyPositionX}% ${philosophyPositionY}%`,
-                      transform: `scale(${philosophyScale / 100})`,
-                    }}
-                  />
-                  <div className="absolute bottom-4 left-4 z-20">
-                    <p className="text-[10px] font-mono tracking-widest text-[#b4975a] uppercase">DW Capture</p>
-                    <p className="text-white font-serif italic text-sm mt-0.5">"Timeless, honest, fine-art"</p>
-                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Bottom Page Indicator */}
-            <div className="text-center font-mono text-[10px] text-zinc-400 mt-8">
-              PAGE 5 OF 6 &bull; DREAMWED STORIES
-            </div>
-          </section>
+            {/* Primary WhatsApp Action Button */}
+            <a
+              href={getWhatsAppLink()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 bg-[#D1A852] hover:bg-[#b8913e] text-stone-950 shadow-lg hover:scale-[1.01] active:scale-98 cursor-pointer"
+            >
+              <Send className="w-4 h-4" />
+              <span>Confirm & Lock Date Via WhatsApp</span>
+            </a>
+          </div>
 
-          {/* ======================================================== */}
-          {/* PAGE 5: BOOKING & ACCEPTANCE */}
-          {/* ======================================================== */}
-          <section className="proposal-page proposal-text-page relative w-full min-h-screen py-12 md:py-20 px-4 md:px-16 flex flex-col justify-between bg-[#ffffff] border-t border-zinc-100">
-            
-            <div className="max-w-4xl mx-auto w-full my-auto space-y-8">
-              
-              <div className="text-center space-y-3">
-                <span className="inline-block px-4 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-500 text-[10px] tracking-[0.3em] uppercase font-bold font-mono">
-                  Final Step
-                </span>
-                <h2 className="text-3xl md:text-4xl font-serif font-light text-zinc-900 tracking-wide">
-                  Lock in <span className="italic text-[#b4975a] font-normal font-serif font-light">Your Date</span>
-                </h2>
-                <p className="text-zinc-500 text-xs md:text-sm font-light max-w-md mx-auto">
-                  To approve this proposal, review the details and click the WhatsApp booking button below to lock your draft.
-                </p>
-              </div>
+          {/* Guarantees Bar */}
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 pt-4 text-[11px] text-stone-500">
+            <span className="flex items-center gap-1.5 font-medium">
+              <ShieldCheck className="w-4 h-4 text-[#B4975A]" />
+              <span>Licensed Photography Team</span>
+            </span>
+            <span className="flex items-center gap-1.5 font-medium">
+              <Star className="w-4 h-4 text-[#B4975A] fill-[#B4975A]" />
+              <span>5-Star Rated Service</span>
+            </span>
+          </div>
 
-              {/* Centered booking steps */}
-              <div className="max-w-xl mx-auto w-full pt-4">
-                {/* Booking & UPI Steps */}
-                <div className="bg-zinc-50 border border-zinc-100 rounded-2xl p-6 md:p-8 flex flex-col justify-between space-y-6 shadow-xs">
-                  
-                  <div className="space-y-4">
-                    <h3 className="text-zinc-900 font-medium text-sm flex items-center gap-2">
-                      <Lock size={16} className="text-[#b4975a]" />
-                      <span>Secure Booking Steps</span>
-                    </h3>
-                    
-                    <div className="space-y-4">
-                      <div className="flex gap-3">
-                        <div className="w-5 h-5 rounded-full bg-white border border-zinc-200 flex items-center justify-center font-mono text-[10px] text-[#b4975a] shrink-0 font-bold shadow-xs">1</div>
-                        <div>
-                          <p className="text-zinc-800 text-xs font-semibold">Verify Configuration</p>
-                          <p className="text-[11px] text-zinc-500 mt-0.5">Ensure pricing, coverage staff, and deliverables are correct.</p>
-                        </div>
-                      </div>
+          {/* Footer */}
+          <div className="pt-4 text-center font-mono text-[10px] text-stone-400 tracking-widest">
+            PAGE 6 OF 6 • DREAMWED STORIES
+          </div>
+        </section>
 
-                      <div className="flex gap-3">
-                        <div className="w-5 h-5 rounded-full bg-white border border-zinc-200 flex items-center justify-center font-mono text-[10px] text-[#b4975a] shrink-0 font-bold shadow-xs">2</div>
-                        <div>
-                          <p className="text-zinc-800 text-xs font-semibold">Draft Advance Payment</p>
-                          <p className="text-[11px] text-zinc-500 mt-0.5">
-                            Transfer 10% booking advance to: <strong className="text-zinc-900 font-semibold">dreamwedstories@okaxis</strong>
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-3">
-                        <div className="w-5 h-5 rounded-full bg-white border border-zinc-200 flex items-center justify-center font-mono text-[10px] text-[#b4975a] shrink-0 font-bold shadow-xs">3</div>
-                        <div>
-                          <p className="text-zinc-800 text-xs font-semibold">Send WhatsApp Confirmation</p>
-                          <p className="text-[11px] text-zinc-500 mt-0.5">Click approval button to send booking parameters to our team.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Checkbox for requesting website packages */}
-                  <div className="no-print flex flex-col gap-2 bg-zinc-50 border border-zinc-150 p-3 rounded-xl">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        id="includePackagesCheckbox"
-                        checked={includePackages}
-                        onChange={(e) => setIncludePackages(e.target.checked)}
-                        className="rounded border-zinc-300 text-[#b4975a] focus:ring-0 focus:ring-offset-0 h-4 w-4 cursor-pointer animate-pulse-subtle"
-                      />
-                      <span className="text-zinc-700 text-xs select-none font-semibold leading-snug">
-                        Include standard website packages link in my WhatsApp message
-                      </span>
-                    </label>
-                    {includePackages && (
-                      <div className="text-[10px] text-zinc-400 border-t border-zinc-200/50 pt-2 px-1 space-y-1">
-                        <span className="block font-mono">Link to send:</span>
-                        <a href={packagesLink} target="_blank" rel="noopener noreferrer" className="text-[#b4975a] underline break-all hover:text-[#967d45] font-mono leading-relaxed">
-                          {packagesLink}
-                        </a>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Approve Action Button */}
-                  <a
-                    href={getWhatsAppLink()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="no-print w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-xs tracking-wider uppercase transition-all duration-300 bg-[#b4975a] hover:bg-[#967d45] text-white shadow-lg shadow-[#b4975a]/10 hover:scale-[1.02]"
-                  >
-                    <Send size={14} />
-                    <span>Approve Proposal & Chat</span>
-                  </a>
-
-                </div>
-              </div>
-
-              {/* Guarantees */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 md:gap-12 bg-zinc-50 border border-zinc-100 rounded-xl p-4 max-w-2xl mx-auto">
-                <div className="flex items-center gap-2.5 text-zinc-600 text-xs">
-                  <ShieldCheck size={16} className="text-[#b4975a]" />
-                  <span>Licensed Photography Team</span>
-                </div>
-                <div className="flex items-center gap-2.5 text-zinc-600 text-xs">
-                  <Star size={16} className="text-[#b4975a]" />
-                  <span>5-Star Rated Service</span>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Bottom Page Indicator */}
-            <div className="text-center font-mono text-[10px] text-zinc-400 pb-4">
-              PAGE 6 OF 6 &bull; DREAMWED STORIES
-            </div>
-          </section>
-
-        </div>
       </div>
 
-      {/* ======================================================== */}
-      {/* SIDEBAR CUSTOMIZER PANEL (Hidden in print) */}
-      {/* ======================================================== */}
-      <AnimatePresence>
-        {customizerOpen && (
-          <>
-            {/* Backdrop overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setCustomizerOpen(false)}
-              className="no-print fixed inset-0 z-40 bg-black backdrop-blur-xs"
-            />
+      {/* ========================================================================= */}
+      {/* PHOTO PICKER MODAL (NO-PRINT)                                            */}
+      {/* ========================================================================= */}
+      {photoPickerOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 no-print animate-fadeIn">
+          <div className="bg-stone-900 border border-stone-700 rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            <div className="px-6 py-4 border-b border-stone-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4 text-amber-400" />
+                  <span>Choose or Upload Photo</span>
+                </h3>
+                <span className="text-[11px] text-stone-400 font-mono">
+                  Slot: {activePhotoSlot}
+                </span>
+              </div>
+              <button
+                onClick={() => setPhotoPickerOpen(false)}
+                className="p-1 rounded-lg text-stone-400 hover:text-white hover:bg-stone-800 transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            {/* Panel */}
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "tween", duration: 0.35 }}
-              className="no-print fixed top-0 right-0 bottom-0 z-50 w-full max-w-[400px] bg-[#121216] border-l border-white/10 shadow-2xl flex flex-col justify-between"
+            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+              <div>
+                <span className="text-[11px] uppercase tracking-wider font-bold text-amber-300 block mb-2 font-mono">
+                  1. Upload from your Computer
+                </span>
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-[#D1A852]/60 hover:border-[#D1A852] bg-stone-800/50 hover:bg-stone-800/80 rounded-2xl p-6 cursor-pointer transition-all group">
+                  <Upload className="w-8 h-8 text-[#D1A852] group-hover:scale-110 transition-transform mb-2" />
+                  <span className="text-xs font-semibold text-white">Click to Browse Photo (JPG, PNG)</span>
+                  <span className="text-[10px] text-stone-400 font-mono mt-1">Photo will immediately update in your proposal</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleCustomUpload}
+                  />
+                </label>
+              </div>
+
+              <div>
+                <span className="text-[11px] uppercase tracking-wider font-bold text-stone-300 block mb-2 font-mono">
+                  2. Or Pick from Dreamwed High-Res Library
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {AVAILABLE_STOCK_PHOTOS.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleSelectPhoto(img.url)}
+                      className="group relative rounded-xl overflow-hidden border border-stone-700 hover:border-[#D1A852] transition-all aspect-video cursor-pointer text-left bg-stone-950"
+                    >
+                      <img
+                        src={img.url}
+                        alt={img.label}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-2">
+                        <span className="text-[10px] text-white font-medium truncate block">
+                          {img.label}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* PHOTO ALIGNMENT MODAL (NO-PRINT)                                         */}
+      {/* ========================================================================= */}
+      {alignModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 no-print animate-fadeIn">
+          <div className="bg-stone-900 border border-stone-700 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Sliders className="w-5 h-5 text-amber-400" />
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                  Photo Focal Alignment
+                </h3>
+              </div>
+              <button
+                onClick={() => setAlignModalOpen(false)}
+                className="p-1 rounded-lg text-stone-400 hover:text-white hover:bg-stone-800 transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Photo Selection Tabs */}
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-mono text-stone-400 uppercase tracking-wider block">
+                Select Photo to Adjust:
+              </span>
+              <div className="grid grid-cols-3 gap-1.5 bg-stone-800/80 p-1 rounded-xl">
+                <button
+                  onClick={() => setActiveAlignSlot("coverAlign")}
+                  className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                    activeAlignSlot === "coverAlign"
+                      ? "bg-[#D1A852] text-stone-950 font-bold shadow-sm"
+                      : "text-stone-300 hover:text-white"
+                  }`}
+                >
+                  Cover (P1)
+                </button>
+                <button
+                  onClick={() => setActiveAlignSlot("bannerAlign")}
+                  className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                    activeAlignSlot === "bannerAlign"
+                      ? "bg-[#D1A852] text-stone-950 font-bold shadow-sm"
+                      : "text-stone-300 hover:text-white"
+                  }`}
+                >
+                  Banner (P3)
+                </button>
+                <button
+                  onClick={() => setActiveAlignSlot("philosophyAlign")}
+                  className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                    activeAlignSlot === "philosophyAlign"
+                      ? "bg-[#D1A852] text-stone-950 font-bold shadow-sm"
+                      : "text-stone-300 hover:text-white"
+                  }`}
+                >
+                  Portrait (P5)
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Position Presets */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-mono text-stone-400 uppercase tracking-wider block">
+                Quick Focal Presets:
+              </span>
+              <div className="grid grid-cols-4 gap-2">
+                <button
+                  onClick={() => setAlignPreset(activeAlignSlot, 50, 15)}
+                  className="py-2 rounded-xl bg-stone-800 hover:bg-[#D1A852] hover:text-stone-950 text-stone-200 text-xs font-semibold transition-all"
+                >
+                  Top / Face
+                </button>
+                <button
+                  onClick={() => setAlignPreset(activeAlignSlot, 50, 50)}
+                  className="py-2 rounded-xl bg-stone-800 hover:bg-[#D1A852] hover:text-stone-950 text-stone-200 text-xs font-semibold transition-all"
+                >
+                  Center
+                </button>
+                <button
+                  onClick={() => setAlignPreset(activeAlignSlot, 50, 85)}
+                  className="py-2 rounded-xl bg-stone-800 hover:bg-[#D1A852] hover:text-stone-950 text-stone-200 text-xs font-semibold transition-all"
+                >
+                  Bottom
+                </button>
+                <button
+                  onClick={() => {
+                    setAlignPreset(activeAlignSlot, 50, 50);
+                    updateAlignment(activeAlignSlot, "scale", 100);
+                  }}
+                  className="py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-400 text-xs font-semibold transition-all"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+
+            {/* Fine Sliders */}
+            <div className="space-y-4 pt-2">
+              {/* Vertical Y */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs">
+                  <span className="font-mono text-stone-300">Vertical Offset (Y):</span>
+                  <span className="font-mono font-bold text-amber-400">
+                    {(proposal.photos?.[activeAlignSlot]?.y ?? 50)}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={proposal.photos?.[activeAlignSlot]?.y ?? 50}
+                  onChange={(e) => updateAlignment(activeAlignSlot, "y", e.target.value)}
+                  className="w-full accent-[#D1A852] cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] font-mono text-stone-500">
+                  <span>Top (0%)</span>
+                  <span>Center (50%)</span>
+                  <span>Bottom (100%)</span>
+                </div>
+              </div>
+
+              {/* Horizontal X */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs">
+                  <span className="font-mono text-stone-300">Horizontal Offset (X):</span>
+                  <span className="font-mono font-bold text-amber-400">
+                    {(proposal.photos?.[activeAlignSlot]?.x ?? 50)}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={proposal.photos?.[activeAlignSlot]?.x ?? 50}
+                  onChange={(e) => updateAlignment(activeAlignSlot, "x", e.target.value)}
+                  className="w-full accent-[#D1A852] cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] font-mono text-stone-500">
+                  <span>Left (0%)</span>
+                  <span>Center (50%)</span>
+                  <span>Right (100%)</span>
+                </div>
+              </div>
+
+              {/* Zoom Scale */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs">
+                  <span className="font-mono text-stone-300">Zoom / Scale:</span>
+                  <span className="font-mono font-bold text-amber-400">
+                    {(proposal.photos?.[activeAlignSlot]?.scale ?? 100)}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="100"
+                  max="180"
+                  value={proposal.photos?.[activeAlignSlot]?.scale ?? 100}
+                  onChange={(e) => updateAlignment(activeAlignSlot, "scale", e.target.value)}
+                  className="w-full accent-[#D1A852] cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] font-mono text-stone-500">
+                  <span>Normal (100%)</span>
+                  <span>Max Zoom (180%)</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setAlignModalOpen(false)}
+              className="w-full py-2.5 rounded-xl bg-[#D1A852] hover:bg-[#b8913e] text-stone-950 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer"
             >
-              {/* Header */}
-              <div className="p-5 border-b border-white/10 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sliders size={18} className="text-[#d1a852]" />
-                  <h3 className="font-semibold text-white text-sm">Proposal Customizer</h3>
-                </div>
-                <button
-                  onClick={() => setCustomizerOpen(false)}
-                  className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
-                >
-                  <X size={16} />
-                </button>
-              </div>
+              Done Adjusting
+            </button>
+          </div>
+        </div>
+      )}
 
-              {/* Tabs list */}
-              <div className="flex border-b border-white/5 bg-zinc-900/60 p-1">
-                {["details", "package", "deliverables", "design", "library"].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`flex-1 py-1.5 text-[10px] font-mono uppercase rounded-md tracking-wider transition-colors ${activeTab === tab ? "bg-zinc-800 text-[#d1a852] font-semibold border border-white/5" : "text-zinc-500 hover:text-zinc-300"}`}
+      {/* Saved Proposals Modal */}
+      {savedProposalsModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 no-print">
+          <div className="bg-stone-900 border border-amber-400/30 rounded-3xl max-w-xl w-full p-6 text-white shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
+              <div className="flex items-center gap-2">
+                <FolderOpen className="w-5 h-5 text-amber-400" />
+                <h3 className="font-serif text-lg font-light tracking-wide text-stone-100">
+                  Saved <span className="italic text-[#D1A852]">Proposals Library</span>
+                </h3>
+              </div>
+              <button
+                onClick={() => setSavedProposalsModalOpen(false)}
+                className="p-1 rounded-full hover:bg-stone-800 text-stone-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="max-h-96 overflow-y-auto space-y-2.5 pr-1">
+              {savedProposalsList.length === 0 ? (
+                <p className="text-sm text-stone-400 text-center py-6">No saved proposals found yet.</p>
+              ) : (
+                savedProposalsList.map((p, i) => (
+                  <div
+                    key={p.id || i}
+                    onClick={() => {
+                      setProposal(p);
+                      localStorage.setItem("active_vip_proposal", JSON.stringify(p));
+                      setSavedProposalsModalOpen(false);
+                      showToast(`✨ Loaded proposal for ${p.clientName}!`);
+                    }}
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                      proposal.id === p.id || proposal.clientName?.toLowerCase() === p.clientName?.toLowerCase()
+                        ? "bg-[#D1A852]/20 border-amber-400/60 shadow-md"
+                        : "bg-stone-800/60 border-stone-700/60 hover:bg-stone-800 hover:border-stone-600"
+                    }`}
                   >
-                    {tab}
-                  </button>
-                ))}
-              </div>
-
-              {/* Content Form Scroll */}
-              <div className="flex-grow overflow-y-auto p-5 space-y-6">
-                
-                {/* TAB 1: DETAILS */}
-                {activeTab === "details" && (
-                  <div className="space-y-4">
-                    <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Client & Event Info</span>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-zinc-400 font-mono block">Groom Name</label>
-                        <input
-                          type="text"
-                          value={groomName}
-                          onChange={(e) => setGroomName(e.target.value.toUpperCase())}
-                          className="w-full bg-zinc-900 border border-white/10 rounded-lg py-2 px-3 text-xs focus:border-[#d1a852] outline-none transition-colors"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-zinc-400 font-mono block">Bride Name</label>
-                        <input
-                          type="text"
-                          value={brideName}
-                          onChange={(e) => setBrideName(e.target.value.toUpperCase())}
-                          className="w-full bg-zinc-900 border border-white/10 rounded-lg py-2 px-3 text-xs focus:border-[#d1a852] outline-none transition-colors"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-zinc-400 font-mono block">Lead Photographer</label>
-                      <input
-                        type="text"
-                        value={leadPhotographer}
-                        onChange={(e) => setLeadPhotographer(e.target.value)}
-                        className="w-full bg-zinc-900 border border-white/10 rounded-lg py-2 px-3 text-xs focus:border-[#d1a852] outline-none transition-colors"
-                      />
-                    </div>
-
-                    {eventsList.length > 0 ? (
-                      eventsList.map((evt, idx) => (
-                        <div key={evt.id || idx} className="space-y-1.5 animate-fadeIn">
-                          <label className="text-[10px] text-zinc-400 font-mono block">{evt.name} Date</label>
-                          <input
-                            type="text"
-                            value={evt.date}
-                            onChange={(e) => {
-                              const newEvents = [...eventsList];
-                              newEvents[idx].date = e.target.value;
-                              setEventsList(newEvents);
-                              if (idx === 0) setWeddingDate(formatEventDate(e.target.value));
-                            }}
-                            className="w-full bg-zinc-900 border border-white/10 rounded-lg py-2 px-3 text-xs focus:border-[#d1a852] outline-none transition-colors"
-                          />
-                        </div>
-                      ))
-                    ) : (
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-zinc-400 font-mono block">Wedding Date</label>
-                        <input
-                          type="text"
-                          value={weddingDate}
-                          onChange={(e) => setWeddingDate(e.target.value)}
-                          className="w-full bg-zinc-900 border border-white/10 rounded-lg py-2 px-3 text-xs focus:border-[#d1a852] outline-none transition-colors"
-                        />
-                      </div>
-                    )}
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-zinc-400 font-mono block">Location</label>
-                      <input
-                        type="text"
-                        value={weddingLocation}
-                        onChange={(e) => setWeddingLocation(e.target.value)}
-                        className="w-full bg-zinc-900 border border-white/10 rounded-lg py-2 px-3 text-xs focus:border-[#d1a852] outline-none transition-colors"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-zinc-400 font-mono block">Proposal Code</label>
-                        <input
-                          type="text"
-                          value={proposalId}
-                          onChange={(e) => setProposalId(e.target.value)}
-                          className="w-full bg-zinc-900 border border-white/10 rounded-lg py-2 px-3 text-xs focus:border-[#d1a852] outline-none transition-colors"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-zinc-400 font-mono block">Proposal Date</label>
-                        <input
-                          type="text"
-                          value={proposalDate}
-                          onChange={(e) => setProposalDate(e.target.value)}
-                          className="w-full bg-zinc-900 border border-white/10 rounded-lg py-2 px-3 text-xs focus:border-[#d1a852] outline-none transition-colors"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2.5 pt-2.5 border-t border-white/5">
-                      <label className="flex items-center gap-2.5 text-xs text-zinc-300 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={includePackages}
-                          onChange={(e) => setIncludePackages(e.target.checked)}
-                          className="rounded border-zinc-700 bg-zinc-950 text-[#d1a852] focus:ring-0 focus:ring-offset-0 h-4 w-4 cursor-pointer"
-                        />
-                        <span>Include Packages Link in WhatsApp</span>
-                      </label>
-                      
-                      {includePackages && (
-                        <div className="space-y-1.5 pl-6 animate-fadeIn">
-                          <label className="text-[10px] text-zinc-400 font-mono block">Website Packages URL (Add Link Here)</label>
-                          <input
-                            type="text"
-                            value={packagesLink}
-                            onChange={(e) => setPackagesLink(e.target.value)}
-                            placeholder="e.g. https://dreamwedstories.com/packages"
-                            className="w-full bg-zinc-900 border border-white/10 rounded-lg py-2 px-3 text-xs focus:border-[#d1a852] outline-none transition-colors font-mono text-zinc-300"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 2: PACKAGE STAFF */}
-                {activeTab === "package" && (
-                  <div className="space-y-6">
-                    {/* Website Package Template Selector */}
-                    <div className="space-y-1.5 pb-4 border-b border-white/10">
-                      <label className="text-[10px] text-zinc-400 font-mono block">Load Website Package Template</label>
-                      <select
-                        value={selectedPackageIndex}
-                        onChange={(e) => handleSelectPackageTemplate(Number(e.target.value))}
-                        className="w-full bg-zinc-900 border border-white/10 rounded-lg py-2 px-3 text-xs focus:border-[#d1a852] outline-none transition-colors text-white cursor-pointer"
-                      >
-                        <option value="" disabled>-- Select website package --</option>
-                        <optgroup label="Wedding Packages" className="bg-[#121216]">
-                          <option value="0">Wedding Photography (₹44,999)</option>
-                          <option value="1">Wedding Photo & Pre-Wedding (₹54,999)</option>
-                          <option value="2">Candid Photo & Videography (₹69,999)</option>
-                          <option value="3">Premium Candid Package (₹79,999)</option>
-                          <option value="4">Bride & Groom Luxury Package (₹1,10,000)</option>
-                        </optgroup>
-                        <optgroup label="Standalone Wedding Coverages" className="bg-[#121216]">
-                          <option value="5">Standalone Wedding Day (₹44,999)</option>
-                          <option value="6">Standalone Reception (₹19,999)</option>
-                        </optgroup>
-                        <optgroup label="Engagement Collections" className="bg-[#121216]">
-                          <option value="7">Engagement Photography (₹12,000)</option>
-                          <option value="8">Bride or Groom Engagement Package (₹28,999)</option>
-                        </optgroup>
-                        <optgroup label="Haldi Collections" className="bg-[#121216]">
-                          <option value="9">Haldi Photography (Only) (₹10,000)</option>
-                          <option value="10">Haldi Photography with Album (₹15,000)</option>
-                          <option value="11">Haldi Photo & Videography (₹28,000)</option>
-                        </optgroup>
-                      </select>
-                    </div>
-
-                    <div className="space-y-4">
-                      <span className="text-[10.5px] font-mono text-[#d1a852] font-semibold uppercase block tracking-wider">
-                        {eventsList[0] ? `${eventsList[0].name} Staff` : "Wedding Staff"}
-                      </span>
-                      
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
-                          <span className="text-zinc-400 font-mono">Candid Photographer</span>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => setWeddingCandidPhoto(Math.max(0, weddingCandidPhoto - 1))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
-                            <span className="w-5 text-center font-mono font-bold text-white">{weddingCandidPhoto}</span>
-                            <button onClick={() => setWeddingCandidPhoto(weddingCandidPhoto + 1)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
-                          <span className="text-zinc-400 font-mono">Traditional Photographer</span>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => setWeddingTradPhoto(Math.max(0, weddingTradPhoto - 1))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
-                            <span className="w-5 text-center font-mono font-bold text-white">{weddingTradPhoto}</span>
-                            <button onClick={() => setWeddingTradPhoto(weddingTradPhoto + 1)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
-                          <span className="text-zinc-400 font-mono">Candid Videographer</span>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => setWeddingCandidVideo(Math.max(0, weddingCandidVideo - 1))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
-                            <span className="w-5 text-center font-mono font-bold text-white">{weddingCandidVideo}</span>
-                            <button onClick={() => setWeddingCandidVideo(weddingCandidVideo + 1)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
-                          <span className="text-zinc-400 font-mono">Traditional Videographer</span>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => setWeddingTradVideo(Math.max(0, weddingTradVideo - 1))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
-                            <span className="w-5 text-center font-mono font-bold text-white">{weddingTradVideo}</span>
-                            <button onClick={() => setWeddingTradVideo(weddingTradVideo + 1)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <span className="text-[10.5px] font-mono text-[#d1a852] font-semibold uppercase block tracking-wider">
-                        {eventsList[1] ? `${eventsList[1].name} Staff` : "Reception Staff"}
-                      </span>
-                      
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
-                          <span className="text-zinc-400 font-mono">Photographer</span>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => setEvePhoto(Math.max(0, evePhoto - 1))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
-                            <span className="w-5 text-center font-mono font-bold text-white">{evePhoto}</span>
-                            <button onClick={() => setEvePhoto(evePhoto + 1)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
-                          <span className="text-zinc-400 font-mono">Videographer</span>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => setEveVideo(Math.max(0, eveVideo - 1))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
-                            <span className="w-5 text-center font-mono font-bold text-white">{eveVideo}</span>
-                            <button onClick={() => setEveVideo(eveVideo + 1)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <span className="text-[10.5px] font-mono text-[#d1a852] font-semibold uppercase block tracking-wider">
-                        {eventsList[2] ? `${eventsList[2].name} Staff` : "Pre-Wedding Staff"}
-                      </span>
-                      
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
-                          <span className="text-zinc-400 font-mono">Photographer</span>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => setPrewedPhoto(Math.max(0, prewedPhoto - 1))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
-                            <span className="w-5 text-center font-mono font-bold text-white">{prewedPhoto}</span>
-                            <button onClick={() => setPrewedPhoto(prewedPhoto + 1)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
-                          <span className="text-zinc-400 font-mono">Videographer</span>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => setPrewedVideo(Math.max(0, prewedVideo - 1))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
-                            <span className="w-5 text-center font-mono font-bold text-white">{prewedVideo}</span>
-                            <button onClick={() => setPrewedVideo(prewedVideo + 1)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* SAVE THE DATE STAFF */}
-                    <div className="space-y-4 pt-2">
-                      <span className="text-[10.5px] font-mono text-[#d1a852] font-semibold uppercase block tracking-wider">
-                        {eventsList[3] ? `${eventsList[3].name} Staff` : "Save the Date Staff"}
-                      </span>
-                      
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
-                          <span className="text-zinc-400 font-mono">Photographer</span>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => setStdPhoto(Math.max(0, stdPhoto - 1))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
-                            <span className="w-5 text-center font-mono font-bold text-white">{stdPhoto}</span>
-                            <button onClick={() => setStdPhoto(stdPhoto + 1)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
-                          <span className="text-zinc-400 font-mono">Videographer</span>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => setStdVideo(Math.max(0, stdVideo - 1))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
-                            <span className="w-5 text-center font-mono font-bold text-white">{stdVideo}</span>
-                            <button onClick={() => setStdVideo(stdVideo + 1)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2 rounded-lg border border-white/5">
-                          <span className="text-zinc-400 font-mono">Edited Photos (Qty)</span>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => setStdQty(Math.max(0, stdQty - 10))} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Minus size={10} /></button>
-                            <span className="w-8 text-center font-mono font-bold text-white">{stdQty}</span>
-                            <button onClick={() => setStdQty(stdQty + 10)} className="p-1 bg-zinc-800 rounded hover:bg-zinc-700"><Plus size={10} /></button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* SERVICES & ADD-ONS */}
-                    <div className="space-y-4 pt-4 border-t border-white/10">
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Services & Add-ons</span>
-                      
-                      <div className="space-y-2">
-                        <label className="flex items-center gap-2.5 text-xs text-zinc-300 cursor-pointer bg-zinc-900/60 p-2.5 rounded-lg border border-white/5 hover:border-white/10 transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={hasDrone}
-                            onChange={(e) => setHasDrone(e.target.checked)}
-                            className="rounded border-zinc-700 bg-zinc-950 text-[#d1a852] focus:ring-0 focus:ring-offset-0 h-4 w-4"
-                          />
-                          <span>Aerial Drone (Helicam)</span>
-                        </label>
-
-                        <label className="flex items-center gap-2.5 text-xs text-zinc-300 cursor-pointer bg-zinc-900/60 p-2.5 rounded-lg border border-white/5 hover:border-white/10 transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={hasLedWall}
-                            onChange={(e) => setHasLedWall(e.target.checked)}
-                            className="rounded border-zinc-700 bg-zinc-950 text-[#d1a852] focus:ring-0 focus:ring-offset-0 h-4 w-4"
-                          />
-                          <span>LED Wall Setup</span>
-                        </label>
-
-                        <label className="flex items-center gap-2.5 text-xs text-zinc-300 cursor-pointer bg-zinc-900/60 p-2.5 rounded-lg border border-white/5 hover:border-white/10 transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={hasPreweddingVideo}
-                            onChange={(e) => setHasPreweddingVideo(e.target.checked)}
-                            className="rounded border-zinc-700 bg-zinc-950 text-[#d1a852] focus:ring-0 focus:ring-offset-0 h-4 w-4"
-                          />
-                          <span>Pre-Wedding Video</span>
-                        </label>
-
-                        <label className="flex items-center gap-2.5 text-xs text-zinc-300 cursor-pointer bg-zinc-900/60 p-2.5 rounded-lg border border-white/5 hover:border-white/10 transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={hasHaldi}
-                            onChange={(e) => setHasHaldi(e.target.checked)}
-                            className="rounded border-zinc-700 bg-zinc-950 text-[#d1a852] focus:ring-0 focus:ring-offset-0 h-4 w-4"
-                          />
-                          <span>Haldi Ceremony Coverage</span>
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* CUSTOM SERVICES / ADD-ONS */}
-                    <div className="space-y-4 pt-4 border-t border-white/10">
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Custom Option (Add-on)</span>
-                      
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="e.g. Sangeet, Live Stream..."
-                          value={newCustomAddonName}
-                          onChange={(e) => setNewCustomAddonName(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && addCustomAddon()}
-                          className="flex-grow bg-zinc-900 border border-white/10 rounded-lg py-1.5 px-3 text-xs outline-none focus:border-[#d1a852] text-white"
-                        />
-                        <button
-                          onClick={addCustomAddon}
-                          className="bg-zinc-800 text-white p-2 rounded-lg border border-white/10 hover:bg-zinc-700 transition-colors"
-                        >
-                          <Plus size={12} />
-                        </button>
-                      </div>
-
-                      {customAddons.length > 0 && (
-                        <div className="space-y-2 max-h-[150px] overflow-y-auto pr-1">
-                          {customAddons.map((addon) => (
-                            <div key={addon.id} className="flex items-center justify-between gap-2 bg-zinc-900/60 p-2 rounded border border-white/5">
-                              <label className="flex items-center gap-2.5 text-[11px] text-zinc-300 cursor-pointer truncate flex-grow leading-tight">
-                                <input
-                                  type="checkbox"
-                                  checked={addon.enabled}
-                                  onChange={() => toggleCustomAddon(addon.id)}
-                                  className="rounded border-zinc-700 bg-zinc-950 text-[#d1a852] focus:ring-0 focus:ring-offset-0 h-3.5 w-3.5"
-                                />
-                                <span className="truncate">{addon.name}</span>
-                              </label>
-                              <button
-                                onClick={() => removeCustomAddon(addon.id)}
-                                className="text-zinc-600 hover:text-red-400 transition-colors"
-                              >
-                                <Trash2 size={11} />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 3: DELIVERABLES & PRICE */}
-                {activeTab === "deliverables" && (
-                  <div className="space-y-6">
-                    {/* Price Input */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-zinc-400 font-mono block">Package Price (INR)</label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-2 text-[#d1a852] font-semibold text-xs">₹</span>
-                        <input
-                          type="text"
-                          value={price}
-                          onChange={(e) => setPrice(e.target.value)}
-                          className="w-full bg-zinc-900 border border-white/10 rounded-lg py-2 pl-6 pr-3 text-xs focus:border-[#d1a852] outline-none transition-colors font-bold font-mono"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Deliverables List editor */}
-                    <div className="space-y-3">
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Deliverables</span>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="Add new deliverable..."
-                          value={newDeliverable}
-                          onChange={(e) => setNewDeliverable(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && addDeliverable()}
-                          className="flex-grow bg-zinc-900 border border-white/10 rounded-lg py-1.5 px-3 text-xs outline-none focus:border-[#d1a852]"
-                        />
-                        <button
-                          onClick={addDeliverable}
-                          className="bg-zinc-800 text-white p-2 rounded-lg border border-white/10 hover:bg-zinc-700 transition-colors"
-                        >
-                          <Plus size={12} />
-                        </button>
-                      </div>
-                      <div className="space-y-2 max-h-[150px] overflow-y-auto pr-1">
-                        {deliverables.map((item, idx) => (
-                          <div
-                            key={idx}
-                            draggable={draggableItem?.index === idx && draggableItem?.source === 'deliverables'}
-                            onDragStart={(e) => handleDragStart(e, idx, 'deliverables')}
-                            onDragOver={(e) => handleDragOver(e, idx, 'deliverables')}
-                            onDragEnd={handleDragEnd}
-                            className={`flex items-center justify-between gap-2 bg-zinc-900/60 p-2 rounded border border-white/5 transition-all ${
-                              draggedIndex === idx && dragSource === 'deliverables' ? 'opacity-40 bg-zinc-800' : ''
-                            }`}
-                          >
-                            <div className="flex items-center gap-1.5 flex-grow min-w-0">
-                              <GripVertical
-                                size={11}
-                                className="text-zinc-600 shrink-0 cursor-grab active:cursor-grabbing"
-                                onMouseEnter={() => setDraggableItem({ index: idx, source: 'deliverables' })}
-                                onMouseLeave={() => setDraggableItem(null)}
-                              />
-                              <input
-                                type="text"
-                                value={item}
-                                onChange={(e) => handleEditItem(idx, e.target.value, 'deliverables')}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter" || e.key === "Escape") {
-                                    e.target.blur();
-                                  }
-                                }}
-                                className="text-[11px] text-zinc-400 bg-transparent border-0 outline-none w-full focus:text-white focus:bg-zinc-800/40 rounded px-1 -mx-1"
-                              />
-                            </div>
-                            <button
-                              onClick={() => removeDeliverable(idx)}
-                              className="text-zinc-600 hover:text-red-400 transition-colors shrink-0"
-                            >
-                              <Trash2 size={11} />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Complimentary List editor */}
-                    <div className="space-y-3">
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Complimentary Extras</span>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="Add complimentary item..."
-                          value={newComplimentary}
-                          onChange={(e) => setNewComplimentary(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && addComplimentary()}
-                          className="flex-grow bg-zinc-900 border border-white/10 rounded-lg py-1.5 px-3 text-xs outline-none focus:border-[#d1a852]"
-                        />
-                        <button
-                          onClick={addComplimentary}
-                          className="bg-zinc-800 text-white p-2 rounded-lg border border-white/10 hover:bg-zinc-700 transition-colors"
-                        >
-                          <Plus size={12} />
-                        </button>
-                      </div>
-                      <div className="space-y-2 max-h-[150px] overflow-y-auto pr-1">
-                        {complimentary.map((item, idx) => (
-                          <div
-                            key={idx}
-                            draggable={draggableItem?.index === idx && draggableItem?.source === 'complimentary'}
-                            onDragStart={(e) => handleDragStart(e, idx, 'complimentary')}
-                            onDragOver={(e) => handleDragOver(e, idx, 'complimentary')}
-                            onDragEnd={handleDragEnd}
-                            className={`flex items-center justify-between gap-2 bg-zinc-900/60 p-2 rounded border border-white/5 transition-all ${
-                              draggedIndex === idx && dragSource === 'complimentary' ? 'opacity-40 bg-zinc-800' : ''
-                            }`}
-                          >
-                            <div className="flex items-center gap-1.5 flex-grow min-w-0">
-                              <GripVertical
-                                size={11}
-                                className="text-zinc-600 shrink-0 cursor-grab active:cursor-grabbing"
-                                onMouseEnter={() => setDraggableItem({ index: idx, source: 'complimentary' })}
-                                onMouseLeave={() => setDraggableItem(null)}
-                              />
-                              <input
-                                type="text"
-                                value={item}
-                                onChange={(e) => handleEditItem(idx, e.target.value, 'complimentary')}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter" || e.key === "Escape") {
-                                    e.target.blur();
-                                  }
-                                }}
-                                className="text-[11px] text-zinc-400 bg-transparent border-0 outline-none w-full focus:text-white focus:bg-zinc-800/40 rounded px-1 -mx-1"
-                              />
-                            </div>
-                            <button
-                              onClick={() => removeComplimentary(idx)}
-                              className="text-zinc-600 hover:text-red-400 transition-colors shrink-0"
-                            >
-                              <Trash2 size={11} />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 4: DESIGN & STYLES */}
-                {activeTab === "design" && (
-                  <div className="space-y-6">
-                    {/* Cover photo selection */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Cover Image</span>
-                        <span className="text-[9px] font-mono text-zinc-600">Page 1 Hero</span>
-                      </div>
-
-                      {/* Dedicated Upload Space for Cover */}
-                      <label className="relative flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-[#d1a852]/40 hover:border-[#d1a852] bg-zinc-900/50 hover:bg-zinc-900/90 rounded-xl cursor-pointer transition-all group shadow-sm">
-                        {uploadingTarget === "cover" ? (
-                          <div className="flex items-center gap-2 py-1">
-                            <Loader2 size={16} className="animate-spin text-[#d1a852]" />
-                            <span className="text-[11px] font-mono text-[#d1a852] font-semibold">Uploading photo...</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-[#d1a852]/10 border border-[#d1a852]/30 flex items-center justify-center text-[#d1a852] group-hover:scale-105 transition-transform shrink-0">
-                              <Upload size={14} />
-                            </div>
-                            <div className="text-left">
-                              <div className="text-[11px] font-semibold text-zinc-200 group-hover:text-white flex items-center gap-1.5">
-                                <span>Upload Cover Photo</span>
-                                <span className="text-[9px] bg-[#d1a852]/20 text-[#d1a852] px-1.5 py-0.2 rounded font-mono font-normal">JPG/PNG</span>
-                              </div>
-                              <p className="text-[9.5px] text-zinc-500 font-mono mt-0.5">Click or drag & drop custom photo</p>
-                            </div>
-                          </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-serif text-base font-medium text-white">
+                          {p.clientName || "Unnamed Client"}
+                        </h4>
+                        {(p.id === "proposal_sreenidhi" || p.clientName?.toLowerCase().includes("sreenidhi")) && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/30 text-amber-300 font-mono">
+                            Sreenidhi Oct 2026
+                          </span>
                         )}
-                        <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "cover"} onChange={(e) => handleUploadPhoto(e, "cover")} />
-                      </label>
-
-                      <div className="flex items-center gap-2 pt-1 pb-0.5">
-                        <div className="h-px bg-white/5 flex-1" />
-                        <span className="text-[8.5px] font-mono text-zinc-600 uppercase tracking-widest">or pick preset photo</span>
-                        <div className="h-px bg-white/5 flex-1" />
                       </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        {[...customImages, ...AVAILABLE_IMAGES].map((img) => (
-                          <button
-                            key={img.url}
-                            type="button"
-                            onClick={() => setCoverImage(img.url)}
-                            className={`group relative rounded-lg overflow-hidden border-2 h-14 bg-zinc-900 transition-colors ${coverImage === img.url ? "border-[#d1a852]" : "border-white/5 hover:border-white/20"}`}
-                          >
-                            <img src={resolveAssetPath(img.url)} alt={img.label} className="w-full h-full object-cover" />
-                            {img.isCustom && (
-                              <span className="absolute bottom-1 left-1 bg-black/80 backdrop-blur-xs text-[7.5px] font-mono text-[#d1a852] px-1 py-0.5 rounded">
-                                Custom
-                              </span>
-                            )}
-                            {img.isCustom && (
-                              <div
-                                onClick={(e) => removeCustomImage(e, img.url)}
-                                className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 bg-red-600/90 hover:bg-red-600 text-white p-0.5 rounded cursor-pointer transition-opacity"
-                                title="Delete uploaded image"
-                              >
-                                <X size={9} />
-                              </div>
-                            )}
-                            {coverImage === img.url && (
-                              <div className="absolute top-1 right-1 bg-[#d1a852] text-black p-0.5 rounded-full"><Check size={8} /></div>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                      
-                      {/* Cover Alignment & Scale Slider */}
-                      <div className="bg-zinc-900/60 p-3 rounded-lg border border-white/5 space-y-2">
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-zinc-400 font-mono">
-                            <span>Vertical Align (Y)</span>
-                            <span>{coverPositionY}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={coverPositionY}
-                            onChange={(e) => setCoverPositionY(Number(e.target.value))}
-                            className="w-full h-1 bg-zinc-850 rounded-lg appearance-none cursor-pointer accent-[#d1a852]"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-zinc-400 font-mono">
-                            <span>Horizontal Align (X)</span>
-                            <span>{coverPositionX}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={coverPositionX}
-                            onChange={(e) => setCoverPositionX(Number(e.target.value))}
-                            className="w-full h-1 bg-zinc-850 rounded-lg appearance-none cursor-pointer accent-[#d1a852]"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-zinc-400 font-mono">
-                            <span>Zoom Scale</span>
-                            <span>{coverScale}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="100"
-                            max="200"
-                            value={coverScale}
-                            onChange={(e) => setCoverScale(Number(e.target.value))}
-                            className="w-full h-1 bg-zinc-850 rounded-lg appearance-none cursor-pointer accent-[#d1a852]"
-                          />
-                        </div>
-                      </div>
+                      <p className="text-xs text-stone-400 font-mono">
+                        {p.eventDate || "Date TBD"} • {p.venue || "Venue"}
+                      </p>
                     </div>
-
-                    {/* Package photo selection */}
-                    <div className="space-y-3 pt-3 border-t border-white/5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Package Image</span>
-                        <span className="text-[9px] font-mono text-zinc-600">Page 3 Header</span>
-                      </div>
-
-                      {/* Dedicated Upload Space for Package */}
-                      <label className="relative flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-[#d1a852]/40 hover:border-[#d1a852] bg-zinc-900/50 hover:bg-zinc-900/90 rounded-xl cursor-pointer transition-all group shadow-sm">
-                        {uploadingTarget === "package" ? (
-                          <div className="flex items-center gap-2 py-1">
-                            <Loader2 size={16} className="animate-spin text-[#d1a852]" />
-                            <span className="text-[11px] font-mono text-[#d1a852] font-semibold">Uploading photo...</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-[#d1a852]/10 border border-[#d1a852]/30 flex items-center justify-center text-[#d1a852] group-hover:scale-105 transition-transform shrink-0">
-                              <Upload size={14} />
-                            </div>
-                            <div className="text-left">
-                              <div className="text-[11px] font-semibold text-zinc-200 group-hover:text-white flex items-center gap-1.5">
-                                <span>Upload Package Photo</span>
-                                <span className="text-[9px] bg-[#d1a852]/20 text-[#d1a852] px-1.5 py-0.2 rounded font-mono font-normal">JPG/PNG</span>
-                              </div>
-                              <p className="text-[9.5px] text-zinc-500 font-mono mt-0.5">Click or drag & drop custom photo</p>
-                            </div>
-                          </div>
-                        )}
-                        <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "package"} onChange={(e) => handleUploadPhoto(e, "package")} />
-                      </label>
-
-                      <div className="flex items-center gap-2 pt-1 pb-0.5">
-                        <div className="h-px bg-white/5 flex-1" />
-                        <span className="text-[8.5px] font-mono text-zinc-600 uppercase tracking-widest">or pick preset photo</span>
-                        <div className="h-px bg-white/5 flex-1" />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        {[...customImages, ...AVAILABLE_IMAGES].map((img) => (
-                          <button
-                            key={img.url}
-                            type="button"
-                            onClick={() => setPackageImage(img.url)}
-                            className={`group relative rounded-lg overflow-hidden border-2 h-14 bg-zinc-900 transition-colors ${packageImage === img.url ? "border-[#d1a852]" : "border-white/5 hover:border-white/20"}`}
-                          >
-                            <img src={resolveAssetPath(img.url)} alt={img.label} className="w-full h-full object-cover" />
-                            {img.isCustom && (
-                              <span className="absolute bottom-1 left-1 bg-black/80 backdrop-blur-xs text-[7.5px] font-mono text-[#d1a852] px-1 py-0.5 rounded">
-                                Custom
-                              </span>
-                            )}
-                            {img.isCustom && (
-                              <div
-                                onClick={(e) => removeCustomImage(e, img.url)}
-                                className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 bg-red-600/90 hover:bg-red-600 text-white p-0.5 rounded cursor-pointer transition-opacity"
-                                title="Delete uploaded image"
-                              >
-                                <X size={9} />
-                              </div>
-                            )}
-                            {packageImage === img.url && (
-                              <div className="absolute top-1 right-1 bg-[#d1a852] text-black p-0.5 rounded-full"><Check size={8} /></div>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                      
-                      {/* Package Alignment & Scale Slider */}
-                      <div className="bg-zinc-900/60 p-3 rounded-lg border border-white/5 space-y-2">
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-zinc-400 font-mono">
-                            <span>Vertical Align (Y)</span>
-                            <span>{packagePositionY}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={packagePositionY}
-                            onChange={(e) => setPackagePositionY(Number(e.target.value))}
-                            className="w-full h-1 bg-zinc-850 rounded-lg appearance-none cursor-pointer accent-[#d1a852]"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-zinc-400 font-mono">
-                            <span>Horizontal Align (X)</span>
-                            <span>{packagePositionX}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={packagePositionX}
-                            onChange={(e) => setPackagePositionX(Number(e.target.value))}
-                            className="w-full h-1 bg-zinc-850 rounded-lg appearance-none cursor-pointer accent-[#d1a852]"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-zinc-400 font-mono">
-                            <span>Zoom Scale</span>
-                            <span>{packageScale}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="100"
-                            max="200"
-                            value={packageScale}
-                            onChange={(e) => setPackageScale(Number(e.target.value))}
-                            className="w-full h-1 bg-zinc-850 rounded-lg appearance-none cursor-pointer accent-[#d1a852]"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Secondary photo selection */}
-                    <div className="space-y-3 pt-3 border-t border-white/5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Philosophy Image</span>
-                        <span className="text-[9px] font-mono text-zinc-600">Page 5 Quote</span>
-                      </div>
-
-                      {/* Dedicated Upload Space for Philosophy */}
-                      <label className="relative flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-[#d1a852]/40 hover:border-[#d1a852] bg-zinc-900/50 hover:bg-zinc-900/90 rounded-xl cursor-pointer transition-all group shadow-sm">
-                        {uploadingTarget === "philosophy" ? (
-                          <div className="flex items-center gap-2 py-1">
-                            <Loader2 size={16} className="animate-spin text-[#d1a852]" />
-                            <span className="text-[11px] font-mono text-[#d1a852] font-semibold">Uploading photo...</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-[#d1a852]/10 border border-[#d1a852]/30 flex items-center justify-center text-[#d1a852] group-hover:scale-105 transition-transform shrink-0">
-                              <Upload size={14} />
-                            </div>
-                            <div className="text-left">
-                              <div className="text-[11px] font-semibold text-zinc-200 group-hover:text-white flex items-center gap-1.5">
-                                <span>Upload Philosophy Photo</span>
-                                <span className="text-[9px] bg-[#d1a852]/20 text-[#d1a852] px-1.5 py-0.2 rounded font-mono font-normal">JPG/PNG</span>
-                              </div>
-                              <p className="text-[9.5px] text-zinc-500 font-mono mt-0.5">Click or drag & drop custom photo</p>
-                            </div>
-                          </div>
-                        )}
-                        <input type="file" accept="image/*" className="hidden" disabled={uploadingTarget === "philosophy"} onChange={(e) => handleUploadPhoto(e, "philosophy")} />
-                      </label>
-
-                      <div className="flex items-center gap-2 pt-1 pb-0.5">
-                        <div className="h-px bg-white/5 flex-1" />
-                        <span className="text-[8.5px] font-mono text-zinc-600 uppercase tracking-widest">or pick preset photo</span>
-                        <div className="h-px bg-white/5 flex-1" />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        {[...customImages, ...AVAILABLE_IMAGES].map((img) => (
-                          <button
-                            key={img.url}
-                            type="button"
-                            onClick={() => setPhilosophyImage(img.url)}
-                            className={`group relative rounded-lg overflow-hidden border-2 h-14 bg-zinc-900 transition-colors ${philosophyImage === img.url ? "border-[#d1a852]" : "border-white/5 hover:border-white/20"}`}
-                          >
-                            <img src={resolveAssetPath(img.url)} alt={img.label} className="w-full h-full object-cover filter grayscale" />
-                            {img.isCustom && (
-                              <span className="absolute bottom-1 left-1 bg-black/80 backdrop-blur-xs text-[7.5px] font-mono text-[#d1a852] px-1 py-0.5 rounded">
-                                Custom
-                              </span>
-                            )}
-                            {img.isCustom && (
-                              <div
-                                onClick={(e) => removeCustomImage(e, img.url)}
-                                className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 bg-red-600/90 hover:bg-red-600 text-white p-0.5 rounded cursor-pointer transition-opacity"
-                                title="Delete uploaded image"
-                              >
-                                <X size={9} />
-                              </div>
-                            )}
-                            {philosophyImage === img.url && (
-                              <div className="absolute top-1 right-1 bg-[#d1a852] text-black p-0.5 rounded-full"><Check size={8} /></div>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                      
-                      {/* Philosophy Alignment & Scale Slider */}
-                      <div className="bg-zinc-900/60 p-3 rounded-lg border border-white/5 space-y-2">
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-zinc-400 font-mono">
-                            <span>Vertical Align (Y)</span>
-                            <span>{philosophyPositionY}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={philosophyPositionY}
-                            onChange={(e) => setPhilosophyPositionY(Number(e.target.value))}
-                            className="w-full h-1 bg-zinc-850 rounded-lg appearance-none cursor-pointer accent-[#d1a852]"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-zinc-400 font-mono">
-                            <span>Horizontal Align (X)</span>
-                            <span>{philosophyPositionX}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={philosophyPositionX}
-                            onChange={(e) => setPhilosophyPositionX(Number(e.target.value))}
-                            className="w-full h-1 bg-zinc-850 rounded-lg appearance-none cursor-pointer accent-[#d1a852]"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-zinc-400 font-mono">
-                            <span>Zoom Scale</span>
-                            <span>{philosophyScale}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="100"
-                            max="200"
-                            value={philosophyScale}
-                            onChange={(e) => setPhilosophyScale(Number(e.target.value))}
-                            className="w-full h-1 bg-zinc-850 rounded-lg appearance-none cursor-pointer accent-[#d1a852]"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Theme Accent Color Selection */}
-                    <div className="space-y-3 pt-3 border-t border-white/5">
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Accent Theme Color</span>
-                      
-                      {/* Presets */}
-                      <div className="flex flex-wrap gap-1.5">
-                        {[
-                          { name: "Gold", hex: "#b4975a" },
-                          { name: "Rose Gold", hex: "#e0a899" },
-                          { name: "Emerald", hex: "#4e7e60" },
-                          { name: "Sapphire", hex: "#4a6fa5" },
-                          { name: "Amethyst", hex: "#8c7bb8" },
-                          { name: "Crimson", hex: "#b85c5c" }
-                        ].map((preset) => (
-                          <button
-                            key={preset.hex}
-                            type="button"
-                            onClick={() => setThemeColor(preset.hex)}
-                            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-medium border transition-all bg-zinc-900 hover:border-white/10"
-                            style={{
-                              borderColor: themeColor === preset.hex ? themeColor : 'rgba(255,255,255,0.05)',
-                              color: themeColor === preset.hex ? themeColor : '#a1a1aa'
-                            }}
-                          >
-                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: preset.hex }} />
-                            <span>{preset.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                      
-                      {/* Custom Color Input */}
-                      <div className="flex items-center gap-2 bg-zinc-900/60 p-2 rounded-lg border border-white/5">
-                        <span className="text-[10px] text-zinc-400 font-mono flex-grow">Custom Color Code</span>
-                        <div className="flex items-center gap-1.5 bg-zinc-950 px-2 py-1 rounded border border-white/10">
-                          <input
-                            type="color"
-                            value={themeColor}
-                            onChange={(e) => setThemeColor(e.target.value)}
-                            className="w-5 h-5 rounded border-0 cursor-pointer bg-transparent"
-                          />
-                          <input
-                            type="text"
-                            value={themeColor.toUpperCase()}
-                            onChange={(e) => {
-                              if (e.target.value.startsWith('#') && e.target.value.length <= 7) {
-                                setThemeColor(e.target.value);
-                              }
-                            }}
-                            className="w-14 bg-transparent border-0 outline-none text-[10px] text-zinc-300 font-mono font-bold uppercase p-0"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-                )}
-
-                {/* TAB 5: LIBRARY / DRAFTS */}
-                {activeTab === "library" && (
-                  <div className="space-y-4">
-                    <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">Saved Proposals Library</span>
-                    
-                    {currentDraftId && (
-                      <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between gap-3 text-xs text-amber-400">
-                        <div className="min-w-0">
-                          <span className="text-[9px] uppercase tracking-widest block text-zinc-500 font-mono font-bold">Active Draft</span>
-                          <strong className="block truncate text-white uppercase text-[11px] mt-0.5">{currentDraftTitle}</strong>
-                        </div>
-                        <button
-                          onClick={startNewProposal}
-                          className="px-2 py-1 rounded bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 text-[10px] font-bold uppercase transition-colors shrink-0 cursor-pointer"
-                        >
-                          New Proposal
-                        </button>
-                      </div>
-                    )}
-                    
-                    {currentDraftId ? (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => saveProposalToLibrary(currentDraftId)}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg font-bold text-[10px] tracking-wider uppercase transition-colors bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg cursor-pointer"
-                        >
-                          <Save size={13} />
-                          <span>Save Changes</span>
-                        </button>
-                        <button
-                          onClick={() => saveProposalToLibrary(null)}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg font-bold text-[10px] tracking-wider uppercase transition-colors bg-zinc-850 hover:bg-zinc-800 border border-white/5 text-zinc-300 shadow-lg cursor-pointer"
-                        >
-                          <Plus size={13} />
-                          <span>Save As New</span>
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => saveProposalToLibrary(null)}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-xs tracking-wider uppercase transition-colors bg-[#d1a852] hover:bg-[#b08d41] text-black shadow-lg cursor-pointer"
-                      >
-                        <Plus size={14} />
-                        <span>Save Current Draft</span>
-                      </button>
-                    )}
-
-                    <div className="border-t border-white/5 pt-4 space-y-3">
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider font-semibold">Your Drafts ({proposalLibrary.length})</span>
-                      {proposalLibrary.length === 0 ? (
-                        <div className="text-center py-6 text-xs text-zinc-500 italic">
-                          No saved drafts found. Save your current proposal above to list it here.
-                        </div>
-                      ) : (
-                        <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
-                          {proposalLibrary.map((item) => (
-                            <div key={item.id} className="bg-zinc-900/80 border border-white/5 p-3 rounded-lg flex items-center justify-between gap-3">
-                              <div className="min-w-0 flex-grow">
-                                <h4 className="text-xs font-semibold text-white truncate uppercase" title={item.title}>
-                                  {item.title}
-                                </h4>
-                                <span className="text-[9px] text-zinc-500 font-mono block mt-0.5">
-                                  Saved: {item.savedAt}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5 shrink-0 font-sans">
-                                <button
-                                  onClick={() => loadProposalFromLibrary(item.id)}
-                                  className="px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-[#d1a852] hover:text-white rounded text-[10px] font-mono font-semibold transition-colors"
-                                >
-                                  Load
-                                </button>
-                                <button
-                                  onClick={() => deleteProposalFromLibrary(item.id)}
-                                  className="p-1.5 hover:bg-red-500/10 text-zinc-500 hover:text-red-400 rounded transition-colors"
-                                >
-                                  <Trash2 size={13} />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                    <div className="text-right">
+                      <span className="text-sm font-bold text-amber-400 block font-mono">
+                        ₹{p.price || "Custom"}
+                      </span>
+                      <span className="text-[10px] text-stone-500 font-mono">
+                        {p.events?.length || 0} Events
+                      </span>
                     </div>
                   </div>
-                )}
+                ))
+              )}
+            </div>
 
-              </div>
+            <button
+              onClick={() => setSavedProposalsModalOpen(false)}
+              className="w-full py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer"
+            >
+              Close Library
+            </button>
+          </div>
+        </div>
+      )}
 
-              {/* Footer Save close & Copy Link */}
-              <div className="p-5 border-t border-white/10 bg-zinc-900/60 space-y-3">
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => generateShareableLink(true)}
-                    className="flex items-center justify-center gap-1.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold rounded-lg transition-colors uppercase tracking-wider"
-                    title="Copy a clean proposal link for the client (Customizer hidden)"
-                  >
-                    {copiedClient ? (
-                      <>
-                        <Check size={12} />
-                        <span>Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Share2 size={12} />
-                        <span>Client Link</span>
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => generateShareableLink(false)}
-                    className="flex items-center justify-center gap-1.5 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[11px] font-semibold rounded-lg transition-colors uppercase tracking-wider border border-white/5"
-                    title="Copy proposal link with customization controls enabled"
-                  >
-                    {copiedEdit ? (
-                      <>
-                        <Check size={12} />
-                        <span>Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Edit2 size={12} />
-                        <span>Edit Link</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-                <button
-                  onClick={() => setCustomizerOpen(false)}
-                  className="w-full py-2.5 bg-[#d1a852] hover:bg-[#b08d41] text-black text-xs font-semibold rounded-lg shadow-md transition-colors uppercase tracking-wider"
-                >
-                  Save & Apply Changes
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
+      {/* ========================================================================= */}
+      {/* PRINT STYLESHEET: GUARANTEES EXACT A4 6-PAGE EXPORT                       */}
+      {/* ========================================================================= */}
+      <style>{`
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 0;
+          }
+          body {
+            background-color: #FAF8F5 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          img {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            filter: none !important;
+            -webkit-filter: none !important;
+          }
+          .no-print {
+            display: none !important;
+          }
+          .proposal-page {
+            page-break-after: always !important;
+            break-after: page !important;
+            min-height: 297mm !important;
+            height: 297mm !important;
+            max-height: 297mm !important;
+            width: 210mm !important;
+            max-width: 210mm !important;
+            margin: 0 auto !important;
+            padding: 16mm 18mm !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            position: relative !important;
+            overflow: hidden !important;
+          }
+          #page-1-cover {
+            background-color: #FAF8F5 !important;
+            padding: 16mm 18mm !important;
+            position: relative !important;
+          }
+          #page-1-cover img.cover-img-tag {
+            display: block !important;
+            visibility: visible !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            z-index: 0 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            filter: none !important;
+            -webkit-filter: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

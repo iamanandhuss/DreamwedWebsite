@@ -12,6 +12,7 @@ import { FaArrowRight } from "react-icons/fa6";
 import { Nicklo } from "../components/ui/Nicklo";
 import BeforeAfterSlider from "../components/sections/BeforeAfterSlider";
 import SEO from "../components/SEO";
+import AkashParvathiStory from "../components/sections/AkashParvathiStory";
 
 const Home = () => {
   return (
@@ -60,6 +61,9 @@ const Home = () => {
           </motion.div>
         </div>
       </section>
+
+      {/* Featured Real Engagement Story: Akash & Parvathi in Trivandrum */}
+      <AkashParvathiStory />
 
       <BeforeAfterSlider />
 

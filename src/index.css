@@ -614,3 +614,178 @@ h1, h2, h3, h4, h5, h6 {
 
 
 
+
+/* Dreamwed Stories Luxury Proposal Styles */
+@keyframes bounceSlow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounceSlow 2s infinite ease-in-out;
+}
+
+/* Centered Slideshow Cards (Cover Page) */
+.slideshow-card {
+  position: absolute;
+  transition: all 0.75s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, opacity;
+  cursor: pointer;
+}
+
+.slideshow-pos-center {
+  transform: translateX(0px) scale(1.1) rotate(0deg);
+  z-index: 30;
+  opacity: 1;
+  filter: brightness(1.05) drop-shadow(0 15px 35px rgba(56, 189, 248, 0.4));
+}
+
+.slideshow-pos-right {
+  transform: translateX(82px) scale(0.92) rotate(7deg);
+  z-index: 22;
+  opacity: 0.82;
+  filter: brightness(0.85) drop-shadow(0 10px 25px rgba(0, 0, 0, 0.75));
+}
+
+.slideshow-pos-far-right {
+  transform: translateX(136px) scale(0.78) rotate(13deg);
+  z-index: 15;
+  opacity: 0.38;
+  filter: brightness(0.7) drop-shadow(0 10px 20px rgba(0, 0, 0, 0.85));
+}
+
+.slideshow-pos-hidden {
+  transform: translateX(0px) scale(0.65) rotate(0deg);
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.slideshow-pos-far-left {
+  transform: translateX(-136px) scale(0.78) rotate(-13deg);
+  z-index: 15;
+  opacity: 0.38;
+  filter: brightness(0.7) drop-shadow(0 10px 20px rgba(0, 0, 0, 0.85));
+}
+
+.slideshow-pos-left {
+  transform: translateX(-82px) scale(0.92) rotate(-7deg);
+  z-index: 22;
+  opacity: 0.82;
+  filter: brightness(0.85) drop-shadow(0 10px 25px rgba(0, 0, 0, 0.75));
+}
+
+/* Dreamwed Signature Deep Petrol / Cyan Luxury Backgrounds */
+.bg-dreamwed-luxury {
+  background: radial-gradient(circle at 50% 20%, #143d52 0%, #0d2838 35%, #081a25 70%, #04090e 100%);
+}
+
+.bg-dreamwed-card {
+  background: linear-gradient(180deg, rgba(16, 45, 62, 0.88) 0%, rgba(9, 26, 37, 0.94) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+}
+
+.bg-dreamwed-subcard {
+  background: rgba(7, 20, 29, 0.78);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.logo-glow {
+  filter: drop-shadow(0 0 24px rgba(56, 189, 248, 0.45)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
+}
+
+/* Red / Orange Angled BOOK NOW Badge */
+.badge-book-now {
+  background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%);
+  color: #ffffff;
+  font-weight: 900;
+  text-transform: uppercase;
+  clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
+  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.45);
+}
+
+/* Red Slanted Discount Ribbon for Pricing */
+.ribbon-discount-angled {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: #ffffff;
+  transform: skewX(-8deg);
+  display: inline-block;
+  padding: 12px 32px;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(220, 38, 38, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.ribbon-content {
+  transform: skewX(8deg);
+  display: inline-block;
+}
+
+/* Crew Chips / Lineup Pills */
+.crew-pill-dark {
+  background: rgba(14, 38, 53, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 7px 14px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+}
+
+.crew-pill-dark:hover {
+  border-color: rgba(56, 189, 248, 0.6);
+  background: rgba(20, 52, 72, 0.95);
+  transform: translateY(-1px);
+}
+
+/* Cinema Video Container */
+.cinema-video-container {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #03070b;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.cinema-video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Deliverable Card */
+.deliverable-card-dark {
+  background: rgba(10, 25, 36, 0.75);
+  border: 1px solid rgba(56, 189, 248, 0.16);
+  border-radius: 18px;
+  padding: 16px;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+.deliverable-card-dark:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.page-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 28px 0;
+  opacity: 0.65;
+}

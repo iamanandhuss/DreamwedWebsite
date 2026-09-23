@@ -10,6 +10,7 @@ import {
 import SEO from "../components/SEO";
 import { downloadPhotosAsZip } from "../utils/zipDownloader";
 import WebsiteMediaManager from "../components/admin/WebsiteMediaManager";
+import AdminVipProposals from "../components/admin/AdminVipProposals";
 import defaultOfficeBudgets from "../data/defaultOfficeBudgets.json";
 
 const ADMIN_PASS = "dreamwed2026";
@@ -1924,7 +1925,8 @@ const Admin = () => {
               {id: "ai-orders", label: "🧾 Print Orders", icon: <FileText size={16} />},
               { id: "budget-tracker", label: "💰 Budget Tracker", icon: <Package size={16} /> },
               { id: "invoice-studio", label: "🧾 Invoice Studio", icon: <FileText size={16} /> },
-              { id: "website-media", label: "🖼 Website Media", icon: <ImageIcon size={16} /> }
+              { id: "website-media", label: "🖼 Website Media", icon: <ImageIcon size={16} /> },
+              { id: "vip-proposals", label: "✨ VIP Proposals", icon: <Sparkles size={16} /> }
             ].map((item) => (
               <button
                 key={item.id}
@@ -2016,7 +2018,8 @@ const Admin = () => {
                     {id: "chats", label: "💬 Chat Room", icon: <MessageSquare size={16} />},
                     { id: "budget-tracker", label: "💰 Budget Tracker", icon: <Package size={16} /> },
                     { id: "invoice-studio", label: "🧾 Invoice Studio", icon: <FileText size={16} /> },
-                    { id: "website-media", label: "🖼 Website Media", icon: <ImageIcon size={16} /> }
+                    { id: "website-media", label: "🖼 Website Media", icon: <ImageIcon size={16} /> },
+                    { id: "vip-proposals", label: "✨ VIP Proposals", icon: <Sparkles size={16} /> }
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -2083,6 +2086,7 @@ const Admin = () => {
               {activeTab === "budget-tracker" && "Budget Planner & Settings"}
               {activeTab === "invoice-studio" && "Tax Invoice Studio"}
               {activeTab === "website-media" && "Website Media & Cloudinary CDN"}
+              {activeTab === "vip-proposals" && "VIP Client Proposals Studio"}
             </h2>
           </div>
 
@@ -5888,6 +5892,10 @@ const Admin = () => {
 
         {activeTab === "website-media" && (
           <WebsiteMediaManager />
+        )}
+
+        {activeTab === "vip-proposals" && (
+          <AdminVipProposals />
         )}
 
 

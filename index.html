@@ -32,6 +32,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;600;700&family=Great+Vibes&family=Alex+Brush&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
+    <!-- PDF.js FOR INSTANT PROPOSAL IMPORT -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+    </script>
+
     <!-- SCHEMA.ORG JSON-LD LOCAL BUSINESS STRUCTURED DATA -->
     <script type="application/ld+json">
       {
