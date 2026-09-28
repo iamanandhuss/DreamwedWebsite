@@ -14,24 +14,82 @@ const Packages = () => {
         description="View our premium wedding photography and cinematic videography packages. Select from essential single-side coverage to all-inclusive cinematic cinema stories."
       />
 
-      {/* Hero Section */}
-      <div className="relative py-20 overflow-hidden text-center select-none">
-        {/* Decorative gold background orb */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#d1a852]/5 rounded-full blur-[120px] pointer-events-none" />
-        
-        <div className="relative z-10 max-w-4xl mx-auto px-6 space-y-4">
-          <span className="inline-block px-5 py-2 rounded-full bg-white/5 border border-white/10 text-[#d1a852] text-[10px] md:text-[11px] tracking-[0.3em] uppercase font-bold">
-            Curated Collections
-          </span>
-          <h1 className="text-[40px] sm:text-[52px] md:text-[68px] leading-[1.05] tracking-tight font-serif font-light text-white">
-            Your Legacy, Told in <br />
-            <span className="italic text-[#d1a852] font-normal font-serif">Cinema & Fine Art</span>
-          </h1>
-          <p className="text-[15px] md:text-[18px] text-zinc-400 font-light max-w-xl mx-auto leading-relaxed pt-2">
-            Watch our featured films and couple endorsements below, then select the perfect package for your milestone.
-          </p>
+      {/* Editorial Hero Section with Bright, Clear Couple */}
+      <section className="relative w-full min-h-[90vh] md:min-h-[85vh] flex flex-col justify-center overflow-hidden bg-[#0a0a0c] -mt-24 pt-24 pb-12 sm:pb-16 select-none">
+        {/* Full-bleed Natural Sunlight Background Image */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <img
+            src="/images/stories/akash_parvathi/outdoor_laughter.jpg"
+            onError={(e) => {
+              e.currentTarget.src = "/images/stories/akash_parvathi/intimate_embrace.jpg";
+            }}
+            alt="Dreamwed Stories Wedding Photography"
+            className="w-full h-full object-cover object-[85%_top] sm:object-[78%_top] md:object-[72%_top] filter brightness-[1.08] contrast-[1.02]"
+          />
+          {/* Left-side dark gradient to ensure text readability without darkening the couple on the right */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 via-35% to-transparent pointer-events-none" />
+          {/* Subtle top bar blend */}
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/70 to-transparent pointer-events-none" />
+          {/* Subtle bottom edge blend */}
+          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#0a0a0c] to-transparent pointer-events-none" />
         </div>
-      </div>
+
+        {/* Center-Left Editorial Offer Content */}
+        <div className="relative z-10 max-w-[320px] sm:max-w-xl md:max-w-2xl px-5 sm:px-10 md:px-12 my-auto pt-6 pb-6 space-y-4 sm:space-y-6 text-left">
+          {/* Limited Offer Badge */}
+          <div className="inline-block border border-white/50 bg-black/40 backdrop-blur-xs px-3.5 py-1 sm:py-1.5 rounded-[2px] shadow-sm">
+            <span className="text-[10px] sm:text-[11px] tracking-[0.25em] uppercase font-mono font-medium text-white/95">
+              LIMITED TIME OFFER
+            </span>
+          </div>
+
+          {/* Luxury Large Headline */}
+          <h1 className="text-[36px] sm:text-[52px] md:text-[66px] font-serif font-light leading-[1.08] tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
+            Your <br />
+            wedding <br />
+            deserves a <br />
+            story. <br />
+            <span className="text-[#c89b53] font-normal italic font-serif">
+              Starting at ₹39,999.
+            </span>
+          </h1>
+
+          {/* Description Copy */}
+          <p className="text-[13px] sm:text-[15px] md:text-[18px] text-zinc-200 font-light max-w-[270px] sm:max-w-md leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+            Premium wedding photography & films for couples who want beautiful photographs, real emotions and memories that still feel alive years later.
+          </p>
+
+          {/* CTA Action Button */}
+          <div className="pt-1 sm:pt-2">
+            <a
+              href="#packages"
+              className="inline-block w-auto text-center bg-[#b48a52] hover:bg-[#9c743e] active:scale-98 text-white font-semibold text-[11px] sm:text-xs md:text-sm tracking-[0.14em] uppercase py-3.5 px-6 sm:py-4 sm:px-8 rounded shadow-2xl transition-all cursor-pointer"
+            >
+              SEE PACKAGES & WHAT'S INCLUDED
+            </a>
+          </div>
+
+          {/* Trust Checkmarks */}
+          <div className="flex flex-col gap-1.5 text-[11px] sm:text-xs text-zinc-300 font-light pt-1 drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]">
+            <div className="flex items-center flex-wrap gap-x-4 gap-y-1">
+              <span className="flex items-center gap-1.5">
+                <span className="text-white font-bold">✓</span> Transparent packages
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="text-white font-bold">✓</span> Customisable coverage
+              </span>
+            </div>
+            <span className="flex items-center gap-1.5">
+              <span className="text-white font-bold">✓</span> Kerala + destination weddings
+            </span>
+          </div>
+        </div>
+
+        {/* Bottom subtle gold indicator on desktop */}
+        <div className="relative z-10 px-12 hidden md:block">
+          <div className="w-12 h-[1px] bg-[#c89b53]/40" />
+        </div>
+      </section>
 
       {/* Cinema Spotlight - VALUE FIRST (The 3 Videos) */}
       <CinemaSpotlight />
@@ -43,7 +101,7 @@ const Packages = () => {
       <AkashParvathiStory dark={true} />
 
       {/* Pricing Section - THE INVESTMENT (Pricing cards, countdown, urgency widget) */}
-      <div className="border-t border-white/5 bg-[#0a0a0c]">
+      <div id="packages" className="scroll-mt-24 border-t border-white/5 bg-[#0a0a0c]">
         <PricingSection />
       </div>
 
