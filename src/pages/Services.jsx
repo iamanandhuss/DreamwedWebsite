@@ -398,6 +398,21 @@ const Services = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const getWhatsAppBookingUrl = (plan) => {
+    if (!plan) return "https://wa.me/919995412955";
+    const origin = typeof window !== "undefined" && window.location ? window.location.origin : "https://dreamwedstories.co.in";
+    const shareUrl = `${origin}/packages?pkg=${plan.shareId || ""}`;
+    const message = `Hello Dreamwed Stories! 👋\n\n` +
+                    `I would like to book the following package:\n` +
+                    `📸 *${plan.title}*\n` +
+                    `💰 *Price:* ${plan.price}\n` +
+                    (plan.subtitle ? `📋 *Coverage:* ${plan.subtitle}\n` : '') +
+                    (plan.features && plan.features.length ? `✨ *Key Features:* ${plan.features.slice(0, 3).join(', ')}\n` : '') +
+                    `🔗 *Package Link:* ${shareUrl}\n\n` +
+                    `Please check availability for my wedding date and let me know the booking steps!`;
+    return `https://wa.me/919995412955?text=${encodeURIComponent(message)}`;
+  };
+
   // Auto-play slideshow for active modal gallery
   useEffect(() => {
     if (activePlan === null) return;
@@ -504,7 +519,14 @@ const Services = () => {
         </div>
         
         <div className="text-center mt-auto">
-          <Button to="/contact" variant={isSpecial ? 'primary' : 'outline'} className="w-full" onClick={(e) => e.stopPropagation()}>
+          <Button
+            href={getWhatsAppBookingUrl(plan)}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant={isSpecial ? 'primary' : 'outline'}
+            className="w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
             Book Now
           </Button>
         </div>
@@ -1019,7 +1041,9 @@ const Services = () => {
                     </div>
 
                     <Button
-                      to="/contact"
+                      href={getWhatsAppBookingUrl(plan)}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       variant="primary"
                       className="w-full py-4 rounded-2xl text-center text-xs uppercase tracking-widest font-bold select-none"
                       onClick={() => setActivePlan(null)}

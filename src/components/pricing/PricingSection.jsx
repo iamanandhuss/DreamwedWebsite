@@ -481,6 +481,21 @@ const PricingSection = () => {
     });
   };
 
+  const getWhatsAppBookingUrl = (plan) => {
+    if (!plan) return "https://wa.me/919995412955";
+    const origin = typeof window !== "undefined" && window.location ? window.location.origin : "https://dreamwedstories.co.in";
+    const shareUrl = `${origin}/packages?pkg=${plan.shareId || ""}`;
+    const message = `Hello Dreamwed Stories! 👋\n\n` +
+                    `I would like to book the following package:\n` +
+                    `📸 *${plan.title}*\n` +
+                    `💰 *Price:* ${plan.price} Net\n` +
+                    (plan.subtitle ? `📋 *Coverage:* ${plan.subtitle}\n` : '') +
+                    (plan.preweddingOffer ? `🎁 *Special Offer:* ${plan.preweddingOffer}\n` : '') +
+                    `🔗 *Package Link:* ${shareUrl}\n\n` +
+                    `Please check availability for my wedding date and let me know the booking steps!`;
+    return `https://wa.me/919995412955?text=${encodeURIComponent(message)}`;
+  };
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pkgParam = params.get("pkg");
@@ -661,15 +676,17 @@ const PricingSection = () => {
             </div>
           </div>
 
-          {/* DARK Book Now button — high contrast against white card */}
-          <Link
-            to={`/booking?package=${encodeURIComponent(plan.title)}&price=${encodeURIComponent(plan.price?.replace(/[^\d]/g,"") || "")}`}
+          {/* DARK Book Now button — connects to WhatsApp */}
+          <a
+            href={getWhatsAppBookingUrl(plan)}
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="w-full py-3.5 rounded-2xl font-bold text-[14px] tracking-wide text-center transition-all duration-300 active:scale-[0.97] hover:bg-[#2e2e2b] block shadow-lg hover:shadow-xl"
+            className="w-full py-3.5 rounded-2xl font-bold text-[14px] tracking-wide text-center transition-all duration-300 active:scale-[0.97] hover:bg-[#2e2e2b] block shadow-lg hover:shadow-xl select-none"
             style={{ background: "#191917", color: "#ffffff" }}
           >
             Book Now
-          </Link>
+          </a>
 
           {/* Share options row — WhatsApp and Copy Link */}
           <div className="flex items-center justify-between text-[9.5px] font-bold mt-1 px-1.5 select-none">
@@ -816,9 +833,14 @@ const PricingSection = () => {
                       {addon.details}
                     </div>
                   </div>
-                  <Link to={`/booking?package=${encodeURIComponent(addon.title)}&price=${encodeURIComponent(addon.price.replace(/[^\d]/g, ""))}`} className="mt-8 py-3 w-full rounded-[16px] border border-white/10 text-white hover:bg-[#C8B28B] hover:text-white hover:border-[#C8B28B] transition-all text-center text-xs font-bold uppercase tracking-wider block">
+                  <a
+                    href={`https://wa.me/919995412955?text=${encodeURIComponent(`Hello Dreamwed Stories! 👋\n\nI would like to book the add-on: *${addon.title}* (${addon.price}).\n\nPlease let me know availability and how to proceed!`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-8 py-3 w-full rounded-[16px] border border-white/10 text-white hover:bg-[#C8B28B] hover:text-white hover:border-[#C8B28B] transition-all text-center text-xs font-bold uppercase tracking-wider block"
+                  >
                     Book This Pack
-                  </Link>
+                  </a>
                 </div>
               ))}
             </div>
@@ -837,12 +859,14 @@ const PricingSection = () => {
             <p className="text-[13px] text-zinc-400 font-light max-w-xl mx-auto leading-relaxed mb-6">
               Reserve your date now to protect against seasonal price increases. The booking fee is fully adjustable to any package. Balance payment is required only on the wedding day.
             </p>
-            <Link
-              to="/booking?package=Promo%20Rates%20Booking&price=5000"
+            <a
+              href={`https://wa.me/919995412955?text=${encodeURIComponent(`Hello Dreamwed Stories! 👋\n\nI would like to lock in current promo rates with the ₹5,000 date reservation.\n\nPlease share the details to secure my date!`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-[16px] bg-[#C8B28B] hover:bg-[#B79F78] text-black text-xs uppercase tracking-widest font-bold transition-all shadow-[0_10px_25px_rgba(169,146,104,0.2)] hover:scale-[1.02]"
             >
               Secure My Promo Rates Now <ArrowRight size={14} />
-            </Link>
+            </a>
           </div>
         </div>
 
@@ -1161,15 +1185,16 @@ const PricingSection = () => {
                     </div>
                   </div>
 
-                  <Button
-                    to={`/booking?package=${encodeURIComponent(activePlan?.title || "")}&price=${encodeURIComponent((activePlan?.price || "").replace(/[^\d]/g, ""))}`}
-                    variant="primary"
-                    className="w-full py-4 rounded-2xl text-center text-xs uppercase tracking-widest font-bold select-none"
+                  <a
+                    href={getWhatsAppBookingUrl(activePlan)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-4 rounded-2xl text-center text-xs uppercase tracking-widest font-bold select-none block transition-all active:scale-95 shadow-lg hover:opacity-95"
                     onClick={() => setActivePlan(null)}
                     style={{ background: "#191917", color: "#ffffff" }}
                   >
                     Book Now 🌟
-                  </Button>
+                  </a>
                   <button
                     onClick={(e) => handleShare(e, activePlan)}
                     className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md select-none"
