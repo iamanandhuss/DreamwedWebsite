@@ -142,8 +142,8 @@ const weddingPlans = [
     modalTag: "Signature Luxury",
     subtitle: "4-CAMERA DUAL-SIDE LUXURY COVERAGE",
     preweddingOffer: "FREE DRONE + PREMIUM CUSTOM ALBUM BOX",
-    desc: "Our ultimate dual-side wedding collection. Features comprehensive coverage, drone photography, and physical custom boxes for your handcrafted albums.",
-    setup: "2 Photographers + 2 Videographers + Drone + Custom Album Box",
+    desc: "Our ultimate dual-side wedding collection. Features comprehensive coverage, drone photography, 2 handcrafted albums with custom boxes (one for bride and one for groom), and 2 mini albums.",
+    setup: "2 Photographers + 2 Videographers + Drone + 2 Custom Album Boxes",
     images: ["/luxury_110k_1.jpg", "/luxury_110k_2.jpg", "/luxury_110k_3.jpg", "/luxury_110k_4.jpg"],
     imagePositions: ["center 70%", "center 28%", "center 28%", "center 28%"],
     features: [
@@ -152,14 +152,14 @@ const weddingPlans = [
       "Wedding & Reception Videography (Dual-side)",
       "Wedding Candid Photography & Videography",
       "Helicam (Drone) Aerial Coverage",
-      "One 80-Pages Premium Album with Handcrafted Album Box",
-      "One 80-Pages Mini Album",
+      "2 80-Pages Premium Albums with Handcrafted Album Boxes (One for Bride & One for Groom)",
+      "2 80-Pages Mini Albums (One for Bride & One for Groom)",
       "Cinematic Highlights Film & Instagram Reels",
       "Full HD Wedding Video Film",
-      "2 Premium Wall Frames",
-      "1 Customized Photo Calendar",
-      "1 High-Speed USB Pen Drive",
-      "Edited Photos & High-speed Pendrive"
+      "4 Premium Wall Frames (2 for Bride & 2 for Groom)",
+      "2 Customized Photo Calendars (1 for Bride & 1 for Groom)",
+      "2 High-Speed USB Pen Drives (1 for Bride & 1 for Groom)",
+      "Edited Photos & High-speed Pendrive Backup"
     ]
   }
 ];
@@ -1031,11 +1031,20 @@ const PricingSection = () => {
                         </div>
                       </div>
                       <div className="flex gap-2.5 items-start">
-                        <span className="text-[#8B222C] mt-0.5 shrink-0">🌐</span>
+                        <span className="text-[#8B222C] mt-0.5 shrink-0">👥</span>
                         <div>
-                          <strong className="text-[#191917] block">Personal Couples Website Support</strong>
+                          <strong className="text-[#191917] block">Digital Gallery for Guests</strong>
                           <span className="text-zinc-600 font-light text-[11px] block mt-0.5">
-                            Receive a stunning, private online interactive gallery website to view, select, and share your photos with family.
+                            Dedicated online digital gallery for your guests and family to easily view, celebrate, and download event photos.
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2.5 items-start">
+                        <span className="text-[#8B222C] mt-0.5 shrink-0">📖</span>
+                        <div>
+                          <strong className="text-[#191917] block">Website Album Selection Support</strong>
+                          <span className="text-zinc-600 font-light text-[11px] block mt-0.5">
+                            Interactive online selection portal to seamlessly choose your favorite pictures for your heirloom albums from home.
                           </span>
                         </div>
                       </div>
