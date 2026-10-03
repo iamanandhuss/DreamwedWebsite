@@ -13,8 +13,8 @@ const weddingPlans = [
   {
     shareId: "pkgWeddingBasicCard",
     title: "Wedding Photography",
-    price: "₹44,999",
-    tag: "+ LIMITED TIME OFFER",
+    price: "₹39,999",
+    tag: "+ SPECIAL LIMITED TIME OFFER",
     modalTag: "Essential",
     subtitle: "ESSENTIAL SINGLE-SIDE",
     preweddingOffer: "FREE PRE-WEDDING PHOTO (WORTH ₹12,000)",
@@ -351,7 +351,7 @@ const Services = () => {
     if (!priceStr) return "";
     const num = parseInt(priceStr.replace(/[^0-9]/g, ""));
     if (isNaN(num)) return "₹0";
-    if (num === 44999) return "₹59,999";
+    if (num === 39999 || num === 44999) return "₹59,999";
     if (num === 54999) return "₹79,999";
     if (num === 69999) return "₹99,999";
     if (num === 110000) return "₹1,65,000";
