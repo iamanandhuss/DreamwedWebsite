@@ -202,7 +202,7 @@ const MyBooking = () => {
         if (pName === "Elite Signature Package") setPackagePrice(180000);
         else if (pName === "Premium Couture Package") setPackagePrice(135000);
         else if (pName === "Classic Heritage Package") setPackagePrice(95000);
-        else if (pName === "Wedding Photography") setPackagePrice(39999);
+        else if (pName === "Wedding Photography") setPackagePrice(44999);
         else if (pName === "Wedding Photo & Pre-Wedding") setPackagePrice(54999);
         else if (pName === "Candid Photo & Videography") setPackagePrice(69999);
         else if (pName === "Bride & Groom Luxury Package") setPackagePrice(110000);
@@ -246,7 +246,7 @@ const MyBooking = () => {
     if (pName === "Elite Signature Package") setPackagePrice(180000);
     else if (pName === "Premium Couture Package") setPackagePrice(135000);
     else if (pName === "Classic Heritage Package") setPackagePrice(95000);
-    else if (pName === "Wedding Photography") setPackagePrice(39999);
+    else if (pName === "Wedding Photography") setPackagePrice(44999);
     else if (pName === "Wedding Photo & Pre-Wedding") setPackagePrice(54999);
     else if (pName === "Candid Photo & Videography") setPackagePrice(69999);
     else if (pName === "Bride & Groom Luxury Package") setPackagePrice(110000);
@@ -701,7 +701,7 @@ const MyBooking = () => {
                       <option value="Elite Signature Package">Elite Signature Package (₹1,80,000)</option>
                       <option value="Premium Couture Package">Premium Couture Package (₹1,35,000)</option>
                       <option value="Classic Heritage Package">Classic Heritage Package (₹95,000)</option>
-                      <option value="Wedding Photography">Wedding Photography (₹39,999)</option>
+                      <option value="Wedding Photography">Wedding Photography (₹44,999)</option>
                       <option value="Wedding Photo & Pre-Wedding">Wedding Photo & Pre-Wedding (₹54,999)</option>
                       <option value="Candid Photo & Videography">Candid Photo & Videography (₹69,999)</option>
                       <option value="Bride & Groom Luxury Package">Bride & Groom Luxury Package (₹1,10,000)</option>

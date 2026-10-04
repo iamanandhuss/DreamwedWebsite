@@ -49,7 +49,7 @@ const Packages = () => {
           <h1 className="text-[30px] sm:text-[44px] md:text-[64px] font-serif font-light leading-[1.1] tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
             Your wedding deserves a story. <br />
             <span className="text-[#c89b53] font-normal italic font-serif">
-              Starting at ₹39,999.
+              Starting at ₹44,999.
             </span>
           </h1>
 

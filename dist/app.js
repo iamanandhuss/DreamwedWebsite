@@ -2087,7 +2087,7 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
                 alert(`🎉 REGISTRATION & BOOKING COMPLETED SUCCESSFULLY!\n\nWelcome to your Wedding Hub! You have been automatically logged in.`);
 
                 // WhatsApp booking confirm GPay prompt
-                const includesPrewedding = (parseInt(savedBooking.price_quoted) === 39999 || parseInt(savedBooking.price_quoted) === 54999 || parseInt(savedBooking.price_quoted) === 79999);
+                const includesPrewedding = (parseInt(savedBooking.price_quoted) === 39999 || parseInt(savedBooking.price_quoted) === 44999 || parseInt(savedBooking.price_quoted) === 54999 || parseInt(savedBooking.price_quoted) === 79999);
                 const surpriseBonusText = includesPrewedding ? `🎁 SURPRISE BONUS: Free Save the Date Photoshoot (worth ₹9,999/-) included!\n` : '';
 
                 const message = `Hi Unni! I have successfully completed registration on your website and locked in my Package slot booking!\n\n` +
@@ -2113,7 +2113,7 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
                 loadCustomerDashboard();
 
                 let targetWhatsApp = '9995412955';
-                if (savedBooking.package_interest.includes('39999') || savedBooking.package_interest.includes('Prewedding') || savedBooking.price_quoted === '39999' || savedBooking.price_quoted === '54999' || savedBooking.price_quoted === '79999') {
+                if (savedBooking.package_interest.includes('39999') || savedBooking.package_interest.includes('44999') || savedBooking.package_interest.includes('Prewedding') || savedBooking.price_quoted === '39999' || savedBooking.price_quoted === '44999' || savedBooking.price_quoted === '54999' || savedBooking.price_quoted === '79999') {
                     targetWhatsApp = '9995412955';
                 }
                 window.open(`https://wa.me/91${targetWhatsApp}?text=${encodeURIComponent(message)}`, '_blank');
@@ -2362,8 +2362,8 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
                 title: 'Wedding<br>Photography',
                 category: 'ESSENTIAL SINGLE-SIDE',
                 desc: "Our highly sought-after single-side coverage package. Designed to capture every detail of your celebrations with elite creative precision and beautiful physical heirlooms.",
-                priceText: 'from ₹39,999',
-                priceVal: '39999',
+                priceText: 'from ₹44,999',
+                priceVal: '44999',
                 setup: '<i class="fa-solid fa-camera"></i> 1 Photographer + 1 Videographer',
                 ribbon: '+ FREE PRE-WEDDING PHOTO (LIMITED TIME)',
                 ribbonClass: '',
@@ -2541,7 +2541,7 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
             // Toggle surprise bonus banner inside the booking modal based on price
             const surpriseBanner = document.getElementById('surpriseBonusBanner');
             if (surpriseBanner) {
-                if (currentSelectedPrice === '39999' || currentSelectedPrice === '54999') {
+                if (currentSelectedPrice === '39999' || currentSelectedPrice === '44999' || currentSelectedPrice === '54999') {
                     surpriseBanner.style.display = 'block';
                 } else {
                     surpriseBanner.style.display = 'none';
@@ -2553,7 +2553,8 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
             if (selectEl) {
                 const isSingleSide = currentSelectedPlan.toLowerCase().includes('single side') || 
                                      currentSelectedPlan.toLowerCase().includes('bride or groom') || 
-                                     currentSelectedPrice === '39999';
+                                     currentSelectedPrice === '39999' ||
+                                     currentSelectedPrice === '44999';
                 if (isSingleSide) {
                     selectEl.innerHTML = `
                         <option value="bride" selected>Bride Side Only (Single Password)</option>
@@ -3118,7 +3119,7 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
         // Toggle invSurpriseRow row inside itemized table based on selected package price (₹39,999 gets the free photoshoot)
         const invSurpriseRow = document.getElementById('invSurpriseRow');
         if (invSurpriseRow) {
-            if (price === 39999 || price === 54999) {
+            if (price === 39999 || price === 44999 || price === 54999) {
                 invSurpriseRow.style.display = 'table-row';
             } else {
                 invSurpriseRow.style.display = 'none';
@@ -3183,7 +3184,7 @@ EDITED PHOTOS FOR SOCIAL MEDIA`;
             const travelText = travelVal === 'Included' ? 'Included (Free)' : 'Excluded (Payable by client)';
             const stayText = stayVal === 'Included' ? 'Included (Free)' : 'Excluded (Payable by client)';
 
-            const includesPrewedding = (parseInt(b.price_quoted) === 39999 || parseInt(b.price_quoted) === 54999);
+            const includesPrewedding = (parseInt(b.price_quoted) === 39999 || parseInt(b.price_quoted) === 44999 || parseInt(b.price_quoted) === 54999);
             const surpriseBonusText = includesPrewedding ? `🎁 SURPRISE BONUS: Free Save the Date Photoshoot (worth ₹9,999/-) included!\n` : '';
 
             const message = `Hi ${b.name}!\n\n` +

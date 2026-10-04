@@ -8,7 +8,7 @@ const weddingPlans = [
   {
     shareId: "pkgWeddingBasicCard",
     title: "Wedding Photography",
-    price: "₹39,999",
+    price: "₹44,999",
     tag: "+ SPECIAL LIMITED TIME OFFER",
     modalTag: "Essential",
     subtitle: "ESSENTIAL SINGLE-SIDE",
