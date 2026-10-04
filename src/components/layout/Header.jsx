@@ -173,24 +173,6 @@ const Header = () => {
                   >
                     💍 Client Portal
                   </NavLink>
-                  <NavLink 
-                    to="/admin" 
-                    className="px-4 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-zinc-300 hover:text-[#b4975a] hover:bg-white/5 transition-all text-left block"
-                  >
-                    ⚙️ Admin Login
-                  </NavLink>
-                  <NavLink 
-                    to="/editor" 
-                    className="px-4 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-zinc-300 hover:text-[#b4975a] hover:bg-white/5 transition-all text-left block"
-                  >
-                    🎥 Video Editor
-                  </NavLink>
-                  <NavLink 
-                    to="/designer" 
-                    className="px-4 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-zinc-300 hover:text-[#b4975a] hover:bg-white/5 transition-all text-left block"
-                  >
-                    📖 Album Designer
-                  </NavLink>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -270,34 +252,13 @@ const Header = () => {
 
             {/* Mobile login items */}
             <div className="w-full border-t border-white/5 pt-4 mt-2 flex flex-col items-center gap-4">
-              <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">Workspace Portals</span>
+              <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">Client Console</span>
               <NavLink
                 to="/my-booking"
                 onClick={() => setIsOpen(false)}
                 className="text-base text-zinc-300 hover:text-[#b4975a] tracking-wide transition-all uppercase"
               >
                 💍 Client Portal
-              </NavLink>
-              <NavLink
-                to="/admin"
-                onClick={() => setIsOpen(false)}
-                className="text-base text-zinc-300 hover:text-[#b4975a] tracking-wide transition-all uppercase"
-              >
-                ⚙️ Admin Login
-              </NavLink>
-              <NavLink
-                to="/editor"
-                onClick={() => setIsOpen(false)}
-                className="text-base text-zinc-300 hover:text-[#b4975a] tracking-wide transition-all uppercase"
-              >
-                🎥 Video Editor Login
-              </NavLink>
-              <NavLink
-                to="/designer"
-                onClick={() => setIsOpen(false)}
-                className="text-base text-zinc-300 hover:text-[#b4975a] tracking-wide transition-all uppercase"
-              >
-                📖 Album Designer Login
               </NavLink>
             </div>
           </motion.div>

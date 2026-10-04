@@ -1116,6 +1116,7 @@ const ClientGallery = () => {
         <SEO 
           title={`${meta?.name || "Private"} Gallery | Dreamwed Stories`}
           description="View private cinematic wedding deliverables curated by Dreamwed Stories."
+          noindex={true}
         />
 
         {/* Cinematic Backdrop */}
@@ -1333,6 +1334,7 @@ const ClientGallery = () => {
       <SEO 
         title={`${gallery?.groomName && gallery?.brideName ? `${gallery.groomName} & ${gallery.brideName}` : (gallery?.name || "Wedding")} | Dreamwed Stories`}
         description="A cinematic wedding photography journey curated by Dreamwed Stories."
+        noindex={true}
       />
 
       {/* Sticky Top Luxury Header */}

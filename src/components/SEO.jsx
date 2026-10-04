@@ -4,13 +4,25 @@ import { useEffect } from "react";
  * Lightweight, dependency-free SEO manager component.
  * Dynamically updates document head metadata (Title, Description, Keywords, Open Graph tags) on page mount.
  */
-const SEO = ({ title, description, keywords, ogImage, ogUrl }) => {
+const SEO = ({ title, description, keywords, ogImage, ogUrl, noindex = false }) => {
   useEffect(() => {
     // 1. Update Page Title (optimized for Trivandrum Wedding Photography ranking)
     const baseTitle = "Dreamwed Stories | Best Wedding Photography in Trivandrum, Kerala";
     document.title = title && title !== "Home" ? `${title} | Dreamwed Stories` : baseTitle;
 
-    // 2. Update Meta Description
+    // 2. Manage Robots Meta Directive (noindex for private/staff/client portals)
+    let robotsMeta = document.querySelector('meta[name="robots"]');
+    if (!robotsMeta) {
+      robotsMeta = document.createElement("meta");
+      robotsMeta.name = "robots";
+      document.head.appendChild(robotsMeta);
+    }
+    robotsMeta.setAttribute(
+      "content",
+      noindex ? "noindex, nofollow, noarchive" : "index, follow, max-image-preview:large"
+    );
+
+    // 3. Update Meta Description
     const metaDescription = document.querySelector('meta[name="description"]');
     const defaultDesc = "Capture your special day with the best wedding photography in Trivandrum. Candid moments, cinematic films & pre-wedding shoots by Dreamwed Stories.";
     if (metaDescription) {
@@ -22,7 +34,7 @@ const SEO = ({ title, description, keywords, ogImage, ogUrl }) => {
       document.head.appendChild(newMeta);
     }
 
-    // 3. Update Meta Keywords
+    // 4. Update Meta Keywords
     const metaKeywords = document.querySelector('meta[name="keywords"]');
     const defaultKeywords = "best wedding photography in trivandrum, wedding photography Trivandrum, Kerala wedding photographer, candid wedding photography Kerala, cinematic wedding films Trivandrum, pre-wedding shoot Kerala, professional photographers Trivandrum";
     if (metaKeywords) {
@@ -34,32 +46,42 @@ const SEO = ({ title, description, keywords, ogImage, ogUrl }) => {
       document.head.appendChild(newMeta);
     }
 
-    // 4. Update Open Graph Title
+    // 5. Update Open Graph Title
     const ogTitleTag = document.querySelector('meta[property="og:title"]');
     if (ogTitleTag) {
       ogTitleTag.setAttribute("content", title ? `${title} | Dreamwed Stories` : baseTitle);
     }
 
-    // 5. Update Open Graph Description
+    // 6. Update Open Graph Description
     const ogDescTag = document.querySelector('meta[property="og:description"]');
     if (ogDescTag) {
       ogDescTag.setAttribute("content", description || defaultDesc);
     }
 
-    // 6. Update Open Graph URL
+    // 7. Update Open Graph URL
     const ogUrlTag = document.querySelector('meta[property="og:url"]');
     if (ogUrlTag) {
       ogUrlTag.setAttribute("content", ogUrl || window.location.href);
     }
 
-    // 7. Update Open Graph Image (Hero representation)
+    // 8. Update Open Graph Image (Hero representation)
     if (ogImage) {
       const ogImgTag = document.querySelector('meta[property="og:image"]');
       if (ogImgTag) {
         ogImgTag.setAttribute("content", ogImage);
       }
     }
-  }, [title, description, keywords, ogImage, ogUrl]);
+
+    // Cleanup: Reset robots back to index when leaving unindexed pages in SPA
+    return () => {
+      if (noindex) {
+        const resetMeta = document.querySelector('meta[name="robots"]');
+        if (resetMeta) {
+          resetMeta.setAttribute("content", "index, follow, max-image-preview:large");
+        }
+      }
+    };
+  }, [title, description, keywords, ogImage, ogUrl, noindex]);
 
   return null;
 };

@@ -2,16 +2,16 @@ User-agent: *
 Allow: /
 Allow: /about
 Allow: /services
+Allow: /packages
+Allow: /trivandrum-offer
 Allow: /blog
 Allow: /contact
 Allow: /offer
 Allow: /booking
-Allow: /my-booking
-Allow: /ai-search
 
-# Block internal staff portals from search indexing
-Disallow: /admin/
-Disallow: /editor/
-Disallow: /designer/
+# Googlebot-Image crawl permission for favicons & imagery
+User-agent: Googlebot-Image
+Allow: /
 
+# Sitemap
 Sitemap: https://dreamwedstories.co.in/sitemap.xml

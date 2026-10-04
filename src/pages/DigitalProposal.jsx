@@ -685,6 +685,7 @@ export default function DigitalProposal() {
       <SEO
         title={`${proposal.clientName} — Luxury Wedding Photography Proposal | Dreamwed Stories`}
         description={`Bespoke wedding photography and cinematic film proposal for ${proposal.clientName} by Dreamwed Stories.`}
+        noindex={true}
       />
 
       {/* ================= TOP TOOLBAR (NO-PRINT) ================= */}

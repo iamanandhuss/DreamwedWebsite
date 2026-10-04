@@ -392,7 +392,7 @@ const EditorPortal = () => {
       >
         <span>←</span> Back to Home
       </a>
-      <SEO title="Video Editor Portal | Dreamwed Stories" description="Dreamwed Stories internal video editor workspace." />
+      <SEO title="Video Editor Portal | Dreamwed Stories" description="Dreamwed Stories internal video editor workspace." noindex={true} />
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-[28px] p-8 space-y-6">
         <div className="text-center space-y-2">
@@ -435,7 +435,7 @@ const EditorPortal = () => {
   // AUTHENTICATED WORKSPACE
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-white pt-20 pb-16">
-      <SEO title="Video Editor Portal | Dreamwed Stories" description="Editor workspace." />
+      <SEO title="Video Editor Portal | Dreamwed Stories" description="Editor workspace." noindex={true} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
         {/* Header */}

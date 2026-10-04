@@ -2542,6 +2542,7 @@ const ClientPortal = () => {
         <SEO 
           title="DreamWed Client Portal"
           description="Your personal wedding dashboard where you can track progress, download files, chat with us, and view wedding photos."
+          noindex={true}
         />
         
         {/* Luxury Background Wedding Hero Image */}
@@ -2769,6 +2770,7 @@ const ClientPortal = () => {
       <SEO 
         title="DreamWed Client Portal"
         description="Interact with your premium wedding project timeline, favorite layflat album selections, comment on retouches, and download finalized high-res wedding files."
+        noindex={true}
       />
 
       {/* 1. LEFT SIDEBAR (Ivory, elegant typography, icons) */}

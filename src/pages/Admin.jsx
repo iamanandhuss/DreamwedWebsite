@@ -1853,7 +1853,7 @@ const Admin = () => {
         >
           <span>←</span> Back to Home
         </a>
-        <SEO title="Admin Control Center" description="Dreamwed Stories secure management portal." />
+        <SEO title="Admin Control Center" description="Dreamwed Stories secure management portal." noindex={true} />
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -1899,7 +1899,7 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-[#0b0f19] flex text-white font-sans office-theme-container selection:bg-[#d4af37]/30 selection:text-white">
-      <SEO title="Admin Control Center" description="Dreamwed Stories secure management portal." />
+      <SEO title="Admin Control Center" description="Dreamwed Stories secure management portal." noindex={true} />
 
       {/* Desktop Sidebar */}
       <aside className="w-72 hidden lg:flex flex-col bg-[#131a2b]/95 backdrop-blur-md border-r border-zinc-800/40 h-screen sticky top-0 z-40 p-6 shrink-0 justify-between">

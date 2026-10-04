@@ -225,6 +225,7 @@ const GroomBrideSignup = () => {
       <SEO 
         title="Luxury Couple Registry & Onboarding | Dreamwed Stories"
         description="Initialize your premium digital wedding workspace, capture beautiful Bride and Groom creative coverage specifications, and unlock your luxury invoice client console instantly."
+        noindex={true}
       />
 
       {/* Decorative luxury glows */}
