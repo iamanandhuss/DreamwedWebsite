@@ -1,9 +1,8 @@
 import React from 'react';
 import PricingSection from '../components/pricing/PricingSection';
 import InstagramFeed from '../components/sections/InstagramFeed';
-import TestimonialSection from '../components/sections/TestimonialSection';
 import CinemaSpotlight from '../components/sections/CinemaSpotlight';
-import AkashParvathiStory from '../components/sections/AkashParvathiStory';
+import TestimonialSection from '../components/sections/TestimonialSection';
 import SEO from '../components/SEO';
 
 const Packages = () => {
@@ -94,8 +93,6 @@ const Packages = () => {
       {/* Testimonials Section - SOCIAL PROOF (The Reviews) */}
       <TestimonialSection dark={true} />
 
-      {/* Real Engagement Story - SOCIAL PROOF & FINE-ART EXCELLENCE */}
-      <AkashParvathiStory dark={true} />
 
       {/* Pricing Section - THE INVESTMENT (Pricing cards, countdown, urgency widget) */}
       <div id="packages" className="scroll-mt-24 border-t border-white/5 bg-[#0a0a0c]">
