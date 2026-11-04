@@ -219,11 +219,11 @@ const TrivandrumOffer = () => {
       bonus: "LIMITED TIME OFFER",
       bonusDesc: "Save ₹20,000! Ultimate luxury package with helicam, custom album boxes, and complete dual-side coverage.",
       quoteMalayalam: "“ ചില നിമിഷങ്ങൾ എന്നും ഓർമ്മയിൽ സൂക്ഷിക്കാൻ ഉള്ളതാണ് ”",
-      specialBanner: "Free Premium Pre-Wedding Photography | Free Candid Wedding Photography | Free Candid Wedding Videography | Reels | Edited Photos For Social Media",
+      specialBanner: "Free Premium Pre-Wedding Photography & Video | Free Candid Wedding Photography | Free Candid Wedding Videography | Reels | Edited Photos For Social Media",
       images: ["/luxury_110k_1.jpg", "/luxury_110k_2.jpg", "/luxury_110k_3.jpg", "/luxury_110k_4.jpg"],
       imagePositions: ["center 70%", "center 28%", "center 28%", "center 28%"],
       details: [
-        "Free Pre-Wedding (Photo) & Videography Shoot",
+        "Free Pre-Wedding Photography & Cinematic Video Shoot",
         "Bride Reception (Photo + Video)",
         "Groom Reception (Photo + Video)",
         "Wedding Ceremony (Photo + Video)",

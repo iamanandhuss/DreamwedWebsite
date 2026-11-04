@@ -143,10 +143,10 @@ const weddingPlans = [
     modalTag: "Signature Luxury",
     subtitle: "4-CAMERA DUAL-SIDE LUXURY COVERAGE",
     quoteMalayalam: "“ ചില നിമിഷങ്ങൾ എന്നും ഓർമ്മയിൽ സൂക്ഷിക്കാൻ ഉള്ളതാണ് ”",
-    specialBanner: "Free Premium Pre-Wedding Photography | Free Candid Wedding Photography | Free Candid Wedding Videography | Reels | Edited Photos For Social Media",
+    specialBanner: "Free Premium Pre-Wedding Photography & Video | Free Candid Wedding Photography | Free Candid Wedding Videography | Reels | Edited Photos For Social Media",
     weCover: [
       "4 Camera Wedding Coverage (Full Dual Side Coverage)",
-      "Free Pre-Wedding (Photo)",
+      "Free Pre-Wedding (Photo + Video)",
       "Bride Reception (Photo + Video)",
       "Groom Reception (Photo + Video)",
       "Wedding (Photo + Video)",
@@ -155,6 +155,7 @@ const weddingPlans = [
     ],
     whatBothGet: [
       "Pre-Wedding Photography",
+      "Pre-Wedding Videography",
       "Wedding Reception Photography",
       "Wedding Reception Videography",
       "Wedding Photography",
@@ -176,13 +177,13 @@ const weddingPlans = [
       "Glossy / Matte Finish",
       "Candid Photos Included"
     ],
-    preweddingOffer: "FREE DRONE + 2 CUSTOM ALBUM BOXES + 4 FRAMES",
+    preweddingOffer: "FREE PRE-WEDDING VIDEO + DRONE + 2 CUSTOM ALBUM BOXES",
     desc: "Our ultimate dual-side wedding collection. Features comprehensive 4-camera coverage, drone photography, 2 handcrafted 80-page albums with album bags & custom boxes (one for bride and one for groom), 2 mini albums, 4 wall frames, 2 calendars, and 2 pendrives.",
     setup: "2 Photographers + 2 Videographers + Drone + 2 Custom Album Boxes",
     images: ["/luxury_110k_1.jpg", "/luxury_110k_2.jpg", "/luxury_110k_3.jpg", "/luxury_110k_4.jpg"],
     imagePositions: ["center 70%", "center 28%", "center 28%", "center 28%"],
     features: [
-      "Free Pre-Wedding (Photo) & Videography Shoot",
+      "Free Pre-Wedding Photography & Cinematic Video Shoot",
       "Bride Reception (Photo + Video)",
       "Groom Reception (Photo + Video)",
       "Wedding Ceremony (Photo + Video)",
