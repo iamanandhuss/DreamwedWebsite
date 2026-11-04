@@ -137,28 +137,66 @@ const weddingPlans = [
   {
     shareId: "pkgLuxuryCard",
     title: "Bride & Groom Luxury Package",
+    packName: "BRIDE & GROOM PACK 01",
     price: "₹1,10,000",
     tag: "+ LIMITED TIME OFFER",
     modalTag: "Signature Luxury",
     subtitle: "4-CAMERA DUAL-SIDE LUXURY COVERAGE",
-    preweddingOffer: "FREE DRONE + PREMIUM CUSTOM ALBUM BOX",
-    desc: "Our ultimate dual-side wedding collection. Features comprehensive coverage, drone photography, 2 handcrafted albums with custom boxes (one for bride and one for groom), and 2 mini albums.",
+    quoteMalayalam: "“ ചില നിമിഷങ്ങൾ എന്നും ഓർമ്മയിൽ സൂക്ഷിക്കാൻ ഉള്ളതാണ് ”",
+    specialBanner: "Free Premium Pre-Wedding Photography | Free Candid Wedding Photography | Free Candid Wedding Videography | Reels | Edited Photos For Social Media",
+    weCover: [
+      "4 Camera Wedding Coverage (Full Dual Side Coverage)",
+      "Free Pre-Wedding (Photo)",
+      "Bride Reception (Photo + Video)",
+      "Groom Reception (Photo + Video)",
+      "Wedding (Photo + Video)",
+      "Candid Wedding (Photo + Video)",
+      "Helicam (Drone) Aerial Coverage"
+    ],
+    whatBothGet: [
+      "Pre-Wedding Photography",
+      "Wedding Reception Photography",
+      "Wedding Reception Videography",
+      "Wedding Photography",
+      "Wedding Videography",
+      "Wedding Candid Photography",
+      "Wedding Candid Videography",
+      "One 80-Pages Premium Album with Candid Photos (2 Albums Total: 1 for Bride & 1 for Groom)",
+      "One 80-Pages Mini Album (2 Mini Albums Total: 1 for Bride & 1 for Groom)",
+      "Highlights Video",
+      "Full HD Wedding Video with Candid",
+      "Instagram Reel",
+      "Wall Frame 2 (4 Total: 2 for Bride & 2 for Groom)",
+      "Pendrive (2 Total: 1 for Bride & 1 for Groom)",
+      "Calender (2 Total: 1 for Bride & 1 for Groom)"
+    ],
+    albumSpecs: [
+      "80 Pages Premium Layflat",
+      "Album Bag Included",
+      "Glossy / Matte Finish",
+      "Candid Photos Included"
+    ],
+    preweddingOffer: "FREE DRONE + 2 CUSTOM ALBUM BOXES + 4 FRAMES",
+    desc: "Our ultimate dual-side wedding collection. Features comprehensive 4-camera coverage, drone photography, 2 handcrafted 80-page albums with album bags & custom boxes (one for bride and one for groom), 2 mini albums, 4 wall frames, 2 calendars, and 2 pendrives.",
     setup: "2 Photographers + 2 Videographers + Drone + 2 Custom Album Boxes",
     images: ["/luxury_110k_1.jpg", "/luxury_110k_2.jpg", "/luxury_110k_3.jpg", "/luxury_110k_4.jpg"],
     imagePositions: ["center 70%", "center 28%", "center 28%", "center 28%"],
     features: [
-      "Pre-Wedding Photography & Videography (Save the Date)",
-      "Wedding & Reception Photography (Dual-side)",
-      "Wedding & Reception Videography (Dual-side)",
-      "Wedding Candid Photography & Videography",
+      "Free Pre-Wedding (Photo) & Videography Shoot",
+      "Bride Reception (Photo + Video)",
+      "Groom Reception (Photo + Video)",
+      "Wedding Ceremony (Photo + Video)",
+      "Candid Wedding Photography & Videography",
+      "4-Camera Wedding Coverage (Full Dual Side)",
       "Helicam (Drone) Aerial Coverage",
-      "2 80-Pages Premium Albums with Handcrafted Album Boxes (One for Bride & One for Groom)",
-      "2 80-Pages Mini Albums (One for Bride & One for Groom)",
+      "2 80-Pages Premium Albums with Album Bags & Boxes (1 for Bride & 1 for Groom)",
+      "2 80-Pages Mini Albums (1 for Bride & 1 for Groom)",
+      "Full HD Wedding Video with Candid",
       "Cinematic Highlights Film & Instagram Reels",
-      "Full HD Wedding Video Film",
-      "4 Premium Wall Frames (2 for Bride & 2 for Groom)",
-      "2 Customized Photo Calendars (1 for Bride & 1 for Groom)",
+      "4 Wall Frames (2 for Bride & 2 for Groom)",
       "2 High-Speed USB Pen Drives (1 for Bride & 1 for Groom)",
+      "2 Customized Photo Calendars (1 for Bride & 1 for Groom)",
+      "Glossy / Matte Album Finish with Candid Photos Included",
       "Edited Photos & High-speed Pendrive Backup"
     ]
   }
@@ -1014,6 +1052,83 @@ const PricingSection = () => {
                     {activePlan.desc}
                   </p>
 
+                  {/* Malayalam Sentiment Quote (From Official Flyer) */}
+                  {activePlan.quoteMalayalam && (
+                    <div className="bg-[#b4975a]/10 border border-[#b4975a]/30 rounded-2xl p-3.5 text-center shadow-xs">
+                      <p className="text-sm font-semibold text-[#8c6a23] italic" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                        {activePlan.quoteMalayalam}
+                      </p>
+                      <span className="text-[9px] font-bold text-[#b4975a] uppercase tracking-widest mt-1 block">
+                        Special Package • {activePlan.packName || "Bride & Groom Pack 01"}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Special Bonus Highlight Banner */}
+                  {activePlan.specialBanner && (
+                    <div className="bg-red-50 border border-red-200 rounded-2xl p-3 text-center shadow-xs">
+                      <p className="text-[10.5px] font-bold text-red-600 leading-relaxed uppercase tracking-wider">
+                        {activePlan.specialBanner}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* We Cover For You Sub-Section */}
+                  {activePlan.weCover && (
+                    <div className="border border-[#b4975a]/25 bg-[#b4975a]/5 p-4 rounded-2xl space-y-2.5 text-left shadow-xs">
+                      <span className="block text-[#8c6a23] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                        🎥 We Cover For You...
+                      </span>
+                      <ul className="space-y-1.5 text-xs text-zinc-700">
+                        {activePlan.weCover.map((item, idx) => (
+                          <li key={idx} className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#b4975a] shrink-0" />
+                            <span className="font-medium">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* What You Both Will Get Sub-Section */}
+                  {activePlan.whatBothGet && (
+                    <div className="border border-zinc-200 bg-white p-4 rounded-2xl space-y-2.5 text-left shadow-sm">
+                      <div className="flex justify-between items-center border-b border-zinc-100 pb-2">
+                        <span className="block text-zinc-900 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                          🎁 What You Both Will Get...
+                        </span>
+                        <span className="text-[10px] text-[#8c6a23] font-semibold italic">
+                          For Bride &amp; Groom each:
+                        </span>
+                      </div>
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-zinc-700 pt-1">
+                        {activePlan.whatBothGet.map((item, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0 mt-1.5" />
+                            <span className="leading-snug">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Wedding Album Specifications Sub-Section */}
+                  {activePlan.albumSpecs && (
+                    <div className="border border-amber-400/40 bg-amber-500/5 p-4 rounded-2xl space-y-2 text-left shadow-xs">
+                      <span className="block text-amber-900 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                        📖 Wedding Album Specifications
+                      </span>
+                      <ul className="grid grid-cols-2 gap-2 text-xs text-zinc-700">
+                        {activePlan.albumSpecs.map((item, idx) => (
+                          <li key={idx} className="flex items-center gap-2 font-medium">
+                            <span className="text-amber-600 font-bold">✓</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   {/* Why Book This Package Highlights */}
                   <div className="border border-[#8B222C]/15 bg-[#8B222C]/4 p-4 rounded-2xl space-y-3 select-none text-left">
                     <span className="block text-[#8B222C] text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
@@ -1061,7 +1176,7 @@ const PricingSection = () => {
                   </div>
 
                   {/* Standalone Value Breakdown */}
-                  {activePlan.shareId.startsWith("pkgWedding") && !activePlan.shareId.includes("Standalone") && (
+                  {(activePlan.shareId.startsWith("pkgWedding") || activePlan.shareId === "pkgLuxuryCard") && !activePlan.shareId.includes("Standalone") && (
                     <div className="bg-white border border-[#E6E1DA] p-4 rounded-2xl space-y-2.5 select-none shadow-sm">
                       <span className="block text-[#A99268] text-[9.5px] font-bold uppercase tracking-wider">
                         💎 Combined Package Value Breakdown
@@ -1105,7 +1220,7 @@ const PricingSection = () => {
                           <span className="font-bold">
                             {activePlan.shareId === "pkgWeddingBasicCard" ? "₹71,998" :
                              activePlan.shareId === "pkgWeddingPreCard" ? "₹74,998" :
-                             activePlan.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,24,998"}
+                             activePlan.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,29,998"}
                           </span>
                         </div>
                         <div className="flex justify-between text-[#A99268] font-semibold text-[11px] pt-1">
@@ -1118,7 +1233,7 @@ const PricingSection = () => {
                           activePlan.shareId === "pkgWeddingBasicCard" ? "₹31,999 (44% OFF)" :
                           activePlan.shareId === "pkgWeddingPreCard" ? "₹19,999 (27% OFF)" :
                           activePlan.shareId === "pkgCandidCard" ? "₹19,999 (22% OFF)" :
-                          "₹14,998 (12% OFF)"
+                          "₹19,998 (15% OFF)"
                         }!
                       </div>
                     </div>

@@ -103,27 +103,33 @@ const weddingPlans = [
   {
     shareId: "pkgLuxuryCard",
     title: "Bride & Groom Luxury Package",
+    packName: "BRIDE & GROOM PACK 01",
     price: "₹1,10,000",
     tag: "+ LIMITED TIME OFFER",
     modalTag: "Signature Luxury",
     subtitle: "4-CAMERA DUAL-SIDE LUXURY COVERAGE",
-    preweddingOffer: "FREE DRONE + PREMIUM CUSTOM ALBUM BOX",
-    desc: "Our ultimate dual-side wedding collection. Features comprehensive coverage, drone photography, 2 handcrafted albums with custom boxes (one for bride and one for groom), and 2 mini albums.",
+    quoteMalayalam: "“ ചില നിമിഷങ്ങൾ എന്നും ഓർമ്മയിൽ സൂക്ഷിക്കാൻ ഉള്ളതാണ് ”",
+    specialBanner: "Free Premium Pre-Wedding Photography | Free Candid Wedding Photography | Free Candid Wedding Videography | Reels | Edited Photos For Social Media",
+    preweddingOffer: "FREE DRONE + 2 CUSTOM ALBUM BOXES + 4 FRAMES",
+    desc: "Our ultimate dual-side wedding collection. Features comprehensive 4-camera coverage, drone photography, 2 handcrafted 80-page albums with album bags & custom boxes (one for bride and one for groom), 2 mini albums, 4 wall frames, 2 calendars, and 2 pendrives.",
     setup: "2 Photographers + 2 Videographers + Drone + 2 Custom Album Boxes",
-    images: ["/bride_christian_white.jpg", "/uploaded_couple_blackwhite.jpg", "/kochi_couple_carry.jpg"],
+    images: ["/luxury_110k_1.jpg", "/luxury_110k_2.jpg", "/luxury_110k_3.jpg", "/luxury_110k_4.jpg"],
     features: [
-      "Pre-Wedding Photography & Videography (Save the Date)",
-      "Wedding & Reception Photography (Dual-side)",
-      "Wedding & Reception Videography (Dual-side)",
-      "Wedding Candid Photography & Videography",
+      "Free Pre-Wedding (Photo) & Videography Shoot",
+      "Bride Reception (Photo + Video)",
+      "Groom Reception (Photo + Video)",
+      "Wedding Ceremony (Photo + Video)",
+      "Candid Wedding Photography & Videography",
+      "4-Camera Wedding Coverage (Full Dual Side)",
       "Helicam (Drone) Aerial Coverage",
-      "2 80-Pages Premium Albums with Handcrafted Album Boxes (One for Bride & One for Groom)",
-      "2 80-Pages Mini Albums (One for Bride & One for Groom)",
+      "2 80-Pages Premium Albums with Handcrafted Album Boxes & Bags (1 for Bride & 1 for Groom)",
+      "2 80-Pages Mini Albums (1 for Bride & 1 for Groom)",
+      "Full HD Wedding Video with Candid",
       "Cinematic Highlights Film & Instagram Reels",
-      "Full HD Wedding Video Film",
-      "4 Premium Wall Frames (2 for Bride & 2 for Groom)",
-      "2 Customized Photo Calendars (1 for Bride & 1 for Groom)",
+      "4 Wall Frames (2 for Bride & 2 for Groom)",
       "2 High-Speed USB Pen Drives (1 for Bride & 1 for Groom)",
+      "2 Customized Photo Calendars (1 for Bride & 1 for Groom)",
+      "Glossy / Matte Album Finish with Candid Photos Included",
       "Edited Photos & High-speed Pendrive Backup"
     ]
   }
@@ -823,8 +829,18 @@ const Services = () => {
                       {plan.modalTag || plan.tag || "Collection"}
                     </span>
                     <h3 className="text-2xl sm:text-3xl text-zinc-900 font-semibold tracking-tight font-serif leading-tight">
-                      {plan.title.toLowerCase().includes("package") ? plan.title : `${plan.title} Package`}
+                      {plan.packName || (plan.title.toLowerCase().includes("package") ? plan.title : `${plan.title} Package`)}
                     </h3>
+                    {plan.quoteMalayalam && (
+                      <div className="text-xs sm:text-sm text-[#9b1c1c] font-medium italic -mt-1 font-serif">
+                        {plan.quoteMalayalam}
+                      </div>
+                    )}
+                    {plan.specialBanner && (
+                      <div className="text-[10px] font-bold text-red-650 uppercase tracking-wider bg-red-50 border border-red-200/60 p-2 rounded-xl text-center leading-relaxed">
+                        {plan.specialBanner}
+                      </div>
+                    )}
                     {/* Dynamic Double Pricing & Countdown Timer Block */}
                     <div className="flex flex-col gap-2 bg-[#9b1c1c]/5 border border-[#9b1c1c]/15 p-4.5 rounded-2xl select-none text-left">
                       <div className="flex items-baseline gap-3 flex-wrap">
@@ -924,7 +940,7 @@ const Services = () => {
                     </div>
 
                     {/* Standalone Value Breakdown */}
-                    {plan.shareId.startsWith("pkgWedding") && !plan.shareId.includes("Standalone") && (
+                    {(plan.shareId.startsWith("pkgWedding") || plan.shareId === "pkgLuxuryCard") && !plan.shareId.includes("Standalone") && (
                       <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-2xl space-y-2.5 select-none text-left">
                         <span className="block text-[#1e3f20] text-[9.5px] font-bold uppercase tracking-wider">
                           💎 Combined Package Value Breakdown
@@ -957,8 +973,8 @@ const Services = () => {
                                 <span className="font-semibold text-zinc-800">Worth ₹35,000</span>
                               </div>
                               <div className="flex justify-between text-zinc-500">
-                                <span>Custom Handcrafted Album Box & Extras</span>
-                                <span className="font-semibold text-zinc-800">Worth ₹15,000</span>
+                                <span>2 Handcrafted Album Boxes, Bags & 4 Frames</span>
+                                <span className="font-semibold text-zinc-800">Worth ₹20,000</span>
                               </div>
                             </>
                           )}
@@ -968,7 +984,7 @@ const Services = () => {
                             <span className="font-bold">
                               {plan.shareId === "pkgWeddingBasicCard" ? "₹71,998" :
                                plan.shareId === "pkgWeddingPreCard" ? "₹74,998" :
-                               plan.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,24,998"}
+                               plan.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,29,998"}
                             </span>
                           </div>
                           <div className="flex justify-between text-[#9b1c1c] font-semibold text-[11px] pt-1">
@@ -981,7 +997,7 @@ const Services = () => {
                             plan.shareId === "pkgWeddingBasicCard" ? "₹31,999 (44% OFF)" :
                             plan.shareId === "pkgWeddingPreCard" ? "₹19,999 (27% OFF)" :
                             plan.shareId === "pkgCandidCard" ? "₹19,999 (22% OFF)" :
-                            "₹14,998 (12% OFF)"
+                            "₹19,998 (15% OFF)"
                           }!
                         </div>
                       </div>

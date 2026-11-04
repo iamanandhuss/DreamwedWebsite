@@ -212,29 +212,35 @@ const TrivandrumOffer = () => {
       id: 5,
       shareId: "pkgLuxuryCard",
       title: "Bride & Groom Luxury Package",
+      packName: "BRIDE & GROOM PACK 01",
       subtitle: "4-Camera Dual-Side Luxury Coverage",
       regularPrice: "1,30,000",
       offerPrice: "1,10,000",
       bonus: "LIMITED TIME OFFER",
       bonusDesc: "Save ₹20,000! Ultimate luxury package with helicam, custom album boxes, and complete dual-side coverage.",
+      quoteMalayalam: "“ ചില നിമിഷങ്ങൾ എന്നും ഓർമ്മയിൽ സൂക്ഷിക്കാൻ ഉള്ളതാണ് ”",
+      specialBanner: "Free Premium Pre-Wedding Photography | Free Candid Wedding Photography | Free Candid Wedding Videography | Reels | Edited Photos For Social Media",
       images: ["/luxury_110k_1.jpg", "/luxury_110k_2.jpg", "/luxury_110k_3.jpg", "/luxury_110k_4.jpg"],
       imagePositions: ["center 70%", "center 28%", "center 28%", "center 28%"],
       details: [
-        "Pre-Wedding Photography & Videography (Save the Date)",
-        "Wedding & Reception Photography (Dual-side)",
-        "Wedding & Reception Videography (Dual-side)",
-        "Wedding Candid Photography & Videography",
+        "Free Pre-Wedding (Photo) & Videography Shoot",
+        "Bride Reception (Photo + Video)",
+        "Groom Reception (Photo + Video)",
+        "Wedding Ceremony (Photo + Video)",
+        "Candid Wedding Photography & Videography",
+        "4-Camera Wedding Coverage (Full Dual Side)",
         "Helicam (Drone) Aerial Coverage",
-        "2 80-Pages Premium Albums with Handcrafted Album Boxes (One for Bride & One for Groom)",
-        "2 80-Pages Mini Albums (One for Bride & One for Groom)",
+        "2 80-Pages Premium Albums with Handcrafted Album Boxes & Bags (1 for Bride & 1 for Groom)",
+        "2 80-Pages Mini Albums (1 for Bride & 1 for Groom)",
+        "Full HD Wedding Video with Candid",
         "Cinematic Highlights Film & Instagram Reels",
-        "Full HD Wedding Video Film",
-        "4 Premium Wall Frames (2 for Bride & 2 for Groom)",
-        "2 Customized Photo Calendars (1 for Bride & 1 for Groom)",
+        "4 Wall Frames (2 for Bride & 2 for Groom)",
         "2 High-Speed USB Pen Drives (1 for Bride & 1 for Groom)",
+        "2 Customized Photo Calendars (1 for Bride & 1 for Groom)",
+        "Glossy / Matte Album Finish with Candid Photos Included",
         "Edited Photos & High-speed Pendrive Backup"
       ],
-      description: "Our ultimate dual-side wedding collection. Features comprehensive coverage, drone photography, 2 handcrafted albums with custom boxes (one for bride and one for groom), 2 mini albums, 4 wall frames (2 for bride & 2 for groom), 2 photo calendars (1 for bride & 1 for groom), and 2 USB pen drives (1 for bride & 1 for groom)."
+      description: "Our ultimate dual-side wedding collection. Features comprehensive 4-camera coverage, drone photography, 2 handcrafted 80-page albums with album bags & custom boxes (one for bride and one for groom), 2 mini albums, 4 wall frames, 2 calendars, and 2 pendrives."
     }
   ];
 
@@ -2235,8 +2241,18 @@ const TrivandrumOffer = () => {
                       {pack.subtitle}
                     </span>
                     <h3 className="text-2xl sm:text-3xl text-zinc-900 font-semibold tracking-tight leading-tight" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                      {pack.title.toLowerCase().includes("package") ? pack.title : `${pack.title} Package`}
+                      {pack.packName || (pack.title.toLowerCase().includes("package") ? pack.title : `${pack.title} Package`)}
                     </h3>
+                    {pack.quoteMalayalam && (
+                      <div className="text-xs sm:text-sm text-[#9b1c1c] font-medium italic -mt-1 font-serif">
+                        {pack.quoteMalayalam}
+                      </div>
+                    )}
+                    {pack.specialBanner && (
+                      <div className="text-[10px] font-bold text-red-650 uppercase tracking-wider bg-red-50 border border-red-200/60 p-2 rounded-xl text-center leading-relaxed">
+                        {pack.specialBanner}
+                      </div>
+                    )}
                     {/* Dynamic Double Pricing & Countdown Timer Block */}
                     <div className="flex flex-col gap-2 bg-[#9b1c1c]/5 border border-[#9b1c1c]/15 p-4.5 rounded-2xl select-none text-left w-full">
                       <div className="flex items-baseline gap-3 flex-wrap">
@@ -2336,7 +2352,7 @@ const TrivandrumOffer = () => {
                     </div>
 
                     {/* Standalone Value Breakdown */}
-                    {pack.shareId && pack.shareId.startsWith("pkgWedding") && !pack.shareId.includes("Standalone") && (
+                    {pack.shareId && (pack.shareId.startsWith("pkgWedding") || pack.shareId === "pkgLuxuryCard") && !pack.shareId.includes("Standalone") && (
                       <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-2xl space-y-2.5 select-none text-left">
                         <span className="block text-[#1e3f20] text-[9.5px] font-bold uppercase tracking-wider">
                           💎 Combined Package Value Breakdown
@@ -2369,8 +2385,8 @@ const TrivandrumOffer = () => {
                                 <span className="font-semibold text-zinc-800">Worth ₹35,000</span>
                               </div>
                               <div className="flex justify-between text-zinc-500">
-                                <span>Custom Handcrafted Album Box & Extras</span>
-                                <span className="font-semibold text-zinc-800">Worth ₹15,000</span>
+                                <span>2 Handcrafted Album Boxes, Bags & 4 Frames</span>
+                                <span className="font-semibold text-zinc-800">Worth ₹20,000</span>
                               </div>
                             </>
                           )}
@@ -2380,7 +2396,7 @@ const TrivandrumOffer = () => {
                             <span className="font-bold">
                               {pack.shareId === "pkgWeddingBasicCard" ? "₹71,998" :
                                pack.shareId === "pkgWeddingPreCard" ? "₹74,998" :
-                               pack.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,24,998"}
+                               pack.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,29,998"}
                             </span>
                           </div>
                           <div className="flex justify-between text-[#9b1c1c] font-semibold text-[11px] pt-1">
@@ -2393,7 +2409,7 @@ const TrivandrumOffer = () => {
                             pack.shareId === "pkgWeddingBasicCard" ? "₹31,999 (44% OFF)" :
                             pack.shareId === "pkgWeddingPreCard" ? "₹19,999 (27% OFF)" :
                             pack.shareId === "pkgCandidCard" ? "₹19,999 (22% OFF)" :
-                            "₹14,998 (12% OFF)"
+                            "₹19,998 (15% OFF)"
                           }!
                         </div>
                       </div>
