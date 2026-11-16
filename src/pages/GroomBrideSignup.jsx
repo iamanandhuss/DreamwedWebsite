@@ -7,10 +7,9 @@ import {
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa6";
 import SEO from "../components/SEO";
+import { getApiBase } from "../utils/safeStorage";
 
-const API_BASE = typeof window !== "undefined"
-  ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com")
-  : "https://dreamwed-backend.onrender.com";
+const API_BASE = getApiBase();
 
 const GroomBrideSignup = () => {
   const navigate = useNavigate();

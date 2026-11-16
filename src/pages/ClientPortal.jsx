@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa6";
 import SEO from "../components/SEO";
+import { safeStorage, getApiBase } from "../utils/safeStorage";
 
 // =================== DEDICATED PDF BOOK FLIPBOOK VIEWER ===================
 const PDFBookViewer = ({ pdfUrl, isGoogleDrive, embedUrl, API_BASE }) => {
@@ -1194,7 +1195,7 @@ const ClientPortal = () => {
 
   const [showDevServer, setShowDevServer] = useState(false);
   const [serverInput, setServerInput] = useState(() => {
-    return localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com";
+    return safeStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com";
   });
 
   const API_BASE = serverInput;
@@ -1205,7 +1206,7 @@ const ClientPortal = () => {
     if (cleanUrl.endsWith("/")) {
       cleanUrl = cleanUrl.slice(0, -1);
     }
-    localStorage.setItem("dreamwed_api_base", cleanUrl);
+    safeStorage.setItem("dreamwed_api_base", cleanUrl);
     setServerInput(cleanUrl);
     setShowDevServer(false);
     alert(`Connected to server: ${cleanUrl}`);

@@ -12,11 +12,10 @@ import { downloadPhotosAsZip } from "../utils/zipDownloader";
 import WebsiteMediaManager from "../components/admin/WebsiteMediaManager";
 import AdminVipProposals from "../components/admin/AdminVipProposals";
 import defaultOfficeBudgets from "../data/defaultOfficeBudgets.json";
+import { getApiBase } from "../utils/safeStorage";
 
 const ADMIN_PASS = "dreamwed2026";
-const API_BASE = typeof window !== "undefined"
-  ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com")
-  : "https://dreamwed-backend.onrender.com";
+const API_BASE = getApiBase();
 
 const INITIAL_GALLERIES = [];
 

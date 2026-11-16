@@ -9,6 +9,7 @@ import {
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
 import Button from "../components/ui/Button";
+import { getApiBase } from "../utils/safeStorage";
 
 // Custom icons mapping for event types
 const EventIcons = {
@@ -322,9 +323,7 @@ export default function CustomPackage() {
 
   const pageTopRef = useRef(null);
 
-  const API_BASE = typeof window !== "undefined"
-    ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com")
-    : "https://dreamwed-backend.onrender.com";
+  const API_BASE = getApiBase();
 
   // Fetch package configs
   useEffect(() => {

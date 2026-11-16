@@ -13,12 +13,11 @@ import pic1 from "../assets/images/pic1.jpeg";
 import pic2 from "../assets/images/pic2.jpeg";
 import pic3 from "../assets/images/pic3.jpeg";
 import pic4 from "../assets/images/pic4.jpeg";
+import { getApiBase } from "../utils/safeStorage";
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzy15y5t2F5uM9NiYPimHvlS6xDw2N1Z5oTHF3SQnR6AI_fxo6y6mhIepsUj-kav31g/exec";
 
-const API_BASE = typeof window !== "undefined"
-  ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com")
-  : "https://dreamwed-backend.onrender.com";
+const API_BASE = getApiBase();
 
 const TrivandrumOffer = () => {
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", date: "", receptionDate: "", sameDate: true, message: "" });

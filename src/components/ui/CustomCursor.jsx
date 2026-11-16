@@ -2,6 +2,15 @@ import React, { useState, useEffect } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 
 const CustomCursor = () => {
+  // Completely disable custom cursor on touch devices / mobile phones
+  const isTouchDevice = typeof window !== "undefined" && (
+    ('ontouchstart' in window) ||
+    (navigator.maxTouchPoints > 0) ||
+    (window.matchMedia && window.matchMedia("(pointer: coarse)").matches)
+  );
+
+  if (isTouchDevice) return null;
+
   const [cursorType, setCursorType] = useState("default");
   const [isVisible, setIsVisible] = useState(false);
 

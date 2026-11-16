@@ -2,10 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookOpen, LogIn, LogOut, ExternalLink, Send, CheckCircle, RefreshCw, Camera, Calendar, Download, Upload, FileText, X, AlertTriangle } from "lucide-react";
 import SEO from "../components/SEO";
+import { getApiBase } from "../utils/safeStorage";
 
-const API_BASE = typeof window !== "undefined"
-  ? (localStorage.getItem("dreamwed_api_base") || import.meta.env.VITE_API_BASE_URL || "https://dreamwed-backend.onrender.com")
-  : "https://dreamwed-backend.onrender.com";
+const API_BASE = getApiBase();
 
 const DesignerPortal = () => {
   const [authed, setAuthed] = useState(false);

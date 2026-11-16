@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
@@ -20,8 +20,17 @@ import CustomCursor from './components/ui/CustomCursor';
 import TrivandrumOffer from './pages/TrivandrumOffer';
 import CustomPackage from './pages/CustomPackage';
 import Packages from './pages/Packages';
-import DigitalProposal from './pages/DigitalProposal';
-import ClientGallery from './pages/ClientGallery';
+
+// Code-split heavy portals to keep initial mobile payload ultra-lightweight
+const DigitalProposal = lazy(() => import('./pages/DigitalProposal'));
+const ClientGallery = lazy(() => import('./pages/ClientGallery'));
+
+const PageLoader = () => (
+  <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-light p-6">
+    <div className="w-10 h-10 border-2 border-amber-500/20 border-t-amber-400 rounded-full animate-spin mb-4" />
+    <p className="text-zinc-400 text-xs tracking-widest uppercase font-mono">Dreamwed Stories</p>
+  </div>
+);
 
 // Scroll to top on route change
 const ScrollToTop = () => {
@@ -128,7 +137,9 @@ const AppContent = () => {
     <div className="flex flex-col min-h-screen">
       {!isPortalPath && <Header />}
       <main className="flex-grow">
-        <AnimatedRoutes />
+        <Suspense fallback={<PageLoader />}>
+          <AnimatedRoutes />
+        </Suspense>
       </main>
       {!isPortalPath && <Footer />}
     </div>
