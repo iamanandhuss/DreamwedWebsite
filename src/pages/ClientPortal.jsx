@@ -1129,7 +1129,12 @@ const ClientPortal = () => {
   // High-performance image URL optimizer for Google Drive files
   const getOptimizedImageUrl = (url) => {
     if (!url) return "";
-    return url; // Served from high-speed, direct-embedding Google CDN
+    const str = String(url).trim();
+    const matchd = str.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || str.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
+    if (matchd && matchd[1]) return `https://drive.google.com/thumbnail?id=${matchd[1]}&sz=w1000`;
+    const matchid = str.match(/id=([a-zA-Z0-9_-]+)/);
+    if (matchid && matchid[1]) return `https://drive.google.com/thumbnail?id=${matchid[1]}&sz=w1000`;
+    return str;
   };
 
   // Login Gates
@@ -1279,11 +1284,11 @@ const ClientPortal = () => {
         delivery_items: "Premium Signature bag, custom photo calendar & USB drive"
       },
       gallery_images: [
-        { id: 1, url: "https://lh3.googleusercontent.com/d/1t9NpD7bufB-EotQGhan3UX_zw9oqpCNE=w1000", favorited: true, categories: ["album"], comment: "" },
-        { id: 2, url: "https://lh3.googleusercontent.com/d/1Qf7tqN14Oct0GdG2dn-jNBy_RdNO4tRh=w1000", favorited: true, categories: ["album"], comment: "" },
-        { id: 3, url: "https://lh3.googleusercontent.com/d/1EJ9qWLLBqgT1woFFPduDimEDXBt-K5RS=w1000", favorited: true, categories: ["album"], comment: "" },
-        { id: 4, url: "https://lh3.googleusercontent.com/d/1bWyGkkkzScDh2lyyZt0mfL7S2kdWzchU=w1000", favorited: false, categories: [], comment: "" },
-        { id: 5, url: "https://lh3.googleusercontent.com/d/1lGbiiMD_OfYnvmwxiUoWY7dMyQyfwoPE=w1000", favorited: true, categories: ["album"], comment: "" }
+        { id: 1, url: "https://drive.google.com/thumbnail?id=1t9NpD7bufB-EotQGhan3UX_zw9oqpCNE&sz=w1000", favorited: true, categories: ["album"], comment: "" },
+        { id: 2, url: "https://drive.google.com/thumbnail?id=1Qf7tqN14Oct0GdG2dn-jNBy_RdNO4tRh&sz=w1000", favorited: true, categories: ["album"], comment: "" },
+        { id: 3, url: "https://drive.google.com/thumbnail?id=1EJ9qWLLBqgT1woFFPduDimEDXBt-K5RS&sz=w1000", favorited: true, categories: ["album"], comment: "" },
+        { id: 4, url: "https://drive.google.com/thumbnail?id=1bWyGkkkzScDh2lyyZt0mfL7S2kdWzchU&sz=w1000", favorited: false, categories: [], comment: "" },
+        { id: 5, url: "https://drive.google.com/thumbnail?id=1lGbiiMD_OfYnvmwxiUoWY7dMyQyfwoPE&sz=w1000", favorited: true, categories: ["album"], comment: "" }
       ],
       deliveries: {
         video_teaser_url: "https://www.youtube.com/embed/S9-SrdnKsMs",
@@ -1331,8 +1336,8 @@ const ClientPortal = () => {
         delivery_items: "Premium Signature bag, custom photo calendar & USB drive"
       },
       gallery_images: [
-        { id: 1, url: "https://lh3.googleusercontent.com/d/1t9NpD7bufB-EotQGhan3UX_zw9oqpCNE=w1000", favorited: true, categories: ["album"], comment: "" },
-        { id: 2, url: "https://lh3.googleusercontent.com/d/1Qf7tqN14Oct0GdG2dn-jNBy_RdNO4tRh=w1000", favorited: true, categories: ["album"], comment: "" }
+        { id: 1, url: "https://drive.google.com/thumbnail?id=1t9NpD7bufB-EotQGhan3UX_zw9oqpCNE&sz=w1000", favorited: true, categories: ["album"], comment: "" },
+        { id: 2, url: "https://drive.google.com/thumbnail?id=1Qf7tqN14Oct0GdG2dn-jNBy_RdNO4tRh&sz=w1000", favorited: true, categories: ["album"], comment: "" }
       ],
       deliveries: {
         video_teaser_url: "https://www.youtube.com/embed/S9-SrdnKsMs",
@@ -3471,7 +3476,13 @@ const ClientPortal = () => {
                     onClick={() => setActiveLightboxPhotoId(img.id)}
                     className="group relative rounded-[20px] overflow-hidden border border-zinc-200 bg-zinc-50 aspect-[4/5] flex flex-col justify-end shadow-sm hover:shadow-lg transition-all cursor-pointer"
                   >
-                    <img src={getOptimizedImageUrl(img.url)} loading="lazy" alt="Wedding shoot" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    <img 
+                      src={getOptimizedImageUrl(img.url)} 
+                      loading="lazy" 
+                      alt="Wedding shoot" 
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                      onError={(e) => { e.target.src = "/images/deepak.jpg"; }}
+                    />
                     
                     {/* Gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex items-end justify-center pb-4">
@@ -5012,6 +5023,7 @@ const ClientPortal = () => {
                       src={getOptimizedImageUrl(activePhoto.url)} 
                       alt="Wedding" 
                       className="max-w-full max-h-full object-contain p-4"
+                      onError={(e) => { e.target.src = "/images/deepak.jpg"; }}
                     />
 
                     {/* Navigation Arrows */}

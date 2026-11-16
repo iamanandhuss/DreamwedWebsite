@@ -17,15 +17,12 @@ export const getOptimizedThumbnailUrl = (url, width = 600) => {
   if (!url) return "";
   const str = String(url).trim();
 
-  // Extract Google Drive ID if present (bypasses 302 redirects & cookie limits)
-  const matchId = str.match(/id=([a-zA-Z0-9_-]+)/) || str.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  // If Google Drive link or thumbnail, extract ID and use reliable public thumbnail CDN
+  const matchId = str.match(/id=([a-zA-Z0-9_-]+)/) || str.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || str.match(/googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
   if (matchId && matchId[1]) {
-    return `https://lh3.googleusercontent.com/d/${matchId[1]}=w${width}`;
+    return `https://drive.google.com/thumbnail?id=${matchId[1]}&sz=w${width}`;
   }
 
-  if (str.includes("googleusercontent.com/d/")) {
-    return `${str.split("=")[0]}=w${width}`;
-  }
   if (str.includes("drive.google.com/thumbnail")) {
     return str.replace(/sz=w\d+/i, `sz=w${width}`);
   }

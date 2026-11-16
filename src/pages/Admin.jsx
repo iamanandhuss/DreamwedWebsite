@@ -1760,10 +1760,10 @@ const Admin = () => {
 
   const convertGoogleDriveUrl = (url) => {
     const matchd = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-    if (matchd && matchd[1]) return `https://lh3.googleusercontent.com/d/${matchd[1]}`;
+    if (matchd && matchd[1]) return `https://drive.google.com/thumbnail?id=${matchd[1]}&sz=w1600`;
     
     const matchid = url.match(/id=([a-zA-Z0-9_-]+)/);
-    if (matchid && matchid[1]) return `https://lh3.googleusercontent.com/d/${matchid[1]}`;
+    if (matchid && matchid[1]) return `https://drive.google.com/thumbnail?id=${matchid[1]}&sz=w1600`;
     
     return url;
   };

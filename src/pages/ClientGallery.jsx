@@ -309,6 +309,27 @@ const ClientGallery = () => {
         }
       } catch (e) {}
 
+      // If visiting /gallery directly without an ID, auto-open the showcase embedded gallery
+      if (!id && initialEmbedded && isMounted) {
+        setMeta(initialEmbedded);
+        setGallery(initialEmbedded);
+        setCurrentUser(savedUser || {
+          name: "Guest",
+          role: "Guest",
+          isGuest: true
+        });
+        const curated = curateWeddingStory({
+          photos: initialEmbedded.photos || [],
+          groomName: initialEmbedded.groomName,
+          brideName: initialEmbedded.brideName,
+          galleryName: initialEmbedded.name
+        });
+        setStoryData(curated);
+        setIsLocked(false);
+        setLoading(false);
+        return;
+      }
+
       // Fetch metadata from API (for the lock screen)
       try {
         const res = await fetch(`${API_BASE}/api/public/galleries/${id || targetLookupId}`).catch(() => null);
@@ -322,6 +343,23 @@ const ClientGallery = () => {
           }
         }
       } catch (err) {}
+
+      // Try static galleries.json hosted directly on the website
+      try {
+        const staticRes = await fetch("/data/galleries.json").catch(() => null);
+        if (staticRes && staticRes.ok) {
+          const staticGals = await staticRes.json();
+          if (Array.isArray(staticGals)) {
+            const match = staticGals.find(g => g.id === (id || targetLookupId) || g.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id);
+            if (match && isMounted) {
+              setMeta(match);
+              setIsLocked(true);
+              setLoading(false);
+              return;
+            }
+          }
+        }
+      } catch (staticErr) {}
 
       // If backend is unavailable, fallback to embedded gallery metadata
       if (initialEmbedded && isMounted) {
@@ -374,9 +412,9 @@ const ClientGallery = () => {
   }, [isSlideshowActive, isSlideshowPlaying, allPhotos.length]);
 
   // 2. Handle unlock with multi-tier passcode
-  const handleUnlock = async (e) => {
-    if (e) e.preventDefault();
-    const cleanCode = passcode.trim();
+  const handleUnlock = async (e, forceCode = null) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const cleanCode = (forceCode !== null ? forceCode : passcode).trim();
     if (!cleanCode) {
       setError("Please enter the gallery access passcode.");
       return;
@@ -827,6 +865,19 @@ const ClientGallery = () => {
           loading="lazy"
           decoding="async"
           fetchPriority="low"
+          onError={(e) => {
+            if (photo.url && e.target.src !== photo.url) {
+              e.target.src = photo.url;
+            } else if (!e.target.dataset.fallback) {
+              e.target.dataset.fallback = "true";
+              const matchId = (photo.url || "").match(/id=([a-zA-Z0-9_-]+)/);
+              if (matchId && matchId[1]) {
+                e.target.src = `https://drive.google.com/thumbnail?id=${matchId[1]}&sz=w800`;
+              } else {
+                e.target.src = "/images/deepak.jpg";
+              }
+            }
+          }}
         />
 
         {/* Top Left Badges: Key Moment & Member Selection attribution */}
@@ -1149,23 +1200,26 @@ const ClientGallery = () => {
               alt="Wedding Hero" 
               style={{ objectPosition: activePositionStyle }}
               className="w-full h-full object-cover brightness-85 group-hover:scale-105 transition-transform duration-700" 
+              onError={(e) => {
+                e.target.src = "/images/bride_christian_white.jpg";
+              }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent flex flex-col justify-end p-5 text-center items-center">
               <span style={{ color: activeColor }} className="text-[8px] uppercase font-bold tracking-[0.25em] mb-1 block">
-                Private Wedding Experience
+                {id ? "Private Wedding Experience" : "Signature Wedding Collection"}
               </span>
               <h2 style={{ fontFamily: activeFontFamily }} className="text-2xl sm:text-3xl text-white font-light leading-tight">
-                {meta?.groomName && meta?.brideName ? (
+                {id && meta?.groomName && meta?.brideName ? (
                   <>
                     <span>{meta.groomName}</span>{" "}
                     <span style={{ color: activeColor }} className="italic font-serif">&amp;</span>{" "}
                     <span>{meta.brideName}</span>
                   </>
                 ) : (
-                  meta?.name || "Dreamwed Wedding"
+                  <span>Dreamwed Wedding Stories</span>
                 )}
               </h2>
-              {meta?.weddingDate && (
+              {id && meta?.weddingDate && (
                 <span className="text-zinc-400 text-[10px] tracking-wider mt-1">
                   {meta.weddingDate}
                 </span>
@@ -1173,20 +1227,35 @@ const ClientGallery = () => {
             </div>
           </div>
 
+          {/* Quick Access for General Visitors */}
+          {!id && (
+            <button
+              type="button"
+              onClick={() => {
+                setPasscode("4371");
+                handleUnlock(null, "4371");
+              }}
+              className="w-full py-3 px-4 bg-gradient-to-r from-amber-500/20 via-[#d1a852]/25 to-amber-500/20 hover:from-amber-500/35 hover:to-amber-500/35 border border-[#d1a852]/50 text-amber-300 font-bold text-xs rounded-xl uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+            >
+              <Sparkles size={14} className="text-amber-400 animate-pulse" />
+              <span>✨ Explore Signature Wedding Gallery</span>
+            </button>
+          )}
+
           {/* Login Form */}
           <form onSubmit={handleUnlock} className="space-y-4 text-left">
             {/* Passcode input with dynamic code-type indicator */}
             <div className="space-y-1">
               <div className="flex justify-between items-center">
                 <label className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider block">
-                  Gallery Passcode <span className="text-red-400">*</span>
+                  {id ? "Gallery Passcode" : "Client / Guest Passcode"} <span className="text-red-400">*</span>
                 </label>
                 <span className="text-[9px] font-medium" style={{ color: activeColor }}>
                   {(meta?.selectionCode && passcode.trim() === String(meta.selectionCode).trim()) || passcode.toLowerCase().includes("select")
                     ? "💍 Selection Passcode Detected"
                     : ((meta?.guestCode && passcode.trim() === String(meta.guestCode).trim()) || (meta?.accessCode && passcode.trim() === String(meta.accessCode).trim()) || passcode.toLowerCase().includes("guest")
                       ? "✨ Guest Passcode Detected"
-                      : "Enter Passcode")}
+                      : (id ? "Enter Passcode" : "Enter Passcode or Click Explore"))}
                 </span>
               </div>
               <div className="relative flex items-center">
@@ -1194,7 +1263,7 @@ const ClientGallery = () => {
                   type={showPassword ? "text" : "password"}
                   value={passcode}
                   onChange={(e) => { setPasscode(e.target.value); if (error) setError(""); }}
-                  placeholder="e.g. 4821 or 8392"
+                  placeholder="e.g. 4371 or your private passcode"
                   className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl px-3.5 py-2.5 pr-10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#b4975a] font-mono tracking-wider font-bold"
                   required
                   autoFocus
@@ -1967,6 +2036,17 @@ const ClientGallery = () => {
                           decoding="async"
                           fetchPriority="low"
                           alt={`Archive photo ${index + 1}`}
+                          onError={(e) => {
+                            if (photo.url && e.target.src !== photo.url) {
+                              e.target.src = photo.url;
+                            } else if (!e.target.dataset.fallback) {
+                              e.target.dataset.fallback = "true";
+                              const matchId = (photo.url || "").match(/id=([a-zA-Z0-9_-]+)/);
+                              if (matchId && matchId[1]) {
+                                e.target.src = `https://drive.google.com/thumbnail?id=${matchId[1]}&sz=w800`;
+                              }
+                            }
+                          }}
                         />
 
                         {/* ❤️ Heart Favorite Button */}
@@ -2168,6 +2248,11 @@ const ClientGallery = () => {
                 fetchPriority="high"
                 className="max-h-[75vh] sm:max-h-[80vh] max-w-[92vw] object-contain rounded-2xl border border-zinc-800/80 shadow-2xl select-none z-10"
                 alt="Fullscreen Showcase"
+                onError={(e) => {
+                  if (activePhoto.url && e.target.src !== activePhoto.url) {
+                    e.target.src = activePhoto.url;
+                  }
+                }}
               />
 
               {/* Next Photo Button */}
@@ -2222,6 +2307,11 @@ const ClientGallery = () => {
                         decoding="async"
                         alt={`Thumb ${pIdx + 1}`} 
                         className="w-full h-full object-cover" 
+                        onError={(e) => {
+                          if (p.url && e.target.src !== p.url) {
+                            e.target.src = p.url;
+                          }
+                        }}
                       />
                       {pLiked && (
                         <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-1 ring-white" />

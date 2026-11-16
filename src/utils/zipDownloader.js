@@ -8,10 +8,10 @@ export const normalizeImageUrl = (url) => {
   const str = String(url).trim();
 
   const matchd = str.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (matchd && matchd[1]) return `https://lh3.googleusercontent.com/d/${matchd[1]}`;
+  if (matchd && matchd[1]) return `https://drive.google.com/thumbnail?id=${matchd[1]}&sz=w2500`;
 
   const matchid = str.match(/id=([a-zA-Z0-9_-]+)/);
-  if (matchid && matchid[1]) return `https://lh3.googleusercontent.com/d/${matchid[1]}`;
+  if (matchid && matchid[1]) return `https://drive.google.com/thumbnail?id=${matchid[1]}&sz=w2500`;
 
   return str;
 };
