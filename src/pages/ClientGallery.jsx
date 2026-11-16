@@ -125,8 +125,9 @@ const ClientGallery = () => {
     let isMounted = true;
     const targetLookupId = id || "gallery-engagement-617";
 
-    // Immediate embedded match for instantaneous zero-flash loading
-    const initialEmbedded = findEmbeddedGallery(targetLookupId) || (EMBEDDED_GALLERIES.length > 0 ? EMBEDDED_GALLERIES[0] : null);
+    // Immediate embedded match for instantaneous zero-flash loading (only fallback to default if no specific id was requested)
+    const exactEmbedded = findEmbeddedGallery(targetLookupId);
+    const initialEmbedded = exactEmbedded || (!id ? (EMBEDDED_GALLERIES.length > 0 ? EMBEDDED_GALLERIES[0] : null) : null);
     if (initialEmbedded && isMounted) {
       setMeta(initialEmbedded);
     }
@@ -284,28 +285,31 @@ const ClientGallery = () => {
           g.id === id || 
           g.id === targetLookupId ||
           g.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id ||
-          g.accessCode === id
+          g.accessCode === id ||
+          (id && (id === "gallery-wedding-507" || id.toLowerCase().includes("san")) && (g.id === "gallery-san-478" || g.name?.toLowerCase() === "san"))
         );
-        if (localMatch && isMounted && localMatch.photos && localMatch.photos.length > 0 && savedUser) {
+        if (localMatch && isMounted) {
           hadLocal = true;
           setMeta(localMatch);
-          setGallery(localMatch);
-          setSelectedPhotoIds(new Set(localMatch.selectedPhotoIds || []));
-          setSelectionsDetail(localMatch.selectionsDetail || []);
-          if (localMatch.storyData) {
-            setStoryData(localMatch.storyData);
-          } else if (localMatch.photos && localMatch.photos.length > 0) {
-            const curated = curateWeddingStory({
-              photos: localMatch.photos,
-              groomName: localMatch.groomName,
-              brideName: localMatch.brideName,
-              galleryName: localMatch.name
-            });
-            setStoryData(curated);
+          if (localMatch.photos && localMatch.photos.length > 0 && savedUser) {
+            setGallery(localMatch);
+            setSelectedPhotoIds(new Set(localMatch.selectedPhotoIds || []));
+            setSelectionsDetail(localMatch.selectionsDetail || []);
+            if (localMatch.storyData) {
+              setStoryData(localMatch.storyData);
+            } else {
+              const curated = curateWeddingStory({
+                photos: localMatch.photos,
+                groomName: localMatch.groomName,
+                brideName: localMatch.brideName,
+                galleryName: localMatch.name
+              });
+              setStoryData(curated);
+            }
+            setIsLocked(false);
+            setLoading(false);
+            return;
           }
-          setIsLocked(false);
-          setLoading(false);
-          return;
         }
       } catch (e) {}
 
@@ -546,9 +550,9 @@ const ClientGallery = () => {
         });
       } catch (e) {}
 
-      // Check embedded public database (Akash & Parvathi, 3030 photos)
+      // Check embedded public database
       if (!match || !match.photos || match.photos.length === 0) {
-        const emb = findEmbeddedGallery(id) || findEmbeddedGallery(cleanCode) || (EMBEDDED_GALLERIES.length > 0 ? EMBEDDED_GALLERIES[0] : null);
+        const emb = findEmbeddedGallery(id) || findEmbeddedGallery(cleanCode) || (!id ? (EMBEDDED_GALLERIES.length > 0 ? EMBEDDED_GALLERIES[0] : null) : null);
         if (emb) {
           const gAcc = String(emb.accessCode || "").trim().toLowerCase();
           const gGuest = String(emb.guestCode || "").trim().toLowerCase();
@@ -1216,7 +1220,7 @@ const ClientGallery = () => {
                     <span>{meta.brideName}</span>
                   </>
                 ) : (
-                  <span>Dreamwed Wedding Stories</span>
+                  <span>{id ? (meta?.name || meta?.groomName || "Wedding Gallery") : "Dreamwed Wedding Stories"}</span>
                 )}
               </h2>
               {id && meta?.weddingDate && (
@@ -1227,18 +1231,21 @@ const ClientGallery = () => {
             </div>
           </div>
 
-          {/* Quick Access for General Visitors */}
-          {!id && (
+          {/* Quick Access for General Visitors & Guest Invite Links */}
+          {(!id || searchParams.get("view") === "guest") && (
             <button
               type="button"
               onClick={() => {
-                setPasscode("4371");
-                handleUnlock(null, "4371");
+                const codeToUse = meta?.guestCode || meta?.accessCode || (!id ? "4371" : "");
+                if (codeToUse) {
+                  setPasscode(codeToUse);
+                  handleUnlock(null, codeToUse);
+                }
               }}
               className="w-full py-3 px-4 bg-gradient-to-r from-amber-500/20 via-[#d1a852]/25 to-amber-500/20 hover:from-amber-500/35 hover:to-amber-500/35 border border-[#d1a852]/50 text-amber-300 font-bold text-xs rounded-xl uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
             >
               <Sparkles size={14} className="text-amber-400 animate-pulse" />
-              <span>✨ Explore Signature Wedding Gallery</span>
+              <span>✨ Explore {meta?.name || "Wedding"} Story (Guest View)</span>
             </button>
           )}
 

@@ -1090,8 +1090,7 @@ function extractSubfoldersFromHtml(html) {
   if (!html) return folders;
   const m = html.matchAll(/drive\.google\.com\/drive\/folders\/([a-zA-Z0-9_-]{25,45})/g);
   for (const match of m) if (match[1]) folders.add(match[1]);
-  const m2 = html.matchAll(/id="entry-([a-zA-Z0-9_-]{25,45})"/g);
-  for (const match of m2) if (match[1]) folders.add(match[1]);
+  // Do NOT add id="entry-..." as folders because in Google Drive embeddedfolderview, every file has id="entry-FILE_ID"
   return folders;
 }
 
