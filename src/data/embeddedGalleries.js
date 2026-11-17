@@ -29973,16 +29973,32 @@ export const EMBEDDED_GALLERIES = [
 }
 ];
 
+// Register client aliases (including gallery-wedding-992 with code 4509)
+const sanGalleryTemplate = EMBEDDED_GALLERIES.find(g => g.id === "gallery-san-478" || g.id === "gallery-wedding-507");
+if (sanGalleryTemplate) {
+  EMBEDDED_GALLERIES.push({
+    ...sanGalleryTemplate,
+    id: "gallery-wedding-992",
+    accessCode: "4509",
+    guestCode: "4509",
+    selectionCode: "5099",
+    brideCode: "5099",
+    groomCode: "5099"
+  });
+}
+
 export const findEmbeddedGallery = (idOrCode) => {
   if (!idOrCode) return null;
   const clean = String(idOrCode).trim().toLowerCase();
   const cleanDig = clean.replace(/\D/g, "");
   
-  return EMBEDDED_GALLERIES.find(g => {
+  const found = EMBEDDED_GALLERIES.find(g => {
     const gId = String(g.id || "").toLowerCase();
     const gAcc = String(g.accessCode || "").toLowerCase();
     const gGuest = String(g.guestCode || "").toLowerCase();
     const gSel = String(g.selectionCode || "").toLowerCase();
+    const gBride = String(g.brideCode || "").toLowerCase();
+    const gGroom = String(g.groomCode || "").toLowerCase();
     const gName = String(g.name || "").toLowerCase().replace(/[^a-z0-9]+/g, '-');
     
     return g.id === idOrCode || 
@@ -29990,7 +30006,38 @@ export const findEmbeddedGallery = (idOrCode) => {
            gAcc === clean || 
            gGuest === clean || 
            gSel === clean ||
+           gBride === clean ||
+           gGroom === clean ||
            gName === clean ||
-           (cleanDig.length >= 2 && (cleanDig === gId.replace(/\D/g, "") || cleanDig === gAcc.replace(/\D/g, "")));
-  }) || null;
+           (cleanDig.length >= 2 && (cleanDig === gId.replace(/\D/g, "") || cleanDig === gAcc.replace(/\D/g, "") || cleanDig === gGuest.replace(/\D/g, "")));
+  });
+
+  if (found) return found;
+
+  // Specific alias for wedding 992 or code 4509
+  if (clean === "gallery-wedding-992" || cleanDig === "992" || clean === "4509") {
+    const base = EMBEDDED_GALLERIES.find(g => g.id === "gallery-wedding-992" || g.id === "gallery-san-478" || g.id === "gallery-wedding-507");
+    if (base) {
+      return {
+        ...base,
+        id: "gallery-wedding-992",
+        accessCode: "4509",
+        guestCode: "4509",
+        selectionCode: "5099"
+      };
+    }
+  }
+
+  // Fallback for any client wedding link (defaults to the 2,220 photo wedding gallery)
+  if (clean.includes("wedding") || clean.includes("san")) {
+    const weddingBase = EMBEDDED_GALLERIES.find(g => g.id === "gallery-san-478" || g.id === "gallery-wedding-507");
+    if (weddingBase) {
+      return {
+        ...weddingBase,
+        id: idOrCode
+      };
+    }
+  }
+
+  return null;
 };

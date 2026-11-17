@@ -118,8 +118,9 @@ const ClientGallery = () => {
     let isMounted = true;
     const targetLookupId = id || "gallery-engagement-617";
 
-    // Immediate embedded match for instantaneous zero-flash loading (only fallback to default if no specific id was requested)
-    const exactEmbedded = findEmbeddedGallery(targetLookupId);
+    // Immediate embedded match for instantaneous zero-flash loading
+    const urlCodeParam = searchParams.get("code") || searchParams.get("passcode") || searchParams.get("accessCode") || "";
+    const exactEmbedded = findEmbeddedGallery(targetLookupId) || (urlCodeParam ? findEmbeddedGallery(urlCodeParam) : null);
     const initialEmbedded = exactEmbedded || (!id ? (EMBEDDED_GALLERIES.length > 0 ? EMBEDDED_GALLERIES[0] : null) : null);
     if (initialEmbedded && isMounted) {
       setMeta(initialEmbedded);
