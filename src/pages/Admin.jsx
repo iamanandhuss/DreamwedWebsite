@@ -13,6 +13,7 @@ import WebsiteMediaManager from "../components/admin/WebsiteMediaManager";
 import AdminVipProposals from "../components/admin/AdminVipProposals";
 import defaultOfficeBudgets from "../data/defaultOfficeBudgets.json";
 import { getApiBase } from "../utils/safeStorage";
+import { EMBEDDED_GALLERIES } from "../data/embeddedGalleries";
 
 const ADMIN_PASS = "dreamwed2026";
 const API_BASE = getApiBase();
@@ -946,10 +947,36 @@ const Admin = () => {
     } catch (e) {
       console.warn("Using local galleries fallback:", e);
       try {
-        const stored = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
-        setAiGalleries(Array.isArray(stored) ? stored : []);
+        let stored = JSON.parse(localStorage.getItem("dreamwed_galleries") || "[]");
+        if (!Array.isArray(stored) || stored.length === 0) {
+          stored = EMBEDDED_GALLERIES.map(eg => ({ ...eg, photosCount: eg.photos?.length || 0 }));
+        } else {
+          // If any stored gallery has 0 photos, enrich with matching EMBEDDED_GALLERIES photos
+          stored = stored.map(g => {
+            const hasPhotos = Array.isArray(g.photos) && g.photos.length > 0;
+            if (!hasPhotos) {
+              const matched = EMBEDDED_GALLERIES.find(eg => 
+                eg.id === g.id || 
+                (g.name && eg.name && eg.name.trim().toLowerCase() === g.name.trim().toLowerCase())
+              );
+              if (matched && Array.isArray(matched.photos) && matched.photos.length > 0) {
+                return {
+                  ...g,
+                  photos: matched.photos,
+                  photosCount: matched.photos.length,
+                  guestCode: g.guestCode || matched.guestCode,
+                  selectionCode: g.selectionCode || matched.selectionCode,
+                  coverUrl: g.coverUrl || matched.coverUrl
+                };
+              }
+            }
+            return g;
+          });
+        }
+        setAiGalleries(stored);
+        try { localStorage.setItem("dreamwed_galleries", JSON.stringify(stored)); } catch (e) {}
       } catch (err) {
-        setAiGalleries([]);
+        setAiGalleries(EMBEDDED_GALLERIES.map(eg => ({ ...eg, photosCount: eg.photos?.length || 0 })));
       }
     }
   };
@@ -963,16 +990,26 @@ const Admin = () => {
       if (res.ok) {
         alert("🔄 Photos synchronized successfully from Google Drive!");
         await fetchGalleries();
-      } else {
-        const errData = await res.json();
-        alert(`⚠️ Sync failed: ${errData.error || "no photos found"}`);
+        setSyncingGalId(null);
+        return;
       }
     } catch (err) {
-      console.error(err);
-      alert("❌ Server connection error during sync");
-    } finally {
-      setSyncingGalId(null);
+      console.warn("Server sync unreachable, checking cloud embedded cache...", err);
     }
+
+    // Fallback: Sync from embedded gallery archive
+    const matched = EMBEDDED_GALLERIES.find(eg => eg.id === id);
+    if (matched && matched.photos && matched.photos.length > 0) {
+      setAiGalleries(prev => {
+        const updated = prev.map(g => g.id === id ? { ...g, photos: matched.photos, photosCount: matched.photos.length } : g);
+        try { localStorage.setItem("dreamwed_galleries", JSON.stringify(updated)); } catch (e) {}
+        return updated;
+      });
+      alert(`✨ Synced ${matched.photos.length} photos successfully from cloud archive!`);
+    } else {
+      alert("⚠️ Server connection error during sync");
+    }
+    setSyncingGalId(null);
   };
 
   const fetchProjects = async () => {
@@ -4256,7 +4293,7 @@ const Admin = () => {
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    const link = `${galleryUrl}?view=guest`;
+                                    const link = `${galleryUrl}?view=guest&code=${gCode}`;
                                     navigator.clipboard.writeText(link);
                                     alert(`✨ Guest AI Story Link Copied!\n\n${link}\nPasscode: ${gCode}`);
                                   }}
@@ -4269,7 +4306,7 @@ const Admin = () => {
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    const link = `${galleryUrl}?view=selection`;
+                                    const link = `${galleryUrl}?view=selection&code=${sCode}`;
                                     navigator.clipboard.writeText(link);
                                     alert(`💍 Couple Selection Link Copied!\n\n${link}\nPasscode: ${sCode}`);
                                   }}

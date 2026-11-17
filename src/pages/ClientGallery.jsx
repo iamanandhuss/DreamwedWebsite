@@ -177,12 +177,26 @@ const ClientGallery = () => {
         return;
       }
 
-      // Direct guest link auto-unlock (?view=guest or ?mode=guest or ?guest=true)
+      // Direct URL Passcode (?code=3233, ?code=5099) or Mode Auto-Unlock (?view=guest, ?view=selection)
+      const urlCode = searchParams.get("code") || searchParams.get("passcode") || searchParams.get("accessCode") || "";
       const isGuestModeParam = searchParams.get("view") === "guest" || 
                                searchParams.get("mode") === "guest" || 
                                searchParams.get("guest") === "true";
+      const isSelectionModeParam = searchParams.get("view") === "selection" || 
+                                  searchParams.get("mode") === "selection" || 
+                                  searchParams.get("selection") === "true";
 
-      if (isGuestModeParam && initialEmbedded && isMounted) {
+      const effectiveCode = urlCode || 
+                            (isGuestModeParam ? (initialEmbedded?.guestCode || "3233") : "") ||
+                            (isSelectionModeParam ? (initialEmbedded?.selectionCode || "5099") : "");
+
+      if ((effectiveCode || isGuestModeParam || isSelectionModeParam) && initialEmbedded && isMounted) {
+        const cleanEff = String(effectiveCode || "").trim().toLowerCase();
+        const gSel = String(initialEmbedded.selectionCode || "").trim().toLowerCase();
+        const isSel = isSelectionModeParam || cleanEff === gSel || cleanEff === String(initialEmbedded.brideCode || "").trim().toLowerCase() || cleanEff === String(initialEmbedded.groomCode || "").trim().toLowerCase();
+        const storedRole = safeStorage.getItem("dreamwed_viewer_role");
+        const resolvedRole = isSel ? (storedRole === "Groom" ? "Groom" : "Bride") : "Guest";
+
         setGallery(initialEmbedded);
         setMeta(initialEmbedded);
         setSelectedPhotoIds(new Set(initialEmbedded.selectedPhotoIds || []));
@@ -198,7 +212,15 @@ const ClientGallery = () => {
           });
           setStoryData(curated);
         }
-        setCurrentUser({ name: "Guest", role: "Guest", isGuest: true });
+
+        const autoUser = {
+          name: isSel ? (resolvedRole === "Bride" ? (initialEmbedded.brideName || "Bride") : (initialEmbedded.groomName || "Groom")) : "Guest",
+          role: resolvedRole,
+          isGuest: !isSel
+        };
+        setCurrentUser(autoUser);
+        safeStorage.setItem(`dreamwed_viewer_user_${initialEmbedded.id}`, JSON.stringify(autoUser));
+        safeStorage.setItem(`dreamwed_passcode_${initialEmbedded.id}`, effectiveCode || (isSel ? gSel : initialEmbedded.guestCode));
         setIsLocked(false);
         setLoading(false);
         return;
@@ -411,12 +433,27 @@ const ClientGallery = () => {
     return () => { isMounted = false; };
   }, [id, API_BASE, isDirectDownloadMode]);
 
-  // Role permissions check - GUEST IS STRICTLY LOCKED TO GUEST MODE
+  // Role permissions check - Priority to URL Selection Mode with Auto-Role
   const isCoupleUser = currentUser?.role === "Bride" || currentUser?.role === "Groom";
-  const isCoupleSelectionMode = isCoupleUser 
-    ? (explicitViewOverride !== "guest") 
-    : (explicitViewOverride === "selection" && currentUser?.role !== "Guest");
+  const isCoupleSelectionMode = (explicitViewOverride === "selection") || (isCoupleUser && explicitViewOverride !== "guest");
   const isGuestMode = !isCoupleSelectionMode;
+
+  // Auto-set couple identity when viewing in Selection Mode
+  useEffect(() => {
+    if (isCoupleSelectionMode && (!currentUser || currentUser.role === "Guest")) {
+      const brideName = meta?.brideName || gallery?.brideName || "Bride";
+      const coupleUser = {
+        name: brideName,
+        role: "Bride",
+        isGuest: false
+      };
+      setCurrentUser(coupleUser);
+      if (meta?.id || gallery?.id) {
+        safeStorage.setItem(`dreamwed_viewer_user_${meta?.id || gallery?.id}`, JSON.stringify(coupleUser));
+        safeStorage.setItem("dreamwed_viewer_role", "Bride");
+      }
+    }
+  }, [isCoupleSelectionMode, meta?.brideName, gallery?.brideName, meta?.id, gallery?.id]);
 
   const allPhotos = gallery?.photos || meta?.photos || [];
 
@@ -786,7 +823,7 @@ const ClientGallery = () => {
           title: "The Wedding Story",
           subtitle: `${formatTitleCase(gallery?.name || meta?.name || "Wedding Highlights")}`,
           description: "A cinematic collection of cherished memories and timeless moments.",
-          photos: allPhotos
+          photos: allPhotos.slice(0, 42)
         }] : []);
   }, [storyData?.chapters, allPhotos, gallery?.name, meta?.name]);
 
@@ -882,6 +919,7 @@ const ClientGallery = () => {
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
           decoding="async"
+          referrerPolicy="no-referrer"
           fetchPriority="low"
           onError={(e) => {
             if (photo.url && e.target.src !== photo.url) {
@@ -1216,6 +1254,7 @@ const ClientGallery = () => {
             <img 
               src={heroImage} 
               alt="Wedding Hero" 
+              referrerPolicy="no-referrer"
               style={{ objectPosition: activePositionStyle }}
               className="w-full h-full object-cover brightness-85 group-hover:scale-105 transition-transform duration-700" 
               onError={(e) => {
@@ -1246,7 +1285,7 @@ const ClientGallery = () => {
           </div>
 
           {/* Quick 1-Tap Access for All Guests & Family */}
-          <div className="space-y-2 pt-1">
+          <div className="space-y-2.5 pt-1">
             <button
               type="button"
               onClick={() => {
@@ -1257,11 +1296,22 @@ const ClientGallery = () => {
               className="w-full py-3.5 px-4 bg-gradient-to-r from-amber-500/25 via-[#d1a852]/30 to-amber-500/25 hover:from-amber-500/40 hover:to-amber-500/40 border border-[#d1a852]/60 text-amber-300 font-bold text-xs sm:text-sm rounded-xl uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-amber-500/10 active:scale-[0.98]"
             >
               <Sparkles size={16} className="text-amber-400 animate-pulse" />
-              <span>✨ Enter {meta?.name || "Wedding"} Gallery (Guest Access)</span>
+              <span>✨ Enter Guest AI Story (Code: {meta?.guestCode || meta?.accessCode || "3233"})</span>
             </button>
-            <p className="text-[10px] text-zinc-500 font-medium">
-              Instant Guest View • Passcode: <span className="font-mono text-amber-400/90 font-bold">{meta?.guestCode || meta?.accessCode || "3233"}</span>
-            </p>
+
+            {meta?.selectionCode && (
+              <button
+                type="button"
+                onClick={() => {
+                  const sCode = meta.selectionCode;
+                  setPasscode(sCode);
+                  handleUnlock(null, sCode);
+                }}
+                className="w-full py-3 px-4 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-rose-500/20 hover:from-rose-500/35 hover:to-rose-500/35 border border-rose-500/40 text-rose-300 font-bold text-xs sm:text-sm rounded-xl uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md active:scale-[0.98]"
+              >
+                <span>💍 Couple Album Selection Mode (Code: {meta.selectionCode})</span>
+              </button>
+            )}
           </div>
 
           <div className="relative flex items-center justify-center my-2">
@@ -2064,6 +2114,7 @@ const ClientGallery = () => {
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                           loading="lazy"
                           decoding="async"
+                          referrerPolicy="no-referrer"
                           fetchPriority="low"
                           alt={`Archive photo ${index + 1}`}
                           onError={(e) => {
@@ -2275,6 +2326,7 @@ const ClientGallery = () => {
                 transition={{ duration: 0.2 }}
                 src={getOptimizedThumbnailUrl(activePhoto.url, 1600)} 
                 decoding="async"
+                referrerPolicy="no-referrer"
                 fetchPriority="high"
                 className="max-h-[75vh] sm:max-h-[80vh] max-w-[92vw] object-contain rounded-2xl border border-zinc-800/80 shadow-2xl select-none z-10"
                 alt="Fullscreen Showcase"
@@ -2316,40 +2368,52 @@ const ClientGallery = () => {
               </button>
             </div>
 
-            {/* Bottom Filmstrip Thumbnails */}
+            {/* Bottom Filmstrip Thumbnails (Windowed to 21 active frames to prevent mobile crash) */}
             <div className="p-3 sm:p-4 bg-gradient-to-t from-black/90 via-black/70 to-transparent border-t border-white/5 flex flex-col items-center gap-2 z-20">
-              <div className="flex items-center gap-2 overflow-x-auto max-w-full py-1 px-4 no-scrollbar">
-                {displayedPhotos.map((p, pIdx) => {
-                  const pLiked = selectedPhotoIds.has(p.id);
-                  return (
-                    <button
-                      key={p.id || pIdx}
-                      onClick={() => setActivePhoto(p)}
-                      className={`relative shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
-                        p.id === activePhoto.id
-                          ? "border-[#b4975a] scale-110 ring-2 ring-[#b4975a]/50 opacity-100"
-                          : "border-zinc-800 opacity-50 hover:opacity-100"
-                      }`}
-                    >
-                      <img 
-                        src={getOptimizedThumbnailUrl(p.url, 160)} 
-                        loading="lazy"
-                        decoding="async"
-                        alt={`Thumb ${pIdx + 1}`} 
-                        className="w-full h-full object-cover" 
-                        onError={(e) => {
-                          if (p.url && e.target.src !== p.url) {
-                            e.target.src = p.url;
-                          }
-                        }}
-                      />
-                      {pLiked && (
-                        <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-1 ring-white" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+              {(() => {
+                const activeFilmIdx = Math.max(0, displayedPhotos.findIndex(p => p.id === activePhoto.id));
+                const filmWindowSize = 21;
+                const filmStart = Math.max(0, Math.min(activeFilmIdx - 10, Math.max(0, displayedPhotos.length - filmWindowSize)));
+                const filmEnd = Math.min(displayedPhotos.length, filmStart + filmWindowSize);
+                const windowedPhotos = displayedPhotos.slice(filmStart, filmEnd);
+
+                return (
+                  <div className="flex items-center gap-2 overflow-x-auto max-w-full py-1 px-4 no-scrollbar">
+                    {windowedPhotos.map((p, offsetIdx) => {
+                      const originalIdx = filmStart + offsetIdx;
+                      const pLiked = selectedPhotoIds.has(p.id);
+                      return (
+                        <button
+                          key={p.id || originalIdx}
+                          onClick={() => setActivePhoto(p)}
+                          className={`relative shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                            p.id === activePhoto.id
+                              ? "border-[#b4975a] scale-110 ring-2 ring-[#b4975a]/50 opacity-100"
+                              : "border-zinc-800 opacity-50 hover:opacity-100"
+                          }`}
+                        >
+                          <img 
+                            src={getOptimizedThumbnailUrl(p.url, 160)} 
+                            loading="lazy"
+                            decoding="async"
+                            referrerPolicy="no-referrer"
+                            alt={`Thumb ${originalIdx + 1}`} 
+                            className="w-full h-full object-cover" 
+                            onError={(e) => {
+                              if (p.url && e.target.src !== p.url) {
+                                e.target.src = p.url;
+                              }
+                            }}
+                          />
+                          {pLiked && (
+                            <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-1 ring-white" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
               <span className="text-[10px] text-zinc-500 font-light">
                 Use Left / Right arrow keys or tap thumbnails. Click <strong>Back to Story</strong> to return.
               </span>
@@ -2407,6 +2471,7 @@ const ClientGallery = () => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 1.2, ease: "easeInOut" }}
                 src={allPhotos[slideshowIndex]?.url}
+                referrerPolicy="no-referrer"
                 alt={`Slide ${slideshowIndex + 1}`}
                 className="max-h-[82vh] max-w-[94vw] object-contain rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.9)]"
               />
