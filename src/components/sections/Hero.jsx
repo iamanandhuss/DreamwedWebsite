@@ -29,7 +29,7 @@ const Hero = () => {
         animate={{ scale: 1 }}
         transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
         className={`absolute inset-0 bg-cover bg-center bg-no-repeat z-0 transition-opacity duration-1000 ${
-          isVideoLoaded ? "md:opacity-40" : "opacity-100"
+          isVideoLoaded ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
         style={{ backgroundImage: `url(${heroBg})` }}
       />
@@ -44,7 +44,7 @@ const Hero = () => {
             referrerPolicy="strict-origin-when-cross-origin"
             onLoad={() => setIsVideoLoaded(true)}
             className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] object-cover scale-[1.3] pointer-events-none transition-opacity duration-1000 ${
-              isVideoLoaded ? "opacity-60" : "opacity-0"
+              isVideoLoaded ? "opacity-100" : "opacity-0"
             }`}
             style={{ border: 0 }}
           ></iframe>
