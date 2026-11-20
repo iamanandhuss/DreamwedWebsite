@@ -474,9 +474,10 @@ const ServicesGrid = () => {
                             {playingVideoId === item.id ? (
                               <div className="absolute inset-0 w-full h-full bg-black">
                                 <iframe
-                                  src={`https://www.youtube.com/embed/${item.videoId}?autoplay=1&mute=0&rel=0&modestbranding=1&loop=1&playlist=${item.videoId}`}
+                                  src={`https://www.youtube-nocookie.com/embed/${item.videoId}?autoplay=1&mute=0&rel=0&modestbranding=1&loop=1&playlist=${item.videoId}&playsinline=1`}
                                   title={item.caption}
                                   style={{ border: 0 }}
+                                  referrerPolicy="strict-origin-when-cross-origin"
                                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                   allowFullScreen
                                   className="absolute inset-0 w-full h-full pointer-events-auto"

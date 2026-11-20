@@ -29,7 +29,7 @@ const Hero = () => {
         animate={{ scale: 1 }}
         transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
         className={`absolute inset-0 bg-cover bg-center bg-no-repeat z-0 transition-opacity duration-1000 ${
-          isVideoLoaded ? "md:opacity-0" : "opacity-100"
+          isVideoLoaded ? "md:opacity-40" : "opacity-100"
         }`}
         style={{ backgroundImage: `url(${heroBg})` }}
       />
@@ -38,9 +38,10 @@ const Hero = () => {
       {isDesktop && (
         <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0 hidden md:block">
           <iframe
-            src="https://www.youtube.com/embed/jnSAu-C6OmQ?autoplay=1&mute=1&loop=1&playlist=jnSAu-C6OmQ&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&enablejsapi=1"
+            src="https://www.youtube-nocookie.com/embed/jnSAu-C6OmQ?autoplay=1&mute=1&loop=1&playlist=jnSAu-C6OmQ&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1"
             title="Cinematic background loop"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
             onLoad={() => setIsVideoLoaded(true)}
             className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] object-cover scale-[1.3] pointer-events-none transition-opacity duration-1000 ${
               isVideoLoaded ? "opacity-60" : "opacity-0"
@@ -114,9 +115,10 @@ const Hero = () => {
                 <FaXmark size={20} />
               </button>
               <iframe
-                src="https://www.youtube.com/embed/jnSAu-C6OmQ?autoplay=1&controls=1&rel=0"
+                src="https://www.youtube-nocookie.com/embed/jnSAu-C6OmQ?autoplay=1&controls=1&rel=0&playsinline=1"
                 title="Prewedding Film"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
                 className="w-full h-full border-0"
                 allowFullScreen
               ></iframe>

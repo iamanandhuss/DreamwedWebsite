@@ -1848,8 +1848,9 @@ const TrivandrumOffer = () => {
               {/* 16:9 Aspect Video Embed Container */}
               <div className="relative aspect-video w-full rounded-[24px] overflow-hidden bg-black shadow-inner">
                 <iframe
-                  src="https://www.youtube.com/embed/S9-SrdnKsMs?autoplay=1&mute=0&loop=1&playlist=S9-SrdnKsMs&controls=1&modestbranding=1&rel=0"
+                  src="https://www.youtube-nocookie.com/embed/S9-SrdnKsMs?autoplay=1&mute=0&loop=1&playlist=S9-SrdnKsMs&controls=1&modestbranding=1&rel=0&playsinline=1"
                   title="Cinematic pre-wedding film"
+                  referrerPolicy="strict-origin-when-cross-origin"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   className="absolute inset-0 w-full h-full object-cover"
                   style={{ border: 0 }}

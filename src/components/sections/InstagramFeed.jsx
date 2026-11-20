@@ -422,9 +422,10 @@ const InstagramReelCard = ({ reel, index, dark = false }) => {
         {isPlaying ? (
           <div className="absolute inset-0 w-full h-full bg-black">
             <iframe
-              src={`https://www.youtube.com/embed/${reel.videoId}?autoplay=1&mute=0&rel=0&modestbranding=1&loop=1&playlist=${reel.videoId}`}
+              src={`https://www.youtube-nocookie.com/embed/${reel.videoId}?autoplay=1&mute=0&rel=0&modestbranding=1&loop=1&playlist=${reel.videoId}&playsinline=1`}
               title={reel.caption}
               style={{ border: 0 }}
+              referrerPolicy="strict-origin-when-cross-origin"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
               loading="lazy"

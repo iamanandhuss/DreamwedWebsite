@@ -57,8 +57,9 @@ const ExperienceBento = () => {
               <div className="overflow-hidden rounded-[20px] md:rounded-[28px] relative aspect-video shadow-2xl">
                 <iframe
                   className="w-full h-full"
-                  src="https://www.youtube.com/embed/jnSAu-C6OmQ?autoplay=1&mute=1&loop=1&playlist=jnSAu-C6OmQ"
+                  src="https://www.youtube-nocookie.com/embed/jnSAu-C6OmQ?autoplay=1&mute=1&loop=1&playlist=jnSAu-C6OmQ&playsinline=1"
                   title="Dreamwed Wedding Stories"
+                  referrerPolicy="strict-origin-when-cross-origin"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
