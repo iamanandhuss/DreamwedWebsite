@@ -121,7 +121,7 @@ const AnimatedRoutes = () => {
       <Route path="/packages" element={<Packages />} />
       <Route path="/proposal" element={<DigitalProposal />} />
       <Route path="/proposal/:id" element={<DigitalProposal />} />
-      <Route path="/gallery" element={<ClientGallery />} />
+      <Route path="/gallery" element={<DigitalAlbum />} />
       <Route path="/gallery/:id" element={<ClientGallery />} />
       <Route path="/album" element={<DigitalAlbum />} />
       <Route path="/album/sandeep-sandra" element={<DigitalAlbum />} />
