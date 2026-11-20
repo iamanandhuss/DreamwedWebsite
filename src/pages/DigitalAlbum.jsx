@@ -7,20 +7,16 @@ import {
   X, 
   ChevronUp, 
   PhoneCall,
-  Sparkles,
-  Heart
+  Sparkles
 } from "lucide-react";
 import SEO from "../components/SEO";
 
-// Curated 7 diverse editorial album sections with UNIQUE collage layouts
+// Curated 7 diverse pure-photo editorial collages using the 25 Sandeep & Sandra client photos
 const SECTIONS = [
-  // SECTION 1: Classic Reference Triptych (1 Hero Top + 3 Portraits Bottom)
+  // SECTION 1: Classic Triptych (1 Hero Top + 3 Portraits Bottom)
   {
     id: 1,
     type: "hero_triptych",
-    scriptTitle: "Fall in Love",
-    names: "SANDEEP & SANDRA",
-    subtitle: "Dreamwed Wedding Stories",
     hero: { url: "/images/album/sandeep-sandra/DSC09959.jpg", alt: "Sandeep & Sandra Walking Hand in Hand" },
     photos: [
       { url: "/images/album/sandeep-sandra/DSC09989.jpg", alt: "Beach Romance" },
@@ -29,13 +25,10 @@ const SECTIONS = [
     ]
   },
 
-  // SECTION 2: Asymmetric Magazine Mosaic (1 Tall Portrait Left + 2 Stacked Right + 1 Wide Underneath)
+  // SECTION 2: Asymmetric Magazine Mosaic (1 Tall Left + 2 Stacked Right + 1 Wide Underneath)
   {
     id: 2,
     type: "asymmetric_mosaic",
-    scriptTitle: "Mark The Date",
-    names: "SANDEEP & SANDRA",
-    subtitle: "November 15, 2026 • Trivandrum",
     tall: { url: "/images/album/sandeep-sandra/DSC09795.jpg", alt: "The Sacred Beginning" },
     stackedTop: { url: "/images/album/sandeep-sandra/DSC09854.jpg", alt: "Intimate Smile" },
     stackedBottom: { url: "/images/album/sandeep-sandra/DSC09893.jpg", alt: "Gentle Embrace" },
@@ -46,10 +39,6 @@ const SECTIONS = [
   {
     id: 3,
     type: "diptych_duo",
-    scriptTitle: "Two of Us",
-    names: "SANDEEP & SANDRA",
-    subtitle: "Intimate Couple Portraits",
-    quote: "In the quiet space between moments, the world paused just for the two of us.",
     left: { url: "/images/album/sandeep-sandra/DSC00176.jpg", alt: "Two of Us in Harmony" },
     right: { url: "/images/album/sandeep-sandra/DSC00311.jpg", alt: "Grace & Warmth" }
   },
@@ -58,9 +47,6 @@ const SECTIONS = [
   {
     id: 4,
     type: "quad_grid",
-    scriptTitle: "Timeless Melody",
-    names: "SANDEEP & SANDRA",
-    subtitle: "Heritage & Traditional Splendor",
     photos: [
       { url: "/images/album/sandeep-sandra/DSC00387.jpg", alt: "Candid Laughter" },
       { url: "/images/album/sandeep-sandra/DSC00438.jpg", alt: "Romantic Gaze" },
@@ -73,9 +59,6 @@ const SECTIONS = [
   {
     id: 5,
     type: "panoramic_cards",
-    scriptTitle: "Together Forever",
-    names: "SANDEEP & SANDRA",
-    subtitle: "Promises of a Lifetime",
     panoramic: { url: "/images/album/sandeep-sandra/DSC00514.jpg", alt: "Sacred Traditional Charm" },
     card1: { url: "/images/album/sandeep-sandra/DSC00574.jpg", alt: "Love in Tradition" },
     card2: { url: "/images/album/sandeep-sandra/DSC00640.jpg", alt: "Pure Happiness Together" }
@@ -85,9 +68,6 @@ const SECTIONS = [
   {
     id: 6,
     type: "five_photo_story",
-    scriptTitle: "Golden Memories",
-    names: "SANDEEP & SANDRA",
-    subtitle: "Celebration, Love & Laughter",
     topWide: { url: "/images/album/sandeep-sandra/DSC00776.jpg", alt: "Hand in Hand Walk" },
     topSquare: { url: "/images/album/sandeep-sandra/DSC00832.jpg", alt: "Joyful Connection" },
     bottomRow: [
@@ -101,9 +81,6 @@ const SECTIONS = [
   {
     id: 7,
     type: "grand_finale",
-    scriptTitle: "Ever After",
-    names: "SANDEEP & SANDRA",
-    subtitle: "Captured Forever • Dreamwed Stories",
     centerpiece: { url: "/images/album/sandeep-sandra/DSC01251.jpg", alt: "Happily Ever After" },
     leftFrame: { url: "/images/album/sandeep-sandra/DSC01080.jpg", alt: "Unscripted Joy" },
     rightFrame: { url: "/images/album/sandeep-sandra/DSC01123.jpg", alt: "Timeless Together" }
@@ -154,29 +131,6 @@ const DigitalAlbum = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Reusable Section Typography Header
-  const renderTypography = (scriptTitle, names, subtitle) => (
-    <div className="pt-6 pb-4 sm:pt-8 sm:pb-6 px-4 text-center select-none">
-      <h2 
-        style={{ fontFamily: "'Alex Brush', 'Great Vibes', cursive" }}
-        className="text-4xl sm:text-5xl md:text-6xl font-normal leading-tight tracking-wide text-zinc-900"
-      >
-        {scriptTitle}
-      </h2>
-      <div 
-        style={{ fontFamily: "'Inter', sans-serif" }}
-        className="text-xs sm:text-sm font-medium tracking-[0.3em] uppercase text-zinc-800 mt-2"
-      >
-        {names}
-      </div>
-      {subtitle && (
-        <p className="text-[9px] sm:text-[10px] tracking-[0.22em] uppercase font-light text-zinc-500 mt-1.5">
-          {subtitle}
-        </p>
-      )}
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-[#fcfcf9] text-zinc-900 selection:bg-[#b4975a] selection:text-white pb-24">
       <SEO 
@@ -204,14 +158,11 @@ const DigitalAlbum = () => {
             <ArrowLeft size={18} />
           </button>
 
-          {/* Center Title */}
+          {/* Clean Studio Emblem */}
           <div className="text-center px-2">
-            <h1 className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-zinc-900">
-              Sandeep & Sandra
-            </h1>
-            <p className="text-[9px] uppercase tracking-widest text-[#b4975a] font-medium mt-0.5">
-              Dreamwed Digital Album
-            </p>
+            <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.25em] text-zinc-800">
+              Dreamwed Stories
+            </span>
           </div>
 
           {/* Share Button */}
@@ -242,10 +193,10 @@ const DigitalAlbum = () => {
         )}
       </AnimatePresence>
 
-      {/* DIVERSE EDITORIAL ALBUM FEED (CONTINUOUS MOBILE SCROLL-DOWN) */}
-      <main className="max-w-md sm:max-w-xl md:max-w-2xl mx-auto px-3.5 sm:px-6 pt-4 sm:pt-6 space-y-10 sm:space-y-16">
+      {/* PURE PHOTO COLLAGES FEED (CONTINUOUS MOBILE SCROLL-DOWN) */}
+      <main className="max-w-md sm:max-w-xl md:max-w-2xl mx-auto px-3.5 sm:px-6 pt-4 sm:pt-6 space-y-6 sm:space-y-10">
         
-        {SECTIONS.map((sec, index) => {
+        {SECTIONS.map((sec) => {
 
           // ========================================================
           // LAYOUT 1: CLASSIC TRIPTYCH (Hero Top + 3 Portraits Bottom)
@@ -254,10 +205,10 @@ const DigitalAlbum = () => {
             return (
               <article 
                 key={sec.id}
-                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] transition-all duration-300"
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-2.5 sm:p-4 transition-all duration-300"
               >
                 <div 
-                  className="w-full aspect-[16/10] sm:aspect-[16/9] overflow-hidden relative cursor-pointer bg-zinc-100 group"
+                  className="w-full aspect-[16/10] sm:aspect-[16/9] rounded-xl sm:rounded-2xl overflow-hidden relative cursor-pointer bg-zinc-100 group mb-2.5 sm:mb-3.5"
                   onClick={() => setLightboxImage(sec.hero)}
                 >
                   <img 
@@ -270,27 +221,23 @@ const DigitalAlbum = () => {
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                 </div>
 
-                {renderTypography(sec.scriptTitle, sec.names, sec.subtitle)}
-
-                <div className="px-3 sm:px-6 pb-5 sm:pb-8">
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
-                    {sec.photos.map((item, pIdx) => (
-                      <div
-                        key={pIdx}
-                        className="aspect-[3/4] sm:aspect-[4/5] rounded-sm sm:rounded overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
-                        onClick={() => setLightboxImage(item)}
-                      >
-                        <img 
-                          src={item.url}
-                          alt={item.alt}
-                          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                      </div>
-                    ))}
-                  </div>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  {sec.photos.map((item, pIdx) => (
+                    <div
+                      key={pIdx}
+                      className="aspect-[3/4] sm:aspect-[4/5] rounded-lg sm:rounded-xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                      onClick={() => setLightboxImage(item)}
+                    >
+                      <img 
+                        src={item.url}
+                        alt={item.alt}
+                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                    </div>
+                  ))}
                 </div>
               </article>
             );
@@ -303,15 +250,13 @@ const DigitalAlbum = () => {
             return (
               <article 
                 key={sec.id}
-                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-3.5 sm:p-6 transition-all duration-300"
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-2.5 sm:p-4 transition-all duration-300"
               >
-                {renderTypography(sec.scriptTitle, sec.names, sec.subtitle)}
-
                 {/* Top Split: 1 Tall Portrait + 2 Stacked Photos */}
-                <div className="grid grid-cols-12 gap-2.5 sm:gap-4 items-stretch mb-2.5 sm:mb-4">
-                  {/* Tall Left Frame (7 cols on desktop, 6 on mobile) */}
+                <div className="grid grid-cols-12 gap-2 sm:gap-3 items-stretch mb-2 sm:mb-3">
+                  {/* Tall Left Frame */}
                   <div 
-                    className="col-span-7 sm:col-span-7 aspect-[3/4] sm:aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                    className="col-span-7 aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
                     onClick={() => setLightboxImage(sec.tall)}
                   >
                     <img 
@@ -324,8 +269,8 @@ const DigitalAlbum = () => {
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                   </div>
 
-                  {/* 2 Stacked Right Frames (5 cols) */}
-                  <div className="col-span-5 sm:col-span-5 flex flex-col gap-2.5 sm:gap-4 justify-between">
+                  {/* 2 Stacked Right Frames */}
+                  <div className="col-span-5 flex flex-col gap-2 sm:gap-3 justify-between">
                     <div 
                       className="h-full aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
                       onClick={() => setLightboxImage(sec.stackedTop)}
@@ -381,11 +326,9 @@ const DigitalAlbum = () => {
             return (
               <article 
                 key={sec.id}
-                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-3.5 sm:p-6 transition-all duration-300"
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-2.5 sm:p-4 transition-all duration-300"
               >
-                {renderTypography(sec.scriptTitle, sec.names, sec.subtitle)}
-
-                <div className="grid grid-cols-2 gap-2.5 sm:gap-4 mb-4">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   <div 
                     className="aspect-[3/4] sm:aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
                     onClick={() => setLightboxImage(sec.left)}
@@ -414,12 +357,6 @@ const DigitalAlbum = () => {
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                   </div>
                 </div>
-
-                {sec.quote && (
-                  <p className="text-center text-[11px] sm:text-xs italic text-zinc-500 font-serif max-w-sm mx-auto px-4 pt-1">
-                    "{sec.quote}"
-                  </p>
-                )}
               </article>
             );
           }
@@ -431,11 +368,9 @@ const DigitalAlbum = () => {
             return (
               <article 
                 key={sec.id}
-                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-3.5 sm:p-6 transition-all duration-300"
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-2.5 sm:p-4 transition-all duration-300"
               >
-                {renderTypography(sec.scriptTitle, sec.names, sec.subtitle)}
-
-                <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   {sec.photos.map((item, pIdx) => (
                     <div 
                       key={pIdx}
@@ -464,11 +399,11 @@ const DigitalAlbum = () => {
             return (
               <article 
                 key={sec.id}
-                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] transition-all duration-300"
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-2.5 sm:p-4 transition-all duration-300"
               >
                 {/* 1. Panoramic Full-Bleed Banner */}
                 <div 
-                  className="w-full aspect-[16/9] sm:aspect-[21/9] overflow-hidden relative cursor-pointer bg-zinc-100 group"
+                  className="w-full aspect-[16/9] sm:aspect-[21/9] rounded-xl sm:rounded-2xl overflow-hidden relative cursor-pointer bg-zinc-100 group mb-2 sm:mb-3"
                   onClick={() => setLightboxImage(sec.panoramic)}
                 >
                   <img 
@@ -481,38 +416,34 @@ const DigitalAlbum = () => {
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                 </div>
 
-                {renderTypography(sec.scriptTitle, sec.names, sec.subtitle)}
-
                 {/* 2. Side-by-Side Floating Portrait Pair */}
-                <div className="px-3.5 sm:px-6 pb-6">
-                  <div className="grid grid-cols-2 gap-3 sm:gap-5 max-w-lg mx-auto">
-                    <div 
-                      className="aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
-                      onClick={() => setLightboxImage(sec.card1)}
-                    >
-                      <img 
-                        src={sec.card1.url}
-                        alt={sec.card1.alt}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                    </div>
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  <div 
+                    className="aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                    onClick={() => setLightboxImage(sec.card1)}
+                  >
+                    <img 
+                      src={sec.card1.url}
+                      alt={sec.card1.alt}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                  </div>
 
-                    <div 
-                      className="aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
-                      onClick={() => setLightboxImage(sec.card2)}
-                    >
-                      <img 
-                        src={sec.card2.url}
-                        alt={sec.card2.alt}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                    </div>
+                  <div 
+                    className="aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                    onClick={() => setLightboxImage(sec.card2)}
+                  >
+                    <img 
+                      src={sec.card2.url}
+                      alt={sec.card2.alt}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                   </div>
                 </div>
               </article>
@@ -526,12 +457,10 @@ const DigitalAlbum = () => {
             return (
               <article 
                 key={sec.id}
-                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-3.5 sm:p-6 transition-all duration-300"
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-2.5 sm:p-4 transition-all duration-300"
               >
-                {renderTypography(sec.scriptTitle, sec.names, sec.subtitle)}
-
                 {/* Top Row: 60/40 Asymmetric Pair */}
-                <div className="grid grid-cols-12 gap-2.5 sm:gap-3.5 mb-2.5 sm:mb-3.5">
+                <div className="grid grid-cols-12 gap-2 sm:gap-3 mb-2 sm:mb-3">
                   <div 
                     className="col-span-7 aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
                     onClick={() => setLightboxImage(sec.topWide)}
@@ -562,11 +491,11 @@ const DigitalAlbum = () => {
                 </div>
 
                 {/* Bottom Row: 3-Photo Triptych */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
                   {sec.bottomRow.map((item, pIdx) => (
                     <div 
                       key={pIdx}
-                      className="aspect-[3/4] sm:aspect-[4/5] rounded-sm sm:rounded overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                      className="aspect-[3/4] sm:aspect-[4/5] rounded-lg sm:rounded-xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
                       onClick={() => setLightboxImage(item)}
                     >
                       <img 
@@ -591,11 +520,11 @@ const DigitalAlbum = () => {
             return (
               <article 
                 key={sec.id}
-                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] transition-all duration-300"
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-2.5 sm:p-4 transition-all duration-300"
               >
                 {/* 1. Grand Centerpiece */}
                 <div 
-                  className="w-full aspect-[16/10] sm:aspect-[16/9] overflow-hidden relative cursor-pointer bg-zinc-100 group"
+                  className="w-full aspect-[16/10] sm:aspect-[16/9] rounded-xl sm:rounded-2xl overflow-hidden relative cursor-pointer bg-zinc-100 group mb-2 sm:mb-3"
                   onClick={() => setLightboxImage(sec.centerpiece)}
                 >
                   <img 
@@ -608,38 +537,34 @@ const DigitalAlbum = () => {
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                 </div>
 
-                {renderTypography(sec.scriptTitle, sec.names, sec.subtitle)}
-
                 {/* 2. Two Companion Portraits Side-by-Side */}
-                <div className="px-3.5 sm:px-6 pb-6">
-                  <div className="grid grid-cols-2 gap-3 sm:gap-5 max-w-lg mx-auto">
-                    <div 
-                      className="aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
-                      onClick={() => setLightboxImage(sec.leftFrame)}
-                    >
-                      <img 
-                        src={sec.leftFrame.url}
-                        alt={sec.leftFrame.alt}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                    </div>
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  <div 
+                    className="aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                    onClick={() => setLightboxImage(sec.leftFrame)}
+                  >
+                    <img 
+                      src={sec.leftFrame.url}
+                      alt={sec.leftFrame.alt}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                  </div>
 
-                    <div 
-                      className="aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
-                      onClick={() => setLightboxImage(sec.rightFrame)}
-                    >
-                      <img 
-                        src={sec.rightFrame.url}
-                        alt={sec.rightFrame.alt}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                    </div>
+                  <div 
+                    className="aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                    onClick={() => setLightboxImage(sec.rightFrame)}
+                  >
+                    <img 
+                      src={sec.rightFrame.url}
+                      alt={sec.rightFrame.alt}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                   </div>
                 </div>
               </article>
@@ -649,28 +574,19 @@ const DigitalAlbum = () => {
           return null;
         })}
 
-        {/* CLOSING CREDITS & CTA */}
-        <section className="text-center pt-8 pb-12 px-4 space-y-4">
-          <div className="w-12 h-0.5 bg-[#b4975a] mx-auto rounded-full" />
-          <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-zinc-800">
-            Dreamwed Stories
-          </h3>
-          <p className="text-xs text-zinc-500 max-w-sm mx-auto font-light leading-relaxed">
-            Preserving sacred celebrations with emotion, elegance, and timeless fine-art photography in Kerala.
-          </p>
-
-          <div className="pt-2 flex justify-center">
-            <a
-              href="https://wa.me/918138060591?text=Hi%20Dreamwed,%20I%20loved%20the%20Sandeep%20%26%20Sandra%20Digital%20Album!%20I'd%20like%20to%20inquire%20for%20my%20wedding."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#b4975a] hover:bg-[#c4a96a] text-black font-bold text-xs uppercase tracking-wider rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
-            >
-              <PhoneCall size={14} />
-              <span>Book Your Wedding Story</span>
-            </a>
-          </div>
-        </section>
+        {/* CLOSING BUTTON */}
+        <div className="pt-6 pb-12 flex flex-col items-center gap-3">
+          <div className="w-12 h-0.5 bg-[#b4975a] rounded-full" />
+          <a
+            href="https://wa.me/918138060591?text=Hi%20Dreamwed,%20I%20loved%20the%20Digital%20Album!%20I'd%20like%20to%20inquire%20for%20my%20wedding."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#b4975a] hover:bg-[#c4a96a] text-black font-bold text-xs uppercase tracking-wider rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          >
+            <PhoneCall size={14} />
+            <span>Book Your Wedding Story</span>
+          </a>
+        </div>
 
       </main>
 
@@ -720,10 +636,6 @@ const DigitalAlbum = () => {
               className="max-h-[85vh] max-w-[92vw] object-contain rounded-xl shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             />
-
-            <div className="mt-4 text-center text-white/80 text-xs font-light tracking-widest uppercase">
-              {lightboxImage.alt}
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
