@@ -578,7 +578,7 @@ const DigitalAlbum = () => {
         <div className="pt-6 pb-12 flex flex-col items-center gap-3">
           <div className="w-12 h-0.5 bg-[#b4975a] rounded-full" />
           <a
-            href="https://wa.me/918138060591?text=Hi%20Dreamwed,%20I%20loved%20the%20Digital%20Album!%20I'd%20like%20to%20inquire%20for%20my%20wedding."
+            href="https://wa.me/919995412955?text=Hi%20Dreamwed,%20I%20loved%20the%20Digital%20Album!%20I'd%20like%20to%20inquire%20for%20my%20wedding."
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#b4975a] hover:bg-[#c4a96a] text-black font-bold text-xs uppercase tracking-wider rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
