@@ -12,112 +12,101 @@ import {
 } from "lucide-react";
 import SEO from "../components/SEO";
 
-// Curated 7 luxury album spreads using the 25 Sandeep & Sandra client photos
-const SPREADS = [
+// Curated 7 diverse editorial album sections with UNIQUE collage layouts
+const SECTIONS = [
+  // SECTION 1: Classic Reference Triptych (1 Hero Top + 3 Portraits Bottom)
   {
     id: 1,
+    type: "hero_triptych",
     scriptTitle: "Fall in Love",
     names: "SANDEEP & SANDRA",
     subtitle: "Dreamwed Wedding Stories",
-    hero: {
-      url: "/images/album/sandeep-sandra/DSC09959.jpg",
-      alt: "Sandeep & Sandra Holding Hands"
-    },
-    triptych: [
-      { url: "/images/album/sandeep-sandra/DSC09989.jpg", alt: "Sandeep & Sandra Beach Moment 1" },
+    hero: { url: "/images/album/sandeep-sandra/DSC09959.jpg", alt: "Sandeep & Sandra Walking Hand in Hand" },
+    photos: [
+      { url: "/images/album/sandeep-sandra/DSC09989.jpg", alt: "Beach Romance" },
       { url: "/images/album/sandeep-sandra/DSC00017.jpg", alt: "Traditional Ceremony Portrait" },
-      { url: "/images/album/sandeep-sandra/DSC00154.jpg", alt: "Sandeep & Sandra Beach Moment 2" }
+      { url: "/images/album/sandeep-sandra/DSC00154.jpg", alt: "Gentle Gaze" }
     ]
   },
+
+  // SECTION 2: Asymmetric Magazine Mosaic (1 Tall Portrait Left + 2 Stacked Right + 1 Wide Underneath)
   {
     id: 2,
+    type: "asymmetric_mosaic",
     scriptTitle: "Mark The Date",
     names: "SANDEEP & SANDRA",
     subtitle: "November 15, 2026 • Trivandrum",
-    hero: {
-      url: "/images/album/sandeep-sandra/DSC09795.jpg",
-      alt: "The Sacred Beginning"
-    },
-    triptych: [
-      { url: "/images/album/sandeep-sandra/DSC09854.jpg", alt: "Intimate Smile" },
-      { url: "/images/album/sandeep-sandra/DSC09893.jpg", alt: "Gentle Embrace" },
-      { url: "/images/album/sandeep-sandra/DSC09948.jpg", alt: "Together by the Shore" }
-    ]
+    tall: { url: "/images/album/sandeep-sandra/DSC09795.jpg", alt: "The Sacred Beginning" },
+    stackedTop: { url: "/images/album/sandeep-sandra/DSC09854.jpg", alt: "Intimate Smile" },
+    stackedBottom: { url: "/images/album/sandeep-sandra/DSC09893.jpg", alt: "Gentle Embrace" },
+    bottomWide: { url: "/images/album/sandeep-sandra/DSC09948.jpg", alt: "Together by the Shore" }
   },
+
+  // SECTION 3: Editorial Diptych (2 Grand Side-by-Side Portraits)
   {
     id: 3,
+    type: "diptych_duo",
     scriptTitle: "Two of Us",
     names: "SANDEEP & SANDRA",
     subtitle: "Intimate Couple Portraits",
-    hero: {
-      url: "/images/album/sandeep-sandra/DSC00176.jpg",
-      alt: "Two of Us in Harmony"
-    },
-    triptych: [
-      { url: "/images/album/sandeep-sandra/DSC00311.jpg", alt: "Grace & Warmth" },
-      { url: "/images/album/sandeep-sandra/DSC00387.jpg", alt: "Candid Laughter" },
-      { url: "/images/album/sandeep-sandra/DSC00438.jpg", alt: "Romantic Gaze" }
-    ]
+    quote: "In the quiet space between moments, the world paused just for the two of us.",
+    left: { url: "/images/album/sandeep-sandra/DSC00176.jpg", alt: "Two of Us in Harmony" },
+    right: { url: "/images/album/sandeep-sandra/DSC00311.jpg", alt: "Grace & Warmth" }
   },
+
+  // SECTION 4: Quad Mosaic (4-Photo Dynamic 2x2 Grid)
   {
     id: 4,
+    type: "quad_grid",
     scriptTitle: "Timeless Melody",
     names: "SANDEEP & SANDRA",
     subtitle: "Heritage & Traditional Splendor",
-    hero: {
-      url: "/images/album/sandeep-sandra/DSC00472.jpg",
-      alt: "Veena Melody & Red Saree"
-    },
-    triptych: [
-      { url: "/images/album/sandeep-sandra/DSC00496.jpg", alt: "Heritage Backdrop" },
-      { url: "/images/album/sandeep-sandra/DSC00514.jpg", alt: "Sacred Traditional Charm" },
-      { url: "/images/album/sandeep-sandra/DSC00574.jpg", alt: "Love in Tradition" }
+    photos: [
+      { url: "/images/album/sandeep-sandra/DSC00387.jpg", alt: "Candid Laughter" },
+      { url: "/images/album/sandeep-sandra/DSC00438.jpg", alt: "Romantic Gaze" },
+      { url: "/images/album/sandeep-sandra/DSC00472.jpg", alt: "Veena Melody & Red Saree" },
+      { url: "/images/album/sandeep-sandra/DSC00496.jpg", alt: "Heritage Backdrop" }
     ]
   },
+
+  // SECTION 5: Panoramic Feature + 2 Offset Portrait Cards
   {
     id: 5,
+    type: "panoramic_cards",
     scriptTitle: "Together Forever",
     names: "SANDEEP & SANDRA",
     subtitle: "Promises of a Lifetime",
-    hero: {
-      url: "/images/album/sandeep-sandra/DSC00640.jpg",
-      alt: "Pure Happiness Together"
-    },
-    triptych: [
-      { url: "/images/album/sandeep-sandra/DSC00776.jpg", alt: "Hand in Hand Walk" },
-      { url: "/images/album/sandeep-sandra/DSC00832.jpg", alt: "Joyful Connection" },
-      { url: "/images/album/sandeep-sandra/DSC00900.jpg", alt: "Candid Glance" }
-    ]
+    panoramic: { url: "/images/album/sandeep-sandra/DSC00514.jpg", alt: "Sacred Traditional Charm" },
+    card1: { url: "/images/album/sandeep-sandra/DSC00574.jpg", alt: "Love in Tradition" },
+    card2: { url: "/images/album/sandeep-sandra/DSC00640.jpg", alt: "Pure Happiness Together" }
   },
+
+  // SECTION 6: 5-Photo Story Mosaic (2 Dynamic Top + 3 Triptych Bottom)
   {
     id: 6,
+    type: "five_photo_story",
     scriptTitle: "Golden Memories",
     names: "SANDEEP & SANDRA",
     subtitle: "Celebration, Love & Laughter",
-    hero: {
-      url: "/images/album/sandeep-sandra/DSC00969.jpg",
-      alt: "Golden Hour Glow"
-    },
-    triptych: [
-      { url: "/images/album/sandeep-sandra/DSC00981.jpg", alt: "Sunset Reflections" },
-      { url: "/images/album/sandeep-sandra/DSC01080.jpg", alt: "Unscripted Joy" },
-      { url: "/images/album/sandeep-sandra/DSC01123.jpg", alt: "Timeless Together" }
+    topWide: { url: "/images/album/sandeep-sandra/DSC00776.jpg", alt: "Hand in Hand Walk" },
+    topSquare: { url: "/images/album/sandeep-sandra/DSC00832.jpg", alt: "Joyful Connection" },
+    bottomRow: [
+      { url: "/images/album/sandeep-sandra/DSC00900.jpg", alt: "Candid Glance" },
+      { url: "/images/album/sandeep-sandra/DSC00969.jpg", alt: "Golden Hour Glow" },
+      { url: "/images/album/sandeep-sandra/DSC00981.jpg", alt: "Sunset Reflections" }
     ]
   },
+
+  // SECTION 7: Signature Grand Finale (Centerpiece + 2 Companion Frames)
   {
     id: 7,
+    type: "grand_finale",
     scriptTitle: "Ever After",
     names: "SANDEEP & SANDRA",
     subtitle: "Captured Forever • Dreamwed Stories",
-    hero: {
-      url: "/images/album/sandeep-sandra/DSC01251.jpg",
-      alt: "Happily Ever After"
-    },
-    triptych: [
-      { url: "/images/album/sandeep-sandra/DSC00017.jpg", alt: "Signature Portrait" },
-      { url: "/images/album/sandeep-sandra/DSC00472.jpg", alt: "Classical Melody" },
-      { url: "/images/album/sandeep-sandra/DSC00969.jpg", alt: "Cherished Forever" }
-    ]
+    centerpiece: { url: "/images/album/sandeep-sandra/DSC01251.jpg", alt: "Happily Ever After" },
+    leftFrame: { url: "/images/album/sandeep-sandra/DSC01080.jpg", alt: "Unscripted Joy" },
+    rightFrame: { url: "/images/album/sandeep-sandra/DSC01123.jpg", alt: "Timeless Together" }
   }
 ];
 
@@ -164,6 +153,29 @@ const DigitalAlbum = () => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  // Reusable Section Typography Header
+  const renderTypography = (scriptTitle, names, subtitle) => (
+    <div className="pt-6 pb-4 sm:pt-8 sm:pb-6 px-4 text-center select-none">
+      <h2 
+        style={{ fontFamily: "'Alex Brush', 'Great Vibes', cursive" }}
+        className="text-4xl sm:text-5xl md:text-6xl font-normal leading-tight tracking-wide text-zinc-900"
+      >
+        {scriptTitle}
+      </h2>
+      <div 
+        style={{ fontFamily: "'Inter', sans-serif" }}
+        className="text-xs sm:text-sm font-medium tracking-[0.3em] uppercase text-zinc-800 mt-2"
+      >
+        {names}
+      </div>
+      {subtitle && (
+        <p className="text-[9px] sm:text-[10px] tracking-[0.22em] uppercase font-light text-zinc-500 mt-1.5">
+          {subtitle}
+        </p>
+      )}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#fcfcf9] text-zinc-900 selection:bg-[#b4975a] selection:text-white pb-24">
@@ -230,77 +242,412 @@ const DigitalAlbum = () => {
         )}
       </AnimatePresence>
 
-      {/* EDITORIAL ALBUM FEED (CONTINUOUS MOBILE SCROLL-DOWN) */}
+      {/* DIVERSE EDITORIAL ALBUM FEED (CONTINUOUS MOBILE SCROLL-DOWN) */}
       <main className="max-w-md sm:max-w-xl md:max-w-2xl mx-auto px-3.5 sm:px-6 pt-4 sm:pt-6 space-y-10 sm:space-y-16">
         
-        {SPREADS.map((spread, index) => (
-          <article 
-            key={spread.id}
-            className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] transition-all duration-300"
-          >
-            {/* 1. TOP HERO PHOTO (Full Width) */}
-            <div 
-              className="w-full aspect-[16/10] sm:aspect-[16/9] overflow-hidden relative cursor-pointer bg-zinc-100 group"
-              onClick={() => setLightboxImage(spread.hero)}
-            >
-              <img 
-                src={spread.hero.url}
-                alt={spread.hero.alt}
-                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
-                loading={index < 2 ? "eager" : "lazy"}
-                decoding="async"
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-            </div>
+        {SECTIONS.map((sec, index) => {
 
-            {/* 2. MIDDLE TYPOGRAPHIC SPREAD HEADER */}
-            <div className="pt-6 pb-4 sm:pt-8 sm:pb-6 px-4 text-center select-none">
-              {/* Romantic Cursive Script Heading (1:1 with reference) */}
-              <h2 
-                style={{ fontFamily: "'Alex Brush', 'Great Vibes', cursive" }}
-                className="text-4xl sm:text-5xl md:text-6xl font-normal leading-tight tracking-wide text-zinc-900"
+          // ========================================================
+          // LAYOUT 1: CLASSIC TRIPTYCH (Hero Top + 3 Portraits Bottom)
+          // ========================================================
+          if (sec.type === "hero_triptych") {
+            return (
+              <article 
+                key={sec.id}
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] transition-all duration-300"
               >
-                {spread.scriptTitle}
-              </h2>
+                <div 
+                  className="w-full aspect-[16/10] sm:aspect-[16/9] overflow-hidden relative cursor-pointer bg-zinc-100 group"
+                  onClick={() => setLightboxImage(sec.hero)}
+                >
+                  <img 
+                    src={sec.hero.url}
+                    alt={sec.hero.alt}
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
+                    loading="eager"
+                    decoding="async"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                </div>
 
-              {/* Couple Names (Spaced Uppercase) */}
-              <div 
-                style={{ fontFamily: "'Inter', sans-serif" }}
-                className="text-xs sm:text-sm font-medium tracking-[0.3em] uppercase text-zinc-800 mt-2"
+                {renderTypography(sec.scriptTitle, sec.names, sec.subtitle)}
+
+                <div className="px-3 sm:px-6 pb-5 sm:pb-8">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
+                    {sec.photos.map((item, pIdx) => (
+                      <div
+                        key={pIdx}
+                        className="aspect-[3/4] sm:aspect-[4/5] rounded-sm sm:rounded overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                        onClick={() => setLightboxImage(item)}
+                      >
+                        <img 
+                          src={item.url}
+                          alt={item.alt}
+                          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </article>
+            );
+          }
+
+          // ========================================================
+          // LAYOUT 2: ASYMMETRIC MAGAZINE MOSAIC (1 Tall Left + 2 Stacked Right + 1 Wide Underneath)
+          // ========================================================
+          if (sec.type === "asymmetric_mosaic") {
+            return (
+              <article 
+                key={sec.id}
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-3.5 sm:p-6 transition-all duration-300"
               >
-                {spread.names}
-              </div>
+                {renderTypography(sec.scriptTitle, sec.names, sec.subtitle)}
 
-              {/* Subtitle / Studio Branding */}
-              <p className="text-[9px] sm:text-[10px] tracking-[0.22em] uppercase font-light text-zinc-500 mt-1.5">
-                {spread.subtitle}
-              </p>
-            </div>
-
-            {/* 3. BOTTOM TRIPTYCH GRID (3 Vertical Portraits Side-by-Side) */}
-            <div className="px-3 sm:px-6 pb-5 sm:pb-8">
-              <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
-                {spread.triptych.map((item, photoIdx) => (
-                  <div
-                    key={photoIdx}
-                    className="aspect-[3/4] sm:aspect-[4/5] rounded-sm sm:rounded overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
-                    onClick={() => setLightboxImage(item)}
+                {/* Top Split: 1 Tall Portrait + 2 Stacked Photos */}
+                <div className="grid grid-cols-12 gap-2.5 sm:gap-4 items-stretch mb-2.5 sm:mb-4">
+                  {/* Tall Left Frame (7 cols on desktop, 6 on mobile) */}
+                  <div 
+                    className="col-span-7 sm:col-span-7 aspect-[3/4] sm:aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                    onClick={() => setLightboxImage(sec.tall)}
                   >
                     <img 
-                      src={item.url}
-                      alt={item.alt}
-                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      src={sec.tall.url}
+                      alt={sec.tall.alt}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
                       loading="lazy"
                       decoding="async"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                   </div>
-                ))}
-              </div>
-            </div>
 
-          </article>
-        ))}
+                  {/* 2 Stacked Right Frames (5 cols) */}
+                  <div className="col-span-5 sm:col-span-5 flex flex-col gap-2.5 sm:gap-4 justify-between">
+                    <div 
+                      className="h-full aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                      onClick={() => setLightboxImage(sec.stackedTop)}
+                    >
+                      <img 
+                        src={sec.stackedTop.url}
+                        alt={sec.stackedTop.alt}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                    </div>
+
+                    <div 
+                      className="h-full aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                      onClick={() => setLightboxImage(sec.stackedBottom)}
+                    >
+                      <img 
+                        src={sec.stackedBottom.url}
+                        alt={sec.stackedBottom.alt}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Panoramic Anchor Photo */}
+                <div 
+                  className="w-full aspect-[21/9] sm:aspect-[16/7] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                  onClick={() => setLightboxImage(sec.bottomWide)}
+                >
+                  <img 
+                    src={sec.bottomWide.url}
+                    alt={sec.bottomWide.alt}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                </div>
+              </article>
+            );
+          }
+
+          // ========================================================
+          // LAYOUT 3: EDITORIAL DIPTYCH (2 Grand Side-by-Side Portraits)
+          // ========================================================
+          if (sec.type === "diptych_duo") {
+            return (
+              <article 
+                key={sec.id}
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-3.5 sm:p-6 transition-all duration-300"
+              >
+                {renderTypography(sec.scriptTitle, sec.names, sec.subtitle)}
+
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-4 mb-4">
+                  <div 
+                    className="aspect-[3/4] sm:aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                    onClick={() => setLightboxImage(sec.left)}
+                  >
+                    <img 
+                      src={sec.left.url}
+                      alt={sec.left.alt}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                  </div>
+
+                  <div 
+                    className="aspect-[3/4] sm:aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                    onClick={() => setLightboxImage(sec.right)}
+                  >
+                    <img 
+                      src={sec.right.url}
+                      alt={sec.right.alt}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                  </div>
+                </div>
+
+                {sec.quote && (
+                  <p className="text-center text-[11px] sm:text-xs italic text-zinc-500 font-serif max-w-sm mx-auto px-4 pt-1">
+                    "{sec.quote}"
+                  </p>
+                )}
+              </article>
+            );
+          }
+
+          // ========================================================
+          // LAYOUT 4: QUAD GRID (4-Photo Dynamic 2x2 Grid)
+          // ========================================================
+          if (sec.type === "quad_grid") {
+            return (
+              <article 
+                key={sec.id}
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-3.5 sm:p-6 transition-all duration-300"
+              >
+                {renderTypography(sec.scriptTitle, sec.names, sec.subtitle)}
+
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+                  {sec.photos.map((item, pIdx) => (
+                    <div 
+                      key={pIdx}
+                      className="aspect-square sm:aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                      onClick={() => setLightboxImage(item)}
+                    >
+                      <img 
+                        src={item.url}
+                        alt={item.alt}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                    </div>
+                  ))}
+                </div>
+              </article>
+            );
+          }
+
+          // ========================================================
+          // LAYOUT 5: PANORAMIC + 2 OFFSET PORTRAIT CARDS
+          // ========================================================
+          if (sec.type === "panoramic_cards") {
+            return (
+              <article 
+                key={sec.id}
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] transition-all duration-300"
+              >
+                {/* 1. Panoramic Full-Bleed Banner */}
+                <div 
+                  className="w-full aspect-[16/9] sm:aspect-[21/9] overflow-hidden relative cursor-pointer bg-zinc-100 group"
+                  onClick={() => setLightboxImage(sec.panoramic)}
+                >
+                  <img 
+                    src={sec.panoramic.url}
+                    alt={sec.panoramic.alt}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-103"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                </div>
+
+                {renderTypography(sec.scriptTitle, sec.names, sec.subtitle)}
+
+                {/* 2. Side-by-Side Floating Portrait Pair */}
+                <div className="px-3.5 sm:px-6 pb-6">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-5 max-w-lg mx-auto">
+                    <div 
+                      className="aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                      onClick={() => setLightboxImage(sec.card1)}
+                    >
+                      <img 
+                        src={sec.card1.url}
+                        alt={sec.card1.alt}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                    </div>
+
+                    <div 
+                      className="aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                      onClick={() => setLightboxImage(sec.card2)}
+                    >
+                      <img 
+                        src={sec.card2.url}
+                        alt={sec.card2.alt}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                    </div>
+                  </div>
+                </div>
+              </article>
+            );
+          }
+
+          // ========================================================
+          // LAYOUT 6: 5-PHOTO STORY MOSAIC (2 Dynamic Top + 3 Triptych Bottom)
+          // ========================================================
+          if (sec.type === "five_photo_story") {
+            return (
+              <article 
+                key={sec.id}
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] p-3.5 sm:p-6 transition-all duration-300"
+              >
+                {renderTypography(sec.scriptTitle, sec.names, sec.subtitle)}
+
+                {/* Top Row: 60/40 Asymmetric Pair */}
+                <div className="grid grid-cols-12 gap-2.5 sm:gap-3.5 mb-2.5 sm:mb-3.5">
+                  <div 
+                    className="col-span-7 aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                    onClick={() => setLightboxImage(sec.topWide)}
+                  >
+                    <img 
+                      src={sec.topWide.url}
+                      alt={sec.topWide.alt}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                  </div>
+
+                  <div 
+                    className="col-span-5 aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                    onClick={() => setLightboxImage(sec.topSquare)}
+                  >
+                    <img 
+                      src={sec.topSquare.url}
+                      alt={sec.topSquare.alt}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                  </div>
+                </div>
+
+                {/* Bottom Row: 3-Photo Triptych */}
+                <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
+                  {sec.bottomRow.map((item, pIdx) => (
+                    <div 
+                      key={pIdx}
+                      className="aspect-[3/4] sm:aspect-[4/5] rounded-sm sm:rounded overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                      onClick={() => setLightboxImage(item)}
+                    >
+                      <img 
+                        src={item.url}
+                        alt={item.alt}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                    </div>
+                  ))}
+                </div>
+              </article>
+            );
+          }
+
+          // ========================================================
+          // LAYOUT 7: GRAND FINALE (Centerpiece + 2 Companion Frames)
+          // ========================================================
+          if (sec.type === "grand_finale") {
+            return (
+              <article 
+                key={sec.id}
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] transition-all duration-300"
+              >
+                {/* 1. Grand Centerpiece */}
+                <div 
+                  className="w-full aspect-[16/10] sm:aspect-[16/9] overflow-hidden relative cursor-pointer bg-zinc-100 group"
+                  onClick={() => setLightboxImage(sec.centerpiece)}
+                >
+                  <img 
+                    src={sec.centerpiece.url}
+                    alt={sec.centerpiece.alt}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-103"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                </div>
+
+                {renderTypography(sec.scriptTitle, sec.names, sec.subtitle)}
+
+                {/* 2. Two Companion Portraits Side-by-Side */}
+                <div className="px-3.5 sm:px-6 pb-6">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-5 max-w-lg mx-auto">
+                    <div 
+                      className="aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                      onClick={() => setLightboxImage(sec.leftFrame)}
+                    >
+                      <img 
+                        src={sec.leftFrame.url}
+                        alt={sec.leftFrame.alt}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                    </div>
+
+                    <div 
+                      className="aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                      onClick={() => setLightboxImage(sec.rightFrame)}
+                    >
+                      <img 
+                        src={sec.rightFrame.url}
+                        alt={sec.rightFrame.alt}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                    </div>
+                  </div>
+                </div>
+              </article>
+            );
+          }
+
+          return null;
+        })}
 
         {/* CLOSING CREDITS & CTA */}
         <section className="text-center pt-8 pb-12 px-4 space-y-4">
