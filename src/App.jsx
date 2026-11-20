@@ -24,6 +24,7 @@ import Packages from './pages/Packages';
 // Code-split heavy portals to keep initial mobile payload ultra-lightweight
 const DigitalProposal = lazy(() => import('./pages/DigitalProposal'));
 const ClientGallery = lazy(() => import('./pages/ClientGallery'));
+const DigitalAlbum = lazy(() => import('./pages/DigitalAlbum'));
 
 const PageLoader = () => (
   <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white font-light p-6">
@@ -122,6 +123,8 @@ const AnimatedRoutes = () => {
       <Route path="/proposal/:id" element={<DigitalProposal />} />
       <Route path="/gallery" element={<ClientGallery />} />
       <Route path="/gallery/:id" element={<ClientGallery />} />
+      <Route path="/album" element={<DigitalAlbum />} />
+      <Route path="/album/sandeep-sandra" element={<DigitalAlbum />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -129,7 +132,7 @@ const AnimatedRoutes = () => {
 
 const AppContent = () => {
   const location = useLocation();
-  const isPortalPath = ["/my-booking", "/admin", "/editor", "/designer", "/ai-search", "/groom/bride", "/grrom/bride", "/groom-bride", "/proposal", "/gallery"].some(path => 
+  const isPortalPath = ["/my-booking", "/admin", "/editor", "/designer", "/ai-search", "/groom/bride", "/grrom/bride", "/groom-bride", "/proposal", "/gallery", "/album"].some(path => 
     location.pathname.startsWith(path)
   );
 
