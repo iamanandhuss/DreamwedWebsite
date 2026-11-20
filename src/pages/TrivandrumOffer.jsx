@@ -307,7 +307,7 @@ const TrivandrumOffer = () => {
         "Pre-Wedding Photography & Videography (Save the Date)",
         "Wedding Day Candid & Traditional Photography",
         "Wedding Day Candid & Traditional Videography",
-        "Grand Reception Candid & Traditional Coverage",
+        "Reception Coverage Traditional Photography & Videography",
         "Helicam (Drone) Aerial Coverage",
         "One 80-Pages Premium layflat Album",
         "Highlights Video Film",
