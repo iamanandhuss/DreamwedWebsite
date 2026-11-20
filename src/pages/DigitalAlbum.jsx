@@ -1,19 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, 
-  Maximize2, 
-  Minimize2, 
-  RotateCw, 
-  ChevronLeft, 
-  ChevronRight, 
-  Sun, 
-  Moon, 
-  X, 
   Share2, 
-  Download,
-  BookOpen
+  X, 
+  ChevronUp, 
+  PhoneCall,
+  Sparkles,
+  Heart
 } from "lucide-react";
 import SEO from "../components/SEO";
 
@@ -128,365 +123,228 @@ const SPREADS = [
 
 const DigitalAlbum = () => {
   const navigate = useNavigate();
-  const containerRef = useRef(null);
-  
-  const [currentSpreadIndex, setCurrentSpreadIndex] = useState(0);
-  const [direction, setDirection] = useState(1);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [lightboxImage, setLightboxImage] = useState(null);
   const [shareCopied, setShareCopied] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
-  // Touch swipe handling
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
-
-  const activeSpread = SPREADS[currentSpreadIndex];
-
-  // Fullscreen state listener
+  // Monitor scroll for back to top button
   useEffect(() => {
-    const handleFsChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
     };
-    document.addEventListener("fullscreenchange", handleFsChange);
-    return () => document.removeEventListener("fullscreenchange", handleFsChange);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Keyboard navigation
+  // Keyboard close for lightbox
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (lightboxImage) {
-        if (e.key === "Escape") setLightboxImage(null);
-        return;
+      if (e.key === "Escape" && lightboxImage) {
+        setLightboxImage(null);
       }
-      if (e.key === "ArrowRight") nextSpread();
-      if (e.key === "ArrowLeft") prevSpread();
-      if (e.key === "f" || e.key === "F") toggleFullscreen();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentSpreadIndex, lightboxImage]);
-
-  const nextSpread = () => {
-    if (currentSpreadIndex < SPREADS.length - 1) {
-      setDirection(1);
-      setCurrentSpreadIndex((prev) => prev + 1);
-    } else {
-      // Loop back to beginning
-      setDirection(1);
-      setCurrentSpreadIndex(0);
-    }
-  };
-
-  const prevSpread = () => {
-    if (currentSpreadIndex > 0) {
-      setDirection(-1);
-      setCurrentSpreadIndex((prev) => prev - 1);
-    } else {
-      // Loop to end
-      setDirection(-1);
-      setCurrentSpreadIndex(SPREADS.length - 1);
-    }
-  };
-
-  const toggleFullscreen = () => {
-    if (!containerRef.current) return;
-    if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().catch(() => {});
-    } else {
-      document.exitFullscreen().catch(() => {});
-    }
-  };
-
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = (e) => {
-    touchEndX.current = e.changedTouches[0].clientX;
-    const diff = touchStartX.current - touchEndX.current;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) nextSpread();
-      else prevSpread();
-    }
-  };
+  }, [lightboxImage]);
 
   const handleShare = () => {
-    if (navigator.clipboard) {
+    if (navigator.share) {
+      navigator.share({
+        title: "Sandeep & Sandra • Digital Wedding Album",
+        text: "Experience the bespoke wedding album of Sandeep & Sandra by Dreamwed Stories.",
+        url: window.location.href
+      }).catch(() => {});
+    } else if (navigator.clipboard) {
       navigator.clipboard.writeText(window.location.href);
       setShareCopied(true);
       setTimeout(() => setShareCopied(false), 2500);
     }
   };
 
-  // Theme styles
-  const bgClass = isDarkMode ? "bg-zinc-950 text-white" : "bg-[#fbfbf9] text-zinc-900";
-  const cardBgClass = isDarkMode ? "bg-zinc-900 text-white border-zinc-800" : "bg-white text-zinc-900 border-zinc-200/80";
-  const titleColor = isDarkMode ? "text-amber-200" : "text-zinc-900";
-  const namesColor = isDarkMode ? "text-zinc-200" : "text-zinc-800";
-  const subtitleColor = isDarkMode ? "text-zinc-400" : "text-zinc-500";
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
-    <div 
-      ref={containerRef}
-      className={`min-h-screen ${bgClass} transition-colors duration-500 flex flex-col items-center justify-between selection:bg-[#b4975a] selection:text-white select-none overflow-x-hidden`}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
+    <div className="min-h-screen bg-[#fcfcf9] text-zinc-900 selection:bg-[#b4975a] selection:text-white pb-24">
       <SEO 
         title="Sandeep & Sandra • Digital Wedding Album | Dreamwed Stories"
         description="Experience the bespoke editorial wedding album of Sandeep & Sandra, beautifully crafted with timeless candids by Dreamwed Stories."
       />
 
-      {/* TOP FLOATING NAVIGATION BAR */}
-      <header className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between z-30 sticky top-0 backdrop-blur-md bg-opacity-80">
-        {/* Back Button */}
-        <button
-          onClick={() => {
-            if (window.history.length > 1) {
-              navigate(-1);
-            } else {
-              navigate("/");
-            }
-          }}
-          className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 shadow-md cursor-pointer hover:scale-105 active:scale-95 ${
-            isDarkMode 
-              ? "bg-zinc-900/90 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800" 
-              : "bg-white/95 border border-zinc-200 text-zinc-700 hover:text-zinc-950 hover:bg-zinc-50 shadow-black/5"
-          }`}
-          title="Back"
-          aria-label="Go back"
-        >
-          <ArrowLeft size={18} />
-        </button>
+      {/* STICKY TOP FLOATING MOBILE APP BAR */}
+      <header className="sticky top-0 z-40 w-full bg-[#fcfcf9]/90 backdrop-blur-xl border-b border-zinc-200/80 px-4 sm:px-6 py-3 transition-all duration-300">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          
+          {/* Back Button */}
+          <button
+            onClick={() => {
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate("/");
+              }
+            }}
+            className="w-10 h-10 rounded-full bg-white border border-zinc-200 shadow-sm flex items-center justify-center text-zinc-800 hover:text-black hover:bg-zinc-50 active:scale-95 transition-all cursor-pointer"
+            title="Go back"
+            aria-label="Back"
+          >
+            <ArrowLeft size={18} />
+          </button>
 
-        {/* Center Album Indicator */}
-        <div className="flex items-center gap-2 px-4 py-1.5 rounded-full border text-[11px] font-medium tracking-wider uppercase backdrop-blur-lg shadow-sm transition-all">
-          <BookOpen size={13} className="text-[#b4975a]" />
-          <span className="font-semibold">Spread {activeSpread.id} of {SPREADS.length}</span>
-        </div>
+          {/* Center Title */}
+          <div className="text-center px-2">
+            <h1 className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-zinc-900">
+              Sandeep & Sandra
+            </h1>
+            <p className="text-[9px] uppercase tracking-widest text-[#b4975a] font-medium mt-0.5">
+              Dreamwed Digital Album
+            </p>
+          </div>
 
-        {/* Right Tools */}
-        <div className="flex items-center gap-2">
-          {/* Share */}
+          {/* Share Button */}
           <button
             onClick={handleShare}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-sm cursor-pointer hover:scale-105 ${
-              isDarkMode ? "bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white" : "bg-white border border-zinc-200 text-zinc-700 hover:text-black"
-            }`}
-            title={shareCopied ? "Link Copied!" : "Share Album Link"}
+            className="w-10 h-10 rounded-full bg-white border border-zinc-200 shadow-sm flex items-center justify-center text-zinc-800 hover:text-black hover:bg-zinc-50 active:scale-95 transition-all cursor-pointer"
+            title="Share Album"
+            aria-label="Share Album"
           >
-            <Share2 size={15} />
+            <Share2 size={16} />
           </button>
 
-          {/* Theme Toggle */}
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-sm cursor-pointer hover:scale-105 ${
-              isDarkMode ? "bg-zinc-900 border border-zinc-800 text-amber-400" : "bg-white border border-zinc-200 text-zinc-700"
-            }`}
-            title={isDarkMode ? "Switch to Classic White Album" : "Switch to Luxury Dark Album"}
-          >
-            {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
-
-          {/* Fullscreen */}
-          <button
-            onClick={toggleFullscreen}
-            className={`hidden sm:flex w-10 h-10 rounded-full items-center justify-center transition-all shadow-sm cursor-pointer hover:scale-105 ${
-              isDarkMode ? "bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white" : "bg-white border border-zinc-200 text-zinc-700 hover:text-black"
-            }`}
-            title="Toggle Fullscreen"
-          >
-            {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
-          </button>
         </div>
       </header>
 
-      {/* COPIED TOAST NOTIFICATION */}
+      {/* COPIED TOAST */}
       <AnimatePresence>
         {shareCopied && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-18 z-50 px-4 py-2 bg-[#b4975a] text-black text-xs font-bold uppercase tracking-widest rounded-full shadow-xl"
+            className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-zinc-900 text-white text-xs font-bold uppercase tracking-widest rounded-full shadow-2xl flex items-center gap-2"
           >
-            ✓ Album Link Copied!
+            <Sparkles size={14} className="text-[#b4975a]" />
+            <span>Album Link Copied!</span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* MAIN EDITORIAL ALBUM SPREAD CONTAINER */}
-      <main className="w-full flex-grow flex items-center justify-center px-3 sm:px-6 md:px-8 py-2 md:py-6">
-        <div className="w-full max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl relative">
-          
-          {/* SPREAD CARD WITH FRAMER-MOTION SMOOTH SLIDE */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeSpread.id}
-              initial={{ opacity: 0, x: direction * 40, scale: 0.98 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -direction * 40, scale: 0.98 }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className={`w-full rounded-2xl md:rounded-3xl border overflow-hidden shadow-2xl transition-all duration-300 ${cardBgClass}`}
-              style={{
-                boxShadow: isDarkMode 
-                  ? "0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 1px rgba(255, 255, 255, 0.1)" 
-                  : "0 25px 60px -15px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.08)"
-              }}
+      {/* EDITORIAL ALBUM FEED (CONTINUOUS MOBILE SCROLL-DOWN) */}
+      <main className="max-w-md sm:max-w-xl md:max-w-2xl mx-auto px-3.5 sm:px-6 pt-4 sm:pt-6 space-y-10 sm:space-y-16">
+        
+        {SPREADS.map((spread, index) => (
+          <article 
+            key={spread.id}
+            className="w-full bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.06)] transition-all duration-300"
+          >
+            {/* 1. TOP HERO PHOTO (Full Width) */}
+            <div 
+              className="w-full aspect-[16/10] sm:aspect-[16/9] overflow-hidden relative cursor-pointer bg-zinc-100 group"
+              onClick={() => setLightboxImage(spread.hero)}
             >
-              
-              {/* 1. TOP HERO PHOTO (Full Width with subtle hover zoom) */}
-              <div 
-                className="w-full aspect-[16/10] sm:aspect-[16/9] overflow-hidden relative cursor-pointer group bg-black/5"
-                onClick={() => setLightboxImage(activeSpread.hero)}
+              <img 
+                src={spread.hero.url}
+                alt={spread.hero.alt}
+                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
+                loading={index < 2 ? "eager" : "lazy"}
+                decoding="async"
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+            </div>
+
+            {/* 2. MIDDLE TYPOGRAPHIC SPREAD HEADER */}
+            <div className="pt-6 pb-4 sm:pt-8 sm:pb-6 px-4 text-center select-none">
+              {/* Romantic Cursive Script Heading (1:1 with reference) */}
+              <h2 
+                style={{ fontFamily: "'Alex Brush', 'Great Vibes', cursive" }}
+                className="text-4xl sm:text-5xl md:text-6xl font-normal leading-tight tracking-wide text-zinc-900"
               >
-                <img 
-                  src={activeSpread.hero.url}
-                  alt={activeSpread.hero.alt}
-                  className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-700 ease-out"
-                  loading="eager"
-                  fetchPriority="high"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-                <span className="absolute bottom-2 right-2 text-[9px] uppercase tracking-wider text-white/80 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                  Tap to expand
-                </span>
+                {spread.scriptTitle}
+              </h2>
+
+              {/* Couple Names (Spaced Uppercase) */}
+              <div 
+                style={{ fontFamily: "'Inter', sans-serif" }}
+                className="text-xs sm:text-sm font-medium tracking-[0.3em] uppercase text-zinc-800 mt-2"
+              >
+                {spread.names}
               </div>
 
-              {/* 2. MIDDLE TYPOGRAPHIC SPREAD HEADER */}
-              <div className="pt-6 pb-4 sm:pt-8 sm:pb-6 px-4 text-center">
-                {/* Romantic Cursive Script Heading (Matching screenshot) */}
-                <h2 
-                  style={{ fontFamily: "'Alex Brush', 'Great Vibes', cursive" }}
-                  className={`text-4xl sm:text-5xl md:text-6xl font-normal leading-[1.1] mb-1 tracking-wide ${titleColor}`}
-                >
-                  {activeSpread.scriptTitle}
-                </h2>
+              {/* Subtitle / Studio Branding */}
+              <p className="text-[9px] sm:text-[10px] tracking-[0.22em] uppercase font-light text-zinc-500 mt-1.5">
+                {spread.subtitle}
+              </p>
+            </div>
 
-                {/* Couple Names (Clean, spaced uppercase serif/sans) */}
-                <div 
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                  className={`text-xs sm:text-sm md:text-base font-light tracking-[0.28em] sm:tracking-[0.35em] uppercase mt-2 ${namesColor}`}
-                >
-                  {activeSpread.names}
-                </div>
-
-                {/* Subtitle / Studio Branding */}
-                <p className={`text-[9px] sm:text-[10px] tracking-[0.2em] uppercase font-light mt-1.5 opacity-85 ${subtitleColor}`}>
-                  {activeSpread.subtitle}
-                </p>
+            {/* 3. BOTTOM TRIPTYCH GRID (3 Vertical Portraits Side-by-Side) */}
+            <div className="px-3 sm:px-6 pb-5 sm:pb-8">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
+                {spread.triptych.map((item, photoIdx) => (
+                  <div
+                    key={photoIdx}
+                    className="aspect-[3/4] sm:aspect-[4/5] rounded-sm sm:rounded overflow-hidden bg-zinc-100 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                    onClick={() => setLightboxImage(item)}
+                  >
+                    <img 
+                      src={item.url}
+                      alt={item.alt}
+                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                  </div>
+                ))}
               </div>
+            </div>
 
-              {/* 3. BOTTOM TRIPTYCH GRID (3 Vertical Portraits Side-by-Side) */}
-              <div className="px-3 sm:px-6 pb-6 sm:pb-8">
-                <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
-                  {activeSpread.triptych.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="aspect-[3/4] sm:aspect-[4/5] rounded-sm sm:rounded overflow-hidden bg-black/5 relative cursor-pointer group shadow-sm hover:shadow-md transition-all"
-                      onClick={() => setLightboxImage(item)}
-                    >
-                      <img 
-                        src={item.url}
-                        alt={item.alt}
-                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors duration-300" />
-                    </div>
-                  ))}
-                </div>
-              </div>
+          </article>
+        ))}
 
-            </motion.div>
-          </AnimatePresence>
+        {/* CLOSING CREDITS & CTA */}
+        <section className="text-center pt-8 pb-12 px-4 space-y-4">
+          <div className="w-12 h-0.5 bg-[#b4975a] mx-auto rounded-full" />
+          <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-zinc-800">
+            Dreamwed Stories
+          </h3>
+          <p className="text-xs text-zinc-500 max-w-sm mx-auto font-light leading-relaxed">
+            Preserving sacred celebrations with emotion, elegance, and timeless fine-art photography in Kerala.
+          </p>
 
-          {/* SIDE FLIP CONTROLS (DESKTOP) */}
-          <button
-            onClick={prevSpread}
-            className={`hidden md:flex absolute -left-16 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full items-center justify-center transition-all shadow-lg hover:scale-110 active:scale-95 cursor-pointer ${
-              isDarkMode ? "bg-zinc-900 border border-zinc-800 text-white" : "bg-white border border-zinc-200 text-zinc-800"
-            }`}
-            aria-label="Previous Spread"
-          >
-            <ChevronLeft size={22} />
-          </button>
+          <div className="pt-2 flex justify-center">
+            <a
+              href="https://wa.me/918138060591?text=Hi%20Dreamwed,%20I%20loved%20the%20Sandeep%20%26%20Sandra%20Digital%20Album!%20I'd%20like%20to%20inquire%20for%20my%20wedding."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#b4975a] hover:bg-[#c4a96a] text-black font-bold text-xs uppercase tracking-wider rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            >
+              <PhoneCall size={14} />
+              <span>Book Your Wedding Story</span>
+            </a>
+          </div>
+        </section>
 
-          <button
-            onClick={nextSpread}
-            className={`hidden md:flex absolute -right-16 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full items-center justify-center transition-all shadow-lg hover:scale-110 active:scale-95 cursor-pointer ${
-              isDarkMode ? "bg-zinc-900 border border-zinc-800 text-white" : "bg-white border border-zinc-200 text-zinc-800"
-            }`}
-            aria-label="Next Spread"
-          >
-            <ChevronRight size={22} />
-          </button>
-
-        </div>
       </main>
 
-      {/* BOTTOM ACTION BAR & SPREAD THUMBNAILS */}
-      <footer className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 flex flex-col items-center gap-3 z-30">
-        
-        {/* Spread Navigation Dots */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {SPREADS.map((spread, idx) => (
-            <button
-              key={spread.id}
-              onClick={() => {
-                setDirection(idx > currentSpreadIndex ? 1 : -1);
-                setCurrentSpreadIndex(idx);
-              }}
-              className={`transition-all duration-300 rounded-full cursor-pointer ${
-                idx === currentSpreadIndex
-                  ? "w-8 h-2 bg-[#b4975a]"
-                  : `w-2 h-2 ${isDarkMode ? "bg-zinc-800 hover:bg-zinc-600" : "bg-zinc-300 hover:bg-zinc-400"}`
-              }`}
-              title={`Jump to Spread ${spread.id}: ${spread.scriptTitle}`}
-              aria-label={`Jump to Spread ${spread.id}`}
-            />
-          ))}
-        </div>
-
-        {/* Mobile Next / Rotate Button matching the screenshot icons */}
-        <div className="w-full flex items-center justify-between sm:justify-center gap-4 text-xs">
-          <button
-            onClick={prevSpread}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-full border text-xs font-medium transition-all cursor-pointer ${
-              isDarkMode ? "border-zinc-800 hover:bg-zinc-900 text-zinc-300" : "border-zinc-300 hover:bg-zinc-100 text-zinc-700"
-            }`}
+      {/* FLOATING SCROLL TO TOP BUTTON */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            onClick={scrollToTop}
+            className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-zinc-900 text-white shadow-2xl border border-zinc-800 flex items-center justify-center hover:bg-black active:scale-95 transition-all cursor-pointer"
+            title="Scroll to top"
+            aria-label="Back to Top"
           >
-            <ChevronLeft size={14} />
-            <span>Previous</span>
-          </button>
+            <ChevronUp size={20} />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
-          {/* Quick Flip / Next Button (Matching rotate icon in screenshot) */}
-          <button
-            onClick={nextSpread}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#b4975a] hover:bg-[#c4a96a] text-black font-bold uppercase tracking-wider text-[11px] shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
-            <span>Next Spread</span>
-            <RotateCw size={14} className="hover:rotate-180 transition-transform duration-500" />
-          </button>
-
-          {/* Mobile Fullscreen Button */}
-          <button
-            onClick={toggleFullscreen}
-            className={`sm:hidden w-10 h-10 rounded-full flex items-center justify-center border transition-all cursor-pointer ${
-              isDarkMode ? "border-zinc-800 bg-zinc-900 text-zinc-300" : "border-zinc-300 bg-white text-zinc-700"
-            }`}
-            title="Fullscreen"
-            aria-label="Toggle Fullscreen"
-          >
-            {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-          </button>
-        </div>
-      </footer>
-
-      {/* FULLSCREEN LIGHTBOX POPUP FOR IMAGE EXPANSION */}
+      {/* FULLSCREEN LIGHTBOX POPUP */}
       <AnimatePresence>
         {lightboxImage && (
           <motion.div
