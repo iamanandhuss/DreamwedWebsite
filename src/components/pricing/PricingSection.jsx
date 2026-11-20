@@ -68,12 +68,12 @@ const weddingPlans = [
   {
     shareId: "pkgPremiumCandidCard",
     title: "Premium Candid Package",
-    price: "₹79,999",
+    price: "₹84,999",
     tag: "Single-Side Wedding + Pre-Wedding + Drone",
     modalTag: "Premium Wedding",
     subtitle: "COMPLETE SINGLE-SIDE & DRONE",
-    preweddingOffer: "FREE DRONE AERIAL COVERAGE + 100 PAGES ALBUM",
-    desc: "Our comprehensive single-side coverage package. Designed for couples seeking complete pre-wedding story, wedding day, and reception coverage with aerial drone views and a premium handcrafted 100-page album.",
+    preweddingOffer: "FREE DRONE AERIAL COVERAGE + 80 PAGES ALBUM",
+    desc: "Our comprehensive single-side coverage package. Designed for couples seeking complete pre-wedding story, wedding day, and reception coverage with aerial drone views and a premium handcrafted 80-page album.",
     setup: "Candid & Traditional Team + Drone + Pre-Wedding",
     images: [
       "/premium_candid_79k_1.jpg",
@@ -90,7 +90,7 @@ const weddingPlans = [
       "Wedding Day Candid & Traditional Videography",
       "Grand Reception Candid & Traditional Coverage",
       "Helicam (Drone) Aerial Coverage",
-      "One 100-Pages Premium layflat Album",
+      "One 80-Pages Premium layflat Album",
       "Highlights Video Film",
       "Full HD Wedding Video Film",
       "Engagement & Wedding Reels",
@@ -368,7 +368,7 @@ const PricingSection = () => {
     if (num === 110000) return "₹1,65,000";
     if (num === 19999) return "₹29,999";
     if (num === 28999) return "₹45,000";
-    if (num === 79999) return "₹1,20,000";
+    if (num === 79999 || num === 84999) return "₹1,20,000";
     if (num === 10000) return "₹15,000";
     if (num === 15000) return "₹25,000";
     if (num === 28000) return "₹45,000";
@@ -385,7 +385,7 @@ const PricingSection = () => {
     }
     if (upper.includes("DESKTOP CALENDAR")) return "🎁 Free Calendar";
     if (upper.includes("COMPLIMENTARY WALL FRAME")) return "🎁 Free Wall Frame";
-    if (upper.includes("DRONE AERIAL")) return "🎁 Free Drone & 100pg Album";
+    if (upper.includes("DRONE AERIAL")) return "🎁 Free Drone & 80pg Album";
     if (upper.includes("FREE DRONE + PREMIUM")) return "🎁 Free Drone & Album Box";
     if (upper.includes("DIGITAL ALBUM ACCESS")) return "🎁 Free Album Access";
     if (upper.includes("DIGITAL ACCESS")) return "🎁 Free Digital Access";
@@ -528,7 +528,7 @@ const PricingSection = () => {
     const savePercent =
       plan.shareId === "pkgWeddingBasicCard"  ? "33%" :
       plan.shareId === "pkgWeddingPreCard"    ? "27%" :
-      plan.shareId === "pkgPremiumCandidCard" ? "33%" :
+      plan.shareId === "pkgPremiumCandidCard" ? "29%" :
       plan.shareId === "pkgLuxuryCard"        ? "15%" : null;
 
     const allFeatures = plan.features || [];

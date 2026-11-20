@@ -205,7 +205,7 @@ const MyBooking = () => {
         else if (pName === "Wedding Photo & Pre-Wedding") setPackagePrice(54999);
         else if (pName === "Candid Photo & Videography") setPackagePrice(69999);
         else if (pName === "Bride & Groom Luxury Package") setPackagePrice(110000);
-        else if (pName === "Premium Candid Package") setPackagePrice(79999);
+        else if (pName === "Premium Candid Package") setPackagePrice(84999);
         else if (pName === "Bride or Groom Engagement Package") setPackagePrice(28999);
         else if (pName === "Standalone Wedding Day") setPackagePrice(44999);
         else if (pName === "Standalone Reception") setPackagePrice(19999);
@@ -249,7 +249,7 @@ const MyBooking = () => {
     else if (pName === "Wedding Photo & Pre-Wedding") setPackagePrice(54999);
     else if (pName === "Candid Photo & Videography") setPackagePrice(69999);
     else if (pName === "Bride & Groom Luxury Package") setPackagePrice(110000);
-    else if (pName === "Premium Candid Package") setPackagePrice(79999);
+    else if (pName === "Premium Candid Package") setPackagePrice(84999);
     else if (pName === "Bride or Groom Engagement Package") setPackagePrice(28999);
     else if (pName === "Standalone Wedding Day") setPackagePrice(44999);
     else if (pName === "Standalone Reception") setPackagePrice(19999);
@@ -703,7 +703,7 @@ const MyBooking = () => {
                       <option value="Wedding Photography">Wedding Photography (₹44,999)</option>
                       <option value="Wedding Photo & Pre-Wedding">Wedding Photo & Pre-Wedding (₹54,999)</option>
                       <option value="Bride & Groom Luxury Package">Bride & Groom Luxury Package (₹1,10,000)</option>
-                      <option value="Premium Candid Package">Premium Candid Package (₹79,999)</option>
+                      <option value="Premium Candid Package">Premium Candid Package (₹84,999)</option>
                       <option value="Bride or Groom Engagement Package">Bride or Groom Engagement Package (₹28,999)</option>
                       <option value="Standalone Wedding Day">Standalone Wedding Day (₹44,999)</option>
                       <option value="Standalone Reception">Standalone Reception (₹19,999)</option>

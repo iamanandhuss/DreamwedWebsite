@@ -298,9 +298,9 @@ const TrivandrumOffer = () => {
       title: "Premium Candid Package",
       subtitle: "Complete Single-Side & Drone",
       regularPrice: "1,20,000",
-      offerPrice: "79,999",
+      offerPrice: "84,999",
       bonus: "Wedding + Pre-Wedding + Drone",
-      bonusDesc: "Save ₹40,001! Complete single-side coverage including pre-wedding and aerial drone views.",
+      bonusDesc: "Save ₹35,001! Complete single-side coverage including pre-wedding and aerial drone views.",
       images: ["/couple_traditional_red.jpg", pic1, pic2],
       isSpecial: true,
       details: [
@@ -309,7 +309,7 @@ const TrivandrumOffer = () => {
         "Wedding Day Candid & Traditional Videography",
         "Grand Reception Candid & Traditional Coverage",
         "Helicam (Drone) Aerial Coverage",
-        "One 100-Pages Premium layflat Album",
+        "One 80-Pages Premium layflat Album",
         "Highlights Video Film",
         "Full HD Wedding Video Film",
         "Engagement & Wedding Reels",
@@ -318,7 +318,7 @@ const TrivandrumOffer = () => {
         "2 Premium Wall Frames",
         "Edited Photos & High-speed Pendrive"
       ],
-      description: "Our comprehensive single-side coverage package. Designed for couples seeking complete pre-wedding story, wedding day, and reception coverage with aerial drone views and a premium handcrafted 100-page album."
+      description: "Our comprehensive single-side coverage package. Designed for couples seeking complete pre-wedding story, wedding day, and reception coverage with aerial drone views and a premium handcrafted 80-page album."
     }
   ];
 
@@ -498,7 +498,7 @@ const TrivandrumOffer = () => {
     setFormErrors({});
     setBookingStatus("loading");
     
-    const isPack04 = selectedPackage === "Candid Photo & Videography" && selectedPackagePrice === 79999;
+    const isPack04 = (selectedPackage === "Premium Candid Package" || selectedPackage === "Candid Photo & Videography") && (selectedPackagePrice === 79999 || selectedPackagePrice === 84999);
     const selectedAddonsList = [];
     if (!isPack04 && selectedAddons.prewedVideo) {
       selectedAddonsList.push({ name: "Cinematic Pre-Wedding Shoot", price: 9999 });
@@ -1278,7 +1278,7 @@ const TrivandrumOffer = () => {
               Lock In <span className="italic font-serif text-[#b4975a]">Your Wedding Date</span>
             </h2>
             <p className="text-zinc-500 text-xs sm:text-sm font-light leading-relaxed">
-              Verify our availability for your wedding day. Secure your special ₹44,999/-, ₹54,999/-, ₹69,999/- or ₹79,999/- ad package and claim your **FREE Pre-Wedding Shoot** bonus.
+              Verify our availability for your wedding day. Secure your special ₹44,999/-, ₹54,999/-, or ₹84,999/- ad package and claim your **FREE Pre-Wedding Shoot** bonus.
             </p>
           </div>
 
@@ -1513,7 +1513,7 @@ const TrivandrumOffer = () => {
                     <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 block mb-1">Customize Optional Add-ons</span>
                     
                     {/* Cinematic Pre-wedding check (Unless it's Pack 04, which includes it free) */}
-                    {!(selectedPackage === "Candid Photo & Videography" && selectedPackagePrice === 79999) ? (
+                    {!((selectedPackage === "Premium Candid Package" || selectedPackage === "Candid Photo & Videography") && (selectedPackagePrice === 79999 || selectedPackagePrice === 84999)) ? (
                       <label className="flex items-center justify-between text-xs text-zinc-600 cursor-pointer py-1 hover:text-zinc-900 select-none">
                         <span className="flex items-center gap-2">
                           <input 
@@ -1569,7 +1569,7 @@ const TrivandrumOffer = () => {
                     <span className="text-lg text-[#9b1c1c]">
                       ₹{(
                         selectedPackagePrice + 
-                        (!(selectedPackage === "Candid Photo & Videography" && selectedPackagePrice === 79999) && selectedAddons.prewedVideo ? 9999 : 0) + 
+                        (!((selectedPackage === "Premium Candid Package" || selectedPackage === "Candid Photo & Videography") && (selectedPackagePrice === 79999 || selectedPackagePrice === 84999)) && selectedAddons.prewedVideo ? 9999 : 0) + 
                         (selectedAddons.drone ? 8000 : 0) + 
                         (selectedAddons.ledScreen === "single" ? 14999 : selectedAddons.ledScreen === "double" ? 24999 : 0)
                       ).toLocaleString("en-IN")}

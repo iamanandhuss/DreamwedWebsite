@@ -188,12 +188,12 @@ const engagementPlans = [
   {
     shareId: "pkgPremiumCandidCard",
     title: "Premium Candid Package",
-    price: "₹79,999",
+    price: "₹84,999",
     tag: "Single-Side Wedding + Pre-Wedding + Drone",
     modalTag: "Premium Wedding",
     subtitle: "COMPLETE SINGLE-SIDE & DRONE",
-    preweddingOffer: "FREE DRONE AERIAL COVERAGE + 100 PAGES ALBUM",
-    desc: "Our comprehensive single-side coverage package. Designed for couples seeking complete pre-wedding story, wedding day, and reception coverage with aerial drone views and a premium handcrafted 100-page album.",
+    preweddingOffer: "FREE DRONE AERIAL COVERAGE + 80 PAGES ALBUM",
+    desc: "Our comprehensive single-side coverage package. Designed for couples seeking complete pre-wedding story, wedding day, and reception coverage with aerial drone views and a premium handcrafted 80-page album.",
     setup: "Candid & Traditional Team + Drone + Pre-Wedding",
     images: ["/couple_traditional_red.jpg", "/deepak.jpg", "/anandha_lekshmi.jpg"],
     isSpecial: true,
@@ -203,7 +203,7 @@ const engagementPlans = [
       "Wedding Day Candid & Traditional Videography",
       "Grand Reception Candid & Traditional Coverage",
       "Helicam (Drone) Aerial Coverage",
-      "One 100-Pages Premium layflat Album",
+      "One 80-Pages Premium layflat Album",
       "Highlights Video Film",
       "Full HD Wedding Video Film",
       "Engagement & Wedding Reels",
@@ -331,7 +331,7 @@ const Services = () => {
     if (num === 110000) return "₹1,65,000";
     if (num === 19999) return "₹29,999";
     if (num === 28999) return "₹45,000";
-    if (num === 79999) return "₹1,20,000";
+    if (num === 79999 || num === 84999) return "₹1,20,000";
     if (num === 10000) return "₹15,000";
     if (num === 15000) return "₹25,000";
     if (num === 28000) return "₹45,000";
