@@ -118,9 +118,9 @@ const ClientGallery = () => {
     let isMounted = true;
     const targetLookupId = id || "gallery-engagement-617";
 
-    // Immediate embedded match for instantaneous zero-flash loading
+    // Immediate embedded match for instantaneous zero-flash loading (strict ID match only)
     const urlCodeParam = searchParams.get("code") || searchParams.get("passcode") || searchParams.get("accessCode") || "";
-    const exactEmbedded = findEmbeddedGallery(targetLookupId) || (urlCodeParam ? findEmbeddedGallery(urlCodeParam) : null);
+    const exactEmbedded = id ? findEmbeddedGallery(id) : (urlCodeParam ? findEmbeddedGallery(urlCodeParam) : null);
     const initialEmbedded = exactEmbedded || (!id ? (EMBEDDED_GALLERIES.length > 0 ? EMBEDDED_GALLERIES[0] : null) : null);
     if (initialEmbedded && isMounted) {
       setMeta(initialEmbedded);
@@ -187,47 +187,104 @@ const ClientGallery = () => {
                                   searchParams.get("mode") === "selection" || 
                                   searchParams.get("selection") === "true";
 
-      const effectiveCode = urlCode || 
-                            (isGuestModeParam ? (initialEmbedded?.guestCode || "3233") : "") ||
-                            (isSelectionModeParam ? (initialEmbedded?.selectionCode || "5099") : "");
+      // 1. Check local storage first (instant on admin/author device)
+      let localMatch = null;
+      try {
+        const localGals = JSON.parse(safeStorage.getItem("dreamwed_galleries") || "[]");
+        localMatch = localGals.find(g => 
+          g.id === (id || targetLookupId) || 
+          (id && g.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id.toLowerCase()) ||
+          (g.accessCode && g.accessCode === id)
+        );
+      } catch (e) {}
 
-      if ((effectiveCode || isGuestModeParam || isSelectionModeParam) && initialEmbedded && isMounted) {
-        const cleanEff = String(effectiveCode || "").trim().toLowerCase();
-        const gSel = String(initialEmbedded.selectionCode || "").trim().toLowerCase();
-        const isSel = isSelectionModeParam || cleanEff === gSel || cleanEff === String(initialEmbedded.brideCode || "").trim().toLowerCase() || cleanEff === String(initialEmbedded.groomCode || "").trim().toLowerCase();
-        const storedRole = safeStorage.getItem("dreamwed_viewer_role");
-        const resolvedRole = isSel ? (storedRole === "Groom" ? "Groom" : "Bride") : "Guest";
+      // If local gallery has photos and user is auto-unlocking or guest:
+      if (localMatch && localMatch.photos && localMatch.photos.length > 0 && isMounted) {
+        const effectiveCode = urlCode || 
+                              (isGuestModeParam ? (localMatch.guestCode || localMatch.accessCode) : "") ||
+                              (isSelectionModeParam ? (localMatch.selectionCode || localMatch.accessCode) : "");
 
-        setGallery(initialEmbedded);
-        setMeta(initialEmbedded);
-        setSelectedPhotoIds(new Set(initialEmbedded.selectedPhotoIds || []));
-        setSelectionsDetail(initialEmbedded.selectionsDetail || []);
-        if (initialEmbedded.storyData) {
-          setStoryData(initialEmbedded.storyData);
-        } else if (initialEmbedded.photos && initialEmbedded.photos.length > 0) {
-          const curated = curateWeddingStory({
-            photos: initialEmbedded.photos,
-            groomName: initialEmbedded.groomName,
-            brideName: initialEmbedded.brideName,
-            galleryName: initialEmbedded.name
-          });
-          setStoryData(curated);
+        if (effectiveCode || isGuestModeParam || isSelectionModeParam) {
+          const cleanEff = String(effectiveCode || "").trim().toLowerCase();
+          const gSel = String(localMatch.selectionCode || "").trim().toLowerCase();
+          const isSel = isSelectionModeParam || cleanEff === gSel || cleanEff === String(localMatch.brideCode || "").trim().toLowerCase() || cleanEff === String(localMatch.groomCode || "").trim().toLowerCase();
+          const storedRole = safeStorage.getItem("dreamwed_viewer_role");
+          const resolvedRole = isSel ? (storedRole === "Groom" ? "Groom" : "Bride") : "Guest";
+
+          setGallery(localMatch);
+          setMeta(localMatch);
+          setSelectedPhotoIds(new Set(localMatch.selectedPhotoIds || []));
+          setSelectionsDetail(localMatch.selectionsDetail || []);
+          if (localMatch.storyData) {
+            setStoryData(localMatch.storyData);
+          } else {
+            const curated = curateWeddingStory({
+              photos: localMatch.photos,
+              groomName: localMatch.groomName,
+              brideName: localMatch.brideName,
+              galleryName: localMatch.name
+            });
+            setStoryData(curated);
+          }
+
+          const autoUser = {
+            name: isSel ? (resolvedRole === "Bride" ? (localMatch.brideName || "Bride") : (localMatch.groomName || "Groom")) : "Guest",
+            role: resolvedRole,
+            isGuest: !isSel
+          };
+          setCurrentUser(autoUser);
+          safeStorage.setItem(`dreamwed_viewer_user_${localMatch.id}`, JSON.stringify(autoUser));
+          safeStorage.setItem(`dreamwed_passcode_${localMatch.id}`, effectiveCode || (isSel ? gSel : localMatch.guestCode));
+          setIsLocked(false);
+          setLoading(false);
+          return;
         }
-
-        const autoUser = {
-          name: isSel ? (resolvedRole === "Bride" ? (initialEmbedded.brideName || "Bride") : (initialEmbedded.groomName || "Groom")) : "Guest",
-          role: resolvedRole,
-          isGuest: !isSel
-        };
-        setCurrentUser(autoUser);
-        safeStorage.setItem(`dreamwed_viewer_user_${initialEmbedded.id}`, JSON.stringify(autoUser));
-        safeStorage.setItem(`dreamwed_passcode_${initialEmbedded.id}`, effectiveCode || (isSel ? gSel : initialEmbedded.guestCode));
-        setIsLocked(false);
-        setLoading(false);
-        return;
       }
 
-      // Check if there is a saved passcode to automatically unlock on refresh
+      // 2. Embedded Pre-bundled Galleries (SAN, Engagement)
+      if (initialEmbedded && isMounted) {
+        const effectiveCode = urlCode || 
+                              (isGuestModeParam ? (initialEmbedded?.guestCode || "3233") : "") ||
+                              (isSelectionModeParam ? (initialEmbedded?.selectionCode || "5099") : "");
+
+        if (effectiveCode || isGuestModeParam || isSelectionModeParam) {
+          const cleanEff = String(effectiveCode || "").trim().toLowerCase();
+          const gSel = String(initialEmbedded.selectionCode || "").trim().toLowerCase();
+          const isSel = isSelectionModeParam || cleanEff === gSel || cleanEff === String(initialEmbedded.brideCode || "").trim().toLowerCase() || cleanEff === String(initialEmbedded.groomCode || "").trim().toLowerCase();
+          const storedRole = safeStorage.getItem("dreamwed_viewer_role");
+          const resolvedRole = isSel ? (storedRole === "Groom" ? "Groom" : "Bride") : "Guest";
+
+          setGallery(initialEmbedded);
+          setMeta(initialEmbedded);
+          setSelectedPhotoIds(new Set(initialEmbedded.selectedPhotoIds || []));
+          setSelectionsDetail(initialEmbedded.selectionsDetail || []);
+          if (initialEmbedded.storyData) {
+            setStoryData(initialEmbedded.storyData);
+          } else if (initialEmbedded.photos && initialEmbedded.photos.length > 0) {
+            const curated = curateWeddingStory({
+              photos: initialEmbedded.photos,
+              groomName: initialEmbedded.groomName,
+              brideName: initialEmbedded.brideName,
+              galleryName: initialEmbedded.name
+            });
+            setStoryData(curated);
+          }
+
+          const autoUser = {
+            name: isSel ? (resolvedRole === "Bride" ? (initialEmbedded.brideName || "Bride") : (initialEmbedded.groomName || "Groom")) : "Guest",
+            role: resolvedRole,
+            isGuest: !isSel
+          };
+          setCurrentUser(autoUser);
+          safeStorage.setItem(`dreamwed_viewer_user_${initialEmbedded.id}`, JSON.stringify(autoUser));
+          safeStorage.setItem(`dreamwed_passcode_${initialEmbedded.id}`, effectiveCode || (isSel ? gSel : initialEmbedded.guestCode));
+          setIsLocked(false);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 3. Saved Passcode or URL Code Auto-Unlock via Remote Backend API
       let savedPasscode = "";
       let savedUser = null;
       try {
@@ -235,60 +292,18 @@ const ClientGallery = () => {
         savedUser = JSON.parse(safeStorage.getItem(`dreamwed_viewer_user_${id || targetLookupId}`) || "null");
       } catch (e) {}
 
-      // If saved passcode exists, attempt auto-unlock
-      if (savedPasscode) {
-        // Fast-path: Offline auto-unlock check with embedded database first
-        const targetGal = initialEmbedded;
-        if (targetGal && isMounted) {
-          const cleanSaved = String(savedPasscode).trim().toLowerCase();
-          const cleanDig = cleanSaved.replace(/\D/g, "");
-          const gAcc = String(targetGal.accessCode || "").trim().toLowerCase();
-          const gGuest = String(targetGal.guestCode || "").trim().toLowerCase();
-          const gSel = String(targetGal.selectionCode || "").trim().toLowerCase();
-          const gBride = String(targetGal.brideCode || "").trim().toLowerCase();
-          const gGroom = String(targetGal.groomCode || "").trim().toLowerCase();
-          const gAccDig = gAcc.replace(/\D/g, "");
-          const gSelDig = gSel.replace(/\D/g, "");
+      const codeToAttempt = urlCode || savedPasscode || (isGuestModeParam ? (localMatch?.guestCode || "guest") : (isSelectionModeParam ? (localMatch?.selectionCode || "select") : ""));
 
-          const isGuestMatch = cleanSaved === gGuest || cleanSaved === gAcc || (cleanDig.length >= 2 && cleanDig === gAccDig);
-          const isSelMatch = cleanSaved === gSel || cleanSaved === gBride || cleanSaved === gGroom || (cleanDig.length >= 2 && cleanDig === gSelDig);
-
-          if (isGuestMatch || isSelMatch) {
-            const resolvedRole = isSelMatch 
-              ? (savedUser?.role === "Groom" ? "Groom" : "Bride")
-              : "Guest";
-
-            setGallery(targetGal);
-            setMeta(targetGal);
-            setSelectedPhotoIds(new Set(targetGal.selectedPhotoIds || []));
-            setSelectionsDetail(targetGal.selectionsDetail || []);
-            if (targetGal.storyData) {
-              setStoryData(targetGal.storyData);
-            } else if (targetGal.photos && targetGal.photos.length > 0) {
-              const curated = curateWeddingStory({
-                photos: targetGal.photos,
-                groomName: targetGal.groomName,
-                brideName: targetGal.brideName,
-                galleryName: targetGal.name
-              });
-              setStoryData(curated);
-            }
-            setCurrentUser(savedUser ? { ...savedUser, role: resolvedRole } : { name: "Guest", role: resolvedRole });
-            setIsLocked(false);
-            setLoading(false);
-            return;
-          }
-        }
-
+      if (id && codeToAttempt && isMounted) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 4000);
-          const res = await fetch(`${API_BASE}/api/public/galleries/${id || targetLookupId}/unlock`, {
+          const timeoutId = setTimeout(() => controller.abort(), 6000);
+          const res = await fetch(`${API_BASE}/api/public/galleries/${id}/unlock`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ 
-              accessCode: savedPasscode,
-              user: savedUser || { name: "Guest", role: "Guest" }
+              accessCode: codeToAttempt,
+              user: savedUser || { name: isSelectionModeParam ? "Bride" : "Guest", role: isSelectionModeParam ? "Bride" : "Guest" }
             }),
             signal: controller.signal
           }).catch(() => null);
@@ -312,55 +327,19 @@ const ClientGallery = () => {
                 });
                 setStoryData(curated);
               }
-              const finalRole = galData.viewerRole || savedUser?.role || "Guest";
-              setCurrentUser(savedUser ? { ...savedUser, role: finalRole } : { name: "Guest", role: finalRole });
+              const finalRole = galData.viewerRole || (isSelectionModeParam ? "Bride" : "Guest");
+              setCurrentUser({ name: isSelectionModeParam ? (galData.brideName || "Bride") : "Guest", role: finalRole });
               setIsLocked(false);
               setLoading(false);
               return;
             }
           }
         } catch (e) {
-          console.warn("Auto-unlock API skipped:", e);
+          console.warn("Backend auto-unlock attempt:", e);
         }
       }
 
-      // Check local storage for offline / cached gallery
-      let hadLocal = false;
-      try {
-        const localGals = JSON.parse(safeStorage.getItem("dreamwed_galleries") || "[]");
-        const localMatch = localGals.find(g => 
-          g.id === id || 
-          g.id === targetLookupId ||
-          g.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id ||
-          g.accessCode === id ||
-          (id && (id === "gallery-wedding-507" || id.toLowerCase().includes("san")) && (g.id === "gallery-san-478" || g.name?.toLowerCase() === "san"))
-        );
-        if (localMatch && isMounted) {
-          hadLocal = true;
-          setMeta(localMatch);
-          if (localMatch.photos && localMatch.photos.length > 0 && (savedUser || isGuestModeParam)) {
-            setGallery(localMatch);
-            setSelectedPhotoIds(new Set(localMatch.selectedPhotoIds || []));
-            setSelectionsDetail(localMatch.selectionsDetail || []);
-            if (localMatch.storyData) {
-              setStoryData(localMatch.storyData);
-            } else {
-              const curated = curateWeddingStory({
-                photos: localMatch.photos,
-                groomName: localMatch.groomName,
-                brideName: localMatch.brideName,
-                galleryName: localMatch.name
-              });
-              setStoryData(curated);
-            }
-            setIsLocked(false);
-            setLoading(false);
-            return;
-          }
-        }
-      } catch (e) {}
-
-      // If visiting /gallery directly without an ID, auto-open the showcase embedded gallery
+      // 4. Direct /gallery Root Route - Showcase
       if (!id && initialEmbedded && isMounted) {
         setMeta(initialEmbedded);
         setGallery(initialEmbedded);
@@ -381,7 +360,15 @@ const ClientGallery = () => {
         return;
       }
 
-      // Fast embedded lock screen: if initialEmbedded is known, display it instantly without waiting for network
+      // 5. Lock Screen for Local Gallery
+      if (localMatch && isMounted) {
+        setMeta(localMatch);
+        setIsLocked(true);
+        setLoading(false);
+        return;
+      }
+
+      // 6. Lock Screen for Embedded Gallery
       if (initialEmbedded && isMounted) {
         setMeta(initialEmbedded);
         setIsLocked(true);
@@ -389,7 +376,7 @@ const ClientGallery = () => {
         return;
       }
 
-      // Fallback for custom online galleries: fetch metadata from API with 4s timeout
+      // 7. Lock Screen for Custom Online Gallery (Fetch metadata from API)
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 4000);
@@ -406,7 +393,7 @@ const ClientGallery = () => {
         }
       } catch (err) {}
 
-      // Try static galleries.json hosted directly on the website
+      // 8. Static galleries.json Fallback
       try {
         const staticRes = await fetch("/data/galleries.json").catch(() => null);
         if (staticRes && staticRes.ok) {
@@ -423,7 +410,7 @@ const ClientGallery = () => {
         }
       } catch (staticErr) {}
 
-      if (isMounted && !hadLocal) {
+      if (isMounted && !localMatch) {
         setError("Gallery unavailable.");
       }
 
@@ -533,18 +520,16 @@ const ClientGallery = () => {
 
     // 1. FAST-PATH: Resilient embedded & offline database check FIRST (0ms latency for mobile)
     try {
-      const emb = findEmbeddedGallery(id) || findEmbeddedGallery(cleanCode) || (!id ? (EMBEDDED_GALLERIES.length > 0 ? EMBEDDED_GALLERIES[0] : null) : null);
+      const emb = id ? findEmbeddedGallery(id) : (findEmbeddedGallery(cleanCode) || (!id ? (EMBEDDED_GALLERIES.length > 0 ? EMBEDDED_GALLERIES[0] : null) : null));
       if (emb) {
         const gAcc = String(emb.accessCode || "").trim().toLowerCase();
         const gGuest = String(emb.guestCode || "").trim().toLowerCase();
         const gSel = String(emb.selectionCode || "").trim().toLowerCase();
         const gBride = String(emb.brideCode || "").trim().toLowerCase();
         const gGroom = String(emb.groomCode || "").trim().toLowerCase();
-        const gAccDig = gAcc.replace(/\D/g, "");
-        const gSelDig = gSel.replace(/\D/g, "");
 
-        const isGuestMatch = lowerCode === gGuest || lowerCode === gAcc || (cleanDigits.length >= 2 && cleanDigits === gAccDig);
-        const isSelMatch = lowerCode === gSel || lowerCode === gBride || lowerCode === gGroom || (cleanDigits.length >= 2 && cleanDigits === gSelDig);
+        const isGuestMatch = lowerCode === gGuest || lowerCode === gAcc;
+        const isSelMatch = lowerCode === gSel || lowerCode === gBride || lowerCode === gGroom;
 
         if (isGuestMatch || isSelMatch) {
           const resolvedRole = isSelMatch 
@@ -582,21 +567,52 @@ const ClientGallery = () => {
           setIsLocked(false);
           if (!id) navigate(`/gallery/${emb.id}`, { replace: true });
           setUnlocking(false);
+          return;
+        }
+      }
 
-          // Background fire-and-forget sync to live backend
-          try {
-            fetch(`${API_BASE}/api/public/galleries/${targetKey}/unlock`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ accessCode: cleanCode, user: finalUser })
-            }).catch(() => null);
-          } catch (e) {}
+      // Check local storage gallery match
+      const localGals = JSON.parse(safeStorage.getItem("dreamwed_galleries") || "[]");
+      const localMatch = localGals.find(g => g.id === id || (id && g.name && g.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id.toLowerCase()));
+      if (localMatch && localMatch.photos && localMatch.photos.length > 0) {
+        const gAcc = String(localMatch.accessCode || "").trim().toLowerCase();
+        const gGuest = String(localMatch.guestCode || "").trim().toLowerCase();
+        const gSel = String(localMatch.selectionCode || "").trim().toLowerCase();
+        const gBride = String(localMatch.brideCode || "").trim().toLowerCase();
+        const gGroom = String(localMatch.groomCode || "").trim().toLowerCase();
+        const isGuestMatch = lowerCode === gGuest || lowerCode === gAcc;
+        const isSelMatch = lowerCode === gSel || lowerCode === gBride || lowerCode === gGroom || isSelectionCode;
 
+        if (isGuestMatch || isSelMatch) {
+          const resolvedRole = isSelMatch ? (viewerRole === "Groom" ? "Groom" : "Bride") : "Guest";
+          setGallery(localMatch);
+          setMeta(localMatch);
+          setSelectedPhotoIds(new Set(localMatch.selectedPhotoIds || []));
+          setSelectionsDetail(localMatch.selectionsDetail || []);
+          if (localMatch.storyData) {
+            setStoryData(localMatch.storyData);
+          } else {
+            const curated = curateWeddingStory({
+              photos: localMatch.photos,
+              groomName: localMatch.groomName,
+              brideName: localMatch.brideName,
+              galleryName: localMatch.name
+            });
+            setStoryData(curated);
+          }
+          const finalUser = { ...activeUserProfile, role: resolvedRole };
+          if (id) {
+            safeStorage.setItem(`dreamwed_viewer_user_${id}`, JSON.stringify(finalUser));
+            safeStorage.setItem(`dreamwed_passcode_${id}`, cleanCode);
+          }
+          setCurrentUser(finalUser);
+          setIsLocked(false);
+          setUnlocking(false);
           return;
         }
       }
     } catch (offlineErr) {
-      console.warn("Embedded unlock fast-path skipped:", offlineErr);
+      console.warn("Offline unlock fast-path skipped:", offlineErr);
     }
 
     // 2. Try Live API unlock (for dynamic / online-created galleries)
