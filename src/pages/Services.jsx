@@ -69,38 +69,6 @@ const weddingPlans = [
     ]
   },
   {
-    shareId: "pkgCandidCard",
-    title: "Candid Photo & Videography",
-    price: "₹69,999",
-    tag: "+ LIMITED TIME OFFER",
-    modalTag: "Signature",
-    subtitle: "ARTISTIC CANDID SHOTS",
-    preweddingOffer: "FREE PHOTO CALENDAR + 1 WALL FRAME",
-    desc: "Our creative 3-camera setup featuring dedicated candid photography. Ideal for couples who want artistic, natural, and unstaged storytelling of their special day.",
-    setup: "1 Photographer + 1 Candid Photographer + 1 Videographer",
-    images: ["/uploaded_bride_traditional.jpg", "/uploaded_bride_gold.jpg", "/chindu.jpg"],
-    features: [
-      "Pre-Wedding Photo + Video (Save The Date)",
-      "Wedding Reception Photography",
-      "Wedding Reception Videography",
-      "Wedding Day Photography",
-      "Wedding Day Candid-Photography",
-      "Wedding Day Videography",
-      "One 80 Pages Premium Album",
-      "80 Pages Mini Album",
-      "Highlights Video",
-      "Full HD Wedding Video",
-      "Wedding Reel",
-      "1 Photographer Setup",
-      "1 Candid Photographer Setup",
-      "1 Videographer Setup",
-      "1 Calendar",
-      "1 Pen Drive",
-      "2 Wall Frames",
-      "Edited Photos & High-speed Pendrive"
-    ]
-  },
-  {
     shareId: "pkgLuxuryCard",
     title: "Bride & Groom Luxury Package",
     packName: "BRIDE & GROOM PACK 01",
@@ -496,14 +464,12 @@ const Services = () => {
                 <span className="text-[#1e3f20] font-bold">Total Value:</span>
                 <span className="font-semibold text-zinc-800">
                   {plan.shareId === "pkgWeddingBasicCard" ? "₹71,998" : 
-                   plan.shareId === "pkgWeddingPreCard" ? "₹74,998" : 
-                   plan.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,24,998"}
+                   plan.shareId === "pkgWeddingPreCard" ? "₹74,998" : "₹1,24,998"}
                 </span>
                 <span className="text-zinc-300">|</span>
                 <span className="text-[#9b1c1c] font-bold">
                   {plan.shareId === "pkgWeddingBasicCard" ? "Save 44%" : 
-                   plan.shareId === "pkgWeddingPreCard" ? "Save 27%" : 
-                   plan.shareId === "pkgCandidCard" ? "Save 22%" : "Save 12%"}
+                   plan.shareId === "pkgWeddingPreCard" ? "Save 27%" : "Save 12%"}
                 </span>
               </span>
             </div>
@@ -960,12 +926,6 @@ const Services = () => {
                               {plan.shareId === "pkgWeddingBasicCard" ? "Worth ₹12,000" : "Worth ₹15,000"}
                             </span>
                           </div>
-                          {plan.shareId === "pkgCandidCard" && (
-                            <div className="flex justify-between text-zinc-500">
-                              <span>Creative Candid Upgrade (3-Camera Setup)</span>
-                              <span className="font-semibold text-zinc-800">Worth ₹15,000</span>
-                            </div>
-                          )}
                           {plan.shareId === "pkgLuxuryCard" && (
                             <>
                               <div className="flex justify-between text-zinc-500">
@@ -983,8 +943,7 @@ const Services = () => {
                             <span>Total Standalone Value</span>
                             <span className="font-bold">
                               {plan.shareId === "pkgWeddingBasicCard" ? "₹71,998" :
-                               plan.shareId === "pkgWeddingPreCard" ? "₹74,998" :
-                               plan.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,29,998"}
+                               plan.shareId === "pkgWeddingPreCard" ? "₹74,998" : "₹1,29,998"}
                             </span>
                           </div>
                           <div className="flex justify-between text-[#9b1c1c] font-semibold text-[11px] pt-1">
@@ -996,7 +955,6 @@ const Services = () => {
                           🎉 INSTANT SAVINGS OF {
                             plan.shareId === "pkgWeddingBasicCard" ? "₹31,999 (44% OFF)" :
                             plan.shareId === "pkgWeddingPreCard" ? "₹19,999 (27% OFF)" :
-                            plan.shareId === "pkgCandidCard" ? "₹19,999 (22% OFF)" :
                             "₹19,998 (15% OFF)"
                           }!
                         </div>

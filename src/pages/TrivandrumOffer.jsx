@@ -175,39 +175,6 @@ const TrivandrumOffer = () => {
       description: "Perfect for capturing your beautiful pre-wedding love story and the complete wedding day celebrations. Includes comprehensive coverage and professional deliverables."
     },
     {
-      id: 3,
-      shareId: "pkgCandidCard",
-      title: "Candid Photo & Videography",
-      subtitle: "Artistic Candid Shots",
-      regularPrice: "75,000",
-      offerPrice: "69,999",
-      bonus: "LIMITED TIME OFFER",
-      bonusDesc: "Save ₹5,001! Professional Candid coverage for artistic wedding stories.",
-      images: ["/candid_69k_1.jpg", "/candid_69k_2.jpg", "/candid_69k_3.jpg", "/candid_69k_4.jpg", "/candid_69k_5.jpg"],
-      imagePositions: ["center 30%", "center 22%", "center 25%", "center 25%", "center 30%"],
-      details: [
-        "Pre-Wedding Photo + Video (Save The Date)",
-        "Wedding Reception Photography",
-        "Wedding Reception Videography",
-        "Wedding Day Photography",
-        "Wedding Day Candid-Photography",
-        "Wedding Day Videography",
-        "One 80 Pages Premium Album",
-        "80 Pages Mini Album",
-        "Highlights Video",
-        "Full HD Wedding Video",
-        "Wedding Reel",
-        "1 Photographer Setup",
-        "1 Candid Photographer Setup",
-        "1 Videographer Setup",
-        "1 Calendar",
-        "1 Pen Drive",
-        "2 Wall Frames",
-        "Edited Photos & High-speed Pendrive"
-      ],
-      description: "Our creative 3-camera setup featuring dedicated candid photography. Ideal for couples who want artistic, natural, and unstaged storytelling of their special day."
-    },
-    {
       id: 5,
       shareId: "pkgLuxuryCard",
       title: "Bride & Groom Luxury Package",
@@ -661,8 +628,7 @@ const TrivandrumOffer = () => {
       : "4 Camera · Multi-Angle";
     const savePercent =
       pack.shareId === "pkgWeddingBasicCard" ? "Save 44%" :
-      pack.shareId === "pkgWeddingPreCard"  ? "Save 27%" :
-      pack.shareId === "pkgCandidCard"      ? "Save 22%" : "Save 12%";
+      pack.shareId === "pkgWeddingPreCard"  ? "Save 27%" : "Save 12%";
 
     return (
       <motion.div
@@ -2372,12 +2338,6 @@ const TrivandrumOffer = () => {
                               {pack.shareId === "pkgWeddingBasicCard" ? "Worth ₹12,000" : "Worth ₹15,000"}
                             </span>
                           </div>
-                          {pack.shareId === "pkgCandidCard" && (
-                            <div className="flex justify-between text-zinc-500">
-                              <span>Creative Candid Upgrade (3-Camera Setup)</span>
-                              <span className="font-semibold text-zinc-800">Worth ₹15,000</span>
-                            </div>
-                          )}
                           {pack.shareId === "pkgLuxuryCard" && (
                             <>
                               <div className="flex justify-between text-zinc-500">
@@ -2395,8 +2355,7 @@ const TrivandrumOffer = () => {
                             <span>Total Standalone Value</span>
                             <span className="font-bold">
                               {pack.shareId === "pkgWeddingBasicCard" ? "₹71,998" :
-                               pack.shareId === "pkgWeddingPreCard" ? "₹74,998" :
-                               pack.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,29,998"}
+                               pack.shareId === "pkgWeddingPreCard" ? "₹74,998" : "₹1,29,998"}
                             </span>
                           </div>
                           <div className="flex justify-between text-[#9b1c1c] font-semibold text-[11px] pt-1">
@@ -2408,7 +2367,6 @@ const TrivandrumOffer = () => {
                           🎉 INSTANT SAVINGS OF {
                             pack.shareId === "pkgWeddingBasicCard" ? "₹31,999 (44% OFF)" :
                             pack.shareId === "pkgWeddingPreCard" ? "₹19,999 (27% OFF)" :
-                            pack.shareId === "pkgCandidCard" ? "₹19,999 (22% OFF)" :
                             "₹19,998 (15% OFF)"
                           }!
                         </div>

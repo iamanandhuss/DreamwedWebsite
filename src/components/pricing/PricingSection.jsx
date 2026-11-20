@@ -66,40 +66,6 @@ const weddingPlans = [
     ]
   },
   {
-    shareId: "pkgCandidCard",
-    title: "Candid Photo & Videography",
-    price: "₹69,999",
-    tag: "+ LIMITED TIME OFFER",
-    modalTag: "Signature",
-    subtitle: "ARTISTIC CANDID SHOTS",
-    preweddingOffer: "FREE PHOTO CALENDAR + 1 WALL FRAME",
-    desc: "Our creative 3-camera setup featuring dedicated candid photography. Ideal for couples who want artistic, natural, and unstaged storytelling of their special day.",
-    setup: "1 Photographer + 1 Candid Photographer + 1 Videographer",
-    images: ["/candid_69k_1.jpg", "/candid_69k_2.jpg", "/candid_69k_3.jpg", "/candid_69k_4.jpg", "/candid_69k_5.jpg"],
-    imagePositions: ["center 30%", "center 22%", "center 25%", "center 25%", "center 30%"],
-    features: [
-      "Pre-Wedding Photo + Video (Save The Date)",
-      "Wedding Reception Photography",
-      "Wedding Reception Videography",
-      "Wedding Day Photography",
-      "Wedding Day Candid-Photography",
-      "Wedding Day Videography",
-      "One 80 Pages Premium Album",
-      "80 Pages Mini Album",
-      "Highlights Video",
-      "Full HD Wedding Video",
-      "Wedding Reel",
-      "1 Photographer Setup",
-      "1 Candid Photographer Setup",
-      "1 Videographer Setup",
-      "1 Calendar",
-      "1 Pen Drive",
-      "2 Wall Frames",
-      "Edited Photos & High-speed Pendrive"
-    ]
-  },
-  
-  {
     shareId: "pkgPremiumCandidCard",
     title: "Premium Candid Package",
     price: "₹79,999",
@@ -562,7 +528,6 @@ const PricingSection = () => {
     const savePercent =
       plan.shareId === "pkgWeddingBasicCard"  ? "33%" :
       plan.shareId === "pkgWeddingPreCard"    ? "27%" :
-      plan.shareId === "pkgCandidCard"        ? "22%" :
       plan.shareId === "pkgPremiumCandidCard" ? "33%" :
       plan.shareId === "pkgLuxuryCard"        ? "15%" : null;
 
@@ -1197,12 +1162,6 @@ const PricingSection = () => {
                             {activePlan.shareId === "pkgWeddingBasicCard" ? "Worth ₹12,000" : "Worth ₹15,000"}
                           </span>
                         </div>
-                        {activePlan.shareId === "pkgCandidCard" && (
-                          <div className="flex justify-between text-zinc-600">
-                            <span>Creative Candid Upgrade (3-Camera Setup)</span>
-                            <span className="font-semibold text-zinc-800">Worth ₹15,000</span>
-                          </div>
-                        )}
                         {activePlan.shareId === "pkgLuxuryCard" && (
                           <>
                             <div className="flex justify-between text-zinc-600">
@@ -1220,8 +1179,7 @@ const PricingSection = () => {
                           <span>Total Standalone Value</span>
                           <span className="font-bold">
                             {activePlan.shareId === "pkgWeddingBasicCard" ? "₹71,998" :
-                             activePlan.shareId === "pkgWeddingPreCard" ? "₹74,998" :
-                             activePlan.shareId === "pkgCandidCard" ? "₹89,998" : "₹1,29,998"}
+                             activePlan.shareId === "pkgWeddingPreCard" ? "₹74,998" : "₹1,29,998"}
                           </span>
                         </div>
                         <div className="flex justify-between text-[#A99268] font-semibold text-[11px] pt-1">
@@ -1233,7 +1191,6 @@ const PricingSection = () => {
                         🎉 INSTANT SAVINGS OF {
                           activePlan.shareId === "pkgWeddingBasicCard" ? "₹31,999 (44% OFF)" :
                           activePlan.shareId === "pkgWeddingPreCard" ? "₹19,999 (27% OFF)" :
-                          activePlan.shareId === "pkgCandidCard" ? "₹19,999 (22% OFF)" :
                           "₹19,998 (15% OFF)"
                         }!
                       </div>

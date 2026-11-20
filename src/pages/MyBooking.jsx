@@ -702,7 +702,6 @@ const MyBooking = () => {
                       <option value="Classic Heritage Package">Classic Heritage Package (₹95,000)</option>
                       <option value="Wedding Photography">Wedding Photography (₹44,999)</option>
                       <option value="Wedding Photo & Pre-Wedding">Wedding Photo & Pre-Wedding (₹54,999)</option>
-                      <option value="Candid Photo & Videography">Candid Photo & Videography (₹69,999)</option>
                       <option value="Bride & Groom Luxury Package">Bride & Groom Luxury Package (₹1,10,000)</option>
                       <option value="Premium Candid Package">Premium Candid Package (₹79,999)</option>
                       <option value="Bride or Groom Engagement Package">Bride or Groom Engagement Package (₹28,999)</option>
